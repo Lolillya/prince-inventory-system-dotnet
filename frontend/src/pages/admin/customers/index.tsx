@@ -4,12 +4,12 @@ import { SelectedUser } from "../../../components/selected-user";
 import { NoSelectedState } from "../../../components/no-selected-state";
 import { Separator } from "../../../components/separator";
 import { useCustomersQuery } from "../../../features/customers/customer-get-all.query";
-import { useSelectedCustomerQuery } from "../../../features/customers/customer-selecter.query";
 import React from "react";
+import { useSelectedCustomer } from "@/features/customers/customer-selector.query";
 
 const SuppliersPage = () => {
   const { data: customers, isLoading, error } = useCustomersQuery();
-  const { data: selectedCustomer } = useSelectedCustomerQuery();
+  const { data: selectedCustomer } = useSelectedCustomer();
 
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;

@@ -6,7 +6,8 @@ import { api } from "../api/API.service";
 export const createInvoice = async (
   payload: InvoiceProductModel[],
   customerId?: string | number,
-  userId?: string | number
+  userId?: string | number,
+  invoiceTerm?: number
 ) => {
   console.log("customerId: ", customerId);
   console.log("userId: ", userId);
@@ -16,6 +17,7 @@ export const createInvoice = async (
       LineItem: [{}],
       Invoice_Clerk: userId,
       Customer_ID: customerId,
+      Term: invoiceTerm,
       Notes: "Sample Invoice Note",
     };
 

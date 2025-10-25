@@ -1,7 +1,10 @@
 using System.Text.Json;
 using backend.Data;
 using backend.Dtos.InvoiceDTO;
+using backend.Models.InvoiceModel;
+using backend.Models.LineItems;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controller.InvoiceControllers
 {
@@ -28,13 +31,61 @@ namespace backend.Controller.InvoiceControllers
         // CREATE INVOICE LOGIC
         private async Task CreateInvoice(InvoiceDTO payload)
         {
+            decimal totalLineItems = 0;
+            foreach (var item in payload.LineItem)
+                totalLineItems += item.unit_price * item.unit_quantity;
+
+            var invoiceNumber = await GetLatestInvoiceNumber();
+
+            var invoice = new Invoice
+            {
+                Invoice_Number = invoiceNumber,
+                Notes = payload.Notes,
+                Customer_ID = payload.Customer_ID,
+                Invoice_Clerk = payload.Invoice_Clerk,
+                Total_Amount = totalLineItems,
+                Status = "Invoice Status",
+                Term = payload.Term,
+                Discount = 0
+            };
+
+            _db.Add(invoice);
+
+            await _db.SaveChangesAsync();
 
         }
 
         // CREATE INVOICE LINE ITEMS LOGIC
-        private async Task CreateInvoiceLineItems(InvoiceDTO payload)
+        private async Task<List<object>> CreateInvoiceLineItems(InvoiceDTO payload, int invoiceId)
         {
+            var createdLineItems = new List<object>();
 
+            for (int i = 0; i < payload.LineItem.Count; i++)
+            {
+                var dto = payload.LineItem[i];
+
+                var lineItem = new InvoiceLineItems
+                {
+                    Product_ID = dto.item.product.Product_ID,
+                    Invoice_ID = invoiceId,
+                    Unit = dto.unit,
+                    Unit_Price = dto.unit_price,
+                    Quantity = dto.unit_quantity
+                };
+
+                _db.Add(lineItem);
+                await _db.SaveChangesAsync();
+
+            }
+
+            return createdLineItems;
+        }
+
+        private async Task<int> GetLatestInvoiceNumber()
+        {
+            var max = await _db.Invoice.MaxAsync(i => (int?)i.Invoice_Number);
+
+            return (max ?? 0) + 1;
         }
     }
 }

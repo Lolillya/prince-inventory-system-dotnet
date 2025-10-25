@@ -1,8 +1,8 @@
 import { StarIcon, TrashIcon } from "../icons";
 import { UserClientModel } from "../models/user-client.model";
 import { useSetSupplierSelected } from "../features/suppliers/supplier-selected.query";
-import { useSetCustomerSelected } from "../features/customers/customer-selecter.query";
 import { useSetEmployeeSelected } from "../features/employees/empployee-selected.query";
+import { useSetCustomerSelected } from "@/features/customers/customer-selector.query";
 
 type UserType = "customer" | "supplier" | "employee";
 

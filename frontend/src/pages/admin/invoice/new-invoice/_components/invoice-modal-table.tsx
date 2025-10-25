@@ -1,15 +1,22 @@
 import { useAuth } from "@/context/use-auth";
 import { createInvoice } from "@/features/invoice/create-invoice.service";
 import { useSelectedInvoiceCustomer } from "@/features/invoice/invoice-customer.state";
+import { useInvoiceTermQuery } from "@/features/invoice/invoice-term.state";
 import { useSelectedProductInvoiceQuery } from "@/features/invoice/selected-product";
 
 export const InvoiceTable = () => {
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
   const { data: selecterCustomer } = useSelectedInvoiceCustomer();
+  const { data: invoiceTerm } = useInvoiceTermQuery();
   const { user } = useAuth();
 
   const handleCreateInvoice = () => {
-    createInvoice(selectedInvoices, selecterCustomer?.id, user?.user_ID);
+    createInvoice(
+      selectedInvoices,
+      selecterCustomer?.id,
+      user?.user_ID,
+      invoiceTerm
+    );
   };
   return (
     <div className="flex-1 flex flex-col overflow-hidden gap-2">
