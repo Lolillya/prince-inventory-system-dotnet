@@ -11,6 +11,7 @@ using backend.Models.Inventory;
 using backend.Models.InvoiceModel;
 using backend.Models.RestockModel;
 using backend.Models.LineItems;
+using backend.Models.Unit;
 
 namespace backend.Data
 {
@@ -32,6 +33,8 @@ namespace backend.Data
         public DbSet<RestockLineItems> RestockLineItems { get; set; }
         public DbSet<Restock> Restocks { get; set; }
         public DbSet<RestockBatch> RestocksBatch { get; set; }
+        public DbSet<UnitOfMeasure> UnitOfMeasure { get; set; }
+        public DbSet<Product_UOM> Product_UOMs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -99,6 +102,21 @@ namespace backend.Data
                 entity.HasOne(li => li.Restock)
                     .WithMany(li => li.LineItems)
                     .HasForeignKey(li => li.Restock_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<Product_UOM>(entity =>
+            {
+                entity.ToTable("Product_UOM");
+
+                entity.HasOne(u => u.Product)
+                    .WithMany()
+                    .HasForeignKey(u => u.Product_Id)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(u => u.UnitOfMeasure)
+                    .WithMany()
+                    .HasForeignKey(u => u.UOM_Id)
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
