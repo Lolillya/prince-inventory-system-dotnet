@@ -26,6 +26,7 @@ export const InvoiceTable = () => {
         <label className="text-left w-full">Quantity</label>
         <label className="text-left w-full">Unit</label>
         <label className="text-right w-full">Unit Price</label>
+        <label className="text-right w-full">Quantity</label>
         <label className="text-right w-full">Discount</label>
         <label className="text-right w-full">Subtotal</label>
       </div>
@@ -46,6 +47,9 @@ export const InvoiceTable = () => {
             <span className="text-left w-full">{item.invoice.unit}</span>
             <span className="text-right w-full">
               P {item.invoice.unit_price}
+            </span>
+            <span className="text-right w-full">
+              {item.invoice.unit_quantity}
             </span>
             <span className="text-right w-full">{item.invoice.discount}</span>
             <span className="text-right w-full">

@@ -25,11 +25,31 @@ namespace backend.Controller.InvoiceControllers
 
             Console.WriteLine("Create payload: {0}", JsonSerializer.Serialize(payload));
 
-            return Ok();
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+
+            if (!string.IsNullOrEmpty(payload.Invoice_Clerk))
+            {
+                var clerkExists = await _db.Users.AnyAsync(u => u.Id == payload.Invoice_Clerk);
+                if (!clerkExists)
+                {
+                    await transaction.RollbackAsync();
+                    return BadRequest($"Invoice clerk with id {payload.Invoice_Clerk} not found");
+                }
+            }
+
+            var invoiceId = await CreateInvoice(payload);
+
+            var createdLineItems = await CreateInvoiceLineItems(payload, invoiceId);
+
+            await transaction.CommitAsync();
+
+            return Ok(new { invoiceId, lineItems = createdLineItems });
+
+            // return Ok();
         }
 
         // CREATE INVOICE LOGIC
-        private async Task CreateInvoice(InvoiceDTO payload)
+        private async Task<int> CreateInvoice(InvoiceDTO payload)
         {
             decimal totalLineItems = 0;
             foreach (var item in payload.LineItem)
@@ -53,6 +73,8 @@ namespace backend.Controller.InvoiceControllers
 
             await _db.SaveChangesAsync();
 
+            return invoice.Invoice_ID;
+
         }
 
         // CREATE INVOICE LINE ITEMS LOGIC
@@ -70,7 +92,7 @@ namespace backend.Controller.InvoiceControllers
                     Invoice_ID = invoiceId,
                     Unit = dto.unit,
                     Unit_Price = dto.unit_price,
-                    Quantity = dto.unit_quantity
+                    Unit_Quantity = dto.unit_quantity
                 };
 
                 _db.Add(lineItem);

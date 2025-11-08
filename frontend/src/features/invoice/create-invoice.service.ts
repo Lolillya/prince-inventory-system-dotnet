@@ -30,10 +30,10 @@ export const createInvoice = async (
       total: p.invoice.unit_price * p.invoice.unit_quantity,
       unit: p.invoice.unit,
       unit_price: p.invoice.unit_price,
-      unit_quantiy: p.invoice.unit_quantity,
+      unit_quantity: p.invoice.unit_quantity,
     }));
 
-    console.log(dtos);
+    console.log("dto: ", dtos);
 
     const res = await axios.post(api + "invoice/", dtos, {
       headers: { "Content-Type": "application/json" },

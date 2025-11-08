@@ -23,6 +23,6 @@ namespace backend.Models.LineItems
         public decimal Unit_Price { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal Sub_Total { get; set; }
-        public int Quantity { get; set; }
+        public int Unit_Quantity { get; set; }
     }
 }

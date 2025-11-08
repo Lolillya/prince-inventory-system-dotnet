@@ -62,7 +62,7 @@ namespace backend.Controller.InvoiceControllers
                             li.Unit,
                             li.Unit_Price,
                             li.Sub_Total,
-                            li.Quantity
+                            li.Unit_Quantity
                         }).ToList()
                     })
                     .ToListAsync();
