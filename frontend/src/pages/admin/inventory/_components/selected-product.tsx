@@ -21,9 +21,8 @@ export const SelectedProduct = (product: InventoryProductModel) => {
 
       <div className="flex gap-1">
         <label>ID: </label>
-        <span>{product.product.product_ID}</span>
+        <span>{product.product.productName}</span>
       </div>
-      
 
       <div className="flex flex-col gap-3">
         <label>notes</label>

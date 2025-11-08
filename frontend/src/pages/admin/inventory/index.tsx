@@ -2,8 +2,17 @@ import { useNavigate } from "react-router-dom";
 import { NoSelectedState } from "../../../components/no-selected-state";
 import { Separator } from "../../../components/separator";
 import { UseInventoryQuery } from "../../../features/inventory/get-inventory.query";
-import { useSelectedProductQuery, useSetSelectedProduct } from "../../../features/inventory/product-selected";
-import { EditIcon, FileDownIcon, FilterIcon, PlusIcon, SearchIcon } from "../../../icons";
+import {
+  useSelectedProductQuery,
+  useSetSelectedProduct,
+} from "../../../features/inventory/product-selected";
+import {
+  EditIcon,
+  FileDownIcon,
+  FilterIcon,
+  PlusIcon,
+  SearchIcon,
+} from "../../../icons";
 import { InventoryProductModel } from "../../../models/inventory.model";
 import { SelectedProduct } from "./_components/selected-product";
 
@@ -58,19 +67,33 @@ const InventoryPage = () => {
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">records</label>
+            <label className="capitalize text-saltbox-gray font-normal text-lg">
+              records
+            </label>
           </div>
 
           <div className="w-full overflow-y-scroll flex flex-col gap-2 pr-2">
             {inventory?.map((data, index) => (
               <>
-                <div className="flex justify-between p-5 rounded-lg" key={index} onClick={() => handleClick(data)}>
+                <div
+                  className="flex justify-between p-5 rounded-lg"
+                  key={index}
+                  onClick={() => handleClick(data)}
+                >
                   <div className="flex gap-2 items-center">
-                    <span className="capitalize">{data.product.productName}</span>
+                    <span className="capitalize">
+                      {data.product.productCode}
+                    </span>
                     <span className="capitalize">{data.brand.brandName}</span>
-                    <span className="capitalize">{data.variant.variantName}</span>
+                    <span className="capitalize">
+                      {data.variant.variantName}
+                    </span>
                   </div>
-                  <div onClick={() => navigate(`${data.product.product_ID}/edit-product/`)}>
+                  <div
+                    onClick={() =>
+                      navigate(`${data.product.product_ID}/edit-product/`)
+                    }
+                  >
                     <EditIcon />
                   </div>
                 </div>
@@ -83,11 +106,17 @@ const InventoryPage = () => {
         {/* RIGHT PANEL */}
         <div className="w-[70%] flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">details</label>
+            <label className="capitalize text-saltbox-gray font-normal text-lg">
+              details
+            </label>
           </div>
 
           <div className="h-full bg-custom-gray rounded-lg flex p-5">
-            {!selectedProduct ? <NoSelectedState /> : <SelectedProduct {...selectedProduct} />}
+            {!selectedProduct ? (
+              <NoSelectedState />
+            ) : (
+              <SelectedProduct {...selectedProduct} />
+            )}
           </div>
         </div>
       </div>
