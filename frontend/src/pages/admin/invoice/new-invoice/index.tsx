@@ -11,7 +11,6 @@ import { InvoiceCard } from "./_components/invoice-card";
 import { useState } from "react";
 import { CreateInvoiceModal } from "./_components/invoice-modal";
 import { InvoiceProductModel } from "@/models/invoice.model";
-import { units } from "@/models/enum";
 import { useUnitOfMeasureQurey } from "@/features/unit-of-measure/unit-of-measure";
 
 const NewInvoicePage = () => {
@@ -33,7 +32,7 @@ const NewInvoicePage = () => {
     const invoice: InvoiceProductModel = {
       invoice: {
         item: data,
-        unit: units.NONE,
+        unit: productUnits[0].uom_Name,
         unit_quantity: 0,
         unit_price: 0,
         discount: 0,

@@ -1,4 +1,3 @@
-import { units } from "./enum";
 import { InventoryProductModel } from "./inventory.model";
 
 export type RestockModel = {

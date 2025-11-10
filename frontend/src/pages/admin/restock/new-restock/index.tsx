@@ -7,7 +7,6 @@ import { CreateRestockModal } from "./_components/restock-modal";
 import RestockCard from "./_components/restock-card";
 import { InventoryProductModel } from "@/models/inventory.model";
 import { RestockModel } from "@/models/restock.model";
-import { units } from "@/models/enum";
 import {
   useSelectedRestock,
   useSelectedRestockProduct,
@@ -39,7 +38,7 @@ const NewRestockPage = () => {
     const restock: RestockModel = {
       restock: {
         items: data,
-        unit: units.NONE,
+        unit: productUnits[0].uom_Name,
         unit_quantity: 0,
         unit_price: 0,
         total: 0,
