@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251109171144_AddedProductSeed")]
+    partial class AddedProductSeed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1763,68 +1766,6 @@ namespace backend.Migrations
                     b.HasKey("uom_ID");
 
                     b.ToTable("UnitOfMeasure");
-
-                    b.HasData(
-                        new
-                        {
-                            uom_ID = 1,
-                            uom_Name = "PIECES"
-                        },
-                        new
-                        {
-                            uom_ID = 2,
-                            uom_Name = "PADS"
-                        },
-                        new
-                        {
-                            uom_ID = 3,
-                            uom_Name = "SETS"
-                        },
-                        new
-                        {
-                            uom_ID = 4,
-                            uom_Name = "BOXES"
-                        },
-                        new
-                        {
-                            uom_ID = 5,
-                            uom_Name = "BUNDLES"
-                        },
-                        new
-                        {
-                            uom_ID = 6,
-                            uom_Name = "ROLLS"
-                        },
-                        new
-                        {
-                            uom_ID = 7,
-                            uom_Name = "GALLON"
-                        },
-                        new
-                        {
-                            uom_ID = 8,
-                            uom_Name = "PACKS"
-                        },
-                        new
-                        {
-                            uom_ID = 9,
-                            uom_Name = "TUBES"
-                        },
-                        new
-                        {
-                            uom_ID = 10,
-                            uom_Name = "CARTOONS"
-                        },
-                        new
-                        {
-                            uom_ID = 11,
-                            uom_Name = "CASE"
-                        },
-                        new
-                        {
-                            uom_ID = 12,
-                            uom_Name = "REAMS"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

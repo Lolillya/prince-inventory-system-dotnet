@@ -11,3 +11,4 @@ namespace backend.Models.Unit
         public string uom_Name { get; set; } = null!;
     }
 }
+

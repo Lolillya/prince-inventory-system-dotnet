@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using backend.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using backend.Data;
 using backend.Models.Inventory;
 using backend.Models.InvoiceModel;
 using backend.Models.RestockModel;
@@ -49,7 +43,7 @@ namespace backend.Data
             Seeders.Users.UserDataSeed(builder);
             Seeders.Suppliers.SeedSupplierUsers(builder);
 
-            // Inventory items
+            // Seed Inventory items
             Seeders.BrandInventory.SeedBrandData(builder);
             Seeders.CategoryInventory.SeedCategoryData(builder);
             Seeders.InventoryProduct.SeedProductData(builder);
@@ -57,19 +51,22 @@ namespace backend.Data
             Seeders.VariantInventory.SeedVariantData(builder);
             Seeders.SeedInvoice.SeedInvoiceData(builder);
 
+            // Seed Unit of Measure
+            Seeders.SeedUnitOfMeasure.SeedUnitOfMeasureData(builder);
+
             builder.Entity<Invoice>(entity =>
             {
-                entity.ToTable("Invoice"); // optional, matches your table name
+                entity.ToTable("Invoice");
 
                 entity.HasOne(i => i.Customer)
-                    .WithMany() // no inverse navigation on PersonalDetails
+                    .WithMany()
                     .HasForeignKey(i => i.Customer_ID)
-                    .OnDelete(DeleteBehavior.NoAction); // or .Restrict
+                    .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(i => i.Clerk)
                     .WithMany()
                     .HasForeignKey(i => i.Invoice_Clerk)
-                    .OnDelete(DeleteBehavior.NoAction); // or .Restrict
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
             builder.Entity<Restock>(entity =>
