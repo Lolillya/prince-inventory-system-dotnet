@@ -2,7 +2,7 @@ import { UnitModel } from "@/models/uom.model";
 import { useQuery } from "@tanstack/react-query";
 import { GetAllUnits } from "./get-all-uom.service";
 
-export const UnitOfMeasureQurey = () => {
+export const useUnitOfMeasureQurey = () => {
   return useQuery<UnitModel[]>({
     queryKey: ["unit-model"],
     queryFn: async () => {

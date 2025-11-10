@@ -1,10 +1,9 @@
-import { units } from "./enum";
 import { InventoryProductModel } from "./inventory.model";
 
 export type InvoiceProductModel = {
   invoice: {
     item: InventoryProductModel;
-    unit: units;
+    unit: string;
     unit_quantity: number;
     unit_price: number;
     discount: number;

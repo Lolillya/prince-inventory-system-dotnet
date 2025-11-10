@@ -4,14 +4,15 @@ import {
   useSelectedProductInvoiceQuery,
 } from "@/features/invoice/selected-product";
 import { ChevronDownIcon, PlusIcon, XIcon } from "@/icons";
-import { units } from "@/models/enum";
 import { InventoryProductModel } from "@/models/inventory.model";
+import { UnitModel } from "@/models/uom.model";
 import { useState } from "react";
 
 interface InvoiceCardProp {
   onClick?: () => void;
   product: InventoryProductModel;
   onRemove?: () => void;
+  units: UnitModel[];
 }
 
 enum DiscountEnum {
@@ -19,7 +20,7 @@ enum DiscountEnum {
   PERCENTAGE = "%",
 }
 
-export const InvoiceCard = ({ product, onRemove }: InvoiceCardProp) => {
+export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
   const {
     updateInvoiceQuantityByKey,
     UPDATE_INVOICE_UNIT_PRICE,
@@ -51,14 +52,12 @@ export const InvoiceCard = ({ product, onRemove }: InvoiceCardProp) => {
   const handleChangeUnit = (unit: string) => {
     UPDATE_INVOICE_UNIT(
       product.product.product_ID,
-      unit as units,
+      unit,
       product.variant.variantName
     );
 
     setSelectedUnit(unit);
   };
-
-  // console.log(selelctedInvoice);
 
   return (
     <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-[30rem] text-xs">
@@ -110,8 +109,11 @@ export const InvoiceCard = ({ product, onRemove }: InvoiceCardProp) => {
                 value={selectedUnit}
                 onChange={(e) => handleChangeUnit(e.target.value)}
               >
-                <option value={"Boxes"}>Boxes</option>
-                <option value={"Pieces"}>Pieces</option>
+                {units.map((u, i) => (
+                  <option key={i} value={u.uom_Name}>
+                    {u.uom_Name}
+                  </option>
+                ))}
               </select>
             </div>
             {/* <span>not enough stock in batch</span> */}

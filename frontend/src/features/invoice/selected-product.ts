@@ -104,7 +104,7 @@ export const useSelectedInvoiceProduct = () => {
 
   const UPDATE_INVOICE_UNIT = (
     productId: string | number,
-    unit: units,
+    unit: string,
     variantName: string
   ) => {
     queryClient.setQueryData<InvoiceProductModel[]>(

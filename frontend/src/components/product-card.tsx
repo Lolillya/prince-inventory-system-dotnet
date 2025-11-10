@@ -1,4 +1,5 @@
 import { InventoryProductModel } from "@/models/inventory.model";
+import { UnitModel } from "@/models/uom.model";
 
 interface ProductCardProps {
   onClick?: () => void;
@@ -8,7 +9,7 @@ interface ProductCardProps {
 export const ProductCard = ({ product, onClick }: ProductCardProps) => {
   return (
     <div className="flex flex-col gap-3">
-      <div 
+      <div
         className="flex justify-between bg-gray-bg rounded-lg py-2 px-2 text-xs items-center cursor-pointer hover:bg-gray-200"
         onClick={onClick}
       >

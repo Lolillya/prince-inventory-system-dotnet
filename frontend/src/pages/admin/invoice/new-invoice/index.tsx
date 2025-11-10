@@ -12,11 +12,13 @@ import { useState } from "react";
 import { CreateInvoiceModal } from "./_components/invoice-modal";
 import { InvoiceProductModel } from "@/models/invoice.model";
 import { units } from "@/models/enum";
+import { useUnitOfMeasureQurey } from "@/features/unit-of-measure/unit-of-measure";
 
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: inventoryData, isLoading, error } = UseInventoryQuery();
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
+  const { data: productUnits = [] } = useUnitOfMeasureQurey();
   const { addProduct, removeProduct, clearList } = useSelectedInvoiceProduct();
 
   // LOCAL STATES
@@ -72,6 +74,7 @@ const NewInvoicePage = () => {
                     <InvoiceCard
                       key={`${product.invoice.item.product.product_ID}-${product.invoice.item.variant.variantName}-${index}`}
                       product={product.invoice.item}
+                      units={productUnits}
                       onRemove={() => removeProduct(product)}
                     />
                   ))}
