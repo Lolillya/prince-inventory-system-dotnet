@@ -95,7 +95,7 @@ export const useSelectedRestock = () => {
 
   const UPDATE_RESTOCK_UNIT = (
     productId: string | number,
-    unit: units,
+    unit: string,
     variantName?: string
   ) => {
     queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {

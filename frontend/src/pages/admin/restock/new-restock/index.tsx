@@ -12,11 +12,13 @@ import {
   useSelectedRestock,
   useSelectedRestockProduct,
 } from "@/features/restock/selected-restock";
+import { useUnitOfMeasureQurey } from "@/features/unit-of-measure/unit-of-measure";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
   const { data: inventoryData, isLoading, error } = UseInventoryQuery();
   const { data: selectedProduct } = useSelectedRestockProduct();
+  const { data: productUnits = [] } = useUnitOfMeasureQurey();
   const { addProduct, removeProduct } = useSelectedRestock();
 
   console.log(selectedProduct);
@@ -74,6 +76,7 @@ const NewRestockPage = () => {
                       key={i}
                       product={item.restock.items}
                       onRemove={() => removeProduct(item)}
+                      units={productUnits}
                     />
                   ))}
                 </div>

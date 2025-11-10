@@ -1,21 +1,36 @@
 import { Separator } from "@/components/separator";
 import { useSelectedRestock } from "@/features/restock/selected-restock";
 import { PlusIcon, RightArrowIcon, XIcon } from "@/icons";
-import { units } from "@/models/enum";
 import { InventoryProductModel } from "@/models/inventory.model";
+import { UnitModel } from "@/models/uom.model";
+import { useState } from "react";
 
 interface RestockCardProp {
   onClick?: () => void;
   product: InventoryProductModel;
   onRemove?: () => void;
+  units: UnitModel[];
 }
 
-const RestockCard = ({ product, onRemove }: RestockCardProp) => {
+const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
   const {
     UPDATE_RESTOCK_QUANTITY,
     UPDATE_RESTOCK_UNIT_PRICE,
     UPDATE_RESTOCK_UNIT,
   } = useSelectedRestock();
+
+  const [selectedUnit, setSelectedUnit] = useState<string>(
+    units[0]?.uom_Name || ""
+  );
+
+  const handleChangeUnit = (unit: string) => {
+    UPDATE_RESTOCK_UNIT(
+      product.product.product_ID,
+      unit,
+      product.variant.variantName
+    );
+    setSelectedUnit(unit);
+  };
 
   return (
     <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-[30rem] text-xs">
@@ -73,17 +88,14 @@ const RestockCard = ({ product, onRemove }: RestockCardProp) => {
           <label>unit</label>
           <select
             className="rounded-lg w-full p-3 text-sm drop-shadow-none bg-custom-bg-white"
-            value={units.NONE}
-            onChange={(e) =>
-              UPDATE_RESTOCK_UNIT(
-                product.product.product_ID,
-                e.target.value as units,
-                product.variant.variantName
-              )
-            }
+            value={selectedUnit}
+            onChange={(e) => handleChangeUnit(e.target.value)}
           >
-            <option value={units.BOXES}>Boxes</option>
-            <option value={units.PACKS}>Packs</option>
+            {units.map((u, i) => (
+              <option value={u.uom_Name} key={i}>
+                {u.uom_Name}
+              </option>
+            ))}
           </select>
         </div>
       </div>

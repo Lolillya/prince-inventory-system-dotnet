@@ -1,5 +1,4 @@
 import { InventoryProductModel } from "@/models/inventory.model";
-import { UnitModel } from "@/models/uom.model";
 
 interface ProductCardProps {
   onClick?: () => void;

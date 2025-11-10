@@ -30,7 +30,9 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
   const { data: selelctedInvoice } = useSelectedProductInvoiceQuery();
 
   const [discount, setDiscount] = useState<DiscountEnum>(DiscountEnum.MANUAL);
-  const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [selectedUnit, setSelectedUnit] = useState<string>(
+    units[0]?.uom_Name || ""
+  );
 
   const calculateTotal = () => {
     const item =
