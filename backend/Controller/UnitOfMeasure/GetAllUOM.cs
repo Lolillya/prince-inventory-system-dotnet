@@ -28,8 +28,8 @@ namespace backend.Controller.UnitOfMeasure
                 var results = await _db.UnitOfMeasure
                     .Select(u => new
                     {
-                        Id = u.uom_ID,
-                        Name = u.uom_Name
+                        uom_ID = u.uom_ID,
+                        uom_Name = u.uom_Name
                     })
                     .ToListAsync();
 
