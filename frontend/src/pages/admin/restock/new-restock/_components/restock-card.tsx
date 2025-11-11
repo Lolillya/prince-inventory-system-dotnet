@@ -44,6 +44,8 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
       fromUnit: units[0]?.uom_Name || "",
       toUnit: units[0]?.uom_Name || "",
       conversionFactor: 1,
+      quantity: 0,
+      price: 0,
     };
     setConversions([...conversions, newConversion]);
     ADD_UNIT_CONVERSION(
@@ -150,6 +152,36 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
       <div className="flex flex-col gap-2">
         {conversions.map((conversion) => (
           <div key={conversion.id} className="flex gap-1 items-center">
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs">stock</label>
+              <input
+                type="number"
+                placeholder="qty"
+                className="rounded-lg drop-shadow-none w-full bg-custom-bg-white p-2 text-xs"
+                value={conversion.quantity || ""}
+                onChange={(e) =>
+                  handleUpdateConversion(conversion.id, {
+                    quantity: Number(e.target.value) || 0,
+                  })
+                }
+              />
+            </div>
+
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs">price</label>
+              <input
+                type="number"
+                placeholder="0.00"
+                className="rounded-lg drop-shadow-none w-full bg-custom-bg-white p-2 text-xs"
+                value={conversion.price || ""}
+                onChange={(e) =>
+                  handleUpdateConversion(conversion.id, {
+                    price: Number(e.target.value) || 0,
+                  })
+                }
+              />
+            </div>
+
             <div className="flex flex-col gap-1 flex-1">
               <label className="text-xs">from unit</label>
               <select

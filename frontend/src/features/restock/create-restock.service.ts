@@ -40,6 +40,8 @@ export const createRestock = async (
           fromUnit: conv.fromUnit,
           toUnit: conv.toUnit,
           conversionFactor: conv.conversionFactor,
+          quantity: conv.quantity,
+          price: conv.price,
         })) || [],
     }));
 
