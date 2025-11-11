@@ -40,6 +40,10 @@ namespace backend.Controller.RestockControllers
                 }
             }
 
+            /*
+            
+            
+            
             // 1) determine next batch number for supplier and create batch
             var nextBatchNumber = await GetNextBatchNumberAsync(payload.Batch.Supplier_ID);
             payload.Batch.Batch_Number = nextBatchNumber;
@@ -54,6 +58,12 @@ namespace backend.Controller.RestockControllers
             await transaction.CommitAsync();
 
             return Ok(new { restockId, batchId, lineItems = createdLineItems });
+            
+            
+            */
+
+            return Ok();
+
         }
 
         private async Task<int> CreateRestock(RestockDTO payload, int batchId)
