@@ -1727,11 +1727,17 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Product_UOM_Id"));
 
+                    b.Property<int>("Batch_Id")
+                        .HasColumnType("int");
+
                     b.Property<int>("Conversion_Factor")
                         .HasColumnType("int");
 
                     b.Property<int>("Parent_UOM_Id")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Product_Id")
                         .HasColumnType("int");
@@ -1740,6 +1746,8 @@ namespace backend.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Product_UOM_Id");
+
+                    b.HasIndex("Batch_Id");
 
                     b.HasIndex("Product_Id");
 
@@ -1959,6 +1967,12 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Models.Unit.Product_UOM", b =>
                 {
+                    b.HasOne("backend.Models.RestockModel.RestockBatch", "RestockBatch")
+                        .WithMany()
+                        .HasForeignKey("Batch_Id")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("backend.Models.Inventory.Product", "Product")
                         .WithMany()
                         .HasForeignKey("Product_Id")
@@ -1972,6 +1986,8 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+
+                    b.Navigation("RestockBatch");
 
                     b.Navigation("UnitOfMeasure");
                 });
