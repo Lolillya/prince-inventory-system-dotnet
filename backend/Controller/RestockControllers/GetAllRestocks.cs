@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using backend.Data;
+using backend.Dtos.Inventory;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace backend.Controller.RestockControllers
+{
+    [ApiController]
+    [Route("api/restock/get-all")]
+    public class GetAllRestocks : ControllerBase
+    {
+        private readonly ApplicationDBContext _db;
+
+        public GetAllRestocks(ApplicationDBContext db)
+        {
+            _db = db;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var results = await _db.Restocks
+                    .Include(u => u.Clerk)
+                    .Include(u => u.LineItems)
+                        .ThenInclude(u => u.Product)
+                    .Select(u => new
+                    {
+                        grand_total = u.LineItems_Total,
+                        restock_Id = u.Restock_ID,
+
+                        Supplier = new
+                        {
+                            Company_Name = u.Clerk.CompanyName
+
+                        },
+
+                        Line_Items = u.LineItems.Select(li => new
+                        {
+                            li.LineItem_ID,
+
+                            li.Product_ID,
+                            Product = new
+                            {
+                                li.Product.Product_ID,
+                                li.Product.Product_Name
+
+                            }
+                        }).ToList()
+
+                    })
+                    .ToListAsync();
+
+                return Ok(results);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, $"Internal server error: {e.Message}");
+            }
+        }
+    }
+
+}
