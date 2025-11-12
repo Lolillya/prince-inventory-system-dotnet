@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using backend.Data;
 using backend.Dtos.Inventory;
+using backend.Models.RestockModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,29 +30,32 @@ namespace backend.Controller.RestockControllers
                     .Include(u => u.Clerk)
                     .Include(u => u.LineItems)
                         .ThenInclude(u => u.Product)
+                    .Include(u => u.restockBatch)
                     .Select(u => new
                     {
                         grand_total = u.LineItems_Total,
                         restock_Id = u.Restock_ID,
 
-                        Supplier = new
-                        {
-                            Company_Name = u.Clerk.CompanyName
+                        u.restockBatch,
 
-                        },
+                        u.LineItems
 
-                        Line_Items = u.LineItems.Select(li => new
-                        {
-                            li.LineItem_ID,
 
-                            li.Product_ID,
-                            Product = new
-                            {
-                                li.Product.Product_ID,
-                                li.Product.Product_Name
 
-                            }
-                        }).ToList()
+                        // LineItems = u.LineItems.Select(li => new
+                        // {
+                        //     li.LineItem_ID,
+                        //     li.Product_ID,
+                        //     Product = new
+                        //     {
+                        //         li.Product.Product_ID,
+                        //         li.Product.Product_Name
+                        //     },
+                        //     li.Unit,
+                        //     li.Unit_Price,
+                        //     li.Sub_Total,
+                        //     li.Quantity
+                        // }).ToList()
 
                     })
                     .ToListAsync();

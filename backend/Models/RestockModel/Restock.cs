@@ -14,12 +14,14 @@ namespace backend.Models.RestockModel
         public int Batch_ID { get; set; }
         public string Restock_Clerk { get; set; } = null!;
 
-        [ForeignKey(nameof(Restock_Clerk))]
+
         public PersonalDetails Clerk { get; set; } = null!;
 
         public string Notes { get; set; } = null!;
         [Column(TypeName = "decimal(18,2)")]
         public decimal LineItems_Total { get; set; }
+
+        public RestockBatch restockBatch { get; set; } = null!;
 
         [InverseProperty("Restock")]
         public ICollection<RestockLineItems> LineItems { get; set; } = new List<RestockLineItems>();

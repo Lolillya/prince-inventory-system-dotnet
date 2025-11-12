@@ -85,6 +85,12 @@ namespace backend.Data
                     .HasForeignKey(li => li.Restock_ID)
                     .OnDelete(DeleteBehavior.NoAction);
 
+                entity.HasOne(r => r.restockBatch)
+                    .WithMany()
+                    .HasForeignKey(r => r.Batch_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+
             });
 
             builder.Entity<RestockLineItems>(entity =>
