@@ -164,7 +164,7 @@
   }
 
   section {
-    @apply w-full h-full min-h-dvh max-h-dvh flex px-20 py-10 flex-col overflow-y-hidden;
+    @apply w-full h-full min-h-dvh max-h-dvh flex px-20 py-10 flex-col overflow-y-hidden z-10;
   }
 
   span {

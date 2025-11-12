@@ -27,36 +27,46 @@ namespace backend.Controller.RestockControllers
             try
             {
                 var results = await _db.Restocks
-                    .Include(u => u.Clerk)
                     .Include(u => u.LineItems)
                         .ThenInclude(u => u.Product)
                     .Include(u => u.restockBatch)
+                        .ThenInclude(u => u.Supplier)
                     .Select(u => new
                     {
                         grand_total = u.LineItems_Total,
                         restock_Id = u.Restock_ID,
 
-                        u.restockBatch,
+                        line_Items = u.LineItems.Select(li => new
+                        {
+                            li.LineItem_ID,
+                            li.Product_ID,
+                            li.Restock_ID,
+                            Product = new
+                            {
+                                li.Product.Product_ID,
+                                li.Product.Product_Code,
+                                li.Product.Product_Name,
+                                li.Product.Description,
+                                li.Product.Brand_ID,
+                                li.Product.Category_ID,
+                                li.Product.Variant_ID,
+                                li.Product.CreatedAt,
+                                li.Product.UpdatedAt
+                            },
+                            li.Unit,
+                            li.Unit_Price,
+                            li.Sub_Total,
+                            li.Quantity
+                        }).ToList(),
 
-                        u.LineItems
-
-
-
-                        // LineItems = u.LineItems.Select(li => new
-                        // {
-                        //     li.LineItem_ID,
-                        //     li.Product_ID,
-                        //     Product = new
-                        //     {
-                        //         li.Product.Product_ID,
-                        //         li.Product.Product_Name
-                        //     },
-                        //     li.Unit,
-                        //     li.Unit_Price,
-                        //     li.Sub_Total,
-                        //     li.Quantity
-                        // }).ToList()
-
+                        supplier = new
+                        {
+                            u.restockBatch.Supplier.Id,
+                            u.restockBatch.Supplier.FirstName,
+                            u.restockBatch.Supplier.LastName,
+                            u.restockBatch.Supplier.CompanyName,
+                            u.restockBatch.Supplier.Email
+                        }
                     })
                     .ToListAsync();
 
