@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.Dtos.RestockModel;
 using backend.Models.LineItems;
+using backend.Models.Unit;
 
 namespace backend.Controller.RestockControllers
 {
@@ -40,6 +41,10 @@ namespace backend.Controller.RestockControllers
                 }
             }
 
+
+
+
+
             // 1) determine next batch number for supplier and create batch
             var nextBatchNumber = await GetNextBatchNumberAsync(payload.Batch.Supplier_ID);
             payload.Batch.Batch_Number = nextBatchNumber;
@@ -51,9 +56,18 @@ namespace backend.Controller.RestockControllers
             // 3) create line items referencing restockId
             var createdLineItems = await CreateLineItems(payload, restockId);
 
+            // 4) create unit conversions for each line item with conversions
+            var createdConversions = await CreateUnitConversions(payload, batchId);
+
             await transaction.CommitAsync();
 
-            return Ok(new { restockId, batchId, lineItems = createdLineItems });
+            return Ok(new { restockId, batchId, lineItems = createdLineItems, unitConversions = createdConversions });
+
+
+
+
+            // return Ok();
+
         }
 
         private async Task<int> CreateRestock(RestockDTO payload, int batchId)
@@ -141,6 +155,77 @@ namespace backend.Controller.RestockControllers
                 .MaxAsync(b => (int?)b.Batch_Number);
 
             return (max ?? 0) + 1;
+        }
+
+        private async Task<List<object>> CreateUnitConversions(RestockDTO payload, int batchId)
+        {
+            var createdConversions = new List<object>();
+
+            foreach (var lineItem in payload.LineItem)
+            {
+                if (lineItem.unitConversions == null || !lineItem.unitConversions.Any())
+                    continue;
+
+                var productId = lineItem.item.product.Product_ID;
+
+                // Get UOM IDs from the UnitOfMeasure table
+                var unitNames = lineItem.unitConversions
+                    .SelectMany(c => new[] { c.FromUnit, c.ToUnit })
+                    .Distinct()
+                    .ToList();
+
+                var uomMap = await _db.UnitOfMeasure
+                    .Where(u => unitNames.Contains(u.uom_Name))
+                    .ToDictionaryAsync(u => u.uom_Name, u => u.uom_ID);
+
+                // Parent_UOM_Id will be 0 for the first conversion, then each subsequent conversion
+                // references the previous toUnit as its parent
+                int parentUomId = 0;
+
+                foreach (var conversion in lineItem.unitConversions)
+                {
+                    if (!uomMap.ContainsKey(conversion.FromUnit) || !uomMap.ContainsKey(conversion.ToUnit))
+                    {
+                        Console.WriteLine($"Warning: Unit '{conversion.FromUnit}' or '{conversion.ToUnit}' not found in UnitOfMeasure table");
+                        continue;
+                    }
+
+                    var fromUomId = uomMap[conversion.FromUnit];
+                    var toUomId = uomMap[conversion.ToUnit];
+
+                    var productUom = new Product_UOM
+                    {
+                        Product_Id = productId,
+                        Batch_Id = batchId,
+                        UOM_Id = toUomId, // The target unit of this conversion
+                        Parent_UOM_Id = parentUomId == 0 ? fromUomId : parentUomId, // Link to parent unit
+                        Conversion_Factor = conversion.ConversionFactor,
+                        Price = conversion.Price
+                    };
+
+                    _db.Add(productUom);
+                    await _db.SaveChangesAsync();
+
+                    createdConversions.Add(new
+                    {
+                        productUomId = productUom.Product_UOM_Id,
+                        productId = productId,
+                        batchId = batchId,
+                        fromUnit = conversion.FromUnit,
+                        toUnit = conversion.ToUnit,
+                        conversionFactor = conversion.ConversionFactor,
+                        quantity = conversion.Quantity,
+                        price = conversion.Price
+                    });
+
+                    // Set the current toUnit as the parent for the next conversion in the chain
+                    parentUomId = toUomId;
+
+                    Console.WriteLine($"Created Product_UOM: {JsonSerializer.Serialize(productUom)}");
+                }
+            }
+
+            return createdConversions;
         }
     }
 }

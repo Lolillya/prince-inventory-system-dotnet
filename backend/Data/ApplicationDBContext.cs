@@ -115,6 +115,11 @@ namespace backend.Data
                     .WithMany()
                     .HasForeignKey(u => u.UOM_Id)
                     .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(u => u.RestockBatch)
+                    .WithMany()
+                    .HasForeignKey(u => u.Batch_Id)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
         }

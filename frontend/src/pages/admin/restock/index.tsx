@@ -1,9 +1,12 @@
 import { Separator } from "@/components/separator";
+import { useRestockQuery } from "@/features/restock/restock-get-all";
 import { SearchIcon, FilterIcon, PlusIcon, EllipsisIcon } from "@/icons";
 import { useNavigate } from "react-router-dom";
 
 const RestockPage = () => {
   const navigate = useNavigate();
+  const { data: restockItems } = useRestockQuery();
+  console.log(restockItems);
   return (
     <section>
       <div className="w-full mb-8">
@@ -33,24 +36,21 @@ const RestockPage = () => {
         </div>
       </div>
       <div className="flex flex-col gap-5 overflow-y-scroll pb-5 pr-2">
-        {[...Array(20)].map((_, idx) => (
+        {restockItems?.map((r, i) => (
           <div
-            key={idx}
+            key={i}
             className="flex flex-col justify-between gap-5 border shadow-lg rounded-lg p-5"
           >
             <div className="flex flex-1 p-3">
               <div className="flex flex-col gap-3 w-full">
                 <div className="flex gap-3">
-                  <span>#{String(123456 + idx)}</span>
+                  <span>#{r.restock_Id}</span>
                   <span>-</span>
-                  <span>September 29, 2024</span>
+                  <span>ADD DATE TO RESTOCK MODEL</span>
                 </div>
 
                 <div className="flex gap-3">
-                  <span>customer name</span>
-                  <span>|</span>
-                  <span>term:</span>
-                  <span>00</span>
+                  <span>{r.supplier.company_Name}</span>
                 </div>
               </div>
 
@@ -62,7 +62,7 @@ const RestockPage = () => {
                 </div>
 
                 <div className="flex gap-3">
-                  <span>P 0000.00</span>
+                  <span>P {r.grand_total}</span>
                 </div>
               </div>
 

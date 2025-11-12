@@ -35,6 +35,14 @@ export const createRestock = async (
       unit: p.restock.unit,
       unit_price: p.restock.unit_price,
       unit_quantity: p.restock.unit_quantity,
+      unitConversions:
+        p.restock.unitConversions?.map((conv) => ({
+          fromUnit: conv.fromUnit,
+          toUnit: conv.toUnit,
+          conversionFactor: conv.conversionFactor,
+          quantity: conv.quantity,
+          price: conv.price,
+        })) || [],
     }));
 
     console.log("dto: ", dtos);

@@ -15,6 +15,8 @@ namespace backend.Dtos.RestockModel
         public decimal unit_price { get; set; }
 
         public int unit_quantity { get; set; }
+
+        public List<UnitConversionDto>? unitConversions { get; set; }
     }
 
     public class ItemDetailDto
