@@ -10,14 +10,20 @@ namespace backend.Models.Inventory
     {
         [Key]
         public int Product_ID { get; set; }
-        public string Product_Code { get; set; }
-        public string Product_Name { get; set; }
-        public string Description { get; set; }
+        public string Product_Code { get; set; } = null!;
+        public string Product_Name { get; set; } = null!;
+        public string Description { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+
+        // FKs
         public int Brand_ID { get; set; }
         public int Category_ID { get; set; }
         public int Variant_ID { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+
+        public Brand Brand { get; set; } = null!;
+        public Category Category { get; set; } = null!;
+        public Variant Variant { get; set; } = null!;
 
     }
 }

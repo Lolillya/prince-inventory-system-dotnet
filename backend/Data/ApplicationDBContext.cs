@@ -128,6 +128,26 @@ namespace backend.Data
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            builder.Entity<Product>(entity =>
+            {
+                entity.ToTable("Products");
+
+                entity.HasOne(p => p.Brand)
+                .WithMany()
+                .HasForeignKey(p => p.Brand_ID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(p => p.Category)
+                .WithMany()
+                .HasForeignKey(p => p.Category_ID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(p => p.Variant)
+                .WithMany()
+                .HasForeignKey(p => p.Variant_ID)
+                .OnDelete(DeleteBehavior.NoAction);
+            });
+
         }
     }
 }
