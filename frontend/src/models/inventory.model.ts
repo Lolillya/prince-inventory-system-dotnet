@@ -8,16 +8,20 @@ export type InventoryProductModel = {
     category_id: number;
     createdAt: string;
     updatedAt: string;
+    brand: brand;
+    variant: variant;
   };
-  variant: {
-    productId: number;
-    variantName: string;
-    createdAt: string;
-    updatedAt: string;
-  };
-  brand: {
-    brandName: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+};
+
+type brand = {
+  brandName: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type variant = {
+  productId: number;
+  variant_Name: string;
+  createdAt: string;
+  updatedAt: string;
 };
