@@ -55,7 +55,7 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
     UPDATE_INVOICE_UNIT(
       product.product.product_ID,
       unit,
-      product.variant.variantName
+      product.product.variant.variant_Name
     );
 
     setSelectedUnit(unit);
@@ -67,8 +67,8 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
         <div className="flex gap-2 items-center">
           <div className="w-2 h-2 bg-orange-300 rounded-full" />
           <span>{product.product.productName}</span>
-          <span>{product.brand.brandName}</span>
-          <span>{product.variant.variantName}</span>
+          <span>{product.product.brand.brandName}</span>
+          <span>{product.product.variant.variant_Name}</span>
         </div>
         <div
           onClick={onRemove}
@@ -102,7 +102,7 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
                   updateInvoiceQuantityByKey(
                     product.product.product_ID,
                     Number(e.target.value),
-                    product.variant.variantName
+                    product.product.variant.variant_Name
                   )
                 }
               />
@@ -155,7 +155,7 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
                   UPDATE_INVOICE_UNIT_PRICE(
                     product.product.product_ID,
                     Number(e.target.value),
-                    product.variant.variantName
+                    product.product.variant.variant_Name
                   )
                 }
               />
@@ -181,7 +181,7 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
                   updateInvoiceDiscountByKey(
                     product.product.product_ID,
                     Number(e.target.value),
-                    product.variant.variantName
+                    product.product.variant.variant_Name
                   )
                 }
               />

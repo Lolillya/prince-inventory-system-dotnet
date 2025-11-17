@@ -1,8 +1,6 @@
 import { NoSelectedState } from "@/components/no-selected-state";
-import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { LeftArrowIcon, SearchIcon } from "@/icons";
 import { ProductCard } from "../../../../components/product-card";
-import { InventoryProductModel } from "@/models/inventory.model";
 import {
   useSelectedProductInvoiceQuery,
   useSelectedInvoiceProduct,
@@ -13,12 +11,17 @@ import { CreateInvoiceModal } from "./_components/invoice-modal";
 import { InvoiceProductModel } from "@/models/invoice.model";
 import { useUnitOfMeasureQurey } from "@/features/unit-of-measure/unit-of-measure";
 
+import { useInvoiceBatchQuery } from "@/features/invoice/invoice-get-all-batches";
+import { InvoiceItemsModel_2 } from "@/models/invoice-restockBatch.model";
+
 const NewInvoicePage = () => {
   // GLOBAL STATES
-  const { data: inventoryData, isLoading, error } = UseInventoryQuery();
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
   const { data: productUnits = [] } = useUnitOfMeasureQurey();
   const { addProduct, removeProduct, clearList } = useSelectedInvoiceProduct();
+  const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
+
+  console.log(restockBatches);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,10 +31,23 @@ const NewInvoicePage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const handleClick = (data: InventoryProductModel) => {
+  const handleClick = (data: InvoiceItemsModel_2) => {
     const invoice: InvoiceProductModel = {
       invoice: {
-        item: data,
+        item: {
+          product: {
+            product_ID: data.product.product_ID,
+            productCode: data.product.product_Code,
+            productName: data.product.product_Name,
+            desc: data.product.description,
+            brand_id: data.product.brand_ID,
+            category_id: data.product.category_ID,
+            createdAt: data.product.createdAt,
+            updatedAt: data.product.updatedAt,
+            brand: data.product.brand,
+            variant: data.product.variant,
+          },
+        },
         unit: productUnits[0].uom_Name,
         unit_quantity: 0,
         unit_price: 0,
@@ -71,7 +87,7 @@ const NewInvoicePage = () => {
                 <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
                   {selectedInvoices.map((product, index) => (
                     <InvoiceCard
-                      key={`${product.invoice.item.product.product_ID}-${product.invoice.item.variant.variantName}-${index}`}
+                      key={`${product.invoice.item.product.product_ID}-${product.invoice.item.product.variant.variant_Name}-${index}`}
                       product={product.invoice.item}
                       units={productUnits}
                       onRemove={() => removeProduct(product)}
@@ -94,7 +110,7 @@ const NewInvoicePage = () => {
                 </div>
 
                 <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
-                  {inventoryData?.map((data, i) => (
+                  {restockBatches?.map((data, i) => (
                     <ProductCard
                       product={data}
                       onClick={() => handleClick(data)}
