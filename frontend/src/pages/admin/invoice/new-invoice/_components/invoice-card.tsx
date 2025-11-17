@@ -28,10 +28,11 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
     updateInvoiceDiscountByKey,
   } = useSelectedInvoiceProduct();
   const { data: selelctedInvoice } = useSelectedProductInvoiceQuery();
+  console.log(units);
 
   const [discount, setDiscount] = useState<DiscountEnum>(DiscountEnum.MANUAL);
   const [selectedUnit, setSelectedUnit] = useState<string>(
-    units[0]?.uom_Name || ""
+    units[0].uoM_Name || ""
   );
 
   const calculateTotal = () => {
@@ -112,8 +113,8 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
                 onChange={(e) => handleChangeUnit(e.target.value)}
               >
                 {units.map((u, i) => (
-                  <option key={i} value={u.uom_Name}>
-                    {u.uom_Name}
+                  <option key={i} value={u.uoM_Name}>
+                    {u.uoM_Name}
                   </option>
                 ))}
               </select>

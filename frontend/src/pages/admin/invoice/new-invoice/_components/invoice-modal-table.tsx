@@ -44,7 +44,7 @@ export const InvoiceTable = () => {
             <span className="text-left w-full">
               {item.invoice.item.product.productName}
             </span>
-            <span className="text-left w-full">{item.invoice.unit}</span>
+            <span className="text-left w-full">UPDATE UNIT STATE</span>
             <span className="text-right w-full">
               P {item.invoice.unit_price}
             </span>

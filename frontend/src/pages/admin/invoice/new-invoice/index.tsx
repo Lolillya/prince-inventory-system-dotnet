@@ -21,8 +21,6 @@ const NewInvoicePage = () => {
   const { addProduct, removeProduct, clearList } = useSelectedInvoiceProduct();
   const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
 
-  console.log(restockBatches);
-
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -48,7 +46,7 @@ const NewInvoicePage = () => {
             variant: data.product.variant,
           },
         },
-        unit: productUnits[0].uom_Name,
+        unit: data.units,
         unit_quantity: 0,
         unit_price: 0,
         discount: 0,
@@ -89,7 +87,7 @@ const NewInvoicePage = () => {
                     <InvoiceCard
                       key={`${product.invoice.item.product.product_ID}-${product.invoice.item.product.variant.variant_Name}-${index}`}
                       product={product.invoice.item}
-                      units={productUnits}
+                      units={product.invoice.unit}
                       onRemove={() => removeProduct(product)}
                     />
                   ))}
