@@ -1,7 +1,7 @@
 import { handleError } from "@/helpers/error-handler.helper";
-import { InvoiceItemsModel } from "@/models/invoice-items.model";
 import axios from "axios";
 import { api } from "../api/API.service";
+import { InvoiceItemsModel } from "@/models/invoice-items.model";
 
 export const GetAllInvoices = async () => {
   try {

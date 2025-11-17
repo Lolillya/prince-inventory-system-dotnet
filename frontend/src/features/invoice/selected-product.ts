@@ -25,8 +25,8 @@ export const useSelectedInvoiceProduct = () => {
           (p) =>
             p.invoice.item.product.product_ID ===
               product.invoice.item.product.product_ID &&
-            p.invoice.item.variant.variantName ===
-              product.invoice.item.variant.variantName
+            p.invoice.item.product.variant.variant_Name ===
+              product.invoice.item.product.variant.variant_Name
         );
         const next = exists ? old : [...old, product];
 
@@ -39,7 +39,7 @@ export const useSelectedInvoiceProduct = () => {
   const updateInvoiceQuantityByKey = (
     productId: string | number,
     unit_quantity: number,
-    variantName?: string
+    variant_Name?: string
   ) => {
     queryClient.setQueryData<InvoiceProductModel[]>(
       InvoiceProductKey,
@@ -47,8 +47,8 @@ export const useSelectedInvoiceProduct = () => {
         const idx = old.findIndex(
           (p) =>
             String(p.invoice.item.product.product_ID) === String(productId) &&
-            (variantName
-              ? p.invoice.item.variant.variantName === variantName
+            (variant_Name
+              ? p.invoice.item.product.variant.variant_Name === variant_Name
               : true)
         );
         if (idx === -1) return old;
@@ -72,7 +72,7 @@ export const useSelectedInvoiceProduct = () => {
   const UPDATE_INVOICE_UNIT_PRICE = (
     productId: string | number,
     unit_price: number,
-    variantName?: string
+    variant_Name?: string
   ) => {
     queryClient.setQueryData<InvoiceProductModel[]>(
       InvoiceProductKey,
@@ -80,8 +80,8 @@ export const useSelectedInvoiceProduct = () => {
         const idx = old.findIndex(
           (p) =>
             String(p.invoice.item.product.product_ID) === String(productId) &&
-            (variantName
-              ? p.invoice.item.variant.variantName === variantName
+            (variant_Name
+              ? p.invoice.item.product.variant.variant_Name === variant_Name
               : true)
         );
         if (idx === -1) return old;
@@ -104,7 +104,7 @@ export const useSelectedInvoiceProduct = () => {
   const UPDATE_INVOICE_UNIT = (
     productId: string | number,
     unit: string,
-    variantName: string
+    variant_Name: string
   ) => {
     queryClient.setQueryData<InvoiceProductModel[]>(
       InvoiceProductKey,
@@ -112,8 +112,8 @@ export const useSelectedInvoiceProduct = () => {
         const idx = old.findIndex(
           (p) =>
             String(p.invoice.item.product.product_ID) === String(productId) &&
-            (variantName
-              ? p.invoice.item.variant.variantName === variantName
+            (variant_Name
+              ? p.invoice.item.product.variant.variant_Name === variant_Name
               : true)
         );
         if (idx === -1) return old;
@@ -137,7 +137,7 @@ export const useSelectedInvoiceProduct = () => {
   const updateInvoiceDiscountByKey = (
     productId: string | number,
     discount: number,
-    variantName?: string
+    variant_Name?: string
   ) => {
     queryClient.setQueryData<InvoiceProductModel[]>(
       InvoiceProductKey,
@@ -145,8 +145,8 @@ export const useSelectedInvoiceProduct = () => {
         const idx = old.findIndex(
           (p) =>
             String(p.invoice.item.product.product_ID) === String(productId) &&
-            (variantName
-              ? p.invoice.item.variant.variantName === variantName
+            (variant_Name
+              ? p.invoice.item.product.variant.variant_Name === variant_Name
               : true)
         );
         if (idx === -1) return old;
@@ -175,8 +175,8 @@ export const useSelectedInvoiceProduct = () => {
             !(
               p.invoice.item.product.product_ID ===
                 product.invoice.item.product.product_ID &&
-              p.invoice.item.variant.variantName ===
-                product.invoice.item.variant.variantName
+              p.invoice.item.product.variant.variant_Name ===
+                product.invoice.item.product.variant.variant_Name
             )
         );
         return next;
