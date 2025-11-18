@@ -10,15 +10,13 @@ import {
 } from "@/features/restock/selected-restock";
 import { useUnitOfMeasureQurey } from "@/features/unit-of-measure/unit-of-measure";
 import { ProductCard } from "../_components/product-card";
-import { RestockModel } from "@/features/restock/models/restock.model";
-import { InventoryModel } from "@/features/inventory/models/inventory.model";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
   const { data: inventoryData, isLoading, error } = UseInventoryQuery();
   const { data: selectedProduct } = useSelectedRestockProduct();
   const { data: productUnits = [] } = useUnitOfMeasureQurey();
-  const { addProduct, removeProduct } = useSelectedRestock();
+  // const { addProduct, removeProduct } = useSelectedRestock();
 
   console.log(inventoryData);
 

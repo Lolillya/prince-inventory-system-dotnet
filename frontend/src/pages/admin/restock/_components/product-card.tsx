@@ -1,8 +1,8 @@
-import { InventoryProductModel } from "@/models/inventory.model";
+import { InventoryModel } from "@/features/inventory/models/inventory.model";
 
 interface ProductCardProps {
   onClick?: () => void;
-  product: InventoryProductModel;
+  product: InventoryModel;
 }
 
 export const ProductCard = ({ product, onClick }: ProductCardProps) => {
