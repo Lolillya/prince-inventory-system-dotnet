@@ -1,6 +1,5 @@
-import { RestockModel } from "@/models/restock.model";
-import { UnitConversion } from "@/models/unit-conversion.model";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { RestockModel, UnitConversion } from "./models/restock.model";
 
 const RestockProductKey = ["restock-product"];
 
@@ -24,8 +23,8 @@ export const useSelectedRestock = () => {
         (p) =>
           p.restock.items.product.product_ID ===
             product.restock.items.product.product_ID &&
-          p.restock.items.variant.variantName ===
-            product.restock.items.variant.variantName
+          p.restock.items.variant.variant_Name ===
+            product.restock.items.variant.variant_Name
       );
       const next = exists ? old : [...old, product];
       // Log the updated selected invoices
@@ -37,14 +36,14 @@ export const useSelectedRestock = () => {
   const UPDATE_RESTOCK_UNIT_PRICE = (
     productId: string | number,
     unit_price: number,
-    variantName?: string
+    variant_Name?: string
   ) => {
     queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
       const idx = old.findIndex(
         (p) =>
           String(p.restock.items.product.product_ID) === String(productId) &&
-          (variantName
-            ? p.restock.items.variant.variantName === variantName
+          (variant_Name
+            ? p.restock.items.variant.variant_Name === variant_Name
             : true)
       );
       if (idx === -1) return old;
@@ -67,14 +66,14 @@ export const useSelectedRestock = () => {
   const UPDATE_RESTOCK_QUANTITY = (
     productId: string | number,
     unit_quantity: number,
-    variantName?: string
+    variant_Name?: string
   ) => {
     queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
       const idx = old.findIndex(
         (p) =>
           String(p.restock.items.product.product_ID) === String(productId) &&
-          (variantName
-            ? p.restock.items.variant.variantName === variantName
+          (variant_Name
+            ? p.restock.items.variant.variant_Name === variant_Name
             : true)
       );
       if (idx === -1) return old;
@@ -96,14 +95,14 @@ export const useSelectedRestock = () => {
   const UPDATE_RESTOCK_UNIT = (
     productId: string | number,
     unit: string,
-    variantName?: string
+    variant_Name?: string
   ) => {
     queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
       const idx = old.findIndex(
         (p) =>
           String(p.restock.items.product.product_ID) === String(productId) &&
-          (variantName
-            ? p.restock.items.variant.variantName === variantName
+          (variant_Name
+            ? p.restock.items.variant.variant_Name === variant_Name
             : true)
       );
       if (idx === -1) return old;
@@ -129,8 +128,8 @@ export const useSelectedRestock = () => {
           !(
             p.restock.items.product.product_ID ===
               product.restock.items.product.product_ID &&
-            p.restock.items.variant.variantName ===
-              product.restock.items.variant.variantName
+            p.restock.items.variant.variant_Name ===
+              product.restock.items.variant.variant_Name
           )
       );
 
@@ -141,14 +140,14 @@ export const useSelectedRestock = () => {
   const ADD_UNIT_CONVERSION = (
     productId: string | number,
     conversion: UnitConversion,
-    variantName?: string
+    variant_Name?: string
   ) => {
     queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
       const idx = old.findIndex(
         (p) =>
           String(p.restock.items.product.product_ID) === String(productId) &&
-          (variantName
-            ? p.restock.items.variant.variantName === variantName
+          (variant_Name
+            ? p.restock.items.variant.variant_Name === variant_Name
             : true)
       );
       if (idx === -1) return old;
@@ -172,14 +171,14 @@ export const useSelectedRestock = () => {
     productId: string | number,
     conversionId: string,
     updates: Partial<UnitConversion>,
-    variantName?: string
+    variant_Name?: string
   ) => {
     queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
       const idx = old.findIndex(
         (p) =>
           String(p.restock.items.product.product_ID) === String(productId) &&
-          (variantName
-            ? p.restock.items.variant.variantName === variantName
+          (variant_Name
+            ? p.restock.items.variant.variant_Name === variant_Name
             : true)
       );
       if (idx === -1) return old;
@@ -206,14 +205,14 @@ export const useSelectedRestock = () => {
   const REMOVE_UNIT_CONVERSION = (
     productId: string | number,
     conversionId: string,
-    variantName?: string
+    variant_Name?: string
   ) => {
     queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
       const idx = old.findIndex(
         (p) =>
           String(p.restock.items.product.product_ID) === String(productId) &&
-          (variantName
-            ? p.restock.items.variant.variantName === variantName
+          (variant_Name
+            ? p.restock.items.variant.variant_Name === variant_Name
             : true)
       );
       if (idx === -1) return old;

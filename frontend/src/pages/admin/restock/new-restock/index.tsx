@@ -2,16 +2,16 @@ import { NoSelectedState } from "@/components/no-selected-state";
 import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { LeftArrowIcon, SearchIcon } from "@/icons";
 import { useState } from "react";
-import { ProductCard } from "../../../../components/product-card";
 import { CreateRestockModal } from "./_components/restock-modal";
 import RestockCard from "./_components/restock-card";
-import { InventoryProductModel } from "@/models/inventory.model";
-import { RestockModel } from "@/models/restock.model";
 import {
   useSelectedRestock,
   useSelectedRestockProduct,
 } from "@/features/restock/selected-restock";
 import { useUnitOfMeasureQurey } from "@/features/unit-of-measure/unit-of-measure";
+import { ProductCard } from "../_components/product-card";
+import { RestockModel } from "@/features/restock/models/restock.model";
+import { InventoryModel } from "@/features/inventory/models/inventory.model";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
@@ -20,7 +20,7 @@ const NewRestockPage = () => {
   const { data: productUnits = [] } = useUnitOfMeasureQurey();
   const { addProduct, removeProduct } = useSelectedRestock();
 
-  console.log(selectedProduct);
+  console.log(inventoryData);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,19 +34,19 @@ const NewRestockPage = () => {
     setIsModalOpen((prev) => !prev);
   };
 
-  const handleClick = (data: InventoryProductModel) => {
-    const restock: RestockModel = {
-      restock: {
-        items: data,
-        unit: productUnits[0].uom_Name,
-        unit_quantity: 0,
-        unit_price: 0,
-        total: 0,
-      },
-    };
+  // const handleClick = (data: InventoryModel) => {
+  //   const restock: RestockModel = {
+  //     restock: {
+  //       items: data,
+  //       unit: productUnits[0].uoM_Name,
+  //       unit_quantity: 0,
+  //       unit_price: 0,
+  //       total: 0,
+  //     },
+  //   };
 
-    addProduct(restock);
-  };
+  //   addProduct(restock);
+  // };
 
   return (
     <section>
@@ -70,14 +70,14 @@ const NewRestockPage = () => {
                 <NoSelectedState />
               ) : (
                 <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
-                  {selectedProduct.map((item, i) => (
+                  {/* {selectedProduct.map((item, i) => (
                     <RestockCard
                       key={i}
                       product={item.restock.items}
                       onRemove={() => removeProduct(item)}
                       units={productUnits}
                     />
-                  ))}
+                  ))} */}
                 </div>
               )}
             </div>
@@ -98,7 +98,7 @@ const NewRestockPage = () => {
                   {inventoryData?.map((data, i) => (
                     <ProductCard
                       product={data}
-                      onClick={() => handleClick(data)}
+                      onClick={() => console.log()}
                       key={i}
                     />
                   ))}
