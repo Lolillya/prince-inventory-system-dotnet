@@ -1,10 +1,10 @@
 import { handleError } from "@/helpers/error-handler.helper";
-import { RestockModel } from "@/models/restock.model";
 import { api } from "../api/API.service";
 import { useSelectedRestockSupplier } from "./selected-supplier";
 import { useAuth } from "@/context/use-auth";
 
 import axios from "axios";
+import { RestockModel } from "./models/restock.model";
 
 // Pure function that does not use hooks. Accepts supplierId and userId as arguments.
 export const createRestock = async (
