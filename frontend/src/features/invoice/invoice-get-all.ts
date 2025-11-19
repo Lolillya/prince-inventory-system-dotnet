@@ -1,9 +1,9 @@
-import { InvoiceItemsModel } from "@/models/invoice-items.model";
 import { useQuery } from "@tanstack/react-query";
 import { GetAllInvoices } from "./invoice-get-all.service";
+import { InvoiceAllModel } from "./models/invoice-all.model";
 
 export const useInvoiceQuery = () => {
-  return useQuery<InvoiceItemsModel[]>({
+  return useQuery<InvoiceAllModel[]>({
     queryKey: ["invoice-items"],
     queryFn: async () => {
       const response = await GetAllInvoices();

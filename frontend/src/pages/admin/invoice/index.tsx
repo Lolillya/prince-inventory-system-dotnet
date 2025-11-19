@@ -12,6 +12,8 @@ import { useInvoiceQuery } from "@/features/invoice/invoice-get-all";
 const InvoicePage = () => {
   const { data: invoiceData, isLoading: isLoadingInvoice } = useInvoiceQuery();
 
+  console.log(invoiceData);
+
   const navigate = useNavigate();
   return (
     <section>

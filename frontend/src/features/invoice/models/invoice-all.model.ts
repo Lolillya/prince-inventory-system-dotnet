@@ -1,13 +1,15 @@
-export type InvoiceItemsModel = {
+export type InvoiceAllModel = {
   invoice_ID: number;
   invoice_Number: number;
   notes: string;
   total_Amount: number;
+  discount: number;
   status: string;
   term: number;
   createdAt: string;
   customer: InvoiceCustomer;
   clerk: InvoiceClerk;
+  lineItems: LineItems;
 };
 
 type InvoiceCustomer = {
@@ -24,3 +26,5 @@ type InvoiceClerk = {
   lastName: string;
   email: string;
 };
+
+type LineItems = {};
