@@ -11,6 +11,7 @@ import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measur
 import { ProductCard } from "../_components/product-card";
 import { UseInventoryQuery } from "@/features/restock/inventory-batch";
 import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
+import { NewRestockModel } from "@/features/restock/models/restock-add-new";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
@@ -34,9 +35,31 @@ const NewRestockPage = () => {
   };
 
   const handleClick = (data: InventoryBatchesModel) => {
-    const restock: RestockModel = {
+    const restock: NewRestockModel = {
       restock: {
-        items: data,
+        items: {
+          product: {
+            product_ID: data.product.product_ID,
+            product_Code: data.product.product_Code,
+            product_Name: data.product.product_Name,
+            desc: data.product.description,
+            brand_ID: data.product.brand_ID,
+            category_ID: data.product.category_ID,
+            created_At: data.product.created_At,
+            updated_At: data.product.updated_At,
+          },
+          variant: {
+            variant_Name: data.product.variant.variant_Name,
+            created_At: data.product.variant.created_At,
+            updated_At: data.product.variant.updated_At,
+          },
+
+          brand: {
+            brand_Name: data.product.brand.brand_Name,
+            created_At: data.product.brand.created_At,
+            updated_At: data.product.brand.updated_At,
+          },
+        },
         unit: productUnits[0].uoM_Name,
         unit_quantity: 0,
         unit_price: 0,
@@ -44,7 +67,9 @@ const NewRestockPage = () => {
       },
     };
 
-    // addProduct(restock);
+    console.log(restock);
+
+    addProduct(restock);
   };
 
   return (
@@ -97,7 +122,7 @@ const NewRestockPage = () => {
                   {inventoryData?.map((data, i) => (
                     <ProductCard
                       product={data}
-                      onClick={() => console.log()}
+                      onClick={() => handleClick(data)}
                       key={i}
                     />
                   ))}

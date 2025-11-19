@@ -1,10 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { RestockModel, UnitConversion } from "./models/restock.model";
+import { UnitConversion } from "./models/restock.model";
+import { NewRestockModel } from "./models/restock-add-new";
 
 const RestockProductKey = ["restock-product"];
 
 export const useSelectedRestockProduct = () => {
-  return useQuery<RestockModel[]>({
+  return useQuery<NewRestockModel[]>({
     queryKey: RestockProductKey,
     queryFn: async () => {
       return [];
@@ -16,21 +17,24 @@ export const useSelectedRestockProduct = () => {
 export const useSelectedRestock = () => {
   const queryClient = useQueryClient();
 
-  const addProduct = (product: RestockModel) => {
-    queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
-      // Check if product already exists
-      const exists = old.some(
-        (p) =>
-          p.restock.items.product.product_ID ===
-            product.restock.items.product.product_ID &&
-          p.restock.items.variant.variant_Name ===
-            product.restock.items.variant.variant_Name
-      );
-      const next = exists ? old : [...old, product];
-      // Log the updated selected invoices
+  const addProduct = (product: NewRestockModel) => {
+    queryClient.setQueryData<NewRestockModel[]>(
+      RestockProductKey,
+      (old = []) => {
+        // Check if product already exists
+        const exists = old.some(
+          (p) =>
+            p.restock.items.product.product_ID ===
+              product.restock.items.product.product_ID &&
+            p.restock.items.variant.variant_Name ===
+              product.restock.items.variant.variant_Name
+        );
+        const next = exists ? old : [...old, product];
+        // Log the updated selected invoices
 
-      return next;
-    });
+        return next;
+      }
+    );
   };
 
   const UPDATE_RESTOCK_UNIT_PRICE = (
@@ -38,29 +42,32 @@ export const useSelectedRestock = () => {
     unit_price: number,
     variant_Name?: string
   ) => {
-    queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
-      const idx = old.findIndex(
-        (p) =>
-          String(p.restock.items.product.product_ID) === String(productId) &&
-          (variant_Name
-            ? p.restock.items.variant.variant_Name === variant_Name
-            : true)
-      );
-      if (idx === -1) return old;
+    queryClient.setQueryData<NewRestockModel[]>(
+      RestockProductKey,
+      (old = []) => {
+        const idx = old.findIndex(
+          (p) =>
+            String(p.restock.items.product.product_ID) === String(productId) &&
+            (variant_Name
+              ? p.restock.items.variant.variant_Name === variant_Name
+              : true)
+        );
+        if (idx === -1) return old;
 
-      const target = old[idx];
-      const updatedItem: RestockModel = {
-        ...target,
-        restock: {
-          ...target.restock,
-          unit_price,
-        },
-      };
-      const newArr = [...old];
-      newArr[idx] = updatedItem;
+        const target = old[idx];
+        const updatedItem: NewRestockModel = {
+          ...target,
+          restock: {
+            ...target.restock,
+            unit_price,
+          },
+        };
+        const newArr = [...old];
+        newArr[idx] = updatedItem;
 
-      return newArr;
-    });
+        return newArr;
+      }
+    );
   };
 
   const UPDATE_RESTOCK_QUANTITY = (
@@ -68,28 +75,31 @@ export const useSelectedRestock = () => {
     unit_quantity: number,
     variant_Name?: string
   ) => {
-    queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
-      const idx = old.findIndex(
-        (p) =>
-          String(p.restock.items.product.product_ID) === String(productId) &&
-          (variant_Name
-            ? p.restock.items.variant.variant_Name === variant_Name
-            : true)
-      );
-      if (idx === -1) return old;
+    queryClient.setQueryData<NewRestockModel[]>(
+      RestockProductKey,
+      (old = []) => {
+        const idx = old.findIndex(
+          (p) =>
+            String(p.restock.items.product.product_ID) === String(productId) &&
+            (variant_Name
+              ? p.restock.items.variant.variant_Name === variant_Name
+              : true)
+        );
+        if (idx === -1) return old;
 
-      const target = old[idx];
-      const updatedItem: RestockModel = {
-        ...target,
-        restock: {
-          ...target.restock,
-          unit_quantity,
-        },
-      };
-      const newArr = [...old];
-      newArr[idx] = updatedItem;
-      return newArr;
-    });
+        const target = old[idx];
+        const updatedItem: NewRestockModel = {
+          ...target,
+          restock: {
+            ...target.restock,
+            unit_quantity,
+          },
+        };
+        const newArr = [...old];
+        newArr[idx] = updatedItem;
+        return newArr;
+      }
+    );
   };
 
   const UPDATE_RESTOCK_UNIT = (
@@ -97,44 +107,50 @@ export const useSelectedRestock = () => {
     unit: string,
     variant_Name?: string
   ) => {
-    queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
-      const idx = old.findIndex(
-        (p) =>
-          String(p.restock.items.product.product_ID) === String(productId) &&
-          (variant_Name
-            ? p.restock.items.variant.variant_Name === variant_Name
-            : true)
-      );
-      if (idx === -1) return old;
+    queryClient.setQueryData<NewRestockModel[]>(
+      RestockProductKey,
+      (old = []) => {
+        const idx = old.findIndex(
+          (p) =>
+            String(p.restock.items.product.product_ID) === String(productId) &&
+            (variant_Name
+              ? p.restock.items.variant.variant_Name === variant_Name
+              : true)
+        );
+        if (idx === -1) return old;
 
-      const target = old[idx];
-      const updatedItem: RestockModel = {
-        ...target,
-        restock: {
-          ...target.restock,
-          unit,
-        },
-      };
-      const newArr = [...old];
-      newArr[idx] = updatedItem;
-      return newArr;
-    });
+        const target = old[idx];
+        const updatedItem: NewRestockModel = {
+          ...target,
+          restock: {
+            ...target.restock,
+            unit,
+          },
+        };
+        const newArr = [...old];
+        newArr[idx] = updatedItem;
+        return newArr;
+      }
+    );
   };
 
-  const removeProduct = (product: RestockModel) => {
-    queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
-      const next = old.filter(
-        (p) =>
-          !(
-            p.restock.items.product.product_ID ===
-              product.restock.items.product.product_ID &&
-            p.restock.items.variant.variant_Name ===
-              product.restock.items.variant.variant_Name
-          )
-      );
+  const removeProduct = (product: NewRestockModel) => {
+    queryClient.setQueryData<NewRestockModel[]>(
+      RestockProductKey,
+      (old = []) => {
+        const next = old.filter(
+          (p) =>
+            !(
+              p.restock.items.product.product_ID ===
+                product.restock.items.product.product_ID &&
+              p.restock.items.variant.variant_Name ===
+                product.restock.items.variant.variant_Name
+            )
+        );
 
-      return next;
-    });
+        return next;
+      }
+    );
   };
 
   const ADD_UNIT_CONVERSION = (
@@ -142,29 +158,32 @@ export const useSelectedRestock = () => {
     conversion: UnitConversion,
     variant_Name?: string
   ) => {
-    queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
-      const idx = old.findIndex(
-        (p) =>
-          String(p.restock.items.product.product_ID) === String(productId) &&
-          (variant_Name
-            ? p.restock.items.variant.variant_Name === variant_Name
-            : true)
-      );
-      if (idx === -1) return old;
+    queryClient.setQueryData<NewRestockModel[]>(
+      RestockProductKey,
+      (old = []) => {
+        const idx = old.findIndex(
+          (p) =>
+            String(p.restock.items.product.product_ID) === String(productId) &&
+            (variant_Name
+              ? p.restock.items.variant.variant_Name === variant_Name
+              : true)
+        );
+        if (idx === -1) return old;
 
-      const target = old[idx];
-      const existingConversions = target.restock.unitConversions || [];
-      const updatedItem: RestockModel = {
-        ...target,
-        restock: {
-          ...target.restock,
-          unitConversions: [...existingConversions, conversion],
-        },
-      };
-      const newArr = [...old];
-      newArr[idx] = updatedItem;
-      return newArr;
-    });
+        const target = old[idx];
+        const existingConversions = target.restock.unitConversions || [];
+        const updatedItem: NewRestockModel = {
+          ...target,
+          restock: {
+            ...target.restock,
+            unitConversions: [...existingConversions, conversion],
+          },
+        };
+        const newArr = [...old];
+        newArr[idx] = updatedItem;
+        return newArr;
+      }
+    );
   };
 
   const UPDATE_UNIT_CONVERSION = (
@@ -173,33 +192,36 @@ export const useSelectedRestock = () => {
     updates: Partial<UnitConversion>,
     variant_Name?: string
   ) => {
-    queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
-      const idx = old.findIndex(
-        (p) =>
-          String(p.restock.items.product.product_ID) === String(productId) &&
-          (variant_Name
-            ? p.restock.items.variant.variant_Name === variant_Name
-            : true)
-      );
-      if (idx === -1) return old;
+    queryClient.setQueryData<NewRestockModel[]>(
+      RestockProductKey,
+      (old = []) => {
+        const idx = old.findIndex(
+          (p) =>
+            String(p.restock.items.product.product_ID) === String(productId) &&
+            (variant_Name
+              ? p.restock.items.variant.variant_Name === variant_Name
+              : true)
+        );
+        if (idx === -1) return old;
 
-      const target = old[idx];
-      const existingConversions = target.restock.unitConversions || [];
-      const updatedConversions = existingConversions.map((c) =>
-        c.id === conversionId ? { ...c, ...updates } : c
-      );
+        const target = old[idx];
+        const existingConversions = target.restock.unitConversions || [];
+        const updatedConversions = existingConversions.map((c) =>
+          c.id === conversionId ? { ...c, ...updates } : c
+        );
 
-      const updatedItem: RestockModel = {
-        ...target,
-        restock: {
-          ...target.restock,
-          unitConversions: updatedConversions,
-        },
-      };
-      const newArr = [...old];
-      newArr[idx] = updatedItem;
-      return newArr;
-    });
+        const updatedItem: NewRestockModel = {
+          ...target,
+          restock: {
+            ...target.restock,
+            unitConversions: updatedConversions,
+          },
+        };
+        const newArr = [...old];
+        newArr[idx] = updatedItem;
+        return newArr;
+      }
+    );
   };
 
   const REMOVE_UNIT_CONVERSION = (
@@ -207,33 +229,36 @@ export const useSelectedRestock = () => {
     conversionId: string,
     variant_Name?: string
   ) => {
-    queryClient.setQueryData<RestockModel[]>(RestockProductKey, (old = []) => {
-      const idx = old.findIndex(
-        (p) =>
-          String(p.restock.items.product.product_ID) === String(productId) &&
-          (variant_Name
-            ? p.restock.items.variant.variant_Name === variant_Name
-            : true)
-      );
-      if (idx === -1) return old;
+    queryClient.setQueryData<NewRestockModel[]>(
+      RestockProductKey,
+      (old = []) => {
+        const idx = old.findIndex(
+          (p) =>
+            String(p.restock.items.product.product_ID) === String(productId) &&
+            (variant_Name
+              ? p.restock.items.variant.variant_Name === variant_Name
+              : true)
+        );
+        if (idx === -1) return old;
 
-      const target = old[idx];
-      const existingConversions = target.restock.unitConversions || [];
-      const updatedConversions = existingConversions.filter(
-        (c) => c.id !== conversionId
-      );
+        const target = old[idx];
+        const existingConversions = target.restock.unitConversions || [];
+        const updatedConversions = existingConversions.filter(
+          (c) => c.id !== conversionId
+        );
 
-      const updatedItem: RestockModel = {
-        ...target,
-        restock: {
-          ...target.restock,
-          unitConversions: updatedConversions,
-        },
-      };
-      const newArr = [...old];
-      newArr[idx] = updatedItem;
-      return newArr;
-    });
+        const updatedItem: NewRestockModel = {
+          ...target,
+          restock: {
+            ...target.restock,
+            unitConversions: updatedConversions,
+          },
+        };
+        const newArr = [...old];
+        newArr[idx] = updatedItem;
+        return newArr;
+      }
+    );
   };
 
   return {
