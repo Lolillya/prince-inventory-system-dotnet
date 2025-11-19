@@ -20,7 +20,7 @@ const NewRestockPage = () => {
   const { data: productUnits = [] } = useUnitOfMeasureQuery();
   const { addProduct, removeProduct } = useSelectedRestock();
 
-  console.log(productUnits);
+  // console.log(productUnits);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,14 +59,14 @@ const NewRestockPage = () => {
             updated_At: data.product.brand.updated_At,
           },
         },
-        unit: productUnits[0].uoM_Name,
+        unit: productUnits[0].uom_Name,
         unit_quantity: 0,
         unit_price: 0,
         total: 0,
       },
     };
 
-    console.log(restock);
+    // console.log(restock);
 
     addProduct(restock);
   };

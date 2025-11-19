@@ -44,8 +44,10 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
   } = useSelectedRestock();
 
   const [selectedUnit, setSelectedUnit] = useState<string>(
-    units[0]?.uoM_Name || ""
+    units[0]?.uom_Name || ""
   );
+
+  console.log(units);
 
   const [conversions, setConversions] = useState<UnitConversion[]>([]);
 
@@ -61,8 +63,8 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
   const handleAddConversion = () => {
     const newConversion: UnitConversion = {
       id: `conv-${Date.now()}-${Math.random()}`,
-      fromUnit: units[0]?.uoM_Name || "",
-      toUnit: units[0]?.uoM_Name || "",
+      fromUnit: units[0]?.uom_Name || "",
+      toUnit: units[0]?.uom_Name || "",
       conversionFactor: 1,
       quantity: 0,
       price: 0,
@@ -159,8 +161,8 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
             onChange={(e) => handleChangeUnit(e.target.value)}
           >
             {units.map((u, i) => (
-              <option value={u.uoM_Name} key={i}>
-                {u.uoM_Name}
+              <option value={u.uom_Name} key={i}>
+                {u.uom_Name}
               </option>
             ))}
           </select>
@@ -214,8 +216,8 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
                 }
               >
                 {units.map((u, i) => (
-                  <option value={u.uoM_Name} key={i}>
-                    {u.uoM_Name}
+                  <option value={u.uom_Name} key={i}>
+                    {u.uom_Name}
                   </option>
                 ))}
               </select>
@@ -252,8 +254,8 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
                 }
               >
                 {units.map((u, i) => (
-                  <option value={u.uoM_Name} key={i}>
-                    {u.uoM_Name}
+                  <option value={u.uom_Name} key={i}>
+                    {u.uom_Name}
                   </option>
                 ))}
               </select>
