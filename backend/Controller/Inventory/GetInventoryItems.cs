@@ -30,49 +30,46 @@ namespace backend.Controller.Inventory
         {
             try
             {
-                // var results = await (from inv in _db.Inventories
-                //                      join varnt in _db.Variants on inv.Variant_ID equals varnt.Variant_ID
-                //                      join prod in _db.Products on varnt.Product_ID equals prod.Product_ID
-                //                      join brand in _db.Brands on prod.Brand_ID equals brand.Brand_ID
-                //                      select new
-                //                      {
-                //                          Product = new DtoProduct
-                //                          {
-                //                              Product_ID = prod.Product_ID,
-                //                              ProductCode = prod.Product_Code,
-                //                              ProductName = prod.Product_Name,
-                //                              Description = prod.Description,
-                //                              Brand_Id = prod.Brand_ID,
-                //                              Category_Id = prod.Category_ID,
-                //                              CreatedAt = prod.CreatedAt,
-                //                              UpdatedAt = prod.UpdatedAt
-                //                          },
-                //                          Variant = new DtoVariant
-                //                          {
-                //                              ProductId = varnt.Product_ID,
-                //                              VariantName = varnt.Variant_Name,
-                //                              CreatedAt = varnt.CreatedAt,
-                //                              UpdatedAt = varnt.UpdatedAt
-                //                          },
-                //                          Brand = new DtoBrand
-                //                          {
-                //                              BrandName = brand.BrandName,
-                //                              CreatedAt = brand.CreatedAt,
-                //                              UpdatedAt = brand.UpdatedAt
-                //                          },
-                //                      })
-                //                      .ToListAsync();
+                var results = await _db.Inventory
+                    .Include(i => i.Product)
+                        .ThenInclude(i => i.Brand)
+                    .Include(i => i.Product)
+                        .ThenInclude(i => i.Variant)
+                    .Include(i => i.Product)
+                        .ThenInclude(i => i.Category)
+                    .Select(i => new
+                    {
+                        Product = new DtoProduct
+                        {
+                            Product_ID = i.Product_ID,
+                            ProductCode = i.Product.Product_Code,
+                            ProductName = i.Product.Product_Name,
+                            Brand_Id = i.Product.Brand.Brand_ID,
+                            Category_Id = i.Product.Category.Category_ID,
+                            CreatedAt = i.Created_At,
+                            UpdatedAt = i.Updated_At
+                        },
+                        Variant = new DtoVariant
+                        {
+                            VariantName = i.Product.Variant.Variant_Name,
+                            CreatedAt = i.Product.Variant.CreatedAt,
+                            UpdatedAt = i.Product.Variant.UpdatedAt
+                        },
+                        Brand = new DtoBrand
+                        {
+                            BrandName = i.Product.Brand.BrandName,
+                            CreatedAt = i.Product.Brand.CreatedAt,
+                            UpdatedAt = i.Product.Brand.UpdatedAt
+                        },
+                    }).ToListAsync();
 
-                // var results = await _db.Inventories
-                //     .Include(i => i.va)
+                if (results == null || !results.Any())
+                {
+                    return NotFound("No inventory products found.");
+                }
 
-                // if (results == null || !results.Any())
-                // {
-                //     return NotFound("No inventory products found.");
-                // }
-
-                // return Ok(results);
-                return Ok();
+                return Ok(results);
+                // return Ok();
             }
             catch (Exception ex)
             {
