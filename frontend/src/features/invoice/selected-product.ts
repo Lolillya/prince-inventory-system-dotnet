@@ -80,6 +80,7 @@ export const useSelectedInvoiceProduct = () => {
     unit_quantity: number,
     variant_Name?: string
   ) => {
+    // Update display state
     queryClient.setQueryData<InvoiceAddProductModel[]>(
       InvoiceProductKey,
       (old = []) => {
@@ -105,6 +106,33 @@ export const useSelectedInvoiceProduct = () => {
         return newArr;
       }
     );
+
+    // Update payload state
+    queryClient.setQueryData<InvoiceAddPayloadModel[]>(
+      InvoicePayloadKey,
+      (old = []) => {
+        const idx = old.findIndex(
+          (p) =>
+            String(p.invoice.item.product.product_ID) === String(productId) &&
+            (variant_Name
+              ? p.invoice.item.product.variant.variant_Name === variant_Name
+              : true)
+        );
+        if (idx === -1) return old;
+
+        const target = old[idx];
+        const updatedItem: InvoiceAddPayloadModel = {
+          ...target,
+          invoice: {
+            ...target.invoice,
+            unit_quantity,
+          },
+        };
+        const newArr = [...old];
+        newArr[idx] = updatedItem;
+        return newArr;
+      }
+    );
   };
 
   // Update unit price by product id and optional variant name
@@ -113,6 +141,7 @@ export const useSelectedInvoiceProduct = () => {
     unit_price: number,
     variant_Name?: string
   ) => {
+    // Update display state
     queryClient.setQueryData<InvoiceAddProductModel[]>(
       InvoiceProductKey,
       (old = []) => {
@@ -127,6 +156,33 @@ export const useSelectedInvoiceProduct = () => {
 
         const target = old[idx];
         const updatedItem: InvoiceAddProductModel = {
+          ...target,
+          invoice: {
+            ...target.invoice,
+            unit_price,
+          },
+        };
+        const newArr = [...old];
+        newArr[idx] = updatedItem;
+        return newArr;
+      }
+    );
+
+    // Update payload state
+    queryClient.setQueryData<InvoiceAddPayloadModel[]>(
+      InvoicePayloadKey,
+      (old = []) => {
+        const idx = old.findIndex(
+          (p) =>
+            String(p.invoice.item.product.product_ID) === String(productId) &&
+            (variant_Name
+              ? p.invoice.item.product.variant.variant_Name === variant_Name
+              : true)
+        );
+        if (idx === -1) return old;
+
+        const target = old[idx];
+        const updatedItem: InvoiceAddPayloadModel = {
           ...target,
           invoice: {
             ...target.invoice,
@@ -179,6 +235,7 @@ export const useSelectedInvoiceProduct = () => {
     discount: number,
     variant_Name?: string
   ) => {
+    // Update display state
     queryClient.setQueryData<InvoiceAddProductModel[]>(
       InvoiceProductKey,
       (old = []) => {
@@ -193,6 +250,33 @@ export const useSelectedInvoiceProduct = () => {
 
         const target = old[idx];
         const updatedItem: InvoiceAddProductModel = {
+          ...target,
+          invoice: {
+            ...target.invoice,
+            discount,
+          },
+        };
+        const newArr = [...old];
+        newArr[idx] = updatedItem;
+        return newArr;
+      }
+    );
+
+    // Update payload state
+    queryClient.setQueryData<InvoiceAddPayloadModel[]>(
+      InvoicePayloadKey,
+      (old = []) => {
+        const idx = old.findIndex(
+          (p) =>
+            String(p.invoice.item.product.product_ID) === String(productId) &&
+            (variant_Name
+              ? p.invoice.item.product.variant.variant_Name === variant_Name
+              : true)
+        );
+        if (idx === -1) return old;
+
+        const target = old[idx];
+        const updatedItem: InvoiceAddPayloadModel = {
           ...target,
           invoice: {
             ...target.invoice,

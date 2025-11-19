@@ -2,10 +2,10 @@ import { useAuth } from "@/context/use-auth";
 import { createInvoice } from "@/features/invoice/create-invoice.service";
 import { useSelectedInvoiceCustomer } from "@/features/invoice/invoice-customer.state";
 import { useInvoiceTermQuery } from "@/features/invoice/invoice-term.state";
-import { useSelectedProductInvoiceQuery } from "@/features/invoice/selected-product";
+import { useSelectedPayloadInvoiceQuery } from "@/features/invoice/selected-product";
 
 export const InvoiceTable = () => {
-  const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
+  const { data: selectedInvoices = [] } = useSelectedPayloadInvoiceQuery();
   const { data: selecterCustomer } = useSelectedInvoiceCustomer();
   const { data: invoiceTerm } = useInvoiceTermQuery();
   const { user } = useAuth();
@@ -44,7 +44,7 @@ export const InvoiceTable = () => {
             <span className="text-left w-full">
               {item.invoice.item.product.productName}
             </span>
-            <span className="text-left w-full">UPDATE UNIT STATE</span>
+            <span className="text-left w-full">{item.invoice.unit}</span>
             <span className="text-right w-full">
               P {item.invoice.unit_price}
             </span>
