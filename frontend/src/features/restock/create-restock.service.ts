@@ -4,11 +4,11 @@ import { useSelectedRestockSupplier } from "./selected-supplier";
 import { useAuth } from "@/context/use-auth";
 
 import axios from "axios";
-import { RestockModel } from "./models/restock.model";
+import { NewRestockModel } from "./models/restock-add-new";
 
 // Pure function that does not use hooks. Accepts supplierId and userId as arguments.
 export const createRestock = async (
-  payload: RestockModel[],
+  payload: NewRestockModel[],
   supplierId?: string | number,
   userId?: string | number
 ) => {
@@ -27,9 +27,27 @@ export const createRestock = async (
 
     dtos.LineItem = payload.map((p) => ({
       item: {
-        brand: p.restock.items.brand,
-        product: p.restock.items.product,
-        variant: p.restock.items.variant,
+        brand: {
+          BrandName: p.restock.items.brand.brand_Name,
+          CreatedAt: p.restock.items.brand.created_At,
+          UpdatedAt: p.restock.items.brand.updated_At,
+        },
+        product: {
+          Product_ID: p.restock.items.product.product_ID,
+          ProductCode: p.restock.items.product.product_Code,
+          ProductName: p.restock.items.product.product_Name,
+          Description: p.restock.items.product.desc,
+          Brand_Id: p.restock.items.product.brand_ID,
+          Category_Id: p.restock.items.product.category_ID,
+          CreatedAt: p.restock.items.product.created_At,
+          UpdatedAt: p.restock.items.product.updated_At,
+        },
+        variant: {
+          ProductId: p.restock.items.product.product_ID,
+          VariantName: p.restock.items.variant.variant_Name,
+          CreatedAt: p.restock.items.variant.created_At,
+          UpdatedAt: p.restock.items.variant.updated_At,
+        },
       },
       total: p.restock.total ?? p.restock.unit_price * p.restock.unit_quantity,
       unit: p.restock.unit,
@@ -63,7 +81,7 @@ export const useCreateRestock = () => {
   const { data: supplier } = useSelectedRestockSupplier();
   const { user } = useAuth();
 
-  const call = async (payload: RestockModel[]) => {
+  const call = async (payload: NewRestockModel[]) => {
     return createRestock(payload, supplier?.id, user?.user_ID);
   };
 

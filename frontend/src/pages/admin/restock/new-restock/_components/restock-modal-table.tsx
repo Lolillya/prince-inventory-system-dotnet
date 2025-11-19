@@ -8,7 +8,7 @@ export const RestockTable = () => {
   const { data: supplier } = useSelectedRestockSupplier();
   const { user } = useAuth();
 
-  console.log(restockData);
+  console.log("restockData: ", restockData);
 
   const handleCreateRestock = () => {
     if (!restockData) console.log("Add Items for restock!");
