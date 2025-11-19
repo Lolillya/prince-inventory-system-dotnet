@@ -43,7 +43,7 @@ namespace backend.Controller.InvoiceControllers
 
             await transaction.CommitAsync();
 
-            return Ok(new { invoiceId, lineItems = createdLineItems });
+            return Ok(new { invoiceId, createdLineItems });
 
             // return Ok();
         }
@@ -98,6 +98,15 @@ namespace backend.Controller.InvoiceControllers
                 _db.Add(lineItem);
                 await _db.SaveChangesAsync();
 
+                createdLineItems.Add(new
+                {
+                    lineItem.LineItem_ID,
+                    lineItem.Product_ID,
+                    lineItem.Invoice_ID,
+                    lineItem.Unit,
+                    lineItem.Unit_Price,
+                    lineItem.Unit_Quantity
+                });
             }
 
             return createdLineItems;
