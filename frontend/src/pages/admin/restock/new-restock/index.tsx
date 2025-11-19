@@ -1,5 +1,4 @@
 import { NoSelectedState } from "@/components/no-selected-state";
-import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { LeftArrowIcon, SearchIcon } from "@/icons";
 import { useState } from "react";
 import { CreateRestockModal } from "./_components/restock-modal";
@@ -10,6 +9,7 @@ import {
 } from "@/features/restock/selected-restock";
 import { useUnitOfMeasureQurey } from "@/features/unit-of-measure/unit-of-measure";
 import { ProductCard } from "../_components/product-card";
+import { UseInventoryQuery } from "@/features/restock/inventory-batch";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
@@ -93,13 +93,13 @@ const NewRestockPage = () => {
                 </div>
 
                 <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
-                  {inventoryData?.map((data, i) => (
+                  {/* {inventoryData?.map((data, i) => (
                     <ProductCard
                       product={data}
                       onClick={() => console.log()}
                       key={i}
                     />
-                  ))}
+                  ))} */}
                 </div>
               </div>
 
