@@ -29,13 +29,7 @@ export type InvoiceRestockBatchModel = {
       updatedAt: string;
     };
   };
-  units: [
-    {
-      uoM_Name: string;
-      conversion_Factor: number;
-      price: number;
-    },
-  ];
+  units: units[];
   restockBatch: {
     batch_ID: number;
     batch_Number: number;
@@ -43,4 +37,10 @@ export type InvoiceRestockBatchModel = {
     createdAt: string;
     updatedAt: string;
   };
+};
+
+type units = {
+  uoM_Name: string;
+  conversion_Factor: number;
+  price: number;
 };

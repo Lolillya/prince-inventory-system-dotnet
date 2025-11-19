@@ -1,8 +1,8 @@
-import { InvoiceItemsModel_2 } from "@/models/invoice-restockBatch.model";
+import { InvoiceRestockBatchModel } from "@/features/invoice/models/invoice-restock-batch.model";
 
 interface ProductCardProps {
   onClick?: () => void;
-  product: InvoiceItemsModel_2;
+  product: InvoiceRestockBatchModel;
 }
 
 export const ProductCard = ({ product, onClick }: ProductCardProps) => {

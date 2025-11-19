@@ -1,12 +1,12 @@
 import { handleError } from "@/helpers/error-handler.helper";
-import { InvoiceItemsModel_2 } from "@/models/invoice-restockBatch.model";
 import axios from "axios";
 import { api } from "../api/API.service";
+import { InvoiceRestockBatchModel } from "./models/invoice-restock-batch.model";
 
 export const GetAllInvoiceBatch = async () => {
   try {
-    const data = await axios.get<InvoiceItemsModel_2[]>(
-      api + "invoice/get-batches"
+    const data = await axios.get<InvoiceRestockBatchModel[]>(
+      api + "invoice/restock-batches"
     );
     return data;
   } catch (e) {

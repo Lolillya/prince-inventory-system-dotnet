@@ -1,9 +1,9 @@
-import { InvoiceItemsModel_2 } from "@/models/invoice-restockBatch.model";
 import { useQuery } from "@tanstack/react-query";
 import { GetAllInvoiceBatch } from "./invoice-get-all-batches.service";
+import { InvoiceRestockBatchModel } from "./models/invoice-restock-batch.model";
 
 export const useInvoiceBatchQuery = () => {
-  return useQuery<InvoiceItemsModel_2[]>({
+  return useQuery<InvoiceRestockBatchModel[]>({
     queryKey: ["invoice-batch-items"],
     queryFn: async () => {
       const response = await GetAllInvoiceBatch();

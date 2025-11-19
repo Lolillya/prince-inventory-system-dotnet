@@ -4,22 +4,24 @@ import { ProductCard } from "../../../../components/product-card";
 import {
   useSelectedProductInvoiceQuery,
   useSelectedInvoiceProduct,
+  useSelectedPayloadInvoiceQuery,
 } from "@/features/invoice/selected-product";
 import { InvoiceCard } from "./_components/invoice-card";
 import { useState } from "react";
 import { CreateInvoiceModal } from "./_components/invoice-modal";
-import { InvoiceProductModel } from "@/models/invoice.model";
-import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measure";
 
 import { useInvoiceBatchQuery } from "@/features/invoice/invoice-get-all-batches";
-import { InvoiceItemsModel_2 } from "@/models/invoice-restockBatch.model";
+import { InvoiceRestockBatchModel } from "@/features/invoice/models/invoice-restock-batch.model";
+import { InvoiceAddProductModel } from "@/features/invoice/models/invoice-add-product.model";
 
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
-  const { data: productUnits = [] } = useUnitOfMeasureQuery();
+  const { data: currentInvoice } = useSelectedPayloadInvoiceQuery();
   const { addProduct, removeProduct, clearList } = useSelectedInvoiceProduct();
   const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
+
+  console.log(currentInvoice);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,8 +31,8 @@ const NewInvoicePage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const handleClick = (data: InvoiceItemsModel_2) => {
-    const invoice: InvoiceProductModel = {
+  const handleClick = (data: InvoiceRestockBatchModel) => {
+    const invoice: InvoiceAddProductModel = {
       invoice: {
         item: {
           product: {
@@ -54,6 +56,7 @@ const NewInvoicePage = () => {
       },
     };
 
+    console.log(invoice);
     addProduct(invoice);
   };
 
@@ -86,7 +89,7 @@ const NewInvoicePage = () => {
                   {selectedInvoices.map((product, index) => (
                     <InvoiceCard
                       key={`${product.invoice.item.product.product_ID}-${product.invoice.item.product.variant.variant_Name}-${index}`}
-                      product={product.invoice.item}
+                      product={product.invoice.item.product}
                       units={product.invoice.unit}
                       onRemove={() => removeProduct(product)}
                     />

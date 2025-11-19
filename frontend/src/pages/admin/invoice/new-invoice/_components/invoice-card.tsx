@@ -4,15 +4,39 @@ import {
   useSelectedProductInvoiceQuery,
 } from "@/features/invoice/selected-product";
 import { ChevronDownIcon, PlusIcon, XIcon } from "@/icons";
-import { InventoryProductModel } from "@/models/inventory.model";
-import { UnitModel } from "@/models/uom.model";
 import { useState } from "react";
 
 interface InvoiceCardProp {
   onClick?: () => void;
-  product: InventoryProductModel;
+  product: {
+    product_ID: number;
+    productCode: string;
+    productName: string;
+    desc: string;
+    brand_id: number;
+    category_id: number;
+    createdAt: string;
+    updatedAt: string;
+    brand: {
+      brand_ID: number;
+      brandName: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    variant: {
+      variant_ID: number;
+      productId: number;
+      variant_Name: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
   onRemove?: () => void;
-  units: UnitModel[];
+  units: {
+    uoM_Name: string;
+    conversion_Factor: number;
+    price: number;
+  }[];
 }
 
 enum DiscountEnum {
@@ -28,7 +52,6 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
     updateInvoiceDiscountByKey,
   } = useSelectedInvoiceProduct();
   const { data: selelctedInvoice } = useSelectedProductInvoiceQuery();
-  console.log(units);
 
   const [discount, setDiscount] = useState<DiscountEnum>(DiscountEnum.MANUAL);
   const [selectedUnit, setSelectedUnit] = useState<string>(
@@ -53,11 +76,7 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
   };
 
   const handleChangeUnit = (unit: string) => {
-    UPDATE_INVOICE_UNIT(
-      product.product.product_ID,
-      unit,
-      product.product.variant.variant_Name
-    );
+    UPDATE_INVOICE_UNIT(product.product_ID, unit, product.variant.variant_Name);
 
     setSelectedUnit(unit);
   };
@@ -67,9 +86,9 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
       <div className="flex gap-2 items-center text-xs justify-between">
         <div className="flex gap-2 items-center">
           <div className="w-2 h-2 bg-orange-300 rounded-full" />
-          <span>{product.product.productName}</span>
-          <span>{product.product.brand.brandName}</span>
-          <span>{product.product.variant.variant_Name}</span>
+          <span>{product.productName}</span>
+          <span>{product.brand.brandName}</span>
+          <span>{product.variant.variant_Name}</span>
         </div>
         <div
           onClick={onRemove}
@@ -101,9 +120,9 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
                 className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
                 onChange={(e) =>
                   updateInvoiceQuantityByKey(
-                    product.product.product_ID,
+                    product.product_ID,
                     Number(e.target.value),
-                    product.product.variant.variant_Name
+                    product.variant.variant_Name
                   )
                 }
               />
@@ -154,9 +173,9 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
                 className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
                 onChange={(e) =>
                   UPDATE_INVOICE_UNIT_PRICE(
-                    product.product.product_ID,
+                    product.product_ID,
                     Number(e.target.value),
-                    product.product.variant.variant_Name
+                    product.variant.variant_Name
                   )
                 }
               />
@@ -180,9 +199,9 @@ export const InvoiceCard = ({ product, onRemove, units }: InvoiceCardProp) => {
                 className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
                 onChange={(e) =>
                   updateInvoiceDiscountByKey(
-                    product.product.product_ID,
+                    product.product_ID,
                     Number(e.target.value),
-                    product.product.variant.variant_Name
+                    product.variant.variant_Name
                   )
                 }
               />
