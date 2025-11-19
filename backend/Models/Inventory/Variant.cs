@@ -10,9 +10,9 @@ namespace backend.Models.Inventory
     {
         [Key]
         public int Variant_ID { get; set; }
-        public int Product_ID { get; set; }
-        public string Variant_Name { get; set; }
+        public string Variant_Name { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
     }
 }

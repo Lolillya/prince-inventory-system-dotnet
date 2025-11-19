@@ -10,7 +10,7 @@ namespace backend.Models.Inventory
     {
         [Key]
         public int Brand_ID { get; set; }
-        public string BrandName { get; set; }
+        public string BrandName { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

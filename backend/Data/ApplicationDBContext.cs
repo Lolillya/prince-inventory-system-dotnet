@@ -21,7 +21,7 @@ namespace backend.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Variant> Variants { get; set; }
-        public DbSet<Inventory> Inventories { get; set; }
+        public DbSet<Inventory> Inventory { get; set; }
         public DbSet<Invoice> Invoice { get; set; }
         public DbSet<InvoiceLineItems> InvoiceLineItems { get; set; }
         public DbSet<RestockLineItems> RestockLineItems { get; set; }
@@ -53,6 +53,36 @@ namespace backend.Data
 
             // Seed Unit of Measure
             Seeders.SeedUnitOfMeasure.SeedUnitOfMeasureData(builder);
+
+            builder.Entity<Inventory>(entity =>
+            {
+                entity.ToTable("Inventory");
+
+                entity.HasOne(i => i.Product)
+                 .WithMany()
+                 .HasForeignKey(i => i.Product_ID)
+                 .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<Product>(entity =>
+            {
+                entity.ToTable("Products");
+
+                entity.HasOne(p => p.Variant)
+                    .WithMany()
+                    .HasForeignKey(p => p.Variant_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(p => p.Brand)
+                    .WithMany()
+                    .HasForeignKey(p => p.Brand_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(p => p.Category)
+                    .WithMany()
+                    .HasForeignKey(p => p.Category_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             builder.Entity<Invoice>(entity =>
             {
