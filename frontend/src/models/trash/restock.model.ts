@@ -1,5 +1,5 @@
 import { InventoryProductModel } from "./inventory.model";
-import { UnitConversion } from "./unit-conversion.model";
+import { UnitConversion } from "../unit-conversion.model";
 
 export type RestockModel = {
   restock: {

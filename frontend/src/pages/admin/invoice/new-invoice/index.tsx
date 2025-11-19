@@ -9,7 +9,7 @@ import { InvoiceCard } from "./_components/invoice-card";
 import { useState } from "react";
 import { CreateInvoiceModal } from "./_components/invoice-modal";
 import { InvoiceProductModel } from "@/models/invoice.model";
-import { useUnitOfMeasureQurey } from "@/features/unit-of-measure/unit-of-measure";
+import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measure";
 
 import { useInvoiceBatchQuery } from "@/features/invoice/invoice-get-all-batches";
 import { InvoiceItemsModel_2 } from "@/models/invoice-restockBatch.model";
@@ -17,7 +17,7 @@ import { InvoiceItemsModel_2 } from "@/models/invoice-restockBatch.model";
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
-  const { data: productUnits = [] } = useUnitOfMeasureQurey();
+  const { data: productUnits = [] } = useUnitOfMeasureQuery();
   const { addProduct, removeProduct, clearList } = useSelectedInvoiceProduct();
   const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
 

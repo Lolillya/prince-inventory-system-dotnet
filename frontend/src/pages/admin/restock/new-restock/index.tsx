@@ -3,17 +3,21 @@ import { LeftArrowIcon, SearchIcon } from "@/icons";
 import { useState } from "react";
 import { CreateRestockModal } from "./_components/restock-modal";
 import RestockCard from "./_components/restock-card";
-import { useSelectedRestockProduct } from "@/features/restock/selected-restock";
-import { useUnitOfMeasureQurey } from "@/features/unit-of-measure/unit-of-measure";
+import {
+  useSelectedRestock,
+  useSelectedRestockProduct,
+} from "@/features/restock/selected-restock";
+import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measure";
 import { ProductCard } from "../_components/product-card";
 import { UseInventoryQuery } from "@/features/restock/inventory-batch";
+import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
   const { data: inventoryData, isLoading, error } = UseInventoryQuery();
   const { data: selectedProduct } = useSelectedRestockProduct();
-  const { data: productUnits = [] } = useUnitOfMeasureQurey();
-  // const { addProduct, removeProduct } = useSelectedRestock();
+  const { data: productUnits = [] } = useUnitOfMeasureQuery();
+  const { addProduct, removeProduct } = useSelectedRestock();
 
   console.log(inventoryData);
 
@@ -29,19 +33,19 @@ const NewRestockPage = () => {
     setIsModalOpen((prev) => !prev);
   };
 
-  // const handleClick = (data: InventoryModel) => {
-  //   const restock: RestockModel = {
-  //     restock: {
-  //       items: data,
-  //       unit: productUnits[0].uoM_Name,
-  //       unit_quantity: 0,
-  //       unit_price: 0,
-  //       total: 0,
-  //     },
-  //   };
+  const handleClick = (data: InventoryBatchesModel) => {
+    const restock: RestockModel = {
+      restock: {
+        items: data,
+        unit: productUnits[0].uoM_Name,
+        unit_quantity: 0,
+        unit_price: 0,
+        total: 0,
+      },
+    };
 
-  //   addProduct(restock);
-  // };
+    // addProduct(restock);
+  };
 
   return (
     <section>
