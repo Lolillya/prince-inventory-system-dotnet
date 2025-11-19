@@ -20,7 +20,7 @@ const NewRestockPage = () => {
   const { data: productUnits = [] } = useUnitOfMeasureQuery();
   const { addProduct, removeProduct } = useSelectedRestock();
 
-  console.log(inventoryData);
+  console.log(productUnits);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,7 +53,6 @@ const NewRestockPage = () => {
             created_At: data.product.variant.created_At,
             updated_At: data.product.variant.updated_At,
           },
-
           brand: {
             brand_Name: data.product.brand.brand_Name,
             created_At: data.product.brand.created_At,
@@ -94,14 +93,14 @@ const NewRestockPage = () => {
                 <NoSelectedState />
               ) : (
                 <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
-                  {/* {selectedProduct.map((item, i) => (
+                  {selectedProduct.map((item, i) => (
                     <RestockCard
                       key={i}
                       product={item.restock.items}
                       onRemove={() => removeProduct(item)}
                       units={productUnits}
                     />
-                  ))} */}
+                  ))}
                 </div>
               )}
             </div>

@@ -1,14 +1,34 @@
 import { Separator } from "@/components/separator";
 import { useSelectedRestock } from "@/features/restock/selected-restock";
 import { PlusIcon, RightArrowIcon, XIcon } from "@/icons";
-import { InventoryProductModel } from "@/models/inventory.model";
 import { UnitModel } from "@/models/uom.model";
 import { UnitConversion } from "@/models/unit-conversion.model";
 import { useState } from "react";
 
 interface RestockCardProp {
   onClick?: () => void;
-  product: InventoryProductModel;
+  product: {
+    product: {
+      product_ID: number;
+      product_Code: string;
+      product_Name: string;
+      desc: string;
+      brand_ID: number;
+      category_ID: number;
+      created_At: string;
+      updated_At: string;
+    };
+    variant: {
+      variant_Name: string;
+      created_At: string;
+      updated_At: string;
+    };
+    brand: {
+      brand_Name: string;
+      created_At: string;
+      updated_At: string;
+    };
+  };
   onRemove?: () => void;
   units: UnitModel[];
 }
@@ -24,7 +44,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
   } = useSelectedRestock();
 
   const [selectedUnit, setSelectedUnit] = useState<string>(
-    units[0]?.uom_Name || ""
+    units[0]?.uoM_Name || ""
   );
 
   const [conversions, setConversions] = useState<UnitConversion[]>([]);
@@ -33,7 +53,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
     UPDATE_RESTOCK_UNIT(
       product.product.product_ID,
       unit,
-      product.variant.variantName
+      product.variant.variant_Name
     );
     setSelectedUnit(unit);
   };
@@ -41,8 +61,8 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
   const handleAddConversion = () => {
     const newConversion: UnitConversion = {
       id: `conv-${Date.now()}-${Math.random()}`,
-      fromUnit: units[0]?.uom_Name || "",
-      toUnit: units[0]?.uom_Name || "",
+      fromUnit: units[0]?.uoM_Name || "",
+      toUnit: units[0]?.uoM_Name || "",
       conversionFactor: 1,
       quantity: 0,
       price: 0,
@@ -51,7 +71,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
     ADD_UNIT_CONVERSION(
       product.product.product_ID,
       newConversion,
-      product.variant.variantName
+      product.variant.variant_Name
     );
   };
 
@@ -66,7 +86,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
       product.product.product_ID,
       conversionId,
       updates,
-      product.variant.variantName
+      product.variant.variant_Name
     );
   };
 
@@ -75,7 +95,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
     REMOVE_UNIT_CONVERSION(
       product.product.product_ID,
       conversionId,
-      product.variant.variantName
+      product.variant.variant_Name
     );
   };
 
@@ -83,11 +103,11 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
     <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-[30rem] text-xs">
       <div className="flex gap-2 items-center text-xs justify-between">
         <div>
-          <span>{product.product.productName}</span>
+          <span>{product.product.product_Name}</span>
           <span>-</span>
-          <span>{product.brand.brandName}</span>
+          <span>{product.brand.brand_Name}</span>
           <span>-</span>
-          <span>{product.variant.variantName}</span>
+          <span>{product.variant.variant_Name}</span>
         </div>
 
         <div
@@ -110,7 +130,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
               UPDATE_RESTOCK_QUANTITY(
                 product.product.product_ID,
                 Number(e.target.value),
-                product.variant.variantName
+                product.variant.variant_Name
               )
             }
           />
@@ -125,7 +145,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
               UPDATE_RESTOCK_UNIT_PRICE(
                 product.product.product_ID,
                 Number(e.target.value),
-                product.variant.variantName
+                product.variant.variant_Name
               )
             }
           />
@@ -139,8 +159,8 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
             onChange={(e) => handleChangeUnit(e.target.value)}
           >
             {units.map((u, i) => (
-              <option value={u.uom_Name} key={i}>
-                {u.uom_Name}
+              <option value={u.uoM_Name} key={i}>
+                {u.uoM_Name}
               </option>
             ))}
           </select>
@@ -194,8 +214,8 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
                 }
               >
                 {units.map((u, i) => (
-                  <option value={u.uom_Name} key={i}>
-                    {u.uom_Name}
+                  <option value={u.uoM_Name} key={i}>
+                    {u.uoM_Name}
                   </option>
                 ))}
               </select>
@@ -232,8 +252,8 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
                 }
               >
                 {units.map((u, i) => (
-                  <option value={u.uom_Name} key={i}>
-                    {u.uom_Name}
+                  <option value={u.uoM_Name} key={i}>
+                    {u.uoM_Name}
                   </option>
                 ))}
               </select>

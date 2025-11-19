@@ -1,3 +1,5 @@
+import { UnitConversion } from "@/models/unit-conversion.model";
+
 export type NewRestockModel = {
   restock: {
     items: {
@@ -26,5 +28,6 @@ export type NewRestockModel = {
     unit_quantity: number;
     unit_price: number;
     total: number;
+    unitConversions?: UnitConversion[];
   };
 };
