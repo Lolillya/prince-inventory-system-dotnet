@@ -18,7 +18,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 1,
-                Product_ID = 1,
                 Variant_Name = "Single Pack",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -26,7 +25,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 2,
-                Product_ID = 2,
                 Variant_Name = "12-Pack",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -34,7 +32,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 3,
-                Product_ID = 3,
                 Variant_Name = "3-Pack",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -42,7 +39,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 4,
-                Product_ID = 4,
                 Variant_Name = "4-Pack",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -50,7 +46,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 5,
-                Product_ID = 5,
                 Variant_Name = "4-Pack Assorted Colors",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -58,7 +53,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 6,
-                Product_ID = 6,
                 Variant_Name = "12-Pack",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -68,7 +62,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 7,
-                Product_ID = 7,
                 Variant_Name = "24-Count Box",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -76,7 +69,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 8,
-                Product_ID = 8,
                 Variant_Name = "12-Count Set",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -84,7 +76,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 9,
-                Product_ID = 9,
                 Variant_Name = "12-Count Assorted",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -92,7 +83,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 10,
-                Product_ID = 10,
                 Variant_Name = "12-Count Set",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -102,7 +92,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 11,
-                Product_ID = 11,
                 Variant_Name = "Large (5\" x 8.25\")",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -110,7 +99,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 12,
-                Product_ID = 12,
                 Variant_Name = "200 Pages",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -118,7 +106,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 13,
-                Product_ID = 13,
                 Variant_Name = "100 Sheets",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -128,7 +115,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 14,
-                Product_ID = 14,
                 Variant_Name = "5000 Count Box",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
@@ -136,7 +122,6 @@ public static class VariantInventory
             new Variant
             {
                 Variant_ID = 15,
-                Product_ID = 15,
                 Variant_Name = "100 Count Mixed Sizes",
                 CreatedAt = seededAt,
                 UpdatedAt = seededAt
