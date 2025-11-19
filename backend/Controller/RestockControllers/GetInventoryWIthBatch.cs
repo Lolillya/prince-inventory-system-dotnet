@@ -42,29 +42,25 @@ namespace backend.Controller.RestockControllers
                             Brand_ID = i.Product.Brand_ID,
                             Category_ID = i.Product.Category_ID,
                             Variant_ID = i.Product.Variant_ID,
-                            CreatedAt = i.Product.CreatedAt,
-                            UpdatedAt = i.Product.UpdatedAt,
+                            Created_At = i.Product.CreatedAt,
+                            Updated_At = i.Product.UpdatedAt,
                             Brand = new
                             {
-                                i.Product.Brand.Brand_ID,
-                                BrandName = i.Product.Brand.BrandName,
-                                CreatedAt = i.Product.Brand.CreatedAt,
-                                UpdatedAt = i.Product.Brand.UpdatedAt
+                                Brand_Name = i.Product.Brand.BrandName,
+                                Created_At = i.Product.Brand.CreatedAt,
+                                Updated_At = i.Product.Brand.UpdatedAt
                             },
                             Variant = new
                             {
-                                Variant_ID = i.Product.Variant.Variant_ID,
-                                ProductId = i.Product.Product_ID,
                                 Variant_Name = i.Product.Variant.Variant_Name,
-                                CreatedAt = i.Product.Variant.CreatedAt,
-                                UpdatedAt = i.Product.Variant.UpdatedAt
+                                Created_At = i.Product.Variant.CreatedAt,
+                                Updated_At = i.Product.Variant.UpdatedAt
                             },
                             Category = new
                             {
-                                Category_ID = i.Product.Category.Category_ID,
-                                CategoryName = i.Product.Category.Category_Name,
-                                CreatedAt = i.Product.Category.CreatedAt,
-                                UpdatedAt = i.Product.Category.UpdatedAt
+                                Category_Name = i.Product.Category.Category_Name,
+                                Created_At = i.Product.Category.CreatedAt,
+                                Updated_At = i.Product.Category.UpdatedAt
                             }
                         },
                         TotalBatches = _db.RestockLineItems
