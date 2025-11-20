@@ -21,7 +21,7 @@ namespace backend.Models.LineItems
         public Product Product { get; set; } = null!;
         public Restock Restock { get; set; } = null!;
 
-        public string Unit { get; set; } = null!;
+        public int Unit { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal Unit_Price { get; set; }
         [Column(TypeName = "decimal(18,2)")]
