@@ -49,7 +49,7 @@ namespace backend.Data
             Seeders.InventoryProduct.SeedProductData(builder);
             Seeders.SeedInventory.SeedInventoryData(builder);
             Seeders.VariantInventory.SeedVariantData(builder);
-            Seeders.SeedInvoice.SeedInvoiceData(builder);
+            // Seeders.SeedInvoice.SeedInvoiceData(builder);
 
             // Seed Unit of Measure
             Seeders.SeedUnitOfMeasure.SeedUnitOfMeasureData(builder);

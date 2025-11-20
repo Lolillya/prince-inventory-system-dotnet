@@ -17,11 +17,10 @@ import { InvoiceAddProductModel } from "@/features/invoice/models/invoice-add-pr
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
-  const { data: currentInvoice } = useSelectedPayloadInvoiceQuery();
   const { addProduct, removeProduct, clearList } = useSelectedInvoiceProduct();
   const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
 
-  console.log(currentInvoice);
+  console.log(restockBatches);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
