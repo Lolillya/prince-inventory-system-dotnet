@@ -53,7 +53,7 @@ namespace backend.Controller.RestockControllers
                                 li.Product.CreatedAt,
                                 li.Product.UpdatedAt
                             },
-                            li.Unit,
+                            li.uom_ID,
                             li.Unit_Price,
                             li.Sub_Total,
                             li.Quantity
