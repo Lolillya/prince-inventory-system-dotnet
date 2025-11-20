@@ -136,6 +136,11 @@ namespace backend.Data
                     .WithMany(li => li.LineItems)
                     .HasForeignKey(li => li.Restock_ID)
                     .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(li => li.UnitOfMeasure)
+                    .WithMany()
+                    .HasForeignKey(li => li.uom_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
             builder.Entity<Product_UOM>(entity =>
@@ -156,6 +161,8 @@ namespace backend.Data
                     .WithMany()
                     .HasForeignKey(u => u.Batch_Id)
                     .OnDelete(DeleteBehavior.NoAction);
+
+
             });
 
         }

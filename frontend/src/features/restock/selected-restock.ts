@@ -104,7 +104,7 @@ export const useSelectedRestock = () => {
 
   const UPDATE_RESTOCK_UNIT = (
     productId: string | number,
-    unit: string,
+    uom_ID: number,
     variant_Name?: string
   ) => {
     queryClient.setQueryData<NewRestockModel[]>(
@@ -124,7 +124,7 @@ export const useSelectedRestock = () => {
           ...target,
           restock: {
             ...target.restock,
-            unit,
+            uom_ID,
           },
         };
         const newArr = [...old];

@@ -24,7 +24,7 @@ export type NewRestockModel = {
         updated_At: string;
       };
     };
-    unit: string;
+    uom_ID: number;
     unit_quantity: number;
     unit_price: number;
     total: number;

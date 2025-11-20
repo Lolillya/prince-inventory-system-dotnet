@@ -43,21 +43,21 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
     REMOVE_UNIT_CONVERSION,
   } = useSelectedRestock();
 
-  const [selectedUnit, setSelectedUnit] = useState<string>(
-    units[0]?.uom_Name || ""
+  const [selectedUnit, setSelectedUnit] = useState<number>(
+    units[0]?.uom_ID || 0
   );
 
   console.log(units);
 
   const [conversions, setConversions] = useState<UnitConversion[]>([]);
 
-  const handleChangeUnit = (unit: string) => {
+  const handleChangeUnit = (uom_ID: number) => {
     UPDATE_RESTOCK_UNIT(
       product.product.product_ID,
-      unit,
+      uom_ID,
       product.variant.variant_Name
     );
-    setSelectedUnit(unit);
+    setSelectedUnit(uom_ID);
   };
 
   const handleAddConversion = () => {
@@ -158,10 +158,10 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
           <select
             className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
             value={selectedUnit}
-            onChange={(e) => handleChangeUnit(e.target.value)}
+            onChange={(e) => handleChangeUnit(Number(e.target.value))}
           >
             {units.map((u, i) => (
-              <option value={u.uom_Name} key={i}>
+              <option value={u.uom_ID} key={i}>
                 {u.uom_Name}
               </option>
             ))}

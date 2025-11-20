@@ -128,7 +128,7 @@ namespace backend.Controller.RestockControllers
                 {
                     Product_ID = dto.item.product.Product_ID,
                     Restock_ID = restockId,
-                    Unit = dto.unit,
+                    uom_ID = dto.uom_ID,
                     Unit_Price = dto.unit_price,
                     Sub_Total = dto.unit_price * dto.unit_quantity,
                     Quantity = dto.unit_quantity

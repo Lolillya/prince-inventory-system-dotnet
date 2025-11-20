@@ -50,7 +50,7 @@ export const createRestock = async (
         },
       },
       total: p.restock.total ?? p.restock.unit_price * p.restock.unit_quantity,
-      unit: p.restock.unit,
+      uom_ID: p.restock.uom_ID,
       unit_price: p.restock.unit_price,
       unit_quantity: p.restock.unit_quantity,
       unitConversions:

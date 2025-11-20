@@ -2,17 +2,24 @@ import { useAuth } from "@/context/use-auth";
 import { createRestock } from "@/features/restock/create-restock.service";
 import { useSelectedRestockProduct } from "@/features/restock/selected-restock";
 import { useSelectedRestockSupplier } from "@/features/restock/selected-supplier";
+import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measure";
 
 export const RestockTable = () => {
   const { data: restockData } = useSelectedRestockProduct();
   const { data: supplier } = useSelectedRestockSupplier();
   const { user } = useAuth();
+  const { data: productUnits = [] } = useUnitOfMeasureQuery();
 
   console.log("restockData: ", restockData);
 
   const handleCreateRestock = () => {
     if (!restockData) console.log("Add Items for restock!");
     else createRestock(restockData, supplier?.id, user?.user_ID);
+  };
+
+  const getUnitName = (uom_ID: number) => {
+    const unit = productUnits.find((u) => u.uom_ID === uom_ID);
+    return unit?.uom_Name || "N/A";
   };
   return (
     <div className="flex-1 flex flex-col overflow-hidden gap-2">
@@ -44,7 +51,9 @@ export const RestockTable = () => {
             <span className="text-left w-full">
               {item.restock.unit_quantity}
             </span>
-            <span className="text-left">{item.restock.unit}</span>
+            <span className="text-left">
+              {getUnitName(item.restock.uom_ID)}
+            </span>
             <span className="text-right w-full">
               P {item.restock.unit_price}
             </span>

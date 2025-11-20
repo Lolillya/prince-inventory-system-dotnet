@@ -10,7 +10,7 @@ namespace backend.Dtos.RestockModel
 
         public decimal total { get; set; }
 
-        public int unit { get; set; }
+        public int uom_ID { get; set; }
 
         public decimal unit_price { get; set; }
 
