@@ -41,10 +41,6 @@ namespace backend.Controller.RestockControllers
                 }
             }
 
-
-
-
-
             // 1) determine next batch number for supplier and create batch
             var nextBatchNumber = await GetNextBatchNumberAsync(payload.Batch.Supplier_ID);
             payload.Batch.Batch_Number = nextBatchNumber;
@@ -54,7 +50,7 @@ namespace backend.Controller.RestockControllers
             var restockId = await CreateRestock(payload, batchId);
 
             // 3) create line items referencing restockId
-            var createdLineItems = await CreateLineItems(payload, restockId);
+            var createdLineItems = await CreateLineItems(payload, restockId, batchId);
 
             // 4) create unit conversions for each line item with conversions
             var createdConversions = await CreateUnitConversions(payload, batchId);
@@ -62,12 +58,6 @@ namespace backend.Controller.RestockControllers
             await transaction.CommitAsync();
 
             return Ok(new { restockId, batchId, lineItems = createdLineItems, unitConversions = createdConversions });
-
-
-
-
-            // return Ok();
-
         }
 
         private async Task<int> CreateRestock(RestockDTO payload, int batchId)
@@ -112,7 +102,7 @@ namespace backend.Controller.RestockControllers
             return batch.Batch_ID;
         }
 
-        private async Task<List<object>> CreateLineItems(RestockDTO payload, int restockId)
+        private async Task<List<object>> CreateLineItems(RestockDTO payload, int restockId, int batchId)
         {
             var createdLineItems = new List<object>();
 
@@ -139,7 +129,23 @@ namespace backend.Controller.RestockControllers
                 _db.Add(lineItem);
                 await _db.SaveChangesAsync();
 
-                createdLineItems.Add(new { lineItemId = lineItem.LineItem_ID, restockId = restockId });
+                // Create Product_UOM entry for the base unit (no parent)
+                var baseProductUom = new Product_UOM
+                {
+                    Product_Id = dto.item.product.Product_ID,
+                    Batch_Id = batchId,
+                    UOM_Id = dto.uom_ID,
+                    Parent_UOM_Id = null, // Base unit has no parent
+                    Conversion_Factor = 1, // Base unit conversion factor is 1
+                    Price = dto.unit_price
+                };
+
+                _db.Add(baseProductUom);
+                await _db.SaveChangesAsync();
+
+                Console.WriteLine("Base Product_UOM: {0}", JsonSerializer.Serialize(baseProductUom));
+
+                createdLineItems.Add(new { lineItemId = lineItem.LineItem_ID, restockId = restockId, baseProductUomId = baseProductUom.Product_UOM_Id });
             }
 
             return createdLineItems;
@@ -168,6 +174,17 @@ namespace backend.Controller.RestockControllers
 
                 var productId = lineItem.item.product.Product_ID;
 
+                // Get the base Product_UOM entry for this product and batch (where Parent_UOM_Id is null)
+                var baseProductUom = await _db.Product_UOMs
+                    .Where(p => p.Product_Id == productId && p.Batch_Id == batchId && p.Parent_UOM_Id == null)
+                    .FirstOrDefaultAsync();
+
+                if (baseProductUom == null)
+                {
+                    Console.WriteLine($"Warning: No base Product_UOM found for Product {productId} and Batch {batchId}");
+                    continue;
+                }
+
                 // Get UOM IDs from the UnitOfMeasure table
                 var unitNames = lineItem.unitConversions
                     .SelectMany(c => new[] { c.FromUnit, c.ToUnit })
@@ -178,9 +195,8 @@ namespace backend.Controller.RestockControllers
                     .Where(u => unitNames.Contains(u.uom_Name))
                     .ToDictionaryAsync(u => u.uom_Name, u => u.uom_ID);
 
-                // Parent_UOM_Id will be 0 for the first conversion, then each subsequent conversion
-                // references the previous toUnit as its parent
-                int parentUomId = 0;
+                // Start with the base Product_UOM_Id as the parent for the first conversion
+                int? parentProductUomId = baseProductUom.Product_UOM_Id;
 
                 foreach (var conversion in lineItem.unitConversions)
                 {
@@ -190,7 +206,6 @@ namespace backend.Controller.RestockControllers
                         continue;
                     }
 
-                    var fromUomId = uomMap[conversion.FromUnit];
                     var toUomId = uomMap[conversion.ToUnit];
 
                     var productUom = new Product_UOM
@@ -198,7 +213,7 @@ namespace backend.Controller.RestockControllers
                         Product_Id = productId,
                         Batch_Id = batchId,
                         UOM_Id = toUomId, // The target unit of this conversion
-                        Parent_UOM_Id = parentUomId == 0 ? fromUomId : parentUomId, // Link to parent unit
+                        Parent_UOM_Id = parentProductUomId, // Link to parent Product_UOM entry
                         Conversion_Factor = conversion.ConversionFactor,
                         Price = conversion.Price
                     };
@@ -218,8 +233,8 @@ namespace backend.Controller.RestockControllers
                         price = conversion.Price
                     });
 
-                    // Set the current toUnit as the parent for the next conversion in the chain
-                    parentUomId = toUomId;
+                    // Set the current Product_UOM as the parent for the next conversion in the chain
+                    parentProductUomId = productUom.Product_UOM_Id;
 
                     Console.WriteLine($"Created Product_UOM: {JsonSerializer.Serialize(productUom)}");
                 }

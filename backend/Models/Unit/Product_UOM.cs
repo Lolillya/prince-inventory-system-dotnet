@@ -14,7 +14,7 @@ namespace backend.Models.Unit
         public decimal Price { get; set; }
 
         // FKs
-        public int Parent_UOM_Id { get; set; }
+        public int? Parent_UOM_Id { get; set; }
         public int Batch_Id { get; set; }
         public int Product_Id { get; set; }
         public int UOM_Id { get; set; }
