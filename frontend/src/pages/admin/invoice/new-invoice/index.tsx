@@ -20,8 +20,6 @@ const NewInvoicePage = () => {
   const { addProduct, removeProduct, clearList } = useSelectedInvoiceProduct();
   const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
 
-  console.log(restockBatches);
-
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -54,8 +52,6 @@ const NewInvoicePage = () => {
         total: 0,
       },
     };
-
-    console.log(invoice);
     addProduct(invoice);
   };
 

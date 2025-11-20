@@ -4,6 +4,7 @@ import { SearchIcon, FilterIcon, PlusIcon, EllipsisIcon } from "@/icons";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShowAllModal } from "./_components/all-items-modal";
+import { NoRestockState } from "./_components/no-restock-state";
 
 const RestockPage = () => {
   const navigate = useNavigate();
@@ -42,52 +43,58 @@ const RestockPage = () => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-5 overflow-y-scroll pb-5 pr-2">
-        {restockItems?.map((r, i) => (
-          <>
-            {isModalOpen && (
-              <ShowAllModal lineItems={r.line_Items} onClose={handleModal} />
-            )}
-            <div
-              key={i}
-              className="flex flex-col justify-between gap-5 border shadow-lg rounded-lg p-5"
-            >
-              <div className="flex flex-1 p-3">
-                <div className="flex flex-col gap-3 w-full">
-                  <div className="flex gap-3">
-                    <span>#{r.restock_Id}</span>
-                    <span>-</span>
-                    <span>ADD DATE TO RESTOCK MODEL</span>
+      <div className="flex flex-col gap-5 overflow-y-scroll pb-5 pr-2 flex-1">
+        {restockItems?.length === 0 ? (
+          <div className="flex-1 flex justify-center items-center">
+            <NoRestockState />
+          </div>
+        ) : (
+          restockItems?.map((r, i) => (
+            <>
+              {isModalOpen && (
+                <ShowAllModal lineItems={r.line_Items} onClose={handleModal} />
+              )}
+              <div
+                key={i}
+                className="flex flex-col justify-between gap-5 border shadow-lg rounded-lg p-5"
+              >
+                <div className="flex flex-1 p-3">
+                  <div className="flex flex-col gap-3 w-full">
+                    <div className="flex gap-3">
+                      <span>#{r.restock_Id}</span>
+                      <span>-</span>
+                      <span>ADD DATE TO RESTOCK MODEL</span>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span>{r.supplier.companyName}</span>
+                    </div>
                   </div>
 
-                  <div className="flex gap-3">
-                    <span>{r.supplier.companyName}</span>
+                  <Separator orientation="vertical" />
+
+                  <div className="flex flex-col gap-3 w-full">
+                    <div className="flex gap-3">
+                      <span>grand total</span>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span>P {r.grand_total}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-bg border flex items-center justify-center rounded-lg p-2 h-12 w-12 my-auto">
+                    <EllipsisIcon />
                   </div>
                 </div>
 
-                <Separator orientation="vertical" />
-
-                <div className="flex flex-col gap-3 w-full">
-                  <div className="flex gap-3">
-                    <span>grand total</span>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <span>P {r.grand_total}</span>
-                  </div>
-                </div>
-
-                <div className="bg-gray-bg border flex items-center justify-center rounded-lg p-2 h-12 w-12 my-auto">
-                  <EllipsisIcon />
+                <div className="flex justify-center">
+                  <button onClick={handleModal}>view all items</button>
                 </div>
               </div>
-
-              <div className="flex justify-center">
-                <button onClick={handleModal}>view all items</button>
-              </div>
-            </div>
-          </>
-        ))}
+            </>
+          ))
+        )}
       </div>
     </section>
   );
