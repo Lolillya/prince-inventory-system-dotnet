@@ -8,11 +8,11 @@ export type RestockAllModel = {
 type RestockLineItems = {
   lineItem_ID: number;
   product_ID: number;
-  product: product;
   unit: string;
   unit_Price: number;
   sub_Total: number;
   quantity: number;
+  product: product;
 };
 
 type product = {

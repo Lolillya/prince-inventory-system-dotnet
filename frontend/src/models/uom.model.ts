@@ -1,5 +1,5 @@
 export type UnitModel = {
-  uoM_Name: string;
+  uom_Name: string;
   conversion_Factor: number;
   price: number;
 };

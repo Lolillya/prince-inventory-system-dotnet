@@ -1,8 +1,25 @@
-import { LineItems } from "@/models/line-items.model";
 import { XIcon } from "@/icons";
 
 interface Props {
-  lineItems: LineItems[];
+  lineItems: {
+    lineItem_ID: number;
+    product_ID: number;
+    unit: string;
+    unit_Price: number;
+    sub_Total: number;
+    quantity: number;
+    product: {
+      product_ID: number;
+      product_Code: string;
+      product_Name: string;
+      description: string;
+      brand_ID: number;
+      category_ID: number;
+      variant_ID: number;
+      createdAt: string;
+      updatedAt: string;
+    };
+  }[];
   onClose: () => void;
 }
 
