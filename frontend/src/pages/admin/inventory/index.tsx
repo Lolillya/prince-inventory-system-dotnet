@@ -13,8 +13,8 @@ import {
   PlusIcon,
   SearchIcon,
 } from "../../../icons";
-import { InventoryProductModel } from "../../../models/inventory.model";
 import { SelectedProduct } from "./_components/selected-product";
+import { InventoryModel } from "@/features/inventory/models/inventory.model";
 
 const InventoryPage = () => {
   const { data: inventory, isLoading, error } = UseInventoryQuery();
@@ -27,7 +27,7 @@ const InventoryPage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const handleClick = (product: InventoryProductModel) => {
+  const handleClick = (product: InventoryModel) => {
     setSelectedProduct(product);
   };
 
@@ -53,7 +53,10 @@ const InventoryPage = () => {
             <div className="bg-custom-gray p-3 rounded-lg">
               <FileDownIcon />
             </div>
-            <button className="flex items-center justify-center gap-2">
+            <button
+              className="flex items-center justify-center gap-2"
+              onClick={() => navigate("add-product")}
+            >
               <PlusIcon />
               new item
             </button>
