@@ -205,7 +205,7 @@
   }
 
   textarea {
-    @apply rounded-lg bg-white p-3 resize-none;
+    @apply rounded-lg bg-custom-gray p-3 resize-none;
   }
 
   h1 {
