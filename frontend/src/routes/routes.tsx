@@ -12,7 +12,6 @@ import InvoicePage from "../pages/admin/invoice";
 import NewInvoicePage from "../pages/admin/invoice/new-invoice";
 import RestockPage from "@/pages/admin/restock";
 import NewRestockPage from "@/pages/admin/restock/new-restock";
-import AddProductPage from "@/pages/admin/inventory/add-product";
 
 export const router = createBrowserRouter([
   {
@@ -65,10 +64,6 @@ export const router = createBrowserRouter([
           {
             path: "inventory",
             element: <InventoryPage />,
-          },
-          {
-            path: "inventory/add-product",
-            element: <AddProductPage />,
           },
           {
             path: "inventory/:id/edit-product",

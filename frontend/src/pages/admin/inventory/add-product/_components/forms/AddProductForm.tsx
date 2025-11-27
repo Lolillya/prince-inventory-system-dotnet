@@ -1,9 +1,10 @@
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.query";
 
 const schema = yup.object().shape({
   productName: yup.string().required("Product name is required"),
@@ -21,21 +22,6 @@ type AddProductFormValues = {
   brandId: number;
   categoryId: number;
   variantId: number;
-};
-
-const fetchBrands = async () => {
-  const { data } = await axios.get("http://localhost:5055/api/brands");
-  return data;
-};
-
-const fetchCategories = async () => {
-  const { data } = await axios.get("http://localhost:5055/api/categories");
-  return data;
-};
-
-const fetchVariants = async () => {
-  const { data } = await axios.get("http://localhost:5055/api/variants");
-  return data;
 };
 
 const addProduct = async (product: AddProductFormValues) => {
@@ -57,18 +43,10 @@ const AddProductForm = () => {
     resolver: yupResolver(schema),
   });
 
-  const { data: brands, isLoading: brandsLoading } = useQuery({
-    queryKey: ["brands"],
-    queryFn: fetchBrands,
-  });
-  const { data: categories, isLoading: categoriesLoading } = useQuery({
-    queryKey: ["categories"],
-    queryFn: fetchCategories,
-  });
-  const { data: variants, isLoading: variantsLoading } = useQuery({
-    queryKey: ["variants"],
-    queryFn: fetchVariants,
-  });
+  const { data: productFields, isLoading: productFieldsLoading } =
+    UseProductFieldsQuery();
+
+  console.log(productFields);
 
   const mutation = useMutation({
     mutationFn: addProduct,
@@ -108,7 +86,11 @@ const AddProductForm = () => {
         <label htmlFor="description" className="block text-sm font-medium">
           Description
         </label>
-        <textarea id="description" {...register("description")} />
+        <textarea
+          id="description"
+          {...register("description")}
+          className="w-full p-2 rounded-lg "
+        />
         {errors.description && (
           <p className="text-red-500 text-xs mt-1">
             {errors.description.message}
@@ -131,6 +113,7 @@ const AddProductForm = () => {
           </p>
         )}
       </div>
+      {/* BRANDS */}
       <div>
         <label htmlFor="brandId" className="block text-sm font-medium">
           Brand
@@ -138,14 +121,14 @@ const AddProductForm = () => {
         <select
           id="brandId"
           {...register("brandId")}
-          disabled={brandsLoading}
+          disabled={productFieldsLoading}
           className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
         >
           <option value="">
-            {brandsLoading ? "Loading..." : "Select Brand"}
+            {productFieldsLoading ? "Loading..." : "Select Brand"}
           </option>
-          {brands?.map((brand: any) => (
-            <option key={brand.brand_ID} value={brand.brand_ID}>
+          {productFields?.map((brand, i) => (
+            <option key={i} value={brand.brandName}>
               {brand.brandName}
             </option>
           ))}
@@ -154,6 +137,8 @@ const AddProductForm = () => {
           <p className="text-red-500 text-xs mt-1">{errors.brandId.message}</p>
         )}
       </div>
+
+      {/* CATEGORY */}
       <div>
         <label htmlFor="categoryId" className="block text-sm font-medium">
           Category
@@ -162,13 +147,13 @@ const AddProductForm = () => {
           id="categoryId"
           {...register("categoryId")}
           className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
-          disabled={categoriesLoading}
+          disabled={productFieldsLoading}
         >
           <option value="">
-            {categoriesLoading ? "Loading..." : "Select Category"}
+            {productFieldsLoading ? "Loading..." : "Select Category"}
           </option>
-          {categories?.map((category: any) => (
-            <option key={category.category_ID} value={category.category_ID}>
+          {productFields?.map((category, i) => (
+            <option key={i} value={category.category_Name}>
               {category.category_Name}
             </option>
           ))}
@@ -179,6 +164,8 @@ const AddProductForm = () => {
           </p>
         )}
       </div>
+
+      {/* VARIANT */}
       <div>
         <label htmlFor="variantId" className="block text-sm font-medium">
           Variant
@@ -187,13 +174,13 @@ const AddProductForm = () => {
           id="variantId"
           {...register("variantId")}
           className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
-          disabled={variantsLoading}
+          disabled={productFieldsLoading}
         >
           <option value="">
-            {variantsLoading ? "Loading..." : "Select Variant"}
+            {productFieldsLoading ? "Loading..." : "Select Variant"}
           </option>
-          {variants?.map((variant: any) => (
-            <option key={variant.variant_ID} value={variant.variant_ID}>
+          {productFields?.map((variant, i) => (
+            <option key={i} value={variant.variant_Name}>
               {variant.variant_Name}
             </option>
           ))}
@@ -204,7 +191,12 @@ const AddProductForm = () => {
           </p>
         )}
       </div>
-      <button type="submit" disabled={mutation.isPending}>
+
+      <button
+        type="submit"
+        className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        disabled={mutation.isPending}
+      >
         {mutation.isPending ? "Adding Product..." : "Add Product"}
       </button>
     </form>
