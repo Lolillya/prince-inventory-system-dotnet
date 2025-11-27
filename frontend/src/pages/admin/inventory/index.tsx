@@ -15,10 +15,13 @@ import {
 } from "../../../icons";
 import { SelectedProduct } from "./_components/selected-product";
 import { InventoryModel } from "@/features/inventory/models/inventory.model";
+import { useState } from "react";
+import { AddProductModal } from "./add-product/_components/AddProductModal";
 
 const InventoryPage = () => {
   const { data: inventory, isLoading, error } = UseInventoryQuery();
   const { data: selectedProduct } = useSelectedProductQuery();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const setSelectedProduct = useSetSelectedProduct();
   const navigate = useNavigate();
 
@@ -34,6 +37,7 @@ const InventoryPage = () => {
   return (
     <section>
       {/* HEADER */}
+      {isModalOpen && <AddProductModal />}
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3 max-w-lg w-full shrink-0">
@@ -55,7 +59,7 @@ const InventoryPage = () => {
             </div>
             <button
               className="flex items-center justify-center gap-2"
-              onClick={() => navigate("add-product")}
+              onClick={() => setIsModalOpen(!isModalOpen)}
             >
               <PlusIcon />
               new item
