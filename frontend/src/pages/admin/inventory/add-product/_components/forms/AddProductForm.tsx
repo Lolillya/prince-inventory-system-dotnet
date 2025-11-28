@@ -46,7 +46,7 @@ const AddProductForm = () => {
   const { data: productFields, isLoading: productFieldsLoading } =
     UseProductFieldsQuery();
 
-  console.log(productFields);
+  console.log(productFields?.brands);
 
   const mutation = useMutation({
     mutationFn: addProduct,
@@ -136,9 +136,9 @@ const AddProductForm = () => {
             <option value="">
               {productFieldsLoading ? "Loading..." : "Select Brand"}
             </option>
-            {productFields?.map((brand, i) => (
-              <option key={i} value={brand.brandName}>
-                {brand.brandName}
+            {productFields?.brands.map((b, i) => (
+              <option key={i} value={b.brandName}>
+                {b.brandName}
               </option>
             ))}
           </select>
@@ -163,9 +163,9 @@ const AddProductForm = () => {
             <option value="">
               {productFieldsLoading ? "Loading..." : "Select Category"}
             </option>
-            {productFields?.map((category, i) => (
-              <option key={i} value={category.category_Name}>
-                {category.category_Name}
+            {productFields?.categories.map((c, i) => (
+              <option key={i} value={c.category_Name}>
+                {c.category_Name}
               </option>
             ))}
           </select>
@@ -190,9 +190,9 @@ const AddProductForm = () => {
             <option value="">
               {productFieldsLoading ? "Loading..." : "Select Variant"}
             </option>
-            {productFields?.map((variant, i) => (
-              <option key={i} value={variant.variant_Name}>
-                {variant.variant_Name}
+            {productFields?.variants.map((v, i) => (
+              <option key={i} value={v.variant_Name}>
+                {v.variant_Name}
               </option>
             ))}
           </select>

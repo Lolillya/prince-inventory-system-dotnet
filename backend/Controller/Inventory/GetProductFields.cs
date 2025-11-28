@@ -24,18 +24,16 @@ namespace backend.Controller.Inventory
         {
             try
             {
-                var results = await _db.Products
-                    .Include(p => p.Brand)
-                    .Include(p => p.Category)
-                    .Include(p => p.Variant)
-                    .Select(p => new
-                    {
-                        p.Variant.Variant_Name,
-                        p.Brand.BrandName,
-                        p.Category.Category_Name
-                    }).ToListAsync();
 
-                return Ok(results);
+
+                var brands = await _db.Brands
+                    .Select(b => new { b.BrandName }).ToListAsync();
+                var categories = await _db.Categories
+                    .Select(c => new { c.Category_Name }).ToListAsync();
+                var variants = await _db.Variants
+                    .Select(v => new { v.Variant_Name }).ToListAsync();
+
+                return Ok(new { brands, categories, variants });
             }
 
             catch (Exception e)

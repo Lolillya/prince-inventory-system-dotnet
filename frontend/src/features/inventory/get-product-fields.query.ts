@@ -3,7 +3,7 @@ import { ProductFieldsModel } from "./models/product-fields.model";
 import { GetProductFields } from "./get-product-fields.service";
 
 export const UseProductFieldsQuery = () => {
-  return useQuery<ProductFieldsModel[]>({
+  return useQuery<ProductFieldsModel>({
     queryKey: ["product-fields"],
     queryFn: async () => {
       const response = await GetProductFields();

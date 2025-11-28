@@ -1,5 +1,17 @@
 export type ProductFieldsModel = {
-  variant_Name: string;
-  brandName: string;
-  category_Name: string;
+  brands: [
+    {
+      brandName: string;
+    },
+  ];
+  categories: [
+    {
+      category_Name: string;
+    },
+  ];
+  variants: [
+    {
+      variant_Name: string;
+    },
+  ];
 };
