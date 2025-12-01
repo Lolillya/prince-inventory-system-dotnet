@@ -1,0 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace backend.Dtos.Inventory
+{
+    public class NewInventoryProductDto
+    {
+        public string ProductName { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string ProductCode { get; set; } = "";
+        public int Brand_Id { get; set; }
+        public int Category_Id { get; set; }
+        public int Variand_Id { get; set; }
+    }
+}

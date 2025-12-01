@@ -2,33 +2,30 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { toast } from "react-toastify";
-import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.query";
+import { useProductFields } from "@/features/inventory/add-product.query";
+import { addProductService } from "@/features/inventory/add-product.service";
 
 const schema = yup.object().shape({
   productName: yup.string().required("Product name is required"),
   description: yup.string().required("Description is required"),
   productCode: yup.string().required("Product code is required"),
-  brandId: yup.number().required("Brand is required"),
-  categoryId: yup.number().required("Category is required"),
-  variantId: yup.number().required("Variant is required"),
+  brand_Id: yup.number().required("Brand is required"),
+  category_Id: yup.number().required("Category is required"),
+  variant_Id: yup.number().required("Variant is required"),
 });
 
 type AddProductFormValues = {
   productName: string;
   description: string;
   productCode: string;
-  brandId: number;
-  categoryId: number;
-  variantId: number;
+  brand_Id: number;
+  category_Id: number;
+  variant_Id: number;
 };
 
 const addProduct = async (product: AddProductFormValues) => {
-  const { data } = await axios.post(
-    "http://localhost:5055/api/products",
-    product
-  );
+  const data = await addProductService(product);
   return data;
 };
 
@@ -44,7 +41,7 @@ const AddProductForm = () => {
   });
 
   const { data: productFields, isLoading: productFieldsLoading } =
-    UseProductFieldsQuery();
+    useProductFields();
 
   console.log(productFields);
 
@@ -61,6 +58,7 @@ const AddProductForm = () => {
   });
 
   const onSubmit = (data: AddProductFormValues) => {
+    console.log("Form Values:", data);
     mutation.mutate(data);
   };
 
@@ -124,81 +122,81 @@ const AddProductForm = () => {
         </div>
         {/* BRANDS */}
         <div>
-          <label htmlFor="brandId" className="block text-sm font-medium">
+          <label htmlFor="Brand_Id" className="block text-sm font-medium">
             Brand
           </label>
           <select
-            id="brandId"
-            {...register("brandId")}
+            id="Brand_Id"
+            {...register("brand_Id")}
             disabled={productFieldsLoading}
             className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
           >
             <option value="">
               {productFieldsLoading ? "Loading..." : "Select Brand"}
             </option>
-            {productFields?.brands.map((b, i) => (
-              <option key={i} value={b.brandName}>
+            {productFields?.brands.map((b) => (
+              <option key={b.brand_ID} value={b.brand_ID}>
                 {b.brandName}
               </option>
             ))}
           </select>
-          {errors.brandId && (
+          {errors.brand_Id && (
             <p className="text-red-500 text-xs mt-1">
-              {errors.brandId.message}
+              {errors.brand_Id.message}
             </p>
           )}
         </div>
 
         {/* CATEGORY */}
         <div>
-          <label htmlFor="categoryId" className="block text-sm font-medium">
+          <label htmlFor="category_Id" className="block text-sm font-medium">
             Category
           </label>
           <select
-            id="categoryId"
-            {...register("categoryId")}
+            id="category_Id"
+            {...register("category_Id")}
             className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
             disabled={productFieldsLoading}
           >
             <option value="">
               {productFieldsLoading ? "Loading..." : "Select Category"}
             </option>
-            {productFields?.categories.map((c, i) => (
-              <option key={i} value={c.category_Name}>
+            {productFields?.categories.map((c) => (
+              <option key={c.category_ID} value={c.category_ID}>
                 {c.category_Name}
               </option>
             ))}
           </select>
-          {errors.categoryId && (
+          {errors.category_Id && (
             <p className="text-red-500 text-xs mt-1">
-              {errors.categoryId.message}
+              {errors.category_Id.message}
             </p>
           )}
         </div>
 
         {/* VARIANT */}
         <div>
-          <label htmlFor="variantId" className="block text-sm font-medium">
+          <label htmlFor="variant_Id" className="block text-sm font-medium">
             Variant
           </label>
           <select
-            id="variantId"
-            {...register("variantId")}
+            id="variant_Id"
+            {...register("variant_Id")}
             className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
             disabled={productFieldsLoading}
           >
             <option value="">
               {productFieldsLoading ? "Loading..." : "Select Variant"}
             </option>
-            {productFields?.variants.map((v, i) => (
-              <option key={i} value={v.variant_Name}>
+            {productFields?.variants.map((v) => (
+              <option key={v.variant_ID} value={v.variant_ID}>
                 {v.variant_Name}
               </option>
             ))}
           </select>
-          {errors.variantId && (
+          {errors.variant_Id && (
             <p className="text-red-500 text-xs mt-1">
-              {errors.variantId.message}
+              {errors.variant_Id.message}
             </p>
           )}
         </div>

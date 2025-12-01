@@ -27,12 +27,23 @@ namespace backend.Controller.Inventory
 
 
                 var brands = await _db.Brands
-                    .Select(b => new { b.BrandName }).ToListAsync();
+                    .Select(b => new
+                    {
+                        BrandName = b.BrandName,
+                        Brand_ID = b.Brand_ID
+                    }).ToListAsync();
                 var categories = await _db.Categories
-                    .Select(c => new { c.Category_Name }).ToListAsync();
+                    .Select(c => new
+                    {
+                        Category_Name = c.Category_Name,
+                        Category_ID = c.Category_ID
+                    }).ToListAsync();
                 var variants = await _db.Variants
-                    .Select(v => new { v.Variant_Name }).ToListAsync();
-
+                    .Select(v => new
+                    {
+                        Variant_Name = v.Variant_Name,
+                        Variant_ID = v.Variant_ID
+                    }).ToListAsync();
                 return Ok(new { brands, categories, variants });
             }
 
