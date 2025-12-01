@@ -1,15 +1,7 @@
 import axios from "axios";
 import { handleError } from "../../helpers/error-handler.helper";
 import { api } from "../api/API.service";
-
-export type AddProductPayload = {
-  productName: string;
-  description: string;
-  productCode: string;
-  brand_Id: number;
-  category_Id: number;
-  variant_Id: number;
-};
+import { AddProductPayload } from "./models/AddProductPayload.model";
 
 export const addProductService = async (payload: AddProductPayload) => {
   try {
