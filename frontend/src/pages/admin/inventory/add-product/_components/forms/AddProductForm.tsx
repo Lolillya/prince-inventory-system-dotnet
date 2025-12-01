@@ -46,7 +46,7 @@ const AddProductForm = () => {
   const { data: productFields, isLoading: productFieldsLoading } =
     UseProductFieldsQuery();
 
-  console.log(productFields?.brands);
+  console.log(productFields);
 
   const mutation = useMutation({
     mutationFn: addProduct,
