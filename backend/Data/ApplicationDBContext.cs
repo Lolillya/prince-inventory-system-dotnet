@@ -62,6 +62,11 @@ namespace backend.Data
                  .WithMany()
                  .HasForeignKey(i => i.Product_ID)
                  .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(i => i.PersonalDetails)
+                .WithMany()
+                .HasForeignKey(i => i.Inventory_Clerk)
+                .OnDelete(DeleteBehavior.NoAction);
             });
 
             builder.Entity<Product>(entity =>

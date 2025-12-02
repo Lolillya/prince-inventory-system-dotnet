@@ -20,7 +20,7 @@ public static class SeedInventory
                 Product_ID = 1,
                 Total_Quantity = 150,
                 Inventory_Number = 1001,
-                Inventory_Clerk = "John Smith",
+                Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -29,7 +29,7 @@ public static class SeedInventory
                 Product_ID = 2,
                 Total_Quantity = 75,
                 Inventory_Number = 1002,
-                Inventory_Clerk = "Sarah Johnson",
+                Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -38,7 +38,7 @@ public static class SeedInventory
                 Product_ID = 3,
                 Total_Quantity = 200,
                 Inventory_Number = 1003,
-                Inventory_Clerk = "Mike Davis",
+                Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -47,7 +47,7 @@ public static class SeedInventory
                 Product_ID = 4,
                 Total_Quantity = 120,
                 Inventory_Number = 1004,
-                Inventory_Clerk = "Lisa Wilson",
+                Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -56,7 +56,7 @@ public static class SeedInventory
                 Product_ID = 5,
                 Total_Quantity = 80,
                 Inventory_Number = 1005,
-                Inventory_Clerk = "Tom Brown",
+                Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -65,7 +65,7 @@ public static class SeedInventory
                 Product_ID = 6,
                 Total_Quantity = 300,
                 Inventory_Number = 1006,
-                Inventory_Clerk = "Emma Taylor",
+                Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -76,7 +76,7 @@ public static class SeedInventory
                 Product_ID = 7,
                 Total_Quantity = 50,
                 Inventory_Number = 1007,
-                Inventory_Clerk = "John Smith",
+                Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -85,7 +85,7 @@ public static class SeedInventory
                 Product_ID = 8,
                 Total_Quantity = 30,
                 Inventory_Number = 1008,
-                Inventory_Clerk = "Sarah Johnson",
+                Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -94,7 +94,7 @@ public static class SeedInventory
                 Product_ID = 9,
                 Total_Quantity = 40,
                 Inventory_Number = 1009,
-                Inventory_Clerk = "Mike Davis",
+                Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -103,7 +103,7 @@ public static class SeedInventory
                 Product_ID = 10,
                 Total_Quantity = 25,
                 Inventory_Number = 1010,
-                Inventory_Clerk = "Lisa Wilson",
+                Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -114,7 +114,7 @@ public static class SeedInventory
                 Product_ID = 11,
                 Total_Quantity = 60,
                 Inventory_Number = 1011,
-                Inventory_Clerk = "Tom Brown",
+                Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -123,7 +123,7 @@ public static class SeedInventory
                 Product_ID = 12,
                 Total_Quantity = 100,
                 Inventory_Number = 1012,
-                Inventory_Clerk = "Emma Taylor",
+                Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -132,7 +132,7 @@ public static class SeedInventory
                 Product_ID = 13,
                 Total_Quantity = 200,
                 Inventory_Number = 1013,
-                Inventory_Clerk = "John Smith",
+                Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -143,7 +143,7 @@ public static class SeedInventory
                 Product_ID = 14,
                 Total_Quantity = 15,
                 Inventory_Number = 1014,
-                Inventory_Clerk = "Sarah Johnson",
+                Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
                 Updated_At = seededAt
             },
@@ -152,7 +152,7 @@ public static class SeedInventory
                 Product_ID = 15,
                 Total_Quantity = 25,
                 Inventory_Number = 1015,
-                Inventory_Clerk = "Mike Davis",
+                Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
                 Updated_At = seededAt
             }

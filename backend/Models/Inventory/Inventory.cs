@@ -19,5 +19,6 @@ namespace backend.Models.Inventory
         public string Inventory_Clerk { get; set; } = "";
 
         public Product Product { get; set; } = null!;
+        public PersonalDetails PersonalDetails { get; set; } = null!;
     }
 }

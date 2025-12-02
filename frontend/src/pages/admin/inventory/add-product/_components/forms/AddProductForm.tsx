@@ -8,6 +8,7 @@ import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.q
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useEffect } from "react";
+import { addProductService } from "@/features/inventory/add-product.service";
 
 const schema = yup.object().shape({
   productName: yup.string().required("Product name is required"),
@@ -68,9 +69,10 @@ const AddProductForm = () => {
       ...data,
       inventory_Clerk: user?.user_ID || "",
     });
-    // console.log("Form Data:", data);
-    // console.log("User ID:", user?.user_ID);
-    reset();
+    if (newProductData && user) {
+      addProductService(newProductData);
+      reset();
+    }
   };
 
   return (

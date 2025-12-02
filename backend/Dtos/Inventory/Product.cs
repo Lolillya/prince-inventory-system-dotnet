@@ -21,6 +21,8 @@ namespace backend.Dtos.Inventory
         [Required]
         public int Category_Id { get; set; }
         [Required]
+        public int Variant_Id { get; set; }
+        [Required]
         public DateTime CreatedAt { get; set; }
         [Required]
         public DateTime UpdatedAt { get; set; }
