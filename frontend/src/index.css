@@ -254,4 +254,8 @@
   .input-style-2 {
     @apply pl-10 w-full drop-shadow-none bg-custom-gray font-semibold text-saltbox-gray;
   }
+
+  .input-style-3 {
+    @apply w-full drop-shadow-none bg-custom-gray font-semibold text-saltbox-gray text-xs whitespace-nowrap hover:bg-river-green/35;
+  }
 }

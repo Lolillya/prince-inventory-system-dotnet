@@ -7,7 +7,6 @@ import {
 import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.query";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useEffect } from "react";
 import { addProductService } from "@/features/inventory/add-product.service";
 
 const schema = yup.object().shape({
@@ -56,8 +55,6 @@ const AddProductForm = () => {
   const { user } = useAuth();
   const { data: productFields, isLoading: productFieldsLoading } =
     UseProductFieldsQuery();
-
-  // console.log(productFields);
 
   const { UPDATE_ADD_PRODUCT_PAYLOAD } = updateAddProductPayload();
   const { data: newProductData } = AddProductPayloadQuery();
@@ -129,26 +126,32 @@ const AddProductForm = () => {
         </div>
 
         {/* BRANDS */}
-        <div>
-          <label htmlFor="Brand_ID" className="block text-sm font-medium">
-            Brand
-          </label>
-          <select
-            id="Brand_ID"
-            className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
-            disabled={productFieldsLoading}
-            {...register("brand_ID")}
-          >
-            <option value="">Select a brand...</option>
-            {productFields?.brands.map((b) => (
-              <option key={b.brand_ID} value={b.brand_ID}>
-                {b.brandName}
-              </option>
-            ))}
-          </select>
-          <span className="text-red-500 text-xs normal-case">
-            {errors.brand_ID?.message}
-          </span>
+        <div className="flex gap-2 items-center w-full">
+          <div className="w-full">
+            <label htmlFor="Brand_ID" className="block text-sm font-medium">
+              Brand
+            </label>
+            <div className="flex items-center gap-2">
+              <select
+                id="Brand_ID"
+                className="rounded-lg w-4/5 p-2 text-sm drop-shadow-none bg-custom-bg-white"
+                disabled={productFieldsLoading}
+                {...register("brand_ID")}
+              >
+                <option value="">Select a brand...</option>
+                {productFields?.brands.map((b) => (
+                  <option key={b.brand_ID} value={b.brand_ID}>
+                    {b.brandName}
+                  </option>
+                ))}
+              </select>
+
+              <button className="input-style-3">Add Brand +</button>
+            </div>
+            <span className="text-red-500 text-xs normal-case">
+              {errors.brand_ID?.message}
+            </span>
+          </div>
         </div>
 
         {/* CATEGORY */}
@@ -156,19 +159,23 @@ const AddProductForm = () => {
           <label htmlFor="category_Id" className="block text-sm font-medium">
             Category
           </label>
-          <select
-            id="category_Id"
-            className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
-            disabled={productFieldsLoading}
-            {...register("category_Id")}
-          >
-            <option value="">Select a category...</option> {/* <-- REQUIRED */}
-            {productFields?.categories.map((c) => (
-              <option key={c.category_ID} value={c.category_ID}>
-                {c.category_Name}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              id="category_Id"
+              className="rounded-lg w-4/5 p-2 text-sm drop-shadow-none bg-custom-bg-white"
+              disabled={productFieldsLoading}
+              {...register("category_Id")}
+            >
+              <option value="">Select a category...</option>{" "}
+              {productFields?.categories.map((c) => (
+                <option key={c.category_ID} value={c.category_ID}>
+                  {c.category_Name}
+                </option>
+              ))}
+            </select>
+
+            <button className="input-style-3">Add Category +</button>
+          </div>
           <span className="text-red-500 text-xs normal-case">
             {errors.category_Id?.message}
           </span>
@@ -179,19 +186,23 @@ const AddProductForm = () => {
           <label htmlFor="variant_Id" className="block text-sm font-medium">
             Variant
           </label>
-          <select
-            id="variant_Id"
-            className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
-            disabled={productFieldsLoading}
-            {...register("variant_Id")}
-          >
-            <option value="">Select a variant...</option> {/* <-- REQUIRED */}
-            {productFields?.variants.map((v) => (
-              <option key={v.variant_ID} value={v.variant_ID}>
-                {v.variant_Name}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              id="variant_Id"
+              className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
+              disabled={productFieldsLoading}
+              {...register("variant_Id")}
+            >
+              <option value="">Select a variant...</option>
+              {productFields?.variants.map((v) => (
+                <option key={v.variant_ID} value={v.variant_ID}>
+                  {v.variant_Name}
+                </option>
+              ))}
+            </select>
+
+            <button className="input-style-3">Add Variant +</button>
+          </div>
           <span className="text-red-500 text-xs normal-case">
             {errors.variant_Id?.message}
           </span>
