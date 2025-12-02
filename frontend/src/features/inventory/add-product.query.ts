@@ -1,22 +1,34 @@
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AddProductPayload } from "./models/AddProductPayload.model";
 
-export type ProductFields = {
-  brands: { brand_ID: number; brandName: string }[];
-  categories: { category_ID: number; category_Name: string }[];
-  variants: { variant_ID: number; variant_Name: string }[];
-};
+const ADD_PRODUCT_PAYLOAD_QUERY_KEY = ["add-product-payload"];
 
-const fetchProductFields = async (): Promise<ProductFields> => {
-  const { data } = await axios.get(
-    "http://localhost:5055/api/get-product-fields"
-  );
-  return data;
-};
-
-export const useProductFields = () => {
-  return useQuery<ProductFields, Error>({
-    queryKey: ["productFields"],
-    queryFn: fetchProductFields,
+export const AddProductPayloadQuery = () => {
+  return useQuery<AddProductPayload>({
+    queryKey: ADD_PRODUCT_PAYLOAD_QUERY_KEY,
+    queryFn: async () => {
+      return {
+        productName: "",
+        description: "",
+        productCode: "",
+        brand_ID: 0,
+        category_Id: 0,
+        variant_Id: 0,
+        inventory_Clerk: "",
+      };
+    },
+    enabled: false,
   });
+};
+
+export const updateAddProductPayload = () => {
+  const queryClient = useQueryClient();
+
+  const UPDATE_ADD_PRODUCT_PAYLOAD = (payload: AddProductPayload) => {
+    queryClient.setQueryData(ADD_PRODUCT_PAYLOAD_QUERY_KEY, payload);
+  };
+
+  return {
+    UPDATE_ADD_PRODUCT_PAYLOAD,
+  };
 };

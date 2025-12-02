@@ -1,5 +1,5 @@
+import { InventoryProductModel } from "@/models/trash/inventory.model";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { InventoryProductModel } from "../../models/inventory.model";
 
 const ProductSelectedKey = ["product-selected"];
 
@@ -17,6 +17,9 @@ export const useSetSelectedProduct = () => {
   const queryClient = useQueryClient();
 
   return (product: InventoryProductModel | null) => {
-    queryClient.setQueryData<InventoryProductModel | null>(ProductSelectedKey, product);
+    queryClient.setQueryData<InventoryProductModel | null>(
+      ProductSelectedKey,
+      product
+    );
   };
 };

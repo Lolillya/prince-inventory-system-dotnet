@@ -2,7 +2,7 @@ export type ProductFieldsModel = {
   brands: [
     {
       brandName: string;
-      Brand_ID: number;
+      brand_ID: number;
     },
   ];
   categories: [
