@@ -14,12 +14,11 @@ services:
     ports:
       - "5055:5055"
     volumes:
-      - ./backend:/app/backend
+      - ./backend:/src
     depends_on:
       - db
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
-      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: "true"
       ConnectionStrings__DefaultConnection: "Server=db;Database=PrinceDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;"
 
   frontend:

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Path assumptions: working dir is /app/backend (set in Dockerfile)
-cd /app/backend || exit 1
+cd /src || exit 1
 
 # Function to try running migrations until success or timeout
 MAX_RETRIES=30
