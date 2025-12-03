@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using backend.Data;
+using backend.Dtos.Inventory;
 using backend.Models.Inventory;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,18 +21,18 @@ namespace backend.Controller.Inventory
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddCategory([FromBody] string categoryName)
+        public async Task<IActionResult> AddCategory([FromBody] CategoryDto category)
         {
-            if (string.IsNullOrWhiteSpace(categoryName))
+            if (string.IsNullOrWhiteSpace(category.CategoryName))
             {
                 return BadRequest("Category name is required.");
             }
 
             await using var transaction = await _db.Database.BeginTransactionAsync();
 
-            var newCategory = new Category
+            var newCategory = new backend.Models.Inventory.Category
             {
-                Category_Name = categoryName,
+                Category_Name = category.CategoryName,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
