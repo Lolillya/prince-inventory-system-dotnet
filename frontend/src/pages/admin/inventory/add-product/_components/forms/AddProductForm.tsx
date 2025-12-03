@@ -42,7 +42,28 @@ type AddProductFormValues = {
   variant_Id: number;
 };
 
-const AddProductForm = () => {
+interface AddProductFormProps {
+  isBrandModalOpen: boolean;
+  isCategoryModalOpen: boolean;
+  isVariantModalOpen: boolean;
+  isAddProductModalOpen: boolean;
+
+  setIsBrandModalOpen: (isOpen: boolean) => void;
+  setIsCategoryModalOpen: (isOpen: boolean) => void;
+  setIsVariantModalOpen: (isOpen: boolean) => void;
+  setIsAddProductModalOpen: (isOpen: boolean) => void;
+}
+
+const AddProductForm = ({
+  isBrandModalOpen,
+  isCategoryModalOpen,
+  isVariantModalOpen,
+  isAddProductModalOpen,
+  setIsBrandModalOpen,
+  setIsCategoryModalOpen,
+  setIsVariantModalOpen,
+  setIsAddProductModalOpen,
+}: AddProductFormProps) => {
   const {
     register,
     handleSubmit,
@@ -59,8 +80,6 @@ const AddProductForm = () => {
   const { UPDATE_ADD_PRODUCT_PAYLOAD } = updateAddProductPayload();
   const { data: newProductData } = AddProductPayloadQuery();
 
-  console.log(newProductData);
-
   const onSubmit = (data: AddProductFormValues) => {
     UPDATE_ADD_PRODUCT_PAYLOAD({
       ...data,
@@ -70,6 +89,21 @@ const AddProductForm = () => {
       addProductService(newProductData);
       reset();
     }
+  };
+
+  const handleOpenNewBrandModal = () => {
+    setIsAddProductModalOpen(!isAddProductModalOpen);
+    setIsBrandModalOpen(!isBrandModalOpen);
+  };
+
+  const handleOpenNewCategoryModal = () => {
+    setIsAddProductModalOpen(!isAddProductModalOpen);
+    setIsCategoryModalOpen(!isCategoryModalOpen);
+  };
+
+  const handleOpenNewVariantModal = () => {
+    setIsAddProductModalOpen(!isAddProductModalOpen);
+    setIsVariantModalOpen(!isVariantModalOpen);
   };
 
   return (
@@ -146,7 +180,12 @@ const AddProductForm = () => {
                 ))}
               </select>
 
-              <button className="input-style-3">Add Brand +</button>
+              <button
+                className="input-style-3"
+                onClick={handleOpenNewBrandModal}
+              >
+                Add Brand +
+              </button>
             </div>
             <span className="text-red-500 text-xs normal-case">
               {errors.brand_ID?.message}
@@ -174,7 +213,12 @@ const AddProductForm = () => {
               ))}
             </select>
 
-            <button className="input-style-3">Add Category +</button>
+            <button
+              className="input-style-3"
+              onClick={handleOpenNewCategoryModal}
+            >
+              Add Category +
+            </button>
           </div>
           <span className="text-red-500 text-xs normal-case">
             {errors.category_Id?.message}
@@ -201,7 +245,12 @@ const AddProductForm = () => {
               ))}
             </select>
 
-            <button className="input-style-3">Add Variant +</button>
+            <button
+              className="input-style-3"
+              onClick={handleOpenNewVariantModal}
+            >
+              Add Variant +
+            </button>
           </div>
           <span className="text-red-500 text-xs normal-case">
             {errors.variant_Id?.message}

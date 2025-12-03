@@ -37,7 +37,12 @@ const InventoryPage = () => {
   return (
     <section>
       {/* HEADER */}
-      {isModalOpen && <AddProductModal />}
+      {isModalOpen && (
+        <AddProductModal
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+        />
+      )}
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3 max-w-lg w-full shrink-0">
@@ -61,8 +66,8 @@ const InventoryPage = () => {
               className="flex items-center justify-center gap-2"
               onClick={() => setIsModalOpen(!isModalOpen)}
             >
-              <PlusIcon />
               new item
+              <PlusIcon />
             </button>
           </div>
         </div>
