@@ -1,6 +1,5 @@
 import yup from "yup";
 import { addNewCategoryService } from "@/features/inventory/add-new-category/add-new-category.service";
-import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 
@@ -34,8 +33,6 @@ export const AddCategoryForm = ({
   } = useForm<AddCategoryFormValues>({
     resolver: yupResolver(schema),
   });
-
-  const [categoryName, setCategoryName] = useState<string>("");
 
   const handleAddCategory = async (data: AddCategoryFormValues) => {
     addNewCategoryService(data.category_Name);

@@ -1,6 +1,16 @@
+import * as yup from "yup";
 import { addNewVariantService } from "@/features/inventory/add-new-variant/add-new-variant.service";
 import { useState } from "react";
-import { set } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+
+const schema = yup.object().shape({
+  variant_Name: yup.string().required("Variant name is required"),
+});
+
+type AddVariantFormValues = {
+  variant_Name: string;
+};
 
 interface AddVariantFormProps {
   setIsVariantModalOpen: (isOpen: boolean) => void;
@@ -16,17 +26,27 @@ export const AddVariantForm = ({
     setIsAddProductModalOpen(true);
   };
 
-  const [variantName, setVariantName] = useState<string>("");
+  const {
+    register,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<AddVariantFormValues>({
+    resolver: yupResolver(schema),
+  });
 
-  const handleAddVariant = async (event: React.FormEvent) => {
-    addNewVariantService(variantName);
+  const handleAddVariant = async (data: AddVariantFormValues) => {
+    addNewVariantService(data.variant_Name);
     setIsVariantModalOpen(false);
     setIsAddProductModalOpen(true);
-    event.preventDefault();
+    reset();
   };
 
   return (
-    <form className=" flex flex-col gap-5 overflow-y-scroll flex-1 justify-between">
+    <form
+      className=" flex flex-col gap-5 overflow-y-scroll flex-1 justify-between"
+      onSubmit={handleSubmit(handleAddVariant)}
+    >
       <div>
         <label htmlFor="variant_Name" className="block text-sm font-medium">
           Variant Name
@@ -35,17 +55,14 @@ export const AddVariantForm = ({
           id="variant_Name"
           type="text"
           className="w-full drop-shadow-none bg-custom-gray p-2"
-          onChange={(e) => setVariantName(e.target.value)}
-          // {...register("brand_Name")}
+          {...register("variant_Name")}
         />
         <span className="text-red-500 text-xs normal-case">
-          {/* {errors.brand_Name?.message} */}
+          {errors.variant_Name?.message}
         </span>
       </div>
       <div className="flex gap-2">
-        <button type="submit" onClick={handleAddVariant}>
-          Add Variant
-        </button>
+        <button type="submit">Add Variant</button>
         <button type="button" className="input-style-3" onClick={handleCancel}>
           Cancel
         </button>
