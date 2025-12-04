@@ -44,6 +44,7 @@ namespace backend.Controller.Inventory
                             Product_ID = i.Product_ID,
                             ProductCode = i.Product.Product_Code,
                             ProductName = i.Product.Product_Name,
+                            Description = i.Product.Description,
                             Brand_Id = i.Product.Brand.Brand_ID,
                             Category_Id = i.Product.Category.Category_ID,
                             CreatedAt = i.Created_At,
