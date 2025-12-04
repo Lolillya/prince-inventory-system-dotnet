@@ -1,5 +1,5 @@
 import { XIcon } from "@/icons";
-import { InventoryProductModel } from "@/models/trash/inventory.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { EditProductForm } from "./forms/edit-product-form";
 
 interface EditProductModalProps {

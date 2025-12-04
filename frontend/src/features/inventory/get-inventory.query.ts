@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { GetInventory } from "./get-inventory.service";
-import { InventoryProductModel } from "@/models/trash/inventory.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 
 export const UseInventoryQuery = () => {
   return useQuery<InventoryProductModel[]>({

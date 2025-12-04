@@ -1,4 +1,4 @@
-import { InventoryProductModel } from "@/models/trash/inventory.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const ProductSelectedKey = ["product-selected"];

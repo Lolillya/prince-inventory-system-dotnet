@@ -16,7 +16,7 @@ import {
 import { SelectedProduct } from "./_components/selected-product";
 import { useState } from "react";
 import { AddProductModal } from "./add-product/_components/AddProductModal";
-import { InventoryProductModel } from "@/models/trash/inventory.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { EditProductModal } from "./_components/edit-product-modal";
 
 const InventoryPage = () => {

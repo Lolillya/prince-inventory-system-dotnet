@@ -1,4 +1,4 @@
-import { InventoryProductModel } from "./inventory.model";
+import { InventoryProductModel } from "../../features/inventory/models/inventory.model";
 
 export type InvoiceProductModel = {
   invoice: {

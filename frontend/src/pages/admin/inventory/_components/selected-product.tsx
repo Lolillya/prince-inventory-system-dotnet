@@ -1,4 +1,4 @@
-import { InventoryProductModel } from "@/models/trash/inventory.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { Separator } from "../../../../components/separator";
 import { ChevronUpIcon } from "../../../../icons";
 

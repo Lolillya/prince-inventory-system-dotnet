@@ -1,6 +1,6 @@
 import * as yup from "yup";
 import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.query";
-import { InventoryProductModel } from "@/models/trash/inventory.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 
