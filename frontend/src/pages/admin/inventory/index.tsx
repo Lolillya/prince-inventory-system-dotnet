@@ -116,7 +116,10 @@ const InventoryPage = () => {
                       {data.variant.variant_Name}
                     </span>
                   </div>
-                  <div onClick={handleEditProduct}>
+                  <div
+                    onClick={handleEditProduct}
+                    className="cursor-pointer hover:bg-accent p-3 rounded-lg duration-300 transition-all"
+                  >
                     <EditIcon />
                   </div>
                 </div>
