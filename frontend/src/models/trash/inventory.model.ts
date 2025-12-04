@@ -3,7 +3,7 @@ export type InventoryProductModel = {
     product_ID: number;
     productCode: string;
     productName: string;
-    desc: string;
+    description: string;
     brand_id: number;
     category_id: number;
     createdAt: string;

@@ -1,0 +1,215 @@
+import * as yup from "yup";
+import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.query";
+import { InventoryProductModel } from "@/models/trash/inventory.model";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+
+const schema = yup.object().shape({
+  productName: yup.string().required("Product name is required"),
+  description: yup.string().required("Description is required"),
+  productCode: yup.string().required("Product code is required"),
+  brand_ID: yup
+    .number()
+    .transform((value, originalValue) =>
+      String(originalValue).trim() === "" ? undefined : value
+    )
+    .required("Brand is required"),
+  category_Id: yup
+    .number()
+    .transform((value, originalValue) =>
+      String(originalValue).trim() === "" ? undefined : value
+    )
+    .required("Category is required"),
+  variant_Id: yup
+    .number()
+    .transform((value, originalValue) =>
+      String(originalValue).trim() === "" ? undefined : value
+    )
+    .required("Variant is required"),
+});
+
+interface EditProductFormProps {
+  selectedProduct: InventoryProductModel;
+}
+
+export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      productName: selectedProduct.product.productName,
+      description: selectedProduct.product.description,
+      productCode: selectedProduct.product.productCode,
+      // brand_ID: selectedProduct.brand.brand_ID,
+      // category_Id: selectedProduct.category.category_ID,
+      // variant_Id: selectedProduct.variant.variant_ID,
+    },
+  });
+
+  const { data: productFields, isLoading: productFieldsLoading } =
+    UseProductFieldsQuery();
+
+  const onSubmit = () => {};
+
+  return (
+    <form
+      className=" flex flex-col gap-5 overflow-y-scroll flex-1"
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      <div className="flex flex-col space-y-4 mb-auto">
+        {/* PRODUCT NAME */}
+        <div>
+          <label htmlFor="productName" className="block text-sm font-medium">
+            Product Name
+          </label>
+          <input
+            id="productName"
+            type="text"
+            className="w-full drop-shadow-none bg-custom-gray p-2"
+            {...register("productName")}
+          />
+          <span className="text-red-500 text-xs normal-case">
+            {errors.productName?.message}
+          </span>
+        </div>
+
+        {/* DESCRIPTION */}
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium">
+            Description
+          </label>
+          <textarea
+            id="description"
+            className="w-full p-2 rounded-lg "
+            {...register("description")}
+          />
+          <span className="text-red-500 text-xs normal-case">
+            {errors.description?.message}
+          </span>
+        </div>
+
+        {/* PRODUCT CODE */}
+        <div>
+          <label htmlFor="productCode" className="block text-sm font-medium">
+            Product Code
+          </label>
+          <input
+            id="productCode"
+            type="text"
+            className="w-full drop-shadow-none bg-custom-gray p-2"
+            {...register("productCode")}
+          />
+          <span className="text-red-500 text-xs normal-case">
+            {errors.productCode?.message}
+          </span>
+        </div>
+
+        {/* BRANDS */}
+        <div className="flex gap-2 items-center w-full">
+          <div className="w-full">
+            <label htmlFor="Brand_ID" className="block text-sm font-medium">
+              Brand
+            </label>
+            <div className="flex items-center gap-2">
+              <select
+                id="Brand_ID"
+                className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
+                disabled={productFieldsLoading}
+                // value={selectedProduct.brand.brandName}
+                {...register("brand_ID")}
+              >
+                <option value="">Select a brand...</option>
+                {productFields?.brands.map((b) => (
+                  <option key={b.brand_ID} value={b.brand_ID}>
+                    {b.brandName}
+                  </option>
+                ))}
+              </select>
+
+              {/* <button
+                className="input-style-3"
+                onClick={handleOpenNewBrandModal}
+              >
+                Add Brand +
+              </button> */}
+            </div>
+            <span className="text-red-500 text-xs normal-case">
+              {errors.brand_ID?.message}
+            </span>
+          </div>
+        </div>
+
+        {/* CATEGORY */}
+        <div>
+          <label htmlFor="category_Id" className="block text-sm font-medium">
+            Category
+          </label>
+          <div className="flex items-center gap-2">
+            <select
+              id="category_Id"
+              className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
+              disabled={productFieldsLoading}
+              //   value={selectedProduct..category_Name}
+              {...register("category_Id")}
+            >
+              <option value="">Select a category...</option>{" "}
+              {productFields?.categories.map((c) => (
+                <option key={c.category_ID} value={c.category_ID}>
+                  {c.category_Name}
+                </option>
+              ))}
+            </select>
+
+            {/* <button
+              className="input-style-3"
+              onClick={handleOpenNewCategoryModal}
+            >
+              Add Category +
+            </button> */}
+          </div>
+          <span className="text-red-500 text-xs normal-case">
+            {errors.category_Id?.message}
+          </span>
+        </div>
+
+        {/* VARIANT */}
+        <div>
+          <label htmlFor="variant_Id" className="block text-sm font-medium">
+            Variant
+          </label>
+          <div className="flex items-center gap-2">
+            <select
+              id="variant_Id"
+              className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
+              disabled={productFieldsLoading}
+              //   value={selectedProduct.variant.variantName}
+              {...register("variant_Id")}
+            >
+              <option value="">Select a variant...</option>
+              {productFields?.variants.map((v) => (
+                <option key={v.variant_ID} value={v.variant_ID}>
+                  {v.variant_Name}
+                </option>
+              ))}
+            </select>
+
+            {/* <button
+              className="input-style-3"
+                onClick={handleOpenNewVariantModal}
+            >
+              Add Variant +
+            </button> */}
+          </div>
+          <span className="text-red-500 text-xs normal-case">
+            {/* {errors.variant_Id?.message} */}
+          </span>
+        </div>
+      </div>
+
+      <button type="submit">Add Product</button>
+    </form>
+  );
+};

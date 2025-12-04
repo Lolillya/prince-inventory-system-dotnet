@@ -1,6 +1,6 @@
+import { InventoryProductModel } from "@/models/trash/inventory.model";
 import { Separator } from "../../../../components/separator";
 import { ChevronUpIcon } from "../../../../icons";
-import { InventoryProductModel } from "../../../../models/inventory.model";
 
 export const SelectedProduct = (product: InventoryProductModel) => {
   return (
@@ -26,7 +26,7 @@ export const SelectedProduct = (product: InventoryProductModel) => {
 
       <div className="flex flex-col gap-3">
         <label>notes</label>
-        <textarea placeholder="some description" rows={4} />
+        <textarea disabled value={product.product.description} rows={4} />
       </div>
 
       <div className="flex flex-col gap-3">

@@ -17,11 +17,13 @@ import { SelectedProduct } from "./_components/selected-product";
 import { useState } from "react";
 import { AddProductModal } from "./add-product/_components/AddProductModal";
 import { InventoryProductModel } from "@/models/trash/inventory.model";
+import { EditProductModal } from "./_components/edit-product-modal";
 
 const InventoryPage = () => {
   const { data: inventory, isLoading, error } = UseInventoryQuery();
   const { data: selectedProduct } = useSelectedProductQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
   const setSelectedProduct = useSetSelectedProduct();
   const navigate = useNavigate();
 
@@ -36,6 +38,10 @@ const InventoryPage = () => {
     setSelectedProduct(product);
   };
 
+  const handleEditProduct = () => {
+    setIsEditProductModalOpen(!isEditProductModalOpen);
+  };
+
   return (
     <section>
       {/* HEADER */}
@@ -43,6 +49,13 @@ const InventoryPage = () => {
         <AddProductModal
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}
+        />
+      )}
+
+      {isEditProductModalOpen && selectedProduct && (
+        <EditProductModal
+          setIsEditProductModalOpen={setIsEditProductModalOpen}
+          selectedProduct={selectedProduct}
         />
       )}
       <div className="w-full mb-8">
@@ -103,11 +116,7 @@ const InventoryPage = () => {
                       {data.variant.variantName}
                     </span>
                   </div>
-                  <div
-                    onClick={() =>
-                      navigate(`${data.product.product_ID}/edit-product/`)
-                    }
-                  >
+                  <div onClick={handleEditProduct}>
                     <EditIcon />
                   </div>
                 </div>
