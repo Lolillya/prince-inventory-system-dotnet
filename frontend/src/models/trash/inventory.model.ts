@@ -1,27 +1,34 @@
 export type InventoryProductModel = {
   product: {
     product_ID: number;
-    productCode: string;
-    productName: string;
+    product_Code: string;
+    product_Name: string;
     description: string;
-    brand_id: number;
-    category_id: number;
     createdAt: string;
     updatedAt: string;
   };
   brand: brand;
   variant: variant;
+  category: category;
 };
 
 type brand = {
+  brand_ID: number;
   brandName: string;
   createdAt: string;
   updatedAt: string;
 };
 
 type variant = {
-  productId: number;
-  variantName: string;
+  variant_ID: number;
+  variant_Name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type category = {
+  category_ID: number;
+  category_Name: string;
   createdAt: string;
   updatedAt: string;
 };

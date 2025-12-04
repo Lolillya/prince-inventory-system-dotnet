@@ -109,11 +109,11 @@ const InventoryPage = () => {
                 >
                   <div className="flex gap-2 items-center">
                     <span className="capitalize">
-                      {data.product.productCode}
+                      {data.product.product_Code}
                     </span>
                     <span className="capitalize">{data.brand.brandName}</span>
                     <span className="capitalize">
-                      {data.variant.variantName}
+                      {data.variant.variant_Name}
                     </span>
                   </div>
                   <div onClick={handleEditProduct}>

@@ -7,11 +7,11 @@ export const SelectedProduct = (product: InventoryProductModel) => {
     <div className="w-full flex flex-col gap-3">
       <div className="flex justify-between w-full">
         <div className="flex gap-3">
-          <span>{product.product.productName}</span>
+          <span>{product.product.product_Name}</span>
           <span>-</span>
           <span>{product.brand.brandName}</span>
           <span>-</span>
-          <span>{product.variant.variantName}</span>
+          <span>{product.variant.variant_Name}</span>
         </div>
 
         <span className="bg-teal-200 rounded-full py-1 px-2 items-center flex text-center justify-center text-xs">
@@ -21,7 +21,7 @@ export const SelectedProduct = (product: InventoryProductModel) => {
 
       <div className="flex gap-1">
         <label>ID: </label>
-        <span>{product.product.productName}</span>
+        <span>{product.product.product_Name}</span>
       </div>
 
       <div className="flex flex-col gap-3">

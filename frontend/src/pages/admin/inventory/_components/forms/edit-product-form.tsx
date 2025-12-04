@@ -36,16 +36,17 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      productName: selectedProduct.product.productName,
+      productName: selectedProduct.product.product_Name,
       description: selectedProduct.product.description,
-      productCode: selectedProduct.product.productCode,
-      // brand_ID: selectedProduct.brand.brand_ID,
-      // category_Id: selectedProduct.category.category_ID,
-      // variant_Id: selectedProduct.variant.variant_ID,
+      productCode: selectedProduct.product.product_Code,
+      brand_ID: selectedProduct.brand.brand_ID,
+      category_Id: selectedProduct.category.category_ID,
+      variant_Id: selectedProduct.variant.variant_ID,
     },
   });
 
@@ -118,7 +119,7 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
                 id="Brand_ID"
                 className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
                 disabled={productFieldsLoading}
-                // value={selectedProduct.brand.brandName}
+                value={watch("brand_ID")}
                 {...register("brand_ID")}
               >
                 <option value="">Select a brand...</option>
@@ -128,13 +129,6 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
                   </option>
                 ))}
               </select>
-
-              {/* <button
-                className="input-style-3"
-                onClick={handleOpenNewBrandModal}
-              >
-                Add Brand +
-              </button> */}
             </div>
             <span className="text-red-500 text-xs normal-case">
               {errors.brand_ID?.message}
@@ -152,7 +146,7 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
               id="category_Id"
               className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
               disabled={productFieldsLoading}
-              //   value={selectedProduct..category_Name}
+              value={watch("category_Id")}
               {...register("category_Id")}
             >
               <option value="">Select a category...</option>{" "}
@@ -162,13 +156,6 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
                 </option>
               ))}
             </select>
-
-            {/* <button
-              className="input-style-3"
-              onClick={handleOpenNewCategoryModal}
-            >
-              Add Category +
-            </button> */}
           </div>
           <span className="text-red-500 text-xs normal-case">
             {errors.category_Id?.message}
@@ -185,7 +172,7 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
               id="variant_Id"
               className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
               disabled={productFieldsLoading}
-              //   value={selectedProduct.variant.variantName}
+              value={watch("variant_Id")}
               {...register("variant_Id")}
             >
               <option value="">Select a variant...</option>
@@ -195,13 +182,6 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
                 </option>
               ))}
             </select>
-
-            {/* <button
-              className="input-style-3"
-                onClick={handleOpenNewVariantModal}
-            >
-              Add Variant +
-            </button> */}
           </div>
           <span className="text-red-500 text-xs normal-case">
             {/* {errors.variant_Id?.message} */}
