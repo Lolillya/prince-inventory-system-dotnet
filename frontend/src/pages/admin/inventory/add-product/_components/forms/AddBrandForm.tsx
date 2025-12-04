@@ -1,5 +1,16 @@
+import * as yup from "yup";
 import { addNewBrandService } from "@/features/inventory/add-new-brand/add-new-brand.service";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+const schema = yup.object().shape({
+  brand_Name: yup.string().required("Brand name is required"),
+});
+
+type AddBrandFormValues = {
+  brand_Name: string;
+};
 
 interface AddBrandFormProps {
   setIsBrandModalOpen: (isOpen: boolean) => void;
@@ -15,17 +26,27 @@ export const AddBrandForm = ({
     setIsAddProductModalOpen(true);
   };
 
-  const [brandName, setBrandName] = useState<string>("");
+  const {
+    register,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<AddBrandFormValues>({
+    resolver: yupResolver(schema),
+  });
 
-  const handleAddBrand = async (event: React.FormEvent) => {
-    addNewBrandService(brandName);
+  const handleAddBrand = async (data: AddBrandFormValues) => {
+    addNewBrandService(data.brand_Name);
     setIsBrandModalOpen(false);
     setIsAddProductModalOpen(true);
-    event.preventDefault();
+    reset();
   };
 
   return (
-    <form className=" flex flex-col gap-5 overflow-y-scroll flex-1 justify-between">
+    <form
+      className=" flex flex-col gap-5 overflow-y-scroll flex-1 justify-between"
+      onSubmit={handleSubmit(handleAddBrand)}
+    >
       <div>
         <label htmlFor="brand_Name" className="block text-sm font-medium">
           Brand Name
@@ -34,17 +55,14 @@ export const AddBrandForm = ({
           id="brand_Name"
           type="text"
           className="w-full drop-shadow-none bg-custom-gray p-2"
-          onChange={(e) => setBrandName(e.target.value)}
-          // {...register("brand_Name")}
+          {...register("brand_Name")}
         />
         <span className="text-red-500 text-xs normal-case">
-          {/* {errors.brand_Name?.message} */}
+          {errors.brand_Name?.message}
         </span>
       </div>
       <div className="flex gap-2">
-        <button type="submit" onClick={handleAddBrand}>
-          Add Brand
-        </button>
+        <button type="submit">Add Brand</button>
         <button type="button" className="input-style-3" onClick={handleCancel}>
           Cancel
         </button>
