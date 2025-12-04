@@ -1,6 +1,5 @@
 import * as yup from "yup";
 import { addNewVariantService } from "@/features/inventory/add-new-variant/add-new-variant.service";
-import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 

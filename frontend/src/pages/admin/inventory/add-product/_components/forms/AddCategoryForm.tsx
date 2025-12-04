@@ -1,4 +1,4 @@
-import yup from "yup";
+import * as yup from "yup";
 import { addNewCategoryService } from "@/features/inventory/add-new-category/add-new-category.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
