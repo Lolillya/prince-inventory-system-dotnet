@@ -8,9 +8,9 @@ export type InventoryProductModel = {
     category_id: number;
     createdAt: string;
     updatedAt: string;
-    brand: brand;
-    variant: variant;
   };
+  brand: brand;
+  variant: variant;
 };
 
 type brand = {
@@ -21,7 +21,7 @@ type brand = {
 
 type variant = {
   productId: number;
-  variant_Name: string;
+  variantName: string;
   createdAt: string;
   updatedAt: string;
 };

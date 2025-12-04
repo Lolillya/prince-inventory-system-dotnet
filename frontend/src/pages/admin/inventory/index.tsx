@@ -14,9 +14,9 @@ import {
   SearchIcon,
 } from "../../../icons";
 import { SelectedProduct } from "./_components/selected-product";
-import { InventoryModel } from "@/features/inventory/models/inventory.model";
 import { useState } from "react";
 import { AddProductModal } from "./add-product/_components/AddProductModal";
+import { InventoryProductModel } from "@/models/trash/inventory.model";
 
 const InventoryPage = () => {
   const { data: inventory, isLoading, error } = UseInventoryQuery();
@@ -25,12 +25,14 @@ const InventoryPage = () => {
   const setSelectedProduct = useSetSelectedProduct();
   const navigate = useNavigate();
 
+  console.log(selectedProduct);
+
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const handleClick = (product: InventoryModel) => {
+  const handleClick = (product: InventoryProductModel) => {
     setSelectedProduct(product);
   };
 
