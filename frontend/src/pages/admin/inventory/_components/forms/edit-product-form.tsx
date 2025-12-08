@@ -189,7 +189,7 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
         </div>
       </div>
 
-      <button type="submit">Add Product</button>
+      <button type="submit">Confirm Edit</button>
     </form>
   );
 };

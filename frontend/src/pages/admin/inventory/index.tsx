@@ -24,8 +24,8 @@ const InventoryPage = () => {
   const { data: selectedProduct } = useSelectedProductQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const setSelectedProduct = useSetSelectedProduct();
-  const navigate = useNavigate();
 
   console.log(selectedProduct);
 
@@ -41,6 +41,18 @@ const InventoryPage = () => {
   const handleEditProduct = () => {
     setIsEditProductModalOpen(!isEditProductModalOpen);
   };
+
+  // Filter inventory based on search query
+  const filteredInventory = inventory?.filter((item) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      item.product.product_Code.toLowerCase().includes(query) ||
+      item.product.product_Name.toLowerCase().includes(query) ||
+      item.brand.brandName.toLowerCase().includes(query) ||
+      item.variant.variant_Name.toLowerCase().includes(query) ||
+      item.category.category_Name.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <section>
@@ -62,7 +74,12 @@ const InventoryPage = () => {
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3 max-w-lg w-full shrink-0">
             <div className="relative w-full">
-              <input placeholder="Search..." className="input-style-2" />
+              <input
+                placeholder="Search..."
+                className="input-style-2"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
               <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                 <SearchIcon />
               </i>
@@ -100,7 +117,7 @@ const InventoryPage = () => {
           </div>
 
           <div className="w-full overflow-y-scroll flex flex-col gap-2 pr-2">
-            {inventory?.map((data, index) => (
+            {filteredInventory?.map((data, index) => (
               <>
                 <div
                   className="flex justify-between p-5 rounded-lg"
