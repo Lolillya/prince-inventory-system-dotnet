@@ -6,16 +6,27 @@ import { Separator } from "@/components/separator";
 import { NoSelectedState } from "@/components/no-selected-state";
 import { SelectedUser } from "@/components/selected-user";
 import { Fragment, useState } from "react";
+import { AddSupplierModal } from "./_components/add-supplier.modal";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
   const { data: selectedSupplier } = useSelectedSupplierQuery();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
+  const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
 
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
+
+  const handleAddSupplier = () => {
+    setIsAddSupplierModalOpen(!isAddSupplierModalOpen);
+  };
+
+  const handleEditSupplier = () => {
+    setIsEditSupplierModalOpen(!isEditSupplierModalOpen);
+  };
 
   const filteredSuppliers = suppliers?.filter((supplier) => {
     const query = searchQuery.toLowerCase();
@@ -30,6 +41,15 @@ const SuppliersPage = () => {
 
   return (
     <section>
+      {/* ADD SUPPLIER MODAL */}
+      {isAddSupplierModalOpen && (
+        <AddSupplierModal
+          setIsAddSupplierModalOpen={setIsAddSupplierModalOpen}
+        />
+      )}
+
+      {/* EDIT SUPPLIER MODAL */}
+      {}
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3 max-w-lg w-full shrink-0">
@@ -49,7 +69,10 @@ const SuppliersPage = () => {
               <FilterIcon />
             </div>
           </div>
-          <button className="flex items-center justify-center gap-2">
+          <button
+            className="flex items-center justify-center gap-2"
+            onClick={handleAddSupplier}
+          >
             <PlusIcon />
             new supplier
           </button>
