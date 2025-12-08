@@ -41,7 +41,7 @@ namespace backend.Data
 
             // Seed users
             Seeders.Users.UserDataSeed(builder);
-            Seeders.Suppliers.SeedSupplierUsers(builder);
+            // Seeders.Suppliers.SeedSupplierUsers(builder);
 
             // Seed Inventory items
             Seeders.BrandInventory.SeedBrandData(builder);
