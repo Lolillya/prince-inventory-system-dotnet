@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { NoSelectedState } from "../../../components/no-selected-state";
 import { Separator } from "../../../components/separator";
 import { UseInventoryQuery } from "../../../features/inventory/get-inventory.query";

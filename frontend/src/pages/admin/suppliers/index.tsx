@@ -1,29 +1,45 @@
-import { InfoCard } from "../../../components/info-card";
-import { FilterIcon, PlusIcon, SearchIcon } from "../../../icons";
-import { useSuppliersQuery } from "../../../features/suppliers/supplier-get-all.query";
-import { useSelectedSupplierQuery } from "../../../features/suppliers/supplier-selected.query";
-import { Separator } from "../../../components/separator";
-import { NoSelectedState } from "../../../components/no-selected-state";
-import { SelectedUser } from "../../../components/selected-user";
-import React from "react";
+import { InfoCard } from "@/components/info-card";
+import { FilterIcon, PlusIcon, SearchIcon } from "@/icons";
+import { useSuppliersQuery } from "@/features/suppliers/supplier-get-all.query";
+import { useSelectedSupplierQuery } from "@/features/suppliers/supplier-selected.query";
+import { Separator } from "@/components/separator";
+import { NoSelectedState } from "@/components/no-selected-state";
+import { SelectedUser } from "@/components/selected-user";
+import { Fragment, useState } from "react";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
   const { data: selectedSupplier } = useSelectedSupplierQuery();
-
-  console.log(suppliers);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
+
+  const filteredSuppliers = suppliers?.filter((supplier) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      supplier.firstName.toLowerCase().includes(query) ||
+      supplier.lastName.toLowerCase().includes(query) ||
+      supplier.email.toLowerCase().includes(query) ||
+      supplier.companyName.toLowerCase().includes(query) ||
+      supplier.phoneNumber.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <section>
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3 max-w-lg w-full shrink-0">
             <div className="relative w-full">
-              <input placeholder="Search..." className="input-style-2" />
+              <input
+                placeholder="Search..."
+                className="input-style-2"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
               <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                 <SearchIcon />
               </i>
@@ -47,15 +63,17 @@ const SuppliersPage = () => {
             <label className="capitalize text-saltbox-gray font-normal text-lg">
               suppiers
             </label>
-            <span className="capitalize text-vesper-gray"># records</span>
+            <span className="capitalize text-vesper-gray">
+              {filteredSuppliers?.length} records
+            </span>
           </div>
 
           <div className="w-full overflow-y-scroll">
-            {suppliers?.map((data, index) => (
-              <React.Fragment key={data.id}>
+            {filteredSuppliers?.map((data, index) => (
+              <Fragment key={data.id}>
                 <InfoCard type="supplier" key={index} {...data} />
                 <Separator />
-              </React.Fragment>
+              </Fragment>
             ))}
           </div>
         </div>
