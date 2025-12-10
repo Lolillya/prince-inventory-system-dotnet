@@ -19,6 +19,7 @@ const schema = yup.object().shape({
     ),
   phoneNumber: yup.string().required("Contact number is required"),
   companyName: yup.string().required("Company name is required"),
+  address: yup.string(),
   notes: yup.string().optional(),
   roleID: yup.number().required(),
 });
@@ -170,6 +171,22 @@ export const AddSupplierForm = () => {
           />
           <span className="text-red-500 text-xs normal-case">
             {errors.companyName?.message}
+          </span>
+        </div>
+
+        {/* ADDRESS */}
+        <div className="flex flex-col w-full">
+          <label htmlFor="address" className="block text-sm font-medium">
+            Address
+          </label>
+          <input
+            id="address"
+            type="text"
+            className="w-full drop-shadow-none bg-custom-gray p-2"
+            {...register("address")}
+          />
+          <span className="text-red-500 text-xs normal-case">
+            {errors.address?.message}
           </span>
         </div>
 
