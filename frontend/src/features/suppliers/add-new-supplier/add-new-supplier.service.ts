@@ -5,8 +5,6 @@ import { handleError } from "@/helpers/error-handler.helper";
 import axios from "axios";
 
 export const AddNewSupplierService = async (payload: RegisterPayloadModel) => {
-  console.log("payload: ", payload);
-
   // Generate random username and password
   const generatedUsername = `${payload.firstName.toLowerCase()}.${payload.lastName.toLowerCase()}.${Math.floor(Math.random() * 10000)}`;
   const generatedPassword =
@@ -24,7 +22,6 @@ export const AddNewSupplierService = async (payload: RegisterPayloadModel) => {
     username: generatedUsername,
     password: generatedPassword,
   });
-  console.log("Final payload:", finalPayload);
 
   try {
     const data = await axios.post(api + "auth/register", finalPayload);
