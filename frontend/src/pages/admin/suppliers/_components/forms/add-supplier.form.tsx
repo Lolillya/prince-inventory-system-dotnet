@@ -1,11 +1,15 @@
+import { RegisterPayloadModel } from "@/features/auth-login/models/auth-register.model";
+import { AddNewSupplierService } from "@/features/suppliers/add-new-supplier/add-new-supplier.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 
 const schema = yup.object().shape({
+  username: yup.string(),
+  password: yup.string(),
   firstName: yup.string().required("First name is required"),
   lastName: yup.string().required("Last name is required"),
-  emailAddress: yup
+  email: yup
     .string()
     .email("Invalid email address")
     .required("Email address is required")
@@ -13,12 +17,10 @@ const schema = yup.object().shape({
       /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
       "Invalid email format"
     ),
-  contactNumber: yup
-    .string()
-    .required("Contact number is required")
-    .matches(/^\+?[1-9]\d{1,14}$/, "Invalid contact number"),
+  phoneNumber: yup.string().required("Contact number is required"),
   companyName: yup.string().required("Company name is required"),
-  supplierNotes: yup.string(),
+  notes: yup.string().optional(),
+  roleID: yup.number().required(),
 });
 
 export const AddSupplierForm = () => {
@@ -28,9 +30,16 @@ export const AddSupplierForm = () => {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      roleID: 3,
+      username: "",
+      password: "",
+    },
   });
 
-  const onSubmit = () => {};
+  const onSubmit = (data: RegisterPayloadModel) => {
+    AddNewSupplierService(data);
+  };
 
   return (
     <form
@@ -38,6 +47,46 @@ export const AddSupplierForm = () => {
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col space-y-4 mb-auto">
+        {/* LOGIN DETAILS */}
+
+        <div className="flex w-full justify-between gap-4">
+          {/* USERNAME*/}
+          <div className="flex flex-col w-full">
+            <label htmlFor="firstName" className="block text-sm font-medium">
+              Username
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              className="w-full drop-shadow-none bg-custom-gray p-2"
+              placeholder="AUTO GENERATED"
+              disabled
+              {...register("username")}
+            />
+            <span className="text-red-500 text-xs normal-case">
+              {errors.username?.message}
+            </span>
+          </div>
+
+          {/* PASSWORD */}
+          <div className="flex flex-col w-full">
+            <label htmlFor="password" className="block text-sm font-medium">
+              Password
+            </label>
+            <input
+              id="password"
+              type="text"
+              className="w-full drop-shadow-none bg-custom-gray p-2"
+              placeholder="AUTO GENERATED"
+              disabled
+              {...register("password")}
+            />
+            <span className="text-red-500 text-xs normal-case">
+              {errors.password?.message}
+            </span>
+          </div>
+        </div>
+
         {/* SUPPLIER NAME */}
         <div className="flex w-full justify-between gap-4">
           {/* FIRST NAME */}
@@ -82,10 +131,10 @@ export const AddSupplierForm = () => {
               id="emailAddress"
               type="text"
               className="w-full drop-shadow-none bg-custom-gray p-2"
-              {...register("emailAddress")}
+              {...register("email")}
             />
             <span className="text-red-500 text-xs normal-case">
-              {errors.emailAddress?.message}
+              {errors.email?.message}
             </span>
           </div>
 
@@ -100,10 +149,10 @@ export const AddSupplierForm = () => {
               id="contactNumber"
               type="text"
               className="w-full drop-shadow-none bg-custom-gray p-2"
-              {...register("contactNumber")}
+              {...register("phoneNumber")}
             />
             <span className="text-red-500 text-xs normal-case">
-              {errors.contactNumber?.message}
+              {errors.phoneNumber?.message}
             </span>
           </div>
         </div>
@@ -124,6 +173,20 @@ export const AddSupplierForm = () => {
           </span>
         </div>
 
+        {/* ROLE */}
+        <div className="flex flex-col w-full">
+          <label htmlFor="role" className="block text-sm font-medium">
+            Role
+          </label>
+          <input
+            id="role"
+            type="text"
+            className="w-full drop-shadow-none bg-custom-gray p-2"
+            disabled
+            placeholder="SUPPLIER"
+            // {...register("role")}
+          />
+        </div>
         {/* DESCRIPTION */}
         <div>
           <label htmlFor="supplierNotes" className="block text-sm font-medium">
@@ -132,10 +195,10 @@ export const AddSupplierForm = () => {
           <textarea
             id="supplierNotes"
             className="w-full p-2 rounded-lg "
-            {...register("supplierNotes")}
+            {...register("notes")}
           />
           <span className="text-red-500 text-xs normal-case">
-            {errors.supplierNotes?.message}
+            {errors.notes?.message}
           </span>
         </div>
       </div>
