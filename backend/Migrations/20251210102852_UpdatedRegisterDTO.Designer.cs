@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251210102852_UpdatedRegisterDTO")]
+    partial class UpdatedRegisterDTO
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1171,7 +1174,7 @@ namespace backend.Migrations
                         {
                             Id = "1",
                             AccessFailedCount = 0,
-                            Address = "123 Admin St, Cityville",
+                            Address = "",
                             CompanyName = "Prince Educational Supply",
                             ConcurrencyStamp = "8d5e6f7a-1b2c-3d4e-5f6a-7b8c9d0e1f2a",
                             Email = "admin@prince.edu",
@@ -1193,7 +1196,7 @@ namespace backend.Migrations
                         {
                             Id = "2",
                             AccessFailedCount = 0,
-                            Address = "456 Employee Rd, Cityville",
+                            Address = "",
                             CompanyName = "Prince Educational Supply",
                             ConcurrencyStamp = "0e1f2a3b-4c5d-6e7f-8a9b-0c1d2e3f4a5b",
                             Email = "employee@prince.edu",
@@ -1215,7 +1218,7 @@ namespace backend.Migrations
                         {
                             Id = "3",
                             AccessFailedCount = 0,
-                            Address = "789 Supplier Ave, Townsville",
+                            Address = "",
                             CompanyName = "Educational Supplies Inc.",
                             ConcurrencyStamp = "2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d",
                             Email = "supplier@example.com",
@@ -1237,7 +1240,7 @@ namespace backend.Migrations
                         {
                             Id = "4",
                             AccessFailedCount = 0,
-                            Address = "101 Customer Blvd, Villageville",
+                            Address = "",
                             CompanyName = "Johnson Elementary School",
                             ConcurrencyStamp = "4c5d6e7f-8a9b-0c1d-2e3f-4a5b6c7d8e9f",
                             Email = "customer@example.com",
