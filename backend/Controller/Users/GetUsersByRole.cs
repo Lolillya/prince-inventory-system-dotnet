@@ -45,6 +45,8 @@ namespace backend.Controller.Suppliers
                     Notes = user.Notes,
                     PhoneNumber = user.PhoneNumber,
                     Role = supplierRole.Name,
+                    Address = user.Address
+
                 }).ToList();
 
                 return Ok(suppliers);

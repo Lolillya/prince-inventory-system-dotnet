@@ -17,5 +17,6 @@ namespace backend.Dtos.User
         public string Notes { get; set; }
         public string PhoneNumber { get; set; }
         public string Role { get; set; }
+        public string Address { get; set; }
     }
 }
