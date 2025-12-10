@@ -46,6 +46,7 @@ namespace backend.Controllers.Auth
                     FirstName = registerDto.FirstName,
                     LastName = registerDto.LastName,
                     PhoneNumber = registerDto.PhoneNumber,
+                    Address = registerDto.Address
                 };
 
                 var createdUser = await _userManager.CreateAsync(appUser, registerDto.Password);

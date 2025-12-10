@@ -18,15 +18,17 @@ namespace api.Dtos.Account
 
         // ADDITIONAL REQUIRED DETAILS
         [Required]
-        public string CompanyName { get; set; }
-        public string Notes { get; set; }
+        public string CompanyName { get; set; } = "";
+        public string Notes { get; set; } = "";
         [Required]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = "";
         [Required]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = "";
         [Required]
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = "";
         [Required]
-        public string RoleId { get; set; }
+        public string RoleId { get; set; } = "";
+        [Required]
+        public string Address { get; set; } = "";
     }
 }
