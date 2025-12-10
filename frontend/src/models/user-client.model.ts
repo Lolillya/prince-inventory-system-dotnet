@@ -8,4 +8,5 @@ export type UserClientModel = {
   notes: string;
   phoneNumber: string;
   role: string;
+  address: string;
 };

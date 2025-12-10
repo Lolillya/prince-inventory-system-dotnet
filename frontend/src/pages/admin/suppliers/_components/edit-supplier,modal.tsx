@@ -1,6 +1,6 @@
-import { UserModel } from "@/features/auth-login/models/user.model";
 import { XIcon } from "@/icons";
 import { UserClientModel } from "@/models/user-client.model";
+import { EditSupplierForm } from "./forms/edit-supplier.form";
 
 interface EditSupplierModalProps {
   setIsEditSupplierModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -9,10 +9,13 @@ interface EditSupplierModalProps {
 
 export const EditSupplierModal = ({
   setIsEditSupplierModalOpen,
+  selectedSupplier,
 }: EditSupplierModalProps) => {
   const handleCloseModal = () => {
     setIsEditSupplierModalOpen(false);
   };
+
+  console.log("selectedSupplier", selectedSupplier);
 
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
@@ -29,7 +32,7 @@ export const EditSupplierModal = ({
           </div>
         </div>
 
-        {/* <AddSupplierForm /> */}
+        <EditSupplierForm selectedSupplier={selectedSupplier} />
       </div>
     </div>
   );

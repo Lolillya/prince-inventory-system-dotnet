@@ -25,7 +25,7 @@ const SuppliersPage = () => {
     setIsAddSupplierModalOpen(!isAddSupplierModalOpen);
   };
 
-  const handleEditSupplier = () => {
+  const handleEdit = () => {
     setIsEditSupplierModalOpen(!isEditSupplierModalOpen);
   };
 
@@ -122,7 +122,7 @@ const SuppliersPage = () => {
               <SelectedUser
                 type="supplier"
                 {...selectedSupplier}
-                handleEditSupplier={handleEditSupplier}
+                handleEdit={handleEdit}
               />
             )}
           </div>
