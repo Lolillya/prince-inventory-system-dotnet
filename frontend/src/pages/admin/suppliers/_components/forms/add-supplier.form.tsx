@@ -19,7 +19,7 @@ const schema = yup.object().shape({
     ),
   phoneNumber: yup.string().required("Contact number is required"),
   companyName: yup.string().required("Company name is required"),
-  address: yup.string(),
+  address: yup.string().required("Address is required"),
   notes: yup.string().optional(),
   roleID: yup.number().required(),
 });

@@ -4,6 +4,7 @@ export type RegisterPayloadModel = {
   password?: string;
   notes?: string;
   companyName: string;
+  address: string;
   firstName: string;
   lastName: string;
   phoneNumber: string;
