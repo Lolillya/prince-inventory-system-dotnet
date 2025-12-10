@@ -1,10 +1,10 @@
 import { api } from "@/features/api/API.service";
-import { RegisterPayloadModel } from "@/features/auth-login/models/auth-register.model";
+import { UserModel } from "@/features/auth-login/models/user.model";
 import { handleError } from "@/helpers/error-handler.helper";
 
 import axios from "axios";
 
-export const AddNewSupplierService = async (payload: RegisterPayloadModel) => {
+export const AddNewSupplierService = async (payload: UserModel) => {
   // Generate random username and password
   const generatedUsername = `${payload.firstName.toLowerCase()}.${payload.lastName.toLowerCase()}.${Math.floor(Math.random() * 10000)}`;
   const generatedPassword =

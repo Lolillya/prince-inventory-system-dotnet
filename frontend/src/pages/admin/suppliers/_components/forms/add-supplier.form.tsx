@@ -1,4 +1,4 @@
-import { RegisterPayloadModel } from "@/features/auth-login/models/auth-register.model";
+import { RegisterPayloadModel } from "@/features/auth-login/models/user.model";
 import { AddNewSupplierService } from "@/features/suppliers/add-new-supplier/add-new-supplier.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";

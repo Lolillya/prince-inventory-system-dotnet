@@ -7,6 +7,7 @@ import { NoSelectedState } from "@/components/no-selected-state";
 import { SelectedUser } from "@/components/selected-user";
 import { Fragment, useState } from "react";
 import { AddSupplierModal } from "./_components/add-supplier.modal";
+import { EditSupplierModal } from "./_components/edit-supplier,modal";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
@@ -49,7 +50,12 @@ const SuppliersPage = () => {
       )}
 
       {/* EDIT SUPPLIER MODAL */}
-      {}
+      {isEditSupplierModalOpen && (
+        <EditSupplierModal
+          setIsEditSupplierModalOpen={setIsEditSupplierModalOpen}
+          selectedSupplier={selectedSupplier}
+        />
+      )}
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3 max-w-lg w-full shrink-0">
@@ -113,7 +119,11 @@ const SuppliersPage = () => {
             {!selectedSupplier ? (
               <NoSelectedState />
             ) : (
-              <SelectedUser type="supplier" {...selectedSupplier} />
+              <SelectedUser
+                type="supplier"
+                {...selectedSupplier}
+                handleEditSupplier={handleEditSupplier}
+              />
             )}
           </div>
         </div>

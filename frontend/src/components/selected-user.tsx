@@ -13,10 +13,15 @@ import { useState } from "react";
 type UserType = "customer" | "supplier" | "employee";
 
 interface SelectedUserProps extends UserClientModel {
+  handleEditSupplier: () => void;
   type: UserType;
 }
 
-export const SelectedUser = ({ type, ...user }: SelectedUserProps) => {
+export const SelectedUser = ({
+  type,
+  handleEditSupplier,
+  ...user
+}: SelectedUserProps & { handleEditSupplier: () => void }) => {
   return (
     <div className="flex flex-col p-5 w-full gap-2">
       <div className="flex items-center justify-between">
@@ -35,7 +40,10 @@ export const SelectedUser = ({ type, ...user }: SelectedUserProps) => {
             <p className="text-sm text-slate-400">{user.id}</p>
           </div>
         </div>
-        <div className="cursor-pointer hover:bg-bellflower-gray p-3 rounded-lg transition-colors duration-300 text-vesper-gray">
+        <div
+          className="cursor-pointer hover:bg-bellflower-gray p-3 rounded-lg transition-colors duration-300 text-vesper-gray"
+          onClick={handleEditSupplier}
+        >
           <EditIcon />
         </div>
       </div>

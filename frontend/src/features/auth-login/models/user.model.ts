@@ -1,4 +1,4 @@
-export type RegisterPayloadModel = {
+export type UserModel = {
   username?: string;
   email: string;
   password?: string;
