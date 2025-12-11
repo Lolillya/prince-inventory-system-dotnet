@@ -50,10 +50,21 @@ const SuppliersPage = () => {
       )}
 
       {/* EDIT SUPPLIER MODAL */}
-      {isEditSupplierModalOpen && (
+      {isEditSupplierModalOpen && selectedSupplier && (
         <EditSupplierModal
           setIsEditSupplierModalOpen={setIsEditSupplierModalOpen}
-          selectedSupplier={selectedSupplier}
+          selectedSupplier={{
+            id: selectedSupplier.id,
+            username: selectedSupplier.username,
+            email: selectedSupplier.email,
+            firstName: selectedSupplier.firstName,
+            lastName: selectedSupplier.lastName,
+            companyName: selectedSupplier.companyName,
+            address: selectedSupplier.address,
+            phoneNumber: selectedSupplier.phoneNumber,
+            notes: selectedSupplier.notes,
+            roleID: 3,
+          }}
         />
       )}
       <div className="w-full mb-8">

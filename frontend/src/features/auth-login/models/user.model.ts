@@ -9,4 +9,5 @@ export type UserModel = {
   lastName: string;
   phoneNumber: string;
   roleID: number;
+  id?: string;
 };

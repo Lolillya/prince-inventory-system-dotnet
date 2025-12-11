@@ -1,10 +1,10 @@
 import { XIcon } from "@/icons";
-import { UserClientModel } from "@/models/user-client.model";
 import { EditSupplierForm } from "./forms/edit-supplier.form";
+import { UserModel } from "@/features/auth-login/models/user.model";
 
 interface EditSupplierModalProps {
   setIsEditSupplierModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedSupplier: UserClientModel | undefined;
+  selectedSupplier: UserModel | undefined;
 }
 
 export const EditSupplierModal = ({
@@ -14,8 +14,6 @@ export const EditSupplierModal = ({
   const handleCloseModal = () => {
     setIsEditSupplierModalOpen(false);
   };
-
-  console.log("selectedSupplier", selectedSupplier);
 
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">

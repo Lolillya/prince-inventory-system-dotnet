@@ -1,9 +1,12 @@
+import { UserModel } from "@/features/auth-login/models/user.model";
+import { EditSupplierService } from "@/features/suppliers/edit-supplier/edit-supplier.service";
 import { UserClientModel } from "@/models/user-client.model";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 
 const schema = yup.object().shape({
+  id: yup.string(),
   username: yup.string(),
   password: yup.string(),
   firstName: yup.string().required("First name is required"),
@@ -24,7 +27,7 @@ const schema = yup.object().shape({
 });
 
 interface EditSupplierFormProps {
-  selectedSupplier: UserClientModel | undefined;
+  selectedSupplier: UserModel | undefined;
 }
 
 export const EditSupplierForm = ({
@@ -37,6 +40,7 @@ export const EditSupplierForm = ({
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
+      roleID: 3,
       username: "N/A",
       password: "N/A",
       email: selectedSupplier?.email || "",
@@ -46,11 +50,20 @@ export const EditSupplierForm = ({
       companyName: selectedSupplier?.companyName || "",
       address: selectedSupplier?.address || "",
       notes: selectedSupplier?.notes || "",
+      id: selectedSupplier?.id,
     },
   });
 
+  const onSubmit = (data: UserModel) => {
+    console.log("EditSupplierForm onSubmit data:", data);
+    EditSupplierService(data);
+  };
+
   return (
-    <form className="h-full flex flex-col justify-between">
+    <form
+      className="h-full flex flex-col justify-between"
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <div className="flex flex-col space-y-4 mb-auto">
         {/* LOGIN DETAILS */}
 
