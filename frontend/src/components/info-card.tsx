@@ -8,9 +8,10 @@ type UserType = "customer" | "supplier" | "employee";
 
 interface InfoCardProps extends UserClientModel {
   type: UserType;
+  handleDelete?: () => void;
 }
 
-export const InfoCard = ({ type, ...data }: InfoCardProps) => {
+export const InfoCard = ({ type, handleDelete, ...data }: InfoCardProps) => {
   const setSupplierSelected = useSetSupplierSelected();
   const setCustomerSelected = useSetCustomerSelected();
   const setEmployeeSelected = useSetEmployeeSelected();
@@ -39,7 +40,10 @@ export const InfoCard = ({ type, ...data }: InfoCardProps) => {
         <div className="info-card-actions rounded-lg hover:bg-tinker-yellow hover:text-laughing-orange transition-all duration-300 ">
           <StarIcon width={24} height={24} />
         </div>
-        <div className="info-card-actions rounded-lg hover:bg-cake-pink hover:text-munch-pink transition-all duration-300">
+        <div
+          className="info-card-actions rounded-lg hover:bg-cake-pink hover:text-munch-pink transition-all duration-300"
+          onClick={handleDelete}
+        >
           <TrashIcon width={24} height={24} />
         </div>
       </div>

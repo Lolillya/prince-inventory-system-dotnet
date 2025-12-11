@@ -8,6 +8,8 @@ import { SelectedUser } from "@/components/selected-user";
 import { Fragment, useState } from "react";
 import { AddSupplierModal } from "./_components/add-supplier.modal";
 import { EditSupplierModal } from "./_components/edit-supplier,modal";
+import { UserClientModel } from "@/models/user-client.model";
+import { DeleteUserService } from "@/features/suppliers/remove-supplier/remove-supplier.service";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
@@ -27,6 +29,11 @@ const SuppliersPage = () => {
 
   const handleEdit = () => {
     setIsEditSupplierModalOpen(!isEditSupplierModalOpen);
+  };
+
+  const handleDelete = (data: UserClientModel) => {
+    console.log("delete data", data);
+    DeleteUserService(data.id);
   };
 
   const filteredSuppliers = suppliers?.filter((supplier) => {
@@ -111,7 +118,12 @@ const SuppliersPage = () => {
           <div className="w-full overflow-y-scroll">
             {filteredSuppliers?.map((data, index) => (
               <Fragment key={data.id}>
-                <InfoCard type="supplier" key={index} {...data} />
+                <InfoCard
+                  type="supplier"
+                  key={index}
+                  {...data}
+                  handleDelete={() => handleDelete(data)}
+                />
                 <Separator />
               </Fragment>
             ))}

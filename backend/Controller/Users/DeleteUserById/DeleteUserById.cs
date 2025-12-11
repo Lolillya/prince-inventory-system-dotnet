@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using backend.Data;
+using backend.Dtos.User;
 using backend.Models.Users;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,15 +21,15 @@ namespace backend.Controller.Users.DeleteUsersById
         }
 
         [HttpPut]
-        public async Task<IActionResult> DeleteUser([FromBody] string userId)
+        public async Task<IActionResult> DeleteUser([FromBody] DeleteUserDto payload)
         {
             try
             {
                 await using var transaction = await _db.Database.BeginTransactionAsync();
 
-                var user = await _db.Users.FindAsync(userId);
+                var user = await _db.Users.FindAsync(payload.UserId);
                 if (user == null)
-                    return NotFound($"User with id {userId} not found");
+                    return NotFound($"User with id {payload.UserId} not found");
 
                 // Create a new DeletedUsers entry with the user's data
                 var deletedUser = new DeletedUsers
@@ -54,7 +55,7 @@ namespace backend.Controller.Users.DeleteUsersById
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                Console.WriteLine($"User {userId} moved to DeletedUsers table successfully");
+                Console.WriteLine($"User {payload.UserId} moved to DeletedUsers table successfully");
             }
             catch (Exception ex)
             {
