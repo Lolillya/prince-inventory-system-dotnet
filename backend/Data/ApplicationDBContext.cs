@@ -6,6 +6,7 @@ using backend.Models.InvoiceModel;
 using backend.Models.RestockModel;
 using backend.Models.LineItems;
 using backend.Models.Unit;
+using backend.Models.Users;
 
 namespace backend.Data
 {
@@ -29,6 +30,7 @@ namespace backend.Data
         public DbSet<RestockBatch> RestocksBatch { get; set; }
         public DbSet<UnitOfMeasure> UnitOfMeasure { get; set; }
         public DbSet<Product_UOM> Product_UOMs { get; set; }
+        public DbSet<DeletedUsers> DeletedUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
