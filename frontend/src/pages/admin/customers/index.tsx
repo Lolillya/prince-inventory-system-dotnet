@@ -8,6 +8,8 @@ import { useSelectedCustomer } from "@/features/customers/customer-selector.quer
 import { Fragment, useState } from "react";
 import { AddCustomerModal } from "./_components/add-customer.modal";
 import { EditCustomerModal } from "./_components/edit-customer,modal";
+import { UserClientModel } from "@/models/user-client.model";
+import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 
 const SuppliersPage = () => {
   const { data: customers, isLoading, error } = useCustomersQuery();
@@ -18,6 +20,9 @@ const SuppliersPage = () => {
   const [isEditCustomerModalOpen, setIsEditCustomerModalOpen] = useState(false);
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
+    null
+  );
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
@@ -31,7 +36,10 @@ const SuppliersPage = () => {
     setIsEditCustomerModalOpen(!isEditCustomerModalOpen);
   };
 
-  const handleDelete = () => {};
+  const handleDelete = (data: UserClientModel) => {
+    setUserToDelete(data);
+    setIsConfirmRemoveModalOpen(true);
+  };
 
   const filteredCustomers = customers?.filter((customer) => {
     const query = searchQuery.toLowerCase();
@@ -69,6 +77,14 @@ const SuppliersPage = () => {
             notes: selectedCustomer.notes,
             roleID: 3,
           }}
+        />
+      )}
+
+      {/* CONFIRM DELETE MODAL */}
+      {isConfirmRemoveModalOpen && userToDelete && (
+        <ConfirmRemoveModal
+          setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
+          userId={userToDelete.id}
         />
       )}
       <div className="w-full mb-8">
@@ -118,7 +134,7 @@ const SuppliersPage = () => {
                   type="customer"
                   key={index}
                   {...data}
-                  handleDelete={handleDelete}
+                  handleDelete={() => handleDelete(data)}
                   setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
                 />
                 <Separator />
