@@ -7,6 +7,7 @@ import { useCustomersQuery } from "@/features/customers/customer-get-all.query";
 import { useSelectedCustomer } from "@/features/customers/customer-selector.query";
 import { Fragment, useState } from "react";
 import { AddCustomerModal } from "./_components/add-customer.modal";
+import { EditCustomerModal } from "./_components/edit-customer,modal";
 
 const SuppliersPage = () => {
   const { data: customers, isLoading, error } = useCustomersQuery();
@@ -26,7 +27,9 @@ const SuppliersPage = () => {
     setIsAddCustomerModalOpen(!isAddCustomerModalOpen);
   };
 
-  const handleEdit = () => {};
+  const handleEdit = () => {
+    setIsEditCustomerModalOpen(!isEditCustomerModalOpen);
+  };
 
   const handleDelete = () => {};
 
@@ -43,9 +46,29 @@ const SuppliersPage = () => {
 
   return (
     <section>
+      {/* ADD CUSTOMER MODAL */}
       {isAddCustomerModalOpen && (
         <AddCustomerModal
           setIsAddCustomerModalOpen={setIsAddCustomerModalOpen}
+        />
+      )}
+
+      {/* EDIT CUSTOMER MODAL */}
+      {isEditCustomerModalOpen && selectedCustomer && (
+        <EditCustomerModal
+          setIsEditCustomerModalOpen={setIsEditCustomerModalOpen}
+          selectedCustomer={{
+            id: selectedCustomer.id,
+            username: selectedCustomer.username,
+            email: selectedCustomer.email,
+            firstName: selectedCustomer.firstName,
+            lastName: selectedCustomer.lastName,
+            companyName: selectedCustomer.companyName,
+            address: selectedCustomer.address,
+            phoneNumber: selectedCustomer.phoneNumber,
+            notes: selectedCustomer.notes,
+            roleID: 3,
+          }}
         />
       )}
       <div className="w-full mb-8">
@@ -81,7 +104,7 @@ const SuppliersPage = () => {
         <div className="w-full flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
             <label className="capitalize text-saltbox-gray font-normal text-lg">
-              suppiers
+              customers
             </label>
             <span className="capitalize text-vesper-gray">
               {filteredCustomers?.length} records

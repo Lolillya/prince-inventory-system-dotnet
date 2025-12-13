@@ -17,6 +17,6 @@ export const useSetCustomerSelected = () => {
   const queryClient = useQueryClient();
 
   return (customer: UserClientModel) => {
-    queryClient.setQueryData(InvoiceCustomerKey, customer);
+    queryClient.setQueryData<UserClientModel>(InvoiceCustomerKey, customer);
   };
 };
