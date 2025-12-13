@@ -9,7 +9,6 @@ import { Fragment, useState } from "react";
 import { AddSupplierModal } from "./_components/add-supplier.modal";
 import { EditSupplierModal } from "./_components/edit-supplier,modal";
 import { UserClientModel } from "@/models/user-client.model";
-import { DeleteUserService } from "@/features/suppliers/remove-supplier/remove-supplier.service";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 
 const SuppliersPage = () => {

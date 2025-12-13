@@ -7,17 +7,7 @@ export const useSelectedCustomer = () => {
   return useQuery<UserClientModel>({
     queryKey: InvoiceCustomerKey,
     queryFn: async () => {
-      return {
-        id: "",
-        username: "",
-        email: "",
-        firstName: "",
-        lastName: "",
-        companyName: "",
-        notes: "",
-        phoneNumber: "",
-        role: "",
-      };
+      return null as unknown as UserClientModel;
     },
     enabled: false,
   });
