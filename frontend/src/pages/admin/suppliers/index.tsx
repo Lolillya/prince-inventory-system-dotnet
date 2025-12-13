@@ -10,6 +10,7 @@ import { AddSupplierModal } from "./_components/add-supplier.modal";
 import { EditSupplierModal } from "./_components/edit-supplier,modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { DeleteUserService } from "@/features/suppliers/remove-supplier/remove-supplier.service";
+import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
@@ -17,6 +18,8 @@ const SuppliersPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
   const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
+  const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
+    useState(false);
 
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
@@ -33,7 +36,8 @@ const SuppliersPage = () => {
 
   const handleDelete = (data: UserClientModel) => {
     console.log("delete data", data);
-    DeleteUserService(data.id);
+    // DeleteUserService(data.id);
+    setIsConfirmRemoveModalOpen(true);
   };
 
   const filteredSuppliers = suppliers?.filter((supplier) => {
@@ -72,6 +76,13 @@ const SuppliersPage = () => {
             notes: selectedSupplier.notes,
             roleID: 3,
           }}
+        />
+      )}
+
+      {/* CONFIRM DELETE MODAL */}
+      {isConfirmRemoveModalOpen && (
+        <ConfirmRemoveModal
+          setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
         />
       )}
       <div className="w-full mb-8">
@@ -123,6 +134,7 @@ const SuppliersPage = () => {
                   key={index}
                   {...data}
                   handleDelete={() => handleDelete(data)}
+                  setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
                 />
                 <Separator />
               </Fragment>

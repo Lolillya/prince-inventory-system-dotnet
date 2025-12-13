@@ -9,9 +9,15 @@ type UserType = "customer" | "supplier" | "employee";
 interface InfoCardProps extends UserClientModel {
   type: UserType;
   handleDelete?: () => void;
+  setIsConfirmRemoveModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const InfoCard = ({ type, handleDelete, ...data }: InfoCardProps) => {
+export const InfoCard = ({
+  type,
+  handleDelete,
+  setIsConfirmRemoveModalOpen,
+  ...data
+}: InfoCardProps) => {
   const setSupplierSelected = useSetSupplierSelected();
   const setCustomerSelected = useSetCustomerSelected();
   const setEmployeeSelected = useSetEmployeeSelected();
