@@ -1,4 +1,5 @@
 import { UserModel } from "@/features/auth-login/models/user.model";
+import { AddNewCustomerService } from "@/features/customers/add-new-customer/add-new-customer.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -31,7 +32,7 @@ export const AddCustomerForm = () => {
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      roleID: 3,
+      roleID: 4,
       username: "",
       password: "",
     },
@@ -39,6 +40,7 @@ export const AddCustomerForm = () => {
 
   const onSubmit = (data: UserModel) => {
     // AddNewSupplierService(data);
+    AddNewCustomerService(data);
   };
 
   return (
@@ -199,7 +201,7 @@ export const AddCustomerForm = () => {
             type="text"
             className="w-full drop-shadow-none bg-custom-gray p-2"
             disabled
-            placeholder="SUPPLIER"
+            placeholder="CUSTOMER"
             // {...register("role")}
           />
         </div>
