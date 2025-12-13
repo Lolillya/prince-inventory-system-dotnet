@@ -20,6 +20,9 @@ const SuppliersPage = () => {
   const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
+    null
+  );
 
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
@@ -35,8 +38,7 @@ const SuppliersPage = () => {
   };
 
   const handleDelete = (data: UserClientModel) => {
-    console.log("delete data", data);
-    // DeleteUserService(data.id);
+    setUserToDelete(data);
     setIsConfirmRemoveModalOpen(true);
   };
 
@@ -80,9 +82,10 @@ const SuppliersPage = () => {
       )}
 
       {/* CONFIRM DELETE MODAL */}
-      {isConfirmRemoveModalOpen && (
+      {isConfirmRemoveModalOpen && userToDelete && (
         <ConfirmRemoveModal
           setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
+          userId={userToDelete.id}
         />
       )}
       <div className="w-full mb-8">

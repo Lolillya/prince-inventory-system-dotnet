@@ -1,15 +1,20 @@
+import { DeleteUserService } from "@/features/suppliers/remove-supplier/remove-supplier.service";
+
 interface ConfirmRemoveModalProps {
   setIsConfirmRemoveModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  userId: string;
 }
 
 export const ConfirmRemoveModal = ({
   setIsConfirmRemoveModalOpen,
+  userId,
 }: ConfirmRemoveModalProps) => {
   const handleCloseModal = () => {
     setIsConfirmRemoveModalOpen(false);
   };
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
+    await DeleteUserService(userId);
     handleCloseModal();
   };
 
