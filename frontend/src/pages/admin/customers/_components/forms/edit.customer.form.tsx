@@ -1,7 +1,5 @@
 import { UserModel } from "@/features/auth-login/models/user.model";
 import { EditCustomerService } from "@/features/customers/edit-customer/edit-customer.service";
-import { EditSupplierService } from "@/features/suppliers/edit-supplier/edit-supplier.service";
-import { UserClientModel } from "@/models/user-client.model";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
