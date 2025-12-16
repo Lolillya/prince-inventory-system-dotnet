@@ -168,7 +168,7 @@ const AddProductForm = ({
             <div className="flex items-center gap-2">
               <select
                 id="Brand_ID"
-                className="rounded-lg w-4/5 p-2 text-sm drop-shadow-none bg-custom-bg-white"
+                className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
                 disabled={productFieldsLoading}
                 {...register("brand_ID")}
               >
@@ -201,7 +201,7 @@ const AddProductForm = ({
           <div className="flex items-center gap-2">
             <select
               id="category_Id"
-              className="rounded-lg w-4/5 p-2 text-sm drop-shadow-none bg-custom-bg-white"
+              className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
               disabled={productFieldsLoading}
               {...register("category_Id")}
             >
