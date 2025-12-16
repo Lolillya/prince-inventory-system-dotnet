@@ -26,7 +26,7 @@ export const SelectedUser = ({
     <div className="flex flex-col p-5 w-full gap-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-5">
-          <div className="h-16 w-16 !rounded-lg">
+          <div className="h-16 w-16 rounded-lg!">
             <div className="bg-black h-16 w-16 rounded-lg"></div>
           </div>
           <div className="flex flex-col gap-2">
