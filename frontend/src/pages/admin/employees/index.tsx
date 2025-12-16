@@ -7,6 +7,8 @@ import { FilterIcon, PlusIcon, SearchIcon } from "@/icons";
 import { userEmployeesQuery } from "@/features/employees/employee-get-all.query";
 import { useSelectedEmployeeQuery } from "@/features/employees/empployee-selected.query";
 import { AddEmployeeModal } from "./_components/add-employee.modal";
+import { UserClientModel } from "@/models/user-client.model";
+import { EditEmployeeModal } from "./_components/edit-employee.modal";
 
 const EmployeesPage = () => {
   const { data: employees, isLoading, error } = userEmployeesQuery();
@@ -14,6 +16,12 @@ const EmployeesPage = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
+  const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false);
+  const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
+    useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
+    null
+  );
 
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
@@ -35,12 +43,37 @@ const EmployeesPage = () => {
     setIsAddEmployeeModalOpen(!isAddEmployeeModalOpen);
   };
 
+  const handleDelete = (data: UserClientModel) => {};
+
+  const handleEdit = () => {
+    setIsEditEmployeeModalOpen(!isEditEmployeeModalOpen);
+  };
+
   return (
     <section>
       {/* ADD EMPLOYEE MODAL */}
       {isAddEmployeeModalOpen && (
         <AddEmployeeModal
           setIsAddEmployeeModalOpen={setIsAddEmployeeModalOpen}
+        />
+      )}
+
+      {/* EDIT EMPLOYE MODAL */}
+      {isEditEmployeeModalOpen && selectedEmployee && (
+        <EditEmployeeModal
+          setIsEditEmployeeModalOpen={setIsEditEmployeeModalOpen}
+          selectedEmployee={{
+            id: selectedEmployee.id,
+            username: selectedEmployee.username,
+            email: selectedEmployee.email,
+            firstName: selectedEmployee.firstName,
+            lastName: selectedEmployee.lastName,
+            companyName: selectedEmployee.companyName,
+            address: selectedEmployee.address,
+            phoneNumber: selectedEmployee.phoneNumber,
+            notes: selectedEmployee.notes,
+            roleID: 2,
+          }}
         />
       )}
       <div className="w-full mb-8">
@@ -86,7 +119,13 @@ const EmployeesPage = () => {
           <div className="w-full overflow-y-scroll">
             {filteredEmployees?.map((data, index) => (
               <Fragment key={data.id}>
-                <InfoCard type="employee" key={index} {...data} />
+                <InfoCard
+                  type="employee"
+                  key={index}
+                  {...data}
+                  handleDelete={() => handleDelete(data)}
+                  setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
+                />
                 <Separator />
               </Fragment>
             ))}
@@ -105,7 +144,11 @@ const EmployeesPage = () => {
             {!selectedEmployee ? (
               <NoSelectedState />
             ) : (
-              <SelectedUser type="employee" {...selectedEmployee} />
+              <SelectedUser
+                type="employee"
+                {...selectedEmployee}
+                handleEdit={handleEdit}
+              />
             )}
           </div>
         </div>
