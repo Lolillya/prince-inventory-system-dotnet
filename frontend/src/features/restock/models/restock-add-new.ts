@@ -27,7 +27,6 @@ export type NewRestockModel = {
     uom_ID: number;
     unit_quantity: number;
     unit_price: number;
-    total: number;
     unitConversions?: UnitConversion[];
   };
 };

@@ -62,7 +62,6 @@ const NewRestockPage = () => {
         uom_ID: productUnits[0].uom_ID,
         unit_quantity: 0,
         unit_price: 0,
-        total: 0,
       },
     };
 

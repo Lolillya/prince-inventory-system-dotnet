@@ -7,17 +7,7 @@ export const useSelectedRestockSupplier = () => {
   return useQuery<UserClientModel>({
     queryKey: RestockSupplierKey,
     queryFn: async () => {
-      return {
-        id: "",
-        username: "",
-        email: "",
-        firstName: "",
-        lastName: "",
-        companyName: "",
-        notes: "",
-        phoneNumber: "",
-        role: "",
-      };
+      return null as unknown as UserClientModel;
     },
     enabled: false,
   });

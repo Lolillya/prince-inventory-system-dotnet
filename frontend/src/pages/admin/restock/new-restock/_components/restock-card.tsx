@@ -47,8 +47,6 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
     units[0]?.uom_ID || 0
   );
 
-  console.log(units);
-
   const [conversions, setConversions] = useState<UnitConversion[]>([]);
 
   const handleChangeUnit = (uom_ID: number) => {
@@ -66,7 +64,6 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
       fromUnit: units[0]?.uom_Name || "",
       toUnit: units[0]?.uom_Name || "",
       conversionFactor: 1,
-      quantity: 0,
       price: 0,
     };
     setConversions([...conversions, newConversion]);
@@ -102,7 +99,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
   };
 
   return (
-    <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-[30rem] text-xs">
+    <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
       <div className="flex gap-2 items-center text-xs justify-between">
         <div>
           <span>{product.product.product_Name}</span>
@@ -174,7 +171,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
       <div className="flex flex-col gap-2">
         {conversions.map((conversion) => (
           <div key={conversion.id} className="flex gap-1 items-center">
-            <div className="flex flex-col gap-1 flex-1">
+            {/* <div className="flex flex-col gap-1 flex-1">
               <label className="text-xs">stock</label>
               <input
                 type="number"
@@ -187,7 +184,7 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
                   })
                 }
               />
-            </div>
+            </div> */}
 
             <div className="flex flex-col gap-1 flex-1">
               <label className="text-xs">price</label>
