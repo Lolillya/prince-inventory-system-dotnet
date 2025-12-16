@@ -9,6 +9,7 @@ import { useSelectedEmployeeQuery } from "@/features/employees/empployee-selecte
 import { AddEmployeeModal } from "./_components/add-employee.modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { EditEmployeeModal } from "./_components/edit-employee.modal";
+import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 
 const EmployeesPage = () => {
   const { data: employees, isLoading, error } = userEmployeesQuery();
@@ -43,7 +44,10 @@ const EmployeesPage = () => {
     setIsAddEmployeeModalOpen(!isAddEmployeeModalOpen);
   };
 
-  const handleDelete = (data: UserClientModel) => {};
+  const handleDelete = (data: UserClientModel) => {
+    setUserToDelete(data);
+    setIsConfirmRemoveModalOpen(true);
+  };
 
   const handleEdit = () => {
     setIsEditEmployeeModalOpen(!isEditEmployeeModalOpen);
@@ -74,6 +78,14 @@ const EmployeesPage = () => {
             notes: selectedEmployee.notes,
             roleID: 2,
           }}
+        />
+      )}
+
+      {/* CONFIRM DELETE MODAL */}
+      {isConfirmRemoveModalOpen && userToDelete && (
+        <ConfirmRemoveModal
+          setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
+          userId={userToDelete.id}
         />
       )}
       <div className="w-full mb-8">
