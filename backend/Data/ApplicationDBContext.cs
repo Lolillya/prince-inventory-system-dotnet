@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using backend.Models.Inventory;
 using backend.Models.InvoiceModel;
-using backend.Models.RestockModel;
+// using backend.Models.RestockModel;
 using backend.Models.LineItems;
 using backend.Models.Unit;
 using backend.Models.Users;
@@ -25,9 +25,9 @@ namespace backend.Data
         public DbSet<Inventory> Inventory { get; set; }
         public DbSet<Invoice> Invoice { get; set; }
         public DbSet<InvoiceLineItems> InvoiceLineItems { get; set; }
-        public DbSet<RestockLineItems> RestockLineItems { get; set; }
-        public DbSet<Restock> Restocks { get; set; }
-        public DbSet<RestockBatch> RestocksBatch { get; set; }
+        // public DbSet<RestockLineItems> RestockLineItems { get; set; }
+        // public DbSet<Restock> Restocks { get; set; }
+        // public DbSet<RestockBatch> RestocksBatch { get; set; }
         public DbSet<UnitOfMeasure> UnitOfMeasure { get; set; }
         public DbSet<Product_UOM> Product_UOMs { get; set; }
         public DbSet<DeletedUsers> DeletedUsers { get; set; }
@@ -35,8 +35,6 @@ namespace backend.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
-
 
             // Seed roles
             Seeders.Roles.SeedRoles(builder);
@@ -106,49 +104,47 @@ namespace backend.Data
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            builder.Entity<Restock>(entity =>
-            {
-                entity.ToTable("Restock");
+            // builder.Entity<Restock>(entity =>
+            // {
+            //     entity.ToTable("Restock");
 
-                entity.HasOne(r => r.Clerk)
-                    .WithMany()
-                    .HasForeignKey(r => r.Restock_Clerk)
-                    .OnDelete(DeleteBehavior.NoAction);
+            //     entity.HasOne(r => r.Clerk)
+            //         .WithMany()
+            //         .HasForeignKey(r => r.Restock_Clerk)
+            //         .OnDelete(DeleteBehavior.NoAction);
 
-                // Restock has many LineItems
-                // Use the lambda expression for the FK property to avoid creating duplicate FK columns
-                entity.HasMany(r => r.LineItems)
-                    .WithOne(li => li.Restock)
-                    .HasForeignKey(li => li.Restock_ID)
-                    .OnDelete(DeleteBehavior.NoAction);
+            //     entity.HasMany(r => r.LineItems)
+            //         .WithOne(li => li.Restock)
+            //         .HasForeignKey(li => li.Restock_ID)
+            //         .OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasOne(r => r.restockBatch)
-                    .WithMany()
-                    .HasForeignKey(r => r.Batch_ID)
-                    .OnDelete(DeleteBehavior.NoAction);
+            //     entity.HasOne(r => r.restockBatch)
+            //         .WithMany()
+            //         .HasForeignKey(r => r.Batch_ID)
+            //         .OnDelete(DeleteBehavior.NoAction);
 
 
-            });
+            // });
 
-            builder.Entity<RestockLineItems>(entity =>
-            {
-                entity.ToTable("RestockLineItems");
+            // builder.Entity<RestockLineItems>(entity =>
+            // {
+            //     entity.ToTable("RestockLineItems");
 
-                entity.HasOne(li => li.Product)
-                    .WithMany()
-                    .HasForeignKey(li => li.Product_ID)
-                    .OnDelete(DeleteBehavior.NoAction);
+            //     entity.HasOne(li => li.Product)
+            //         .WithMany()
+            //         .HasForeignKey(li => li.Product_ID)
+            //         .OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasOne(li => li.Restock)
-                    .WithMany(li => li.LineItems)
-                    .HasForeignKey(li => li.Restock_ID)
-                    .OnDelete(DeleteBehavior.NoAction);
+            //     entity.HasOne(li => li.Restock)
+            //         .WithMany(li => li.LineItems)
+            //         .HasForeignKey(li => li.Restock_ID)
+            //         .OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasOne(li => li.UnitOfMeasure)
-                    .WithMany()
-                    .HasForeignKey(li => li.uom_ID)
-                    .OnDelete(DeleteBehavior.NoAction);
-            });
+            //     entity.HasOne(li => li.UnitOfMeasure)
+            //         .WithMany()
+            //         .HasForeignKey(li => li.uom_ID)
+            //         .OnDelete(DeleteBehavior.NoAction);
+            // });
 
             builder.Entity<Product_UOM>(entity =>
             {
