@@ -6,16 +6,16 @@ namespace backend.Models.RestockModel
     public class RestockBatch
     {
         [Key]
-        public int Batch_ID { get; set; }
-        public int Batch_Number { get; set; }
+        public int Batch_ID { get; set; } // primary key
 
         // FKs
-        public string Supplier_ID { get; set; } = null!;
+        public int Restock_ID { get; set; } // foreign key from Restock
+        public string Supplier_ID { get; set; } = null!; // foreign key from PersonalDetails
+        public Restock Restock { get; set; } = null!; // Restock table navigation property
+        public PersonalDetails Supplier { get; set; } = null!; // PersonalDetails table navigation property
 
-        [ForeignKey(nameof(Supplier_ID))]
-        public PersonalDetails Supplier { get; set; } = null!;
-
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public int Batch_Number { get; set; } // restock batch number
+        public DateTime CreatedAt { get; set; } // timestamp for creation
+        public DateTime UpdatedAt { get; set; } // timestamp for last update
     }
 }

@@ -8,22 +8,13 @@ namespace backend.Models.RestockModel
     public class Restock
     {
         [Key]
-        public int Restock_ID { get; set; }
+        public int Restock_ID { get; set; } // primary key
 
         // FKs
-        public int Batch_ID { get; set; }
-        public string Restock_Clerk { get; set; } = null!;
+        public string Restock_Clerk { get; set; } = null!; // foreign key from PersonalDetails
+        public PersonalDetails Clerk { get; set; } = null!; // PersonalDetails table navigation property
 
+        public string Restock_Notes { get; set; } = null!; // restock notes
 
-        public PersonalDetails Clerk { get; set; } = null!;
-
-        public string Notes { get; set; } = null!;
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal LineItems_Total { get; set; }
-
-        public RestockBatch restockBatch { get; set; } = null!;
-
-        [InverseProperty("Restock")]
-        public ICollection<RestockLineItems> LineItems { get; set; } = new List<RestockLineItems>();
     }
 }
