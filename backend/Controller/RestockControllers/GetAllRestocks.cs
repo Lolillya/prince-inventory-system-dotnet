@@ -1,82 +1,148 @@
-// using System;
-// using System.Collections.Generic;
-// using System.Linq;
-// using System.Threading.Tasks;
-// using backend.Data;
-// using backend.Dtos.Inventory;
-// using backend.Models.RestockModel;
-// using Microsoft.AspNetCore.Mvc;
-// using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using backend.Data;
+using backend.Dtos.Inventory;
+using backend.Models.RestockModel;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-// namespace backend.Controller.RestockControllers
-// {
-//     [ApiController]
-//     [Route("api/restock/get-all")]
-//     public class GetAllRestocks : ControllerBase
-//     {
-//         private readonly ApplicationDBContext _db;
+namespace backend.Controller.RestockControllers
+{
+    [ApiController]
+    [Route("api/restock/get-all")]
+    public class GetAllRestocks : ControllerBase
+    {
+        private readonly ApplicationDBContext _db;
 
-//         public GetAllRestocks(ApplicationDBContext db)
-//         {
-//             _db = db;
-//         }
+        public GetAllRestocks(ApplicationDBContext db)
+        {
+            _db = db;
+        }
 
-//         [HttpGet]
-//         public async Task<IActionResult> GetAll()
-//         {
-//             try
-//             {
-//                 var results = await _db.Restocks
-//                     .Include(u => u.LineItems)
-//                         .ThenInclude(u => u.Product)
-//                     .Include(u => u.restockBatch)
-//                         .ThenInclude(u => u.Supplier)
-//                     .Select(u => new
-//                     {
-//                         grand_total = u.LineItems_Total,
-//                         restock_Id = u.Restock_ID,
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var results = await _db.Restocks
+                    .Include(r => r.Clerk)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.Supplier)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.Product)
+                                .ThenInclude(p => p.Brand)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.Product)
+                                .ThenInclude(p => p.Category)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.Product)
+                                .ThenInclude(p => p.Variant)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.BaseUnitOfMeasure)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.ProductUOMs)
+                                .ThenInclude(puom => puom.UnitOfMeasure)
+                    .Select(r => new
+                    {
+                        restock_Id = r.Restock_ID,
+                        restock_Number = r.Restock_Number,
+                        restock_Notes = r.Restock_Notes,
+                        clerk = r.Clerk != null ? new
+                        {
+                            r.Clerk.Id,
+                            r.Clerk.FirstName,
+                            r.Clerk.LastName,
+                            r.Clerk.Email
+                        } : null,
+                        created_At = r.CreatedAt,
+                        updated_At = r.UpdatedAt,
 
-//                         line_Items = u.LineItems.Select(li => new
-//                         {
-//                             li.LineItem_ID,
-//                             li.Product_ID,
-//                             li.Restock_ID,
-//                             Product = new
-//                             {
-//                                 li.Product.Product_ID,
-//                                 li.Product.Product_Code,
-//                                 li.Product.Product_Name,
-//                                 li.Product.Description,
-//                                 li.Product.Brand_ID,
-//                                 li.Product.Category_ID,
-//                                 li.Product.Variant_ID,
-//                                 li.Product.CreatedAt,
-//                                 li.Product.UpdatedAt
-//                             },
-//                             li.uom_ID,
-//                             li.Unit_Price,
-//                             li.Sub_Total,
-//                             li.Quantity
-//                         }).ToList(),
+                        batches = r.RestockBatches.Select(rb => new
+                        {
+                            batch_Id = rb.Batch_ID,
+                            batch_Number = rb.Batch_Number,
+                            supplier = rb.Supplier != null ? new
+                            {
+                                rb.Supplier.Id,
+                                rb.Supplier.FirstName,
+                                rb.Supplier.LastName,
+                                rb.Supplier.CompanyName,
+                                rb.Supplier.Email
+                            } : null,
+                            created_At = rb.CreatedAt,
+                            updated_At = rb.UpdatedAt,
 
-//                         supplier = new
-//                         {
-//                             u.restockBatch.Supplier.Id,
-//                             u.restockBatch.Supplier.FirstName,
-//                             u.restockBatch.Supplier.LastName,
-//                             u.restockBatch.Supplier.CompanyName,
-//                             u.restockBatch.Supplier.Email
-//                         }
-//                     })
-//                     .ToListAsync();
+                            line_Items = rb.RestockLineItems.Select(rli => new
+                            {
+                                line_Item_ID = rli.LineItem_ID,
+                                product = rli.Product != null ? new
+                                {
+                                    rli.Product.Product_ID,
+                                    rli.Product.Product_Code,
+                                    rli.Product.Product_Name,
+                                    rli.Product.Description,
+                                    brand = rli.Product.Brand != null ? new
+                                    {
+                                        rli.Product.Brand.Brand_ID,
+                                        rli.Product.Brand.BrandName
+                                    } : null,
+                                    category = rli.Product.Category != null ? new
+                                    {
+                                        rli.Product.Category.Category_ID,
+                                        rli.Product.Category.Category_Name
+                                    } : null,
+                                    variant = rli.Product.Variant != null ? new
+                                    {
+                                        rli.Product.Variant.Variant_ID,
+                                        rli.Product.Variant.Variant_Name
+                                    } : null
+                                } : null,
+                                base_Unit = rli.BaseUnitOfMeasure != null ? new
+                                {
+                                    rli.BaseUnitOfMeasure.uom_ID,
+                                    rli.BaseUnitOfMeasure.uom_Name
+                                } : null,
+                                base_Unit_Price = rli.Base_Unit_Price,
+                                base_Unit_Quantity = rli.Base_Unit_Quantity,
+                                line_Item_Total = rli.Base_Unit_Price * rli.Base_Unit_Quantity,
 
-//                 return Ok(results);
-//             }
-//             catch (Exception e)
-//             {
-//                 return StatusCode(500, $"Internal server error: {e.Message}");
-//             }
-//         }
-//     }
+                                unit_Conversions = rli.ProductUOMs.Select(puom => new
+                                {
+                                    product_UOM_Id = puom.Product_UOM_Id,
+                                    unit = puom.UnitOfMeasure != null ? new
+                                    {
+                                        puom.UnitOfMeasure.uom_ID,
+                                        puom.UnitOfMeasure.uom_Name
+                                    } : null,
+                                    parent_UOM_ID = puom.Parent_UOM_ID,
+                                    conversion_Factor = puom.Conversion_Factor,
+                                    unit_Price = puom.Unit_Price
+                                }).ToList()
+                            }).ToList(),
 
-// }
+                            batch_Total = rb.RestockLineItems.Sum(rli => rli.Base_Unit_Price * rli.Base_Unit_Quantity)
+                        }).ToList(),
+
+                        grand_Total = r.RestockBatches
+                            .SelectMany(rb => rb.RestockLineItems)
+                            .Sum(rli => rli.Base_Unit_Price * rli.Base_Unit_Quantity)
+                    })
+                    .ToListAsync();
+
+                return Ok(results);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, $"Internal server error: {e.Message}");
+            }
+        }
+    }
+
+}
