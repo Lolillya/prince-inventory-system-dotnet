@@ -17,14 +17,17 @@ namespace backend.Models.LineItems
 
         // FKs
         public int Product_ID { get; set; } // foreign key from Product
-        public int Restock_ID { get; set; } // foreign key from Restock
-        public int Uom_ID { get; set; } // foreign key from UnitOfMeasure
+        public int Batch_ID { get; set; } // foreign key from RestockBatch
+        public int Base_UOM_ID { get; set; } // foreign key from UnitOfMeasure (base unit, e.g., BOX)
         public Product Product { get; set; } = null!; // Product table navigation property
-        public Restock Restock { get; set; } = null!; // Restock table navigation property
-        public UnitOfMeasure UnitOfMeasure { get; set; } = null!; // UnitOfMeasure table navigation property
+        public RestockBatch RestockBatch { get; set; } = null!; // RestockBatch table navigation property
+        public UnitOfMeasure BaseUnitOfMeasure { get; set; } = null!; // UnitOfMeasure table navigation property
 
         [Column(TypeName = "decimal(18,2)")] // specify precision and scale
-        public decimal Unit_Price { get; set; } // unit price of the product
-        public int Unit_Quantity { get; set; } // unit quantity of the product
+        public decimal Base_Unit_Price { get; set; } // price per base unit (e.g., 1000.00 per BOX)
+        public int Base_Unit_Quantity { get; set; } // quantity of base units (e.g., 500 boxes)
+
+        // Navigation properties
+        public ICollection<Product_UOM> ProductUOMs { get; set; } = new List<Product_UOM>(); // unit conversions for this line item
     }
 }

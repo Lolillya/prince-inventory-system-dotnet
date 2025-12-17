@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using backend.Models.LineItems;
 
 namespace backend.Models.RestockModel
 {
@@ -14,8 +15,11 @@ namespace backend.Models.RestockModel
         public Restock Restock { get; set; } = null!; // Restock table navigation property
         public PersonalDetails Supplier { get; set; } = null!; // PersonalDetails table navigation property
 
-        public int Batch_Number { get; set; } // restock batch number
-        public DateTime CreatedAt { get; set; } // timestamp for creation
-        public DateTime UpdatedAt { get; set; } // timestamp for last update
+        public int Batch_Number { get; set; } // restock batch number (e.g., 1, 2, 3 for same restock from different suppliers)
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // timestamp for creation
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; // timestamp for last update
+
+        // Navigation properties
+        public ICollection<RestockLineItems> RestockLineItems { get; set; } = new List<RestockLineItems>();
     }
 }
