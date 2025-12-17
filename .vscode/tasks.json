@@ -1,0 +1,77 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "docker-build",
+      "label": "docker-build: debug",
+      "dependsOn": ["docker-build"],
+      "dockerBuild": {
+        "tag": "prince-backend:dev",
+        "target": "base",
+        "dockerfile": "${workspaceFolder}/backend/Dockerfile",
+        "context": "${workspaceFolder}",
+        "pull": true
+      },
+      "netCore": {
+        "appProject": "${workspaceFolder}/backend/backend.csproj"
+      }
+    },
+    {
+      "type": "docker-build",
+      "label": "docker-build: release",
+      "dependsOn": ["docker-build"],
+      "dockerBuild": {
+        "tag": "prince-backend:latest",
+        "dockerfile": "${workspaceFolder}/backend/Dockerfile",
+        "context": "${workspaceFolder}",
+        "pull": true
+      },
+      "netCore": {
+        "appProject": "${workspaceFolder}/backend/backend.csproj"
+      }
+    },
+    {
+      "type": "docker-run",
+      "label": "docker-run: debug",
+      "dependsOn": ["docker-build: debug"],
+      "dockerRun": {
+        "ports": [
+          {
+            "containerPort": 5055,
+            "hostPort": 5055
+          }
+        ],
+        "env": {
+          "ASPNETCORE_ENVIRONMENT": "Development",
+          "ConnectionStrings__DefaultConnection": "Server=db;Database=PrinceDB;User Id=sa;Password=${env:DB_PASSWORD};TrustServerCertificate=True;"
+        },
+        "volumes": [
+          {
+            "containerPath": "/src",
+            "localPath": "${workspaceFolder}/backend"
+          }
+        ]
+      },
+      "netCore": {
+        "appProject": "${workspaceFolder}/backend/backend.csproj",
+        "enableDebugging": true
+      }
+    },
+    {
+      "type": "docker-run",
+      "label": "docker-run: release",
+      "dependsOn": ["docker-build: release"],
+      "dockerRun": {
+        "ports": [
+          {
+            "containerPort": 5055,
+            "hostPort": 5055
+          }
+        ]
+      },
+      "netCore": {
+        "appProject": "${workspaceFolder}/backend/backend.csproj"
+      }
+    }
+  ]
+}
