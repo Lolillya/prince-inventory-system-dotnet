@@ -49,7 +49,7 @@ export const createRestock = async (
           UpdatedAt: p.restock.items.variant.updated_At,
         },
       },
-      total: p.restock.total ?? p.restock.unit_price * p.restock.unit_quantity,
+      // total: p.restock.total ?? p.restock.unit_price * p.restock.unit_quantity,
       uom_ID: p.restock.uom_ID,
       unit_price: p.restock.unit_price,
       unit_quantity: p.restock.unit_quantity,
@@ -58,7 +58,6 @@ export const createRestock = async (
           fromUnit: conv.fromUnit,
           toUnit: conv.toUnit,
           conversionFactor: conv.conversionFactor,
-          quantity: conv.quantity,
           price: conv.price,
         })) || [],
     }));
