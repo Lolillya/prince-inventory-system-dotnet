@@ -74,8 +74,8 @@ const RestockPage = () => {
                     </div>
 
                     <div className="flex gap-3">
-                      <span>Total Batches: </span>
-                      <span>{r.batches.length}</span>
+                      <span>Supplier: </span>
+                      <span>{}</span>
                     </div>
                   </div>
 
@@ -97,7 +97,7 @@ const RestockPage = () => {
                 </div>
 
                 <div className="flex justify-center">
-                  <button onClick={handleModal}>view all batches</button>
+                  <button onClick={handleModal}>view all items</button>
                 </div>
               </div>
             </>
