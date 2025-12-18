@@ -2,10 +2,15 @@ import { InvoiceRestockBatchModel } from "@/features/invoice/models/invoice-rest
 
 interface ProductCardProps {
   onClick?: () => void;
-  product: InvoiceRestockBatchModel;
+  data: InvoiceRestockBatchModel;
 }
 
-export const ProductCard = ({ product, onClick }: ProductCardProps) => {
+export const ProductCard = ({
+  data,
+
+  onClick,
+}: ProductCardProps) => {
+  console.log("data", data);
   return (
     <div className="flex flex-col gap-3">
       <div
@@ -13,11 +18,11 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
         onClick={onClick}
       >
         <div className="grid gap-3 items-center">
-          <span>{product.product.product_Name}</span>
-          <span>{product.product.brand.brandName}</span>
-          <span>{product.product.variant.variant_Name}</span>
+          <span>{data.product.product_Name}</span>
+          <span>{data.product.brand.brandName}</span>
+          <span>{data.product.variant.variant_Name}</span>
         </div>
-        <span>{product.restockBatch.batch_Number} batches</span>
+        <span>{data.batches.length} batches</span>
       </div>
     </div>
   );

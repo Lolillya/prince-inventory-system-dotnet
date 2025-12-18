@@ -1,70 +1,83 @@
 export type InvoiceRestockBatchModel = {
-  product: {
-    product_ID: number;
-    product_Code: string;
-    product_Name: string;
-    description: string;
-    brand_ID: number;
-    category_ID: number;
-    variant_ID: number;
-    createdAt: string;
-    updatedAt: string;
-    brand: {
-      brand_ID: number;
-      brandName: string;
-      createdAt: string;
-      updatedAt: string;
-    } | null;
-    variant: {
-      variant_ID: number;
-      productId: number;
-      variant_Name: string;
-      createdAt: string;
-      updatedAt: string;
-    } | null;
-    category: {
-      category_ID: number;
-      categoryName: string;
-      createdAt: string;
-      updatedAt: string;
-    } | null;
-  };
-  batches: Batch[];
+  batches: Batches[];
+  product: Product;
 };
 
-type Batch = {
+type Batches = {
+  baseUnit: BaseUnit;
   batch_ID: number;
   batch_Number: number;
-  restock: {
-    restock_ID: number;
-    restock_Number: string;
-    createdAt: string;
-    updatedAt: string;
-  };
-  supplier: {
-    supplier_ID: string;
-    firstName: string;
-    lastName: string;
-    companyName: string;
-    email: string;
-  } | null;
-  baseUnit: {
-    uoM_ID: number;
-    uoM_Name: string;
-    unit_Price: number;
-    unit_Quantity: number;
-  } | null;
+  restock: Restock;
+  supplier: Supplier;
   unitConversions: UnitConversion[];
   createdAt: string;
   updatedAt: string;
 };
 
-type UnitConversion = {
-  product_UOM_Id: number;
+type BaseUnit = {
+  unit_Price: number;
+  unit_Quantity: number;
   uoM_ID: number;
   uoM_Name: string;
-  parent_UOM_ID: number | null;
-  parent_UoM_Name: string | null;
+};
+
+type Restock = {
+  restock_ID: number;
+  restock_Number: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Supplier = {
+  companyName: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  supplpier_ID: number;
+};
+
+type UnitConversion = {
   conversion_Factor: number;
+  parent_UOM_ID: number;
+  parent_UOM_Name: string;
+  product_UOM_Id: number;
   unit_Price: number;
+  uoM_ID: number;
+  uoM_Name: string;
+};
+
+type Product = {
+  brand: Brand;
+  brand_ID: number;
+  category: Category;
+  category_ID: number;
+  createdAt: string;
+  description: string;
+  product_Code: string;
+  product_ID: number;
+  product_Name: string;
+  updatedAt: string;
+  variant: Variant;
+  variant_ID: number;
+};
+
+type Brand = {
+  brandName: string;
+  brand_ID: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Category = {
+  categoryName: string;
+  category_ID: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Variant = {
+  createdAt: string;
+  updatedAt: string;
+  variant_ID: number;
+  variant_Name: string;
 };
