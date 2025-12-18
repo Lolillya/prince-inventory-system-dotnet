@@ -14,33 +14,57 @@ export type InvoiceRestockBatchModel = {
       brandName: string;
       createdAt: string;
       updatedAt: string;
-    };
+    } | null;
     variant: {
       variant_ID: number;
       productId: number;
       variant_Name: string;
       createdAt: string;
       updatedAt: string;
-    };
+    } | null;
     category: {
       category_ID: number;
       categoryName: string;
       createdAt: string;
       updatedAt: string;
-    };
+    } | null;
   };
-  units: units[];
-  restockBatch: {
-    batch_ID: number;
-    batch_Number: number;
-    supplier_ID: string;
+  batches: Batch[];
+};
+
+type Batch = {
+  batch_ID: number;
+  batch_Number: number;
+  restock: {
+    restock_ID: number;
+    restock_Number: string;
     createdAt: string;
     updatedAt: string;
   };
+  supplier: {
+    supplier_ID: string;
+    firstName: string;
+    lastName: string;
+    companyName: string;
+    email: string;
+  } | null;
+  baseUnit: {
+    uoM_ID: number;
+    uoM_Name: string;
+    unit_Price: number;
+    unit_Quantity: number;
+  } | null;
+  unitConversions: UnitConversion[];
+  createdAt: string;
+  updatedAt: string;
 };
 
-type units = {
+type UnitConversion = {
+  product_UOM_Id: number;
+  uoM_ID: number;
   uoM_Name: string;
+  parent_UOM_ID: number | null;
+  parent_UoM_Name: string | null;
   conversion_Factor: number;
-  price: number;
+  unit_Price: number;
 };
