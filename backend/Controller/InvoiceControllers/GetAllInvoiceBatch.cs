@@ -43,75 +43,85 @@ namespace backend.Controller.InvoiceControllers
                     .ToListAsync();
 
                 var results = restockLineItems
-                    .GroupBy(rli => new { rli.Product_ID, rli.Batch_ID })
-                    .Select(g => new
+                    .GroupBy(rli => rli.Product_ID)
+                    .Select(productGroup => new
                     {
                         Product = new
                         {
-                            Product_ID = g.First().Product.Product_ID,
-                            Product_Code = g.First().Product.Product_Code,
-                            Product_Name = g.First().Product.Product_Name,
-                            Description = g.First().Product.Description,
-                            Brand_ID = g.First().Product.Brand_ID,
-                            Category_ID = g.First().Product.Category_ID,
-                            Variant_ID = g.First().Product.Variant_ID,
-                            CreatedAt = g.First().Product.CreatedAt,
-                            UpdatedAt = g.First().Product.UpdatedAt,
-                            Brand = g.First().Product.Brand != null ? new
+                            Product_ID = productGroup.First().Product.Product_ID,
+                            Product_Code = productGroup.First().Product.Product_Code,
+                            Product_Name = productGroup.First().Product.Product_Name,
+                            Description = productGroup.First().Product.Description,
+                            Brand_ID = productGroup.First().Product.Brand_ID,
+                            Category_ID = productGroup.First().Product.Category_ID,
+                            Variant_ID = productGroup.First().Product.Variant_ID,
+                            CreatedAt = productGroup.First().Product.CreatedAt,
+                            UpdatedAt = productGroup.First().Product.UpdatedAt,
+                            Brand = productGroup.First().Product.Brand != null ? new
                             {
-                                Brand_ID = g.First().Product.Brand.Brand_ID,
-                                BrandName = g.First().Product.Brand.BrandName,
-                                CreatedAt = g.First().Product.Brand.CreatedAt,
-                                UpdatedAt = g.First().Product.Brand.UpdatedAt
+                                Brand_ID = productGroup.First().Product.Brand.Brand_ID,
+                                BrandName = productGroup.First().Product.Brand.BrandName,
+                                CreatedAt = productGroup.First().Product.Brand.CreatedAt,
+                                UpdatedAt = productGroup.First().Product.Brand.UpdatedAt
                             } : null,
-                            Variant = g.First().Product.Variant != null ? new
+                            Variant = productGroup.First().Product.Variant != null ? new
                             {
-                                Variant_ID = g.First().Product.Variant.Variant_ID,
-                                ProductId = g.First().Product.Product_ID,
-                                Variant_Name = g.First().Product.Variant.Variant_Name,
-                                CreatedAt = g.First().Product.Variant.CreatedAt,
-                                UpdatedAt = g.First().Product.Variant.UpdatedAt
+                                Variant_ID = productGroup.First().Product.Variant.Variant_ID,
+                                ProductId = productGroup.First().Product.Product_ID,
+                                Variant_Name = productGroup.First().Product.Variant.Variant_Name,
+                                CreatedAt = productGroup.First().Product.Variant.CreatedAt,
+                                UpdatedAt = productGroup.First().Product.Variant.UpdatedAt
                             } : null,
-                            Category = g.First().Product.Category != null ? new
+                            Category = productGroup.First().Product.Category != null ? new
                             {
-                                Category_ID = g.First().Product.Category.Category_ID,
-                                CategoryName = g.First().Product.Category.Category_Name,
-                                CreatedAt = g.First().Product.Category.CreatedAt,
-                                UpdatedAt = g.First().Product.Category.UpdatedAt
+                                Category_ID = productGroup.First().Product.Category.Category_ID,
+                                CategoryName = productGroup.First().Product.Category.Category_Name,
+                                CreatedAt = productGroup.First().Product.Category.CreatedAt,
+                                UpdatedAt = productGroup.First().Product.Category.UpdatedAt
                             } : null
                         },
-                        BaseUnit = g.First().BaseUnitOfMeasure != null ? new
-                        {
-                            UoM_ID = g.First().BaseUnitOfMeasure.uom_ID,
-                            UoM_Name = g.First().BaseUnitOfMeasure.uom_Name,
-                            Unit_Price = g.First().Base_Unit_Price,
-                            Unit_Quantity = g.First().Base_Unit_Quantity
-                        } : null,
-                        UnitConversions = g.First().ProductUOMs.Select(puom => new
-                        {
-                            UoM_ID = puom.UnitOfMeasure.uom_ID,
-                            UoM_Name = puom.UnitOfMeasure.uom_Name,
-                            Parent_UOM_ID = puom.Parent_UOM_ID,
-                            Parent_UoM_Name = puom.ParentUnitOfMeasure != null ? puom.ParentUnitOfMeasure.uom_Name : null,
-                            Conversion_Factor = puom.Conversion_Factor,
-                            Unit_Price = puom.Unit_Price
-                        }).ToList(),
-                        RestockBatch = new
-                        {
-                            Batch_ID = g.First().RestockBatch.Batch_ID,
-                            Batch_Number = g.First().RestockBatch.Batch_Number,
-                            Restock_ID = g.First().RestockBatch.Restock_ID,
-                            Restock_Number = g.First().RestockBatch.Restock.Restock_Number,
-                            Supplier = g.First().RestockBatch.Supplier != null ? new
+                        Batches = productGroup
+                            .GroupBy(rli => rli.Batch_ID)
+                            .Select(batchGroup => new
                             {
-                                Supplier_ID = g.First().RestockBatch.Supplier.Id,
-                                FirstName = g.First().RestockBatch.Supplier.FirstName,
-                                LastName = g.First().RestockBatch.Supplier.LastName,
-                                CompanyName = g.First().RestockBatch.Supplier.CompanyName
-                            } : null,
-                            CreatedAt = g.First().RestockBatch.CreatedAt,
-                            UpdatedAt = g.First().RestockBatch.UpdatedAt
-                        }
+                                Batch_ID = batchGroup.First().RestockBatch.Batch_ID,
+                                Batch_Number = batchGroup.First().RestockBatch.Batch_Number,
+                                Restock = new
+                                {
+                                    Restock_ID = batchGroup.First().RestockBatch.Restock_ID,
+                                    Restock_Number = batchGroup.First().RestockBatch.Restock.Restock_Number,
+                                    CreatedAt = batchGroup.First().RestockBatch.Restock.CreatedAt,
+                                    UpdatedAt = batchGroup.First().RestockBatch.Restock.UpdatedAt
+                                },
+                                Supplier = batchGroup.First().RestockBatch.Supplier != null ? new
+                                {
+                                    Supplier_ID = batchGroup.First().RestockBatch.Supplier.Id,
+                                    FirstName = batchGroup.First().RestockBatch.Supplier.FirstName,
+                                    LastName = batchGroup.First().RestockBatch.Supplier.LastName,
+                                    CompanyName = batchGroup.First().RestockBatch.Supplier.CompanyName,
+                                    Email = batchGroup.First().RestockBatch.Supplier.Email
+                                } : null,
+                                BaseUnit = batchGroup.First().BaseUnitOfMeasure != null ? new
+                                {
+                                    UoM_ID = batchGroup.First().BaseUnitOfMeasure.uom_ID,
+                                    UoM_Name = batchGroup.First().BaseUnitOfMeasure.uom_Name,
+                                    Unit_Price = batchGroup.First().Base_Unit_Price,
+                                    Unit_Quantity = batchGroup.First().Base_Unit_Quantity
+                                } : null,
+                                UnitConversions = batchGroup.First().ProductUOMs.Select(puom => new
+                                {
+                                    Product_UOM_Id = puom.Product_UOM_Id,
+                                    UoM_ID = puom.UnitOfMeasure.uom_ID,
+                                    UoM_Name = puom.UnitOfMeasure.uom_Name,
+                                    Parent_UOM_ID = puom.Parent_UOM_ID,
+                                    Parent_UoM_Name = puom.ParentUnitOfMeasure != null ? puom.ParentUnitOfMeasure.uom_Name : null,
+                                    Conversion_Factor = puom.Conversion_Factor,
+                                    Unit_Price = puom.Unit_Price
+                                }).ToList(),
+                                CreatedAt = batchGroup.First().RestockBatch.CreatedAt,
+                                UpdatedAt = batchGroup.First().RestockBatch.UpdatedAt
+                            })
+                            .ToList()
                     })
                     .ToList();
 
