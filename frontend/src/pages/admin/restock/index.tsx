@@ -82,7 +82,7 @@ const RestockPage = () => {
 
                   <div className="flex flex-col gap-3 w-full">
                     <div className="flex gap-3">
-                      <span>grand total</span>
+                      <span>total added stock</span>
                     </div>
 
                     {/* <div className="flex gap-3">
