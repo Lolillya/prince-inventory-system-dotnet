@@ -2,26 +2,55 @@ import { XIcon } from "@/icons";
 
 interface Props {
   lineItems: {
-    lineItem_ID: number;
-    product_ID: number;
-    unit: string;
-    unit_Price: number;
-    sub_Total: number;
-    quantity: number;
-    product: {
-      product_ID: number;
-      product_Code: string;
-      product_Name: string;
-      description: string;
-      brand_ID: number;
-      category_ID: number;
-      variant_ID: number;
-      createdAt: string;
-      updatedAt: string;
-    };
+    line_Item_ID: number;
+    batch_Id: number;
+    batch_Number: number;
+    product: Product;
+    base_Unit: Unit;
+    base_Unit_Price: number;
+    base_Unit_Quantity: number;
+    unit_Conversions: Unit_Conversions[];
   }[];
   onClose: () => void;
 }
+
+type Product = {
+  product_ID: number;
+  product_Code: string;
+  product_Name: string;
+  description: string;
+  brand: Brand;
+  category: Category;
+  variant: Variant;
+};
+
+type Brand = {
+  brand_ID: number;
+  brandName: string;
+};
+
+type Category = {
+  category_ID: number;
+  category_Name: string;
+};
+
+type Variant = {
+  variant_ID: number;
+  variant_Name: string;
+};
+
+type Unit = {
+  uom_ID: number;
+  uom_Name: string;
+};
+
+type Unit_Conversions = {
+  product_UOM_Id: number;
+  unit: Unit;
+  parent_UOM_ID: number;
+  conversion_Factor: number;
+  unit_Price: number;
+};
 
 export const ShowAllModal = ({ lineItems, onClose }: Props) => {
   console.log("line-items", lineItems);
@@ -60,13 +89,20 @@ export const ShowAllModal = ({ lineItems, onClose }: Props) => {
                   <span className="text-left w-full">
                     {item.product?.product_Name || "N/A"}
                   </span>
-                  <span className="text-left w-full">{item.unit}</span>
-                  <span className="text-right w-full">
-                    P {item.unit_Price?.toFixed(2) || "0.00"}
+                  <span className="text-left w-full">
+                    {item.base_Unit.uom_Name}
                   </span>
-                  <span className="text-right w-full">{item.quantity}</span>
                   <span className="text-right w-full">
-                    P {item.sub_Total?.toFixed(2) || "0.00"}
+                    P {item.base_Unit_Price?.toFixed(2) || "0.00"}
+                  </span>
+                  <span className="text-right w-full">
+                    {item.base_Unit_Quantity}
+                  </span>
+                  <span className="text-right w-full">
+                    P{" "}
+                    {(item.base_Unit_Price * item.base_Unit_Quantity).toFixed(
+                      2
+                    ) || "0.00"}
                   </span>
                 </div>
               ))}

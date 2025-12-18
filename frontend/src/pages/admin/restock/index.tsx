@@ -51,10 +51,9 @@ const RestockPage = () => {
         ) : (
           restockItems?.map((r, i) => (
             <>
-              {/* {isModalOpen && (
-                <ShowAllModal lineItems={r.batches} onClose={handleModal} />
-                
-              )} */}
+              {isModalOpen && (
+                <ShowAllModal lineItems={r.line_Items} onClose={handleModal} />
+              )}
               <div
                 key={i}
                 className="flex flex-col justify-between gap-5 border shadow-lg rounded-lg p-5"
@@ -75,7 +74,7 @@ const RestockPage = () => {
 
                     <div className="flex gap-3">
                       <span>Supplier: </span>
-                      <span>{}</span>
+                      <span>{r.supplier.companyName}</span>
                     </div>
                   </div>
 
@@ -86,9 +85,9 @@ const RestockPage = () => {
                       <span>grand total</span>
                     </div>
 
-                    <div className="flex gap-3">
+                    {/* <div className="flex gap-3">
                       <span>P {r.grand_Total}</span>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="bg-gray-bg border flex items-center justify-center rounded-lg p-2 h-12 w-12 my-auto">
