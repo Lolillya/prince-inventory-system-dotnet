@@ -1,33 +1,80 @@
 export type RestockAllModel = {
-  grand_total: number;
   restock_Id: number;
+  restock_Number: string;
+  restock_Notes: string;
+  clerk: Clerk | null;
+  created_At: string;
+  updated_At: string;
+  batches: RestockBatch[];
+  grand_Total: number;
+};
+
+type Clerk = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+};
+
+type RestockBatch = {
+  batch_Id: number;
+  batch_Number: number;
+  supplier: Supplier | null;
+  created_At: string;
+  updated_At: string;
   line_Items: RestockLineItems[];
-  supplier: supplier;
+  batch_Total: number;
 };
 
 type RestockLineItems = {
-  lineItem_ID: number;
-  product_ID: number;
-  unit: string;
-  unit_Price: number;
-  sub_Total: number;
-  quantity: number;
-  product: product;
+  line_Item_ID: number;
+  product: Product | null;
+  base_Unit: UnitOfMeasure | null;
+  base_Unit_Price: number;
+  base_Unit_Quantity: number;
+  line_Item_Total: number;
+  unit_Conversions: UnitConversion[];
 };
 
-type product = {
+type Product = {
   product_ID: number;
   product_Code: string;
   product_Name: string;
   description: string;
-  brand_ID: number;
-  category_ID: number;
-  variant_ID: number;
-  createdAt: string;
-  updatedAt: string;
+  brand: Brand | null;
+  category: Category | null;
+  variant: Variant | null;
 };
 
-type supplier = {
+type Brand = {
+  brand_ID: number;
+  brandName: string;
+};
+
+type Category = {
+  category_ID: number;
+  category_Name: string;
+};
+
+type Variant = {
+  variant_ID: number;
+  variant_Name: string;
+};
+
+type UnitOfMeasure = {
+  uom_ID: number;
+  uom_Name: string;
+};
+
+type UnitConversion = {
+  product_UOM_Id: number;
+  unit: UnitOfMeasure | null;
+  parent_UOM_ID: number | null;
+  conversion_Factor: number;
+  unit_Price: number;
+};
+
+type Supplier = {
   id: string;
   firstName: string;
   lastName: string;

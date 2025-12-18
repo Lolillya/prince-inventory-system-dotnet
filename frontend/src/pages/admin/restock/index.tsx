@@ -51,9 +51,10 @@ const RestockPage = () => {
         ) : (
           restockItems?.map((r, i) => (
             <>
-              {isModalOpen && (
-                <ShowAllModal lineItems={r.line_Items} onClose={handleModal} />
-              )}
+              {/* {isModalOpen && (
+                <ShowAllModal lineItems={r.batches} onClose={handleModal} />
+                
+              )} */}
               <div
                 key={i}
                 className="flex flex-col justify-between gap-5 border shadow-lg rounded-lg p-5"
@@ -61,13 +62,20 @@ const RestockPage = () => {
                 <div className="flex flex-1 p-3">
                   <div className="flex flex-col gap-3 w-full">
                     <div className="flex gap-3">
-                      <span>#{r.restock_Id}</span>
+                      <span>#{r.restock_Number}</span>
                       <span>-</span>
-                      <span>ADD DATE TO RESTOCK MODEL</span>
+                      <span>
+                        {new Intl.DateTimeFormat("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }).format(new Date(r.created_At))}
+                      </span>
                     </div>
 
                     <div className="flex gap-3">
-                      <span>{r.supplier.companyName}</span>
+                      <span>Total Batches: </span>
+                      <span>{r.batches.length}</span>
                     </div>
                   </div>
 
@@ -79,7 +87,7 @@ const RestockPage = () => {
                     </div>
 
                     <div className="flex gap-3">
-                      <span>P {r.grand_total}</span>
+                      <span>P {r.grand_Total}</span>
                     </div>
                   </div>
 
@@ -89,7 +97,7 @@ const RestockPage = () => {
                 </div>
 
                 <div className="flex justify-center">
-                  <button onClick={handleModal}>view all items</button>
+                  <button onClick={handleModal}>view all batches</button>
                 </div>
               </div>
             </>
