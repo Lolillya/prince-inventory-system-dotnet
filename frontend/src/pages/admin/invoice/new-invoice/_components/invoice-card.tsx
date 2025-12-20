@@ -118,14 +118,13 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
   const [isSupplierPriceSelected, setIsSupplierPriceSelected] =
     useState<boolean>(true);
   const [price, setPrice] = useState<number>(0);
+  const [quantity, setQuantity] = useState<number>(0);
 
   const handleSelectBatch = (batch: Batches) => {
     setSelectedUnit(batch.baseUnit);
     setSelectedBatch(batch);
-    console.log(batch);
   };
 
-  console.log(isBaseUnitSelected);
   const handleChangeUnit = (unitName: string) => {
     if (!selectedBatch) return;
 
@@ -187,7 +186,13 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     return total;
   }
 
-  const handleChangePrice = () => {};
+  const handleTotal = () => {
+    if (isSupplierPriceSelected && selectedUnit) {
+      return selectedUnit.unit_Price * quantity;
+    } else {
+      return price * quantity;
+    }
+  };
 
   return (
     <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
@@ -249,13 +254,15 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
                 </label>
                 <input
                   className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
-                  onChange={(e) =>
-                    updateInvoiceQuantityByKey(
-                      product.product_ID,
-                      Number(e.target.value),
-                      product.variant.variant_Name
-                    )
-                  }
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  // onChange={(e) =>
+                  //   updateInvoiceQuantityByKey(
+                  //     product.product_ID,
+                  //     Number(e.target.value),
+                  //     product.variant.variant_Name
+                  //   )
+                  // }
                 />
               </div>
               <select
@@ -312,7 +319,11 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
               <input
                 className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
                 disabled={isSupplierPriceSelected}
-                value={isSupplierPriceSelected ? (selectedUnit?.unit_Price || "0") : price}
+                value={
+                  isSupplierPriceSelected
+                    ? selectedUnit?.unit_Price || "0"
+                    : price
+                }
                 onChange={(e) => {
                   const newPrice = Number(e.target.value);
                   setPrice(newPrice);
@@ -377,7 +388,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
           <span>total:</span>
           <input
             className="shadow-none drop-shadow-none bg-custom-gray w-full"
-            // value={calculateTotal().toString()}
+            value={handleTotal()}
           />
         </div>
       </div>
