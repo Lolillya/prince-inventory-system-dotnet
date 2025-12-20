@@ -1,11 +1,7 @@
 import { Separator } from "@/components/separator";
-import {
-  useSelectedInvoiceProduct,
-  useSelectedProductInvoiceQuery,
-} from "@/features/invoice/selected-product";
-import { handleError } from "@/helpers/error-handler.helper";
+import { useSelectedInvoiceProduct } from "@/features/invoice/selected-product";
 import { ChevronDownIcon, PlusIcon, XIcon } from "@/icons";
-import { use, useState } from "react";
+import { useState } from "react";
 
 type Product = {
   brand: Brand;
@@ -104,15 +100,10 @@ enum DiscountEnum {
 }
 
 export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
-  const {
-    updateInvoiceQuantityByKey,
-    UPDATE_INVOICE_UNIT_PRICE,
-    // UPDATE_INVOICE_UNIT,
-    updateInvoiceDiscountByKey,
-  } = useSelectedInvoiceProduct();
+  const { UPDATE_INVOICE_UNIT_PRICE } = useSelectedInvoiceProduct();
 
   const [discount, setDiscount] = useState<DiscountEnum>(DiscountEnum.MANUAL);
-  const [isBaseUnitSelected, setIsBaseUnitSelected] = useState<boolean>(true);
+  // const [isBaseUnitSelected, setIsBaseUnitSelected] = useState<boolean>(true);
   const [selectedUnit, setSelectedUnit] = useState<BaseUnit>();
   const [selectedBatch, setSelectedBatch] = useState<Batches>();
   const [isSupplierPriceSelected, setIsSupplierPriceSelected] =
@@ -129,7 +120,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
   const handleChangeUnit = (unitName: string) => {
     if (!selectedBatch) return;
 
-    setIsBaseUnitSelected(selectedBatch.baseUnit.uoM_Name === unitName);
+    // setIsBaseUnitSelected(selectedBatch.baseUnit.uoM_Name === unitName);
 
     // Check if it's the base unit
     if (selectedBatch.baseUnit.uoM_Name === unitName) {
