@@ -10,7 +10,7 @@ export const ProductCard = ({
 
   onClick,
 }: ProductCardProps) => {
-  console.log("data", data);
+  // console.log("data", data);
   return (
     <div className="flex flex-col gap-3">
       <div

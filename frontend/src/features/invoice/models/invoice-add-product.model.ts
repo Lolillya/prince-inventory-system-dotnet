@@ -25,7 +25,7 @@ export type InvoiceAddProductModel = {
         };
       };
     };
-    unit: units[];
+    // unit: units[];
     unit_quantity: number;
     unit_price: number;
     discount: number;

@@ -25,7 +25,7 @@ export type InvoiceAddPayloadModel = {
         };
       };
     };
-    unit: string;
+    // unit: string;
     unit_quantity: number;
     unit_price: number;
     discount: number;
