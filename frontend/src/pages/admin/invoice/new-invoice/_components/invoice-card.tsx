@@ -119,6 +119,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     useState<boolean>(true);
   const [price, setPrice] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(0);
+  const [discountValue, setDiscountValue] = useState<number>(0);
 
   const handleSelectBatch = (batch: Batches) => {
     setSelectedUnit(batch.baseUnit);
@@ -187,11 +188,17 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
   }
 
   const handleTotal = () => {
-    if (isSupplierPriceSelected && selectedUnit) {
-      return selectedUnit.unit_Price * quantity;
-    } else {
-      return price * quantity;
+    const basePrice =
+      isSupplierPriceSelected && selectedUnit ? selectedUnit.unit_Price : price;
+    const subtotal = basePrice * quantity;
+
+    if (discount === DiscountEnum.PERCENTAGE) {
+      return subtotal * (1 - discountValue / 100);
+    } else if (discount === DiscountEnum.MANUAL) {
+      return subtotal - discountValue;
     }
+
+    return subtotal;
   };
 
   return (
@@ -362,13 +369,8 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
             <div className="flex">
               <input
                 className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
-                onChange={(e) =>
-                  updateInvoiceDiscountByKey(
-                    product.product_ID,
-                    Number(e.target.value),
-                    product.variant.variant_Name
-                  )
-                }
+                value={discountValue}
+                onChange={(e) => setDiscountValue(Number(e.target.value))}
               />
               <select
                 className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
