@@ -5,7 +5,7 @@ import {
 } from "@/features/invoice/selected-product";
 import { handleError } from "@/helpers/error-handler.helper";
 import { ChevronDownIcon, PlusIcon, XIcon } from "@/icons";
-import { useState } from "react";
+import { use, useState } from "react";
 
 type Product = {
   brand: Brand;
@@ -115,6 +115,9 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
   const [isBaseUnitSelected, setIsBaseUnitSelected] = useState<boolean>(true);
   const [selectedUnit, setSelectedUnit] = useState<BaseUnit>();
   const [selectedBatch, setSelectedBatch] = useState<Batches>();
+  const [isSupplierPriceSelected, setIsSupplierPriceSelected] =
+    useState<boolean>(true);
+  const [price, setPrice] = useState<number>(0);
 
   const handleSelectBatch = (batch: Batches) => {
     setSelectedUnit(batch.baseUnit);
@@ -183,6 +186,8 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
 
     return total;
   }
+
+  const handleChangePrice = () => {};
 
   return (
     <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
@@ -306,23 +311,35 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
             <div className="flex">
               <input
                 className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
-                disabled
-                value={selectedUnit?.unit_Price || "0"}
-                onChange={(e) =>
+                disabled={isSupplierPriceSelected}
+                value={isSupplierPriceSelected ? (selectedUnit?.unit_Price || "0") : price}
+                onChange={(e) => {
+                  const newPrice = Number(e.target.value);
+                  setPrice(newPrice);
                   UPDATE_INVOICE_UNIT_PRICE(
                     product.product_ID,
-                    Number(e.target.value),
+                    newPrice,
                     product.variant.variant_Name
-                  )
-                }
+                  );
+                }}
               />
               <select
                 className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
-                // value={discount}
-                // onChange={(e) => setDiscount(e.target.value as DiscountEnum)}
+                value={isSupplierPriceSelected ? "supplier" : "manual"}
+                onChange={(e) => {
+                  const isSupplier = e.target.value === "supplier";
+                  setIsSupplierPriceSelected(isSupplier);
+                  if (isSupplier && selectedUnit) {
+                    UPDATE_INVOICE_UNIT_PRICE(
+                      product.product_ID,
+                      selectedUnit.unit_Price,
+                      product.variant.variant_Name
+                    );
+                  }
+                }}
               >
-                <option value={DiscountEnum.PERCENTAGE}>Supplier Price</option>
-                <option value={DiscountEnum.MANUAL}>Manual</option>
+                <option value="supplier">Supplier Price</option>
+                <option value="manual">Manual</option>
               </select>
             </div>
           </div>
