@@ -17,10 +17,10 @@ import { InvoiceAddProductModel } from "@/features/invoice/models/invoice-add-pr
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
-  const { addProduct, removeProduct, clearList } = useSelectedInvoiceProduct();
+  const { ADD_PRODUCT, removeProduct, clearList } = useSelectedInvoiceProduct();
   const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
 
-  console.log(restockBatches);
+  // console.log(restockBatches);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,34 +30,17 @@ const NewInvoicePage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  // console.log(restockBatches);
+  console.log("to-invoice", selectedInvoices);
 
-  // const handleClick = (data: InvoiceRestockBatchModel) => {
-  //   const invoice: InvoiceAddProductModel = {
-  //     invoice: {
-  //       item: {
-  //         product: {
-  //           product_ID: data.product.product_ID,
-  //           productCode: data.product.product_Code,
-  //           productName: data.product.product_Name,
-  //           desc: data.product.description,
-  //           brand_id: data.product.brand_ID,
-  //           category_id: data.product.category_ID,
-  //           createdAt: data.product.createdAt,
-  //           updatedAt: data.product.updatedAt,
-  //           brand: data.product.brand,
-  //           variant: data.product.variant,
-  //         },
-  //       },
-  //       unit: data.units,
-  //       unit_quantity: 0,
-  //       unit_price: 0,
-  //       discount: 0,
-  //       total: 0,
-  //     },
-  //   };
-  //   addProduct(invoice);
-  // };
+  const handleClick = (data: InvoiceRestockBatchModel) => {
+    // TODO: Create invoice add product model from restock batch model
+    // pass the whole batch object array
+    // map batches to show different unit structure from restock suppliers
+    // show different unit price options from restock suppliers
+    // then add to selected invoice products
+
+    ADD_PRODUCT(data);
+  };
 
   const createInvoice = () => {
     setIsModalOpen((prev) => !prev);
@@ -81,20 +64,20 @@ const NewInvoicePage = () => {
           <div className="flex gap-5 overflow-y-hidden flex-1">
             {/* LEFT */}
             <div className="w-full flex">
-              {/* {selectedInvoices.length === 0 ? (
+              {selectedInvoices.length === 0 ? (
                 <NoSelectedState />
               ) : (
                 <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
-                  {selectedInvoices.map((product, index) => (
+                  {selectedInvoices.map((p, i) => (
                     <InvoiceCard
-                      key={`${product.invoice.item.product.product_ID}-${product.invoice.item.product.variant.variant_Name}-${index}`}
-                      product={product.invoice.item.product}
-                      units={product.invoice.unit}
-                      onRemove={() => removeProduct(product)}
+                      key={`${p.product.product_ID}-${p.product.variant.variant_Name}-${i}`}
+                      product={p.product}
+                      batches={p.batches}
+                      // onRemove={() => removeProduct(p)}
                     />
                   ))}
                 </div>
-              )} */}
+              )}
             </div>
 
             {/* RIGHT */}
@@ -113,7 +96,7 @@ const NewInvoicePage = () => {
                   {restockBatches?.map((data, i) => (
                     <ProductCard
                       data={data}
-                      // onClick={() => handleClick(data)}
+                      onClick={() => handleClick(data)}
                       key={i}
                     />
                   ))}

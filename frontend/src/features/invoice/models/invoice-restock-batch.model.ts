@@ -78,6 +78,7 @@ type Category = {
 type Variant = {
   createdAt: string;
   updatedAt: string;
+  productId: number;
   variant_ID: number;
   variant_Name: string;
 };
