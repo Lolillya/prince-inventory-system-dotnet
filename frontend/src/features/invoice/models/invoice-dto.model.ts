@@ -5,35 +5,13 @@ export type InvoiceDTO = {
   Term: number | undefined;
   Notes: string;
 };
-
-export type LineItems = {
-  item: {
-    brand: {
-      BrandName: string;
-      CreatedAt: string;
-      UpdatedAt: string;
-    };
-
-    product: {
-      Product_ID: number;
-      ProductCode: string;
-      ProductName: string;
-      Description: string;
-      Brand_Id: number;
-      Category_Id: number;
-      CreatedAt: string;
-      UpcatedAt: string;
-    };
-
-    variant: {
-      ProductId: number;
-      VariantName: string;
-      CreatedAt: string;
-      UpcatedAt: string;
-    };
-  };
-  total: number;
+type LineItems = {
+  createdAt: string;
+  updatedAt: string;
+  product_ID: number;
   unit: string;
-  unit_price: number;
+  uom_ID: number;
+  unit_Price: number;
+  subtotal: number;
   unit_quantity: number;
 };

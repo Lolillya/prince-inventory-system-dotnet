@@ -44,6 +44,9 @@ export const useSelectedInvoiceProduct = () => {
         discount: 0,
         total: 0,
         isDiscountPercentage: false,
+        invoice_Clerk: "",
+        term: 0,
+        uom_ID: 0,
       },
     };
 

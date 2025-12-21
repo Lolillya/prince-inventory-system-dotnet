@@ -1,12 +1,8 @@
 import { Separator } from "@/components/separator";
-import {
-  useInvoicePayloadQuery,
-  useSelectedPayloadInvoiceQuery,
-} from "@/features/invoice/invoice-create-payload";
-import { useSelectedInvoiceProduct } from "@/features/invoice/selected-product";
+import { useInvoicePayloadQuery } from "@/features/invoice/invoice-create-payload";
+
 import { ChevronDownIcon, PlusIcon, XIcon } from "@/icons";
-import { useState, useEffect } from "react";
-import { set } from "react-hook-form";
+import { useState } from "react";
 
 type Product = {
   brand: Brand;
@@ -121,9 +117,6 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     UPDATE_INVOICE_PAYLOAD_TOTAL,
     UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
   } = useInvoicePayloadQuery();
-  const { data: payload } = useSelectedPayloadInvoiceQuery();
-
-  console.log("payload", payload);
 
   const handleSelectBatch = (batch: Batches) => {
     setSelectedUnit(batch.baseUnit);
@@ -132,8 +125,8 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     UPDATE_INVOICE_PAYLOAD_UNIT(
       product.product_ID,
       product.variant.variant_Name,
-      batch.baseUnit.uoM_Name
-      // INCLUDE UNIT ID???
+      batch.baseUnit.uoM_Name,
+      batch.baseUnit.uoM_ID
     );
 
     UPDATE_INVOICE_PAYLOAD_PRICE(
@@ -141,6 +134,8 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       product.variant.variant_Name,
       batch.baseUnit.unit_Price
     );
+
+    updateTotal(batch.baseUnit.unit_Price, quantity, discountValue, discount);
   };
 
   const handleChangeUnit = (unitName: string) => {
@@ -154,7 +149,8 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       UPDATE_INVOICE_PAYLOAD_UNIT(
         product.product_ID,
         product.variant.variant_Name,
-        selectedBatch.baseUnit.uoM_Name
+        selectedBatch.baseUnit.uoM_Name,
+        selectedBatch.baseUnit.uoM_ID
         // INCLUDE UNIT ID???
       );
 
@@ -163,6 +159,13 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
         product.product_ID,
         product.variant.variant_Name,
         selectedBatch.baseUnit.unit_Price
+      );
+
+      updateTotal(
+        selectedBatch.baseUnit.unit_Price,
+        quantity,
+        discountValue,
+        discount
       );
       return;
     }
@@ -183,7 +186,8 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       UPDATE_INVOICE_PAYLOAD_UNIT(
         product.product_ID,
         product.variant.variant_Name,
-        found.uoM_Name
+        found.uoM_Name,
+        found.uoM_ID
         // INCLUDE UNIT ID???
       );
 
@@ -193,6 +197,8 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
         product.variant.variant_Name,
         found.unit_Price
       );
+
+      updateTotal(found.unit_Price, quantity, discountValue, discount);
     }
   };
 
@@ -232,24 +238,41 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     return total;
   };
 
-  const handleTotal = () => {
-    const basePrice =
-      isSupplierPriceSelected && selectedUnit ? selectedUnit.unit_Price : price;
-    const subtotal = basePrice * quantity;
+  const updateTotal = (
+    currentPrice: number,
+    currentQuantity: number,
+    currentDiscount: number,
+    currentDiscountType: DiscountEnum
+  ) => {
+    const subtotal = currentPrice * currentQuantity;
+    let total = subtotal;
 
-    if (discount === DiscountEnum.PERCENTAGE) {
-      return subtotal * (1 - discountValue / 100);
-    } else if (discount === DiscountEnum.MANUAL) {
-      return subtotal - discountValue;
+    if (currentDiscountType === DiscountEnum.PERCENTAGE) {
+      total = subtotal * (1 - currentDiscount / 100);
+    } else if (currentDiscountType === DiscountEnum.MANUAL) {
+      total = subtotal - currentDiscount;
     }
 
     UPDATE_INVOICE_PAYLOAD_TOTAL(
       product.product_ID,
       product.variant.variant_Name,
-      subtotal
+      total
     );
+  };
 
-    return subtotal;
+  const handleTotal = () => {
+    const basePrice =
+      isSupplierPriceSelected && selectedUnit ? selectedUnit.unit_Price : price;
+    const subtotal = basePrice * quantity;
+    let total = subtotal;
+
+    if (discount === DiscountEnum.PERCENTAGE) {
+      total = subtotal * (1 - discountValue / 100);
+    } else if (discount === DiscountEnum.MANUAL) {
+      total = subtotal - discountValue;
+    }
+
+    return total;
   };
 
   const handleChangeQuantity = (value: number) => {
@@ -260,6 +283,10 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       product.variant.variant_Name,
       value
     );
+
+    const currentPrice =
+      isSupplierPriceSelected && selectedUnit ? selectedUnit.unit_Price : price;
+    updateTotal(currentPrice, value, discountValue, discount);
   };
 
   const handleDiscountChange = (value: number) => {
@@ -270,18 +297,26 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       product.variant.variant_Name,
       value
     );
+
+    const currentPrice =
+      isSupplierPriceSelected && selectedUnit ? selectedUnit.unit_Price : price;
+    updateTotal(currentPrice, quantity, value, discount);
   };
 
   const handleDiscountType = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (discount === DiscountEnum.PERCENTAGE) {
-      UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE(true);
-    }
+    const newDiscount = e.target.value as DiscountEnum;
 
-    if (discount === DiscountEnum.MANUAL) {
+    if (newDiscount === DiscountEnum.PERCENTAGE) {
+      UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE(true);
+    } else if (newDiscount === DiscountEnum.MANUAL) {
       UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE(false);
     }
 
-    setDiscount(e.target.value as DiscountEnum);
+    setDiscount(newDiscount);
+
+    const currentPrice =
+      isSupplierPriceSelected && selectedUnit ? selectedUnit.unit_Price : price;
+    updateTotal(currentPrice, quantity, discountValue, newDiscount);
   };
 
   const handleRemove = () => {};
@@ -417,7 +452,11 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                    setPrice(Number(value));
+                    const newPrice = Number(value);
+                    setPrice(newPrice);
+                    if (!isSupplierPriceSelected) {
+                      updateTotal(newPrice, quantity, discountValue, discount);
+                    }
                   }
                 }}
               />
@@ -427,6 +466,11 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
                 onChange={(e) => {
                   const isSupplier = e.target.value === "supplier";
                   setIsSupplierPriceSelected(isSupplier);
+                  const currentPrice =
+                    isSupplier && selectedUnit
+                      ? selectedUnit.unit_Price
+                      : price;
+                  updateTotal(currentPrice, quantity, discountValue, discount);
                 }}
               >
                 <option value="supplier">Supplier Price</option>

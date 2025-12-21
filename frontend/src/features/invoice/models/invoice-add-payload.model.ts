@@ -2,6 +2,7 @@ export type InvoiceAddPayloadModel = {
   invoice: {
     product: Product;
     unit: string;
+    uom_ID: number;
     unit_quantity: number;
     unit_price: number;
     discount: number;

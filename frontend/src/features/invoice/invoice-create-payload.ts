@@ -38,7 +38,8 @@ export const useInvoicePayloadQuery = () => {
   const UPDATE_INVOICE_PAYLOAD_UNIT = (
     productId: number,
     variantName: string,
-    unit: string
+    unit: string,
+    uom_ID: number
   ) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
@@ -53,6 +54,7 @@ export const useInvoicePayloadQuery = () => {
               invoice: {
                 ...item.invoice,
                 unit: unit,
+                uom_ID: uom_ID,
               },
             };
           }
@@ -62,7 +64,7 @@ export const useInvoicePayloadQuery = () => {
     );
   };
 
-  const UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE = () => {
+  const UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE = (isPercentage: boolean) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
       (old = []) => {
@@ -71,7 +73,7 @@ export const useInvoicePayloadQuery = () => {
             ...item,
             invoice: {
               ...item.invoice,
-              isDiscountPercentage: !item.invoice.isDiscountPercentage,
+              isDiscountPercentage: isPercentage,
             },
           };
         });
@@ -187,6 +189,40 @@ export const useInvoicePayloadQuery = () => {
     );
   };
 
+  const UPDATE_INVOICE_CLERK = (id: string) => {
+    queryClient.setQueryData<InvoiceAddPayloadModel[]>(
+      InvoicePayloadKey,
+      (old = []) => {
+        return old.map((item) => {
+          return {
+            ...item,
+            invoice: {
+              ...item.invoice,
+              invoice_Clerk: id,
+            },
+          };
+        });
+      }
+    );
+  };
+
+  const UPDATE_INVOICE_TERM = (term: number) => {
+    queryClient.setQueryData<InvoiceAddPayloadModel[]>(
+      InvoicePayloadKey,
+      (old = []) => {
+        return old.map((item) => {
+          return {
+            ...item,
+            invoice: {
+              ...item.invoice,
+              term: term,
+            },
+          };
+        });
+      }
+    );
+  };
+
   const REMOVE_INVOICE_PAYLOAD = (productId: number, variantName: string) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
@@ -210,6 +246,8 @@ export const useInvoicePayloadQuery = () => {
     UPDATE_INVOICE_PAYLOAD_DISCOUNT,
     UPDATE_INVOICE_PAYLOAD_TOTAL,
     UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
+    UPDATE_INVOICE_TERM,
+    UPDATE_INVOICE_CLERK,
     REMOVE_INVOICE_PAYLOAD,
   };
 };
