@@ -6,6 +6,7 @@ export type InvoiceAddPayloadModel = {
     unit_price: number;
     discount: number;
     total: number;
+    isDiscountPercentage: boolean;
   };
 };
 
