@@ -1,7 +1,11 @@
 import { Separator } from "@/components/separator";
+import {
+  useInvoicePayloadQuery,
+  useSelectedPayloadInvoiceQuery,
+} from "@/features/invoice/invoice-create-payload";
 import { useSelectedInvoiceProduct } from "@/features/invoice/selected-product";
 import { ChevronDownIcon, PlusIcon, XIcon } from "@/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Product = {
   brand: Brand;
@@ -100,10 +104,7 @@ enum DiscountEnum {
 }
 
 export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
-  // const { UPDATE_INVOICE_UNIT_PRICE } = useSelectedInvoiceProduct();
-
   const [discount, setDiscount] = useState<DiscountEnum>(DiscountEnum.MANUAL);
-  // const [isBaseUnitSelected, setIsBaseUnitSelected] = useState<boolean>(true);
   const [selectedUnit, setSelectedUnit] = useState<BaseUnit>();
   const [selectedBatch, setSelectedBatch] = useState<Batches>();
   const [isSupplierPriceSelected, setIsSupplierPriceSelected] =
@@ -111,20 +112,51 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
   const [price, setPrice] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(0);
   const [discountValue, setDiscountValue] = useState<number>(0);
+  const { UPDATE_INVOICE_PAYLOAD_UNIT, UPDATE_INVOICE_PAYLOAD_PRICE } =
+    useInvoicePayloadQuery();
+  const { data: payload } = useSelectedPayloadInvoiceQuery();
+
+  console.log("payload", payload);
 
   const handleSelectBatch = (batch: Batches) => {
     setSelectedUnit(batch.baseUnit);
     setSelectedBatch(batch);
+
+    UPDATE_INVOICE_PAYLOAD_UNIT(
+      product.product_ID,
+      product.variant.variant_Name,
+      batch.baseUnit.uoM_Name
+      // INCLUDE UNIT ID???
+    );
+
+    UPDATE_INVOICE_PAYLOAD_PRICE(
+      product.product_ID,
+      product.variant.variant_Name,
+      batch.baseUnit.unit_Price
+    );
   };
 
   const handleChangeUnit = (unitName: string) => {
     if (!selectedBatch) return;
 
-    // setIsBaseUnitSelected(selectedBatch.baseUnit.uoM_Name === unitName);
-
     // Check if it's the base unit
     if (selectedBatch.baseUnit.uoM_Name === unitName) {
       setSelectedUnit(selectedBatch.baseUnit);
+
+      // update global invoice payload state selected unit
+      UPDATE_INVOICE_PAYLOAD_UNIT(
+        product.product_ID,
+        product.variant.variant_Name,
+        selectedBatch.baseUnit.uoM_Name
+        // INCLUDE UNIT ID???
+      );
+
+      // update global invoice payload state selected price
+      UPDATE_INVOICE_PAYLOAD_PRICE(
+        product.product_ID,
+        product.variant.variant_Name,
+        selectedBatch.baseUnit.unit_Price
+      );
       return;
     }
 
@@ -139,13 +171,28 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
         uoM_ID: found.uoM_ID,
         uoM_Name: found.uoM_Name,
       });
+
+      // update global invoice payload state selected unit
+      UPDATE_INVOICE_PAYLOAD_UNIT(
+        product.product_ID,
+        product.variant.variant_Name,
+        found.uoM_Name
+        // INCLUDE UNIT ID???
+      );
+
+      // update global invoice payload state selected price
+      UPDATE_INVOICE_PAYLOAD_PRICE(
+        product.product_ID,
+        product.variant.variant_Name,
+        found.unit_Price
+      );
     }
   };
 
-  function calculateAvailableStock(
+  const calculateAvailableStock = (
     batch: Batch,
     selectedUomId: number
-  ): number {
+  ): number => {
     let total: number = batch.baseUnit.unit_Quantity;
     let currentUomId: number = batch.baseUnit.uoM_ID;
 
@@ -176,7 +223,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     }
 
     return total;
-  }
+  };
 
   const handleTotal = () => {
     const basePrice =

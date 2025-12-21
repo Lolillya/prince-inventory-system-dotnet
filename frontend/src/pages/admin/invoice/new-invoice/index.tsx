@@ -4,21 +4,20 @@ import { ProductCard } from "../../../../components/product-card";
 import {
   useSelectedProductInvoiceQuery,
   useSelectedInvoiceProduct,
-  useSelectedPayloadInvoiceQuery,
 } from "@/features/invoice/selected-product";
 import { InvoiceCard } from "./_components/invoice-card";
 import { useState } from "react";
 import { CreateInvoiceModal } from "./_components/invoice-modal";
-
 import { useInvoiceBatchQuery } from "@/features/invoice/invoice-get-all-batches";
 import { InvoiceRestockBatchModel } from "@/features/invoice/models/invoice-restock-batch.model";
-import { InvoiceAddProductModel } from "@/features/invoice/models/invoice-add-product.model";
 
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
-  const { ADD_PRODUCT, removeProduct, clearList } = useSelectedInvoiceProduct();
+  const { ADD_PRODUCT, CLEAR_TO_INVOICE_LIST } = useSelectedInvoiceProduct();
   const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
+
+  console.log(restockBatches);
 
   // console.log(restockBatches);
 
@@ -29,8 +28,6 @@ const NewInvoicePage = () => {
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
-
-  console.log("to-invoice", selectedInvoices);
 
   const handleClick = (data: InvoiceRestockBatchModel) => {
     // TODO: Create invoice add product model from restock batch model
@@ -104,7 +101,7 @@ const NewInvoicePage = () => {
               </div>
 
               <div className="flex gap-5 justify-between">
-                <button onClick={clearList}>clear</button>
+                <button onClick={CLEAR_TO_INVOICE_LIST}>clear</button>
                 <button onClick={createInvoice}>create invoice</button>
               </div>
             </div>
