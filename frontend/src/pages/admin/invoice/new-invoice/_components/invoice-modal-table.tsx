@@ -12,6 +12,8 @@ export const InvoiceTable = () => {
 
   const { data: payload } = useSelectedPayloadInvoiceQuery();
 
+  console.log("payload", payload);
+
   const handleCreateInvoice = () => {
     createInvoice(
       selectedInvoices,

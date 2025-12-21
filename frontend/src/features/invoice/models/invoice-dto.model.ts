@@ -14,4 +14,6 @@ type LineItems = {
   unit_Price: number;
   subtotal: number;
   unit_quantity: number;
+  discount: number;
+  isPercentageDiscount: boolean;
 };

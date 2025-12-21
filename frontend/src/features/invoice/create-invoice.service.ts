@@ -25,14 +25,16 @@ export const createInvoice = async (
     };
 
     dtos.LineItem = payload.map((p) => ({
-      createdAt: p.invoice.product.createdAt,
-      updatedAt: p.invoice.product.updatedAt,
+      createdAt: Date.now().toString(),
+      updatedAt: Date.now().toString(),
       product_ID: p.invoice.product.product_ID,
       unit: p.invoice.unit,
       uom_ID: p.invoice.uom_ID,
       unit_Price: p.invoice.unit_price,
       unit_quantity: p.invoice.unit_quantity,
       subtotal: p.invoice.total,
+      discount: p.invoice.discount,
+      isPercentageDiscount: p.invoice.isDiscountPercentage,
     }));
 
     console.log("dto: ", dtos);
