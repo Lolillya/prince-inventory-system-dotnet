@@ -11,14 +11,16 @@ namespace backend.Dtos.InvoiceDTO
     public class InvoiceLineItemPayloadDto
     {
         [Required]
-        public ItemDetailDto item { get; set; } = null!;
+        public ItemDetailDto Item { get; set; } = null!;
         [Required]
-        public decimal total { get; set; }
+        public string Unit { get; set; } = "";
         [Required]
-        public string unit { get; set; }
+        public int Uom_ID { get; set; }
         [Required]
-        public decimal unit_price { get; set; }
+        public decimal Unit_Price { get; set; }
         [Required]
-        public int unit_quantity { get; set; }
+        public decimal Subtotal { get; set; }
+        [Required]
+        public int Unit_Quantity { get; set; }
     }
 }

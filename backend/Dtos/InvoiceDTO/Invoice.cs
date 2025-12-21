@@ -15,9 +15,9 @@ namespace backend.Dtos.InvoiceDTO
         [Required]
         public string Customer_ID { get; set; } = "";
         [Required]
-        public string Notes { get; set; } = "";
-        [Required]
         public int Term { get; set; }
+        [Required]
+        public string Notes { get; set; } = "";
 
 
 

@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using backend.Models.Unit;
 
 namespace backend.Models.InvoiceModel
 {
@@ -14,14 +13,13 @@ namespace backend.Models.InvoiceModel
         // FKs
         public string Customer_ID { get; set; } = null!;
         public string Invoice_Clerk { get; set; } = null!;
-        public int UOM_ID { get; set; }
+
 
         [ForeignKey(nameof(Customer_ID))]
         public PersonalDetails Customer { get; set; } = null!;
         [ForeignKey(nameof(Invoice_Clerk))]
         public PersonalDetails Clerk { get; set; } = null!;
-        [ForeignKey(nameof(UOM_ID))]
-        public UnitOfMeasure UnitOfMeasure { get; set; } = null!;
+
 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251221130117_AddedUOM_ID_ONIvoiceLineItems")]
+    partial class AddedUOM_ID_ONIvoiceLineItems
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -997,6 +1000,9 @@ namespace backend.Migrations
                     b.Property<decimal>("Total_Amount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("UOM_ID")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -1005,6 +1011,8 @@ namespace backend.Migrations
                     b.HasIndex("Customer_ID");
 
                     b.HasIndex("Invoice_Clerk");
+
+                    b.HasIndex("UOM_ID");
 
                     b.ToTable("Invoice", (string)null);
                 });
@@ -1017,9 +1025,6 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LineItem_ID"));
 
-                    b.Property<int>("Discount")
-                        .HasColumnType("int");
-
                     b.Property<int>("Invoice_ID")
                         .HasColumnType("int");
 
@@ -1028,9 +1033,6 @@ namespace backend.Migrations
 
                     b.Property<decimal>("Sub_Total")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UOM_ID")
-                        .HasColumnType("int");
 
                     b.Property<string>("Unit")
                         .IsRequired()
@@ -1042,16 +1044,11 @@ namespace backend.Migrations
                     b.Property<int>("Unit_Quantity")
                         .HasColumnType("int");
 
-                    b.Property<bool>("isPercentageDiscount")
-                        .HasColumnType("bit");
-
                     b.HasKey("LineItem_ID");
 
                     b.HasIndex("Invoice_ID");
 
                     b.HasIndex("Product_ID");
-
-                    b.HasIndex("UOM_ID");
 
                     b.ToTable("InvoiceLineItems");
                 });
@@ -1627,9 +1624,17 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("backend.Models.Unit.UnitOfMeasure", "UnitOfMeasure")
+                        .WithMany()
+                        .HasForeignKey("UOM_ID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Clerk");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("UnitOfMeasure");
                 });
 
             modelBuilder.Entity("backend.Models.LineItems.InvoiceLineItems", b =>
@@ -1646,17 +1651,9 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Models.Unit.UnitOfMeasure", "UnitOfMeasure")
-                        .WithMany()
-                        .HasForeignKey("UOM_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Invoices");
 
                     b.Navigation("Product");
-
-                    b.Navigation("UnitOfMeasure");
                 });
 
             modelBuilder.Entity("backend.Models.LineItems.RestockLineItems", b =>
