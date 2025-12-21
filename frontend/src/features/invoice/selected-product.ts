@@ -43,6 +43,7 @@ export const useSelectedInvoiceProduct = () => {
         unit_price: 0,
         discount: 0,
         total: 0,
+        isDiscountPercentage: false,
       },
     };
 
