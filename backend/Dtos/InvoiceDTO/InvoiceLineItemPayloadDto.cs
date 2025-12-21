@@ -11,7 +11,12 @@ namespace backend.Dtos.InvoiceDTO
     public class InvoiceLineItemPayloadDto
     {
         [Required]
-        public ItemDetailDto Item { get; set; } = null!;
+        public string CreatedAt { get; set; } = "";
+        public string UpdatedAt { get; set; } = "";
+        [Required]
+        public int Product_ID { get; set; }
+
+
         [Required]
         public string Unit { get; set; } = "";
         [Required]
@@ -22,5 +27,9 @@ namespace backend.Dtos.InvoiceDTO
         public decimal Subtotal { get; set; }
         [Required]
         public int Unit_Quantity { get; set; }
+        [Required]
+        public int Discount { get; set; }
+        [Required]
+        public bool isPercentageDiscount { get; set; }
     }
 }
