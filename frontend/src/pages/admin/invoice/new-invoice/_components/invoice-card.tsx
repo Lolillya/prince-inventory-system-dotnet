@@ -6,6 +6,7 @@ import {
 import { useSelectedInvoiceProduct } from "@/features/invoice/selected-product";
 import { ChevronDownIcon, PlusIcon, XIcon } from "@/icons";
 import { useState, useEffect } from "react";
+import { set } from "react-hook-form";
 
 type Product = {
   brand: Brand;
@@ -112,8 +113,14 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
   const [price, setPrice] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(0);
   const [discountValue, setDiscountValue] = useState<number>(0);
-  const { UPDATE_INVOICE_PAYLOAD_UNIT, UPDATE_INVOICE_PAYLOAD_PRICE } =
-    useInvoicePayloadQuery();
+  const {
+    UPDATE_INVOICE_PAYLOAD_UNIT,
+    UPDATE_INVOICE_PAYLOAD_PRICE,
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT,
+    UPDATE_INVOICE_PAYLOAD_QUANTITY,
+    UPDATE_INVOICE_PAYLOAD_TOTAL,
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
+  } = useInvoicePayloadQuery();
   const { data: payload } = useSelectedPayloadInvoiceQuery();
 
   console.log("payload", payload);
@@ -236,7 +243,45 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       return subtotal - discountValue;
     }
 
+    UPDATE_INVOICE_PAYLOAD_TOTAL(
+      product.product_ID,
+      product.variant.variant_Name,
+      subtotal
+    );
+
     return subtotal;
+  };
+
+  const handleChangeQuantity = (value: number) => {
+    setQuantity(value);
+
+    UPDATE_INVOICE_PAYLOAD_QUANTITY(
+      product.product_ID,
+      product.variant.variant_Name,
+      value
+    );
+  };
+
+  const handleDiscountChange = (value: number) => {
+    setDiscountValue(value);
+
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT(
+      product.product_ID,
+      product.variant.variant_Name,
+      value
+    );
+  };
+
+  const handleDiscountType = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (discount === DiscountEnum.PERCENTAGE) {
+      UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE(true);
+    }
+
+    if (discount === DiscountEnum.MANUAL) {
+      UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE(false);
+    }
+
+    setDiscount(e.target.value as DiscountEnum);
   };
 
   const handleRemove = () => {};
@@ -305,16 +350,9 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
                   onChange={(e) => {
                     const value = e.target.value;
                     if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                      setQuantity(Number(value));
+                      handleChangeQuantity(Number(value));
                     }
                   }}
-                  // onChange={(e) =>
-                  //   updateInvoiceQuantityByKey(
-                  //     product.product_ID,
-                  //     Number(e.target.value),
-                  //     product.variant.variant_Name
-                  //   )
-                  // }
                 />
               </div>
               <select
@@ -408,14 +446,14 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                    setDiscountValue(Number(value));
+                    handleDiscountChange(Number(value));
                   }
                 }}
               />
               <select
                 className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
                 value={discount}
-                onChange={(e) => setDiscount(e.target.value as DiscountEnum)}
+                onChange={handleDiscountType}
               >
                 <option value={DiscountEnum.PERCENTAGE}>Percentage (%)</option>
                 <option value={DiscountEnum.MANUAL}>Manual</option>

@@ -62,6 +62,23 @@ export const useInvoicePayloadQuery = () => {
     );
   };
 
+  const UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE = () => {
+    queryClient.setQueryData<InvoiceAddPayloadModel[]>(
+      InvoicePayloadKey,
+      (old = []) => {
+        return old.map((item) => {
+          return {
+            ...item,
+            invoice: {
+              ...item.invoice,
+              isDiscountPercentage: !item.invoice.isDiscountPercentage,
+            },
+          };
+        });
+      }
+    );
+  };
+
   const UPDATE_INVOICE_PAYLOAD_PRICE = (
     productId: number,
     variantName: string,
@@ -192,6 +209,7 @@ export const useInvoicePayloadQuery = () => {
     UPDATE_INVOICE_PAYLOAD_QUANTITY,
     UPDATE_INVOICE_PAYLOAD_DISCOUNT,
     UPDATE_INVOICE_PAYLOAD_TOTAL,
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
     REMOVE_INVOICE_PAYLOAD,
   };
 };
