@@ -87,11 +87,11 @@ interface Batch {
   baseUnit: BaseUnit;
   unitConversions: UnitConversion[];
 }
+
 interface InvoiceCardProp {
   onClick?: () => void;
   product: Product;
   batches: Batches[];
-  // onRemove?: () => void;
 }
 
 enum DiscountEnum {
@@ -100,7 +100,7 @@ enum DiscountEnum {
 }
 
 export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
-  const { UPDATE_INVOICE_UNIT_PRICE } = useSelectedInvoiceProduct();
+  // const { UPDATE_INVOICE_UNIT_PRICE } = useSelectedInvoiceProduct();
 
   const [discount, setDiscount] = useState<DiscountEnum>(DiscountEnum.MANUAL);
   // const [isBaseUnitSelected, setIsBaseUnitSelected] = useState<boolean>(true);
@@ -192,6 +192,8 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     return subtotal;
   };
 
+  const handleRemove = () => {};
+
   return (
     <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
       <div className="flex gap-2 items-center text-xs justify-between">
@@ -202,7 +204,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
           <span>{product.variant.variant_Name}</span>
         </div>
         <div
-          // onClick={onRemove}
+          onClick={handleRemove}
           className="cursor-pointer hover:bg-gray-200 rounded p-1"
         >
           <XIcon />
@@ -253,7 +255,12 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
                 <input
                   className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
                   value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                      setQuantity(Number(value));
+                    }
+                  }}
                   // onChange={(e) =>
                   //   updateInvoiceQuantityByKey(
                   //     product.product_ID,
@@ -323,13 +330,10 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
                     : price
                 }
                 onChange={(e) => {
-                  const newPrice = Number(e.target.value);
-                  setPrice(newPrice);
-                  UPDATE_INVOICE_UNIT_PRICE(
-                    product.product_ID,
-                    newPrice,
-                    product.variant.variant_Name
-                  );
+                  const value = e.target.value;
+                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                    setPrice(Number(value));
+                  }
                 }}
               />
               <select
@@ -338,13 +342,6 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
                 onChange={(e) => {
                   const isSupplier = e.target.value === "supplier";
                   setIsSupplierPriceSelected(isSupplier);
-                  if (isSupplier && selectedUnit) {
-                    UPDATE_INVOICE_UNIT_PRICE(
-                      product.product_ID,
-                      selectedUnit.unit_Price,
-                      product.variant.variant_Name
-                    );
-                  }
                 }}
               >
                 <option value="supplier">Supplier Price</option>
@@ -360,8 +357,13 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
             <div className="flex">
               <input
                 className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
-                value={discountValue}
-                onChange={(e) => setDiscountValue(Number(e.target.value))}
+                value={discountValue || 0}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                    setDiscountValue(Number(value));
+                  }
+                }}
               />
               <select
                 className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
