@@ -1,34 +1,47 @@
 export type InvoiceAddPayloadModel = {
   invoice: {
-    item: {
-      product: {
-        product_ID: number;
-        productCode: string;
-        productName: string;
-        desc: string;
-        brand_id: number;
-        category_id: number;
-        createdAt: string;
-        updatedAt: string;
-        brand: {
-          brand_ID: number;
-          brandName: string;
-          createdAt: string;
-          updatedAt: string;
-        };
-        variant: {
-          variant_ID: number;
-          productId: number;
-          variant_Name: string;
-          createdAt: string;
-          updatedAt: string;
-        };
-      };
-    };
-    // unit: string;
+    product: Product;
+    unit: string;
     unit_quantity: number;
     unit_price: number;
     discount: number;
     total: number;
   };
+};
+
+type Product = {
+  brand: Brand;
+  brand_ID: number;
+  category: Category;
+  category_ID: number;
+  createdAt: string;
+  description: string;
+  product_Code: string;
+  product_ID: number;
+  product_Name: string;
+  updatedAt: string;
+  variant: Variant;
+  variant_ID: number;
+};
+
+type Brand = {
+  brandName: string;
+  brand_ID: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Category = {
+  categoryName: string;
+  category_ID: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Variant = {
+  createdAt: string;
+  updatedAt: string;
+  productId: number;
+  variant_ID: number;
+  variant_Name: string;
 };
