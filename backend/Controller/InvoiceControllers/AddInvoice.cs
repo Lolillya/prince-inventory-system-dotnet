@@ -53,7 +53,7 @@ namespace backend.Controller.InvoiceControllers
         {
             decimal totalLineItems = 0;
             foreach (var item in payload.LineItem)
-                totalLineItems += item.Unit_Price * item.Unit_Quantity;
+                totalLineItems += item.Subtotal;
 
             var invoiceNumber = await GetLatestInvoiceNumber();
 
@@ -88,11 +88,16 @@ namespace backend.Controller.InvoiceControllers
 
                 var lineItem = new InvoiceLineItems
                 {
-                    Product_ID = dto.Item.product.Product_ID,
+                    Product_ID = dto.Product_ID,
                     Invoice_ID = invoiceId,
                     Unit = dto.Unit,
                     Unit_Price = dto.Unit_Price,
-                    Unit_Quantity = dto.Unit_Quantity
+                    Unit_Quantity = dto.Unit_Quantity,
+                    UOM_ID = dto.Uom_ID,
+                    Discount = dto.Discount,
+                    isPercentageDiscount = dto.isPercentageDiscount,
+                    Sub_Total = dto.Subtotal
+
                 };
 
                 _db.Add(lineItem);
