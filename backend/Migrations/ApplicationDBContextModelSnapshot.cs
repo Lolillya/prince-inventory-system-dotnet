@@ -1023,6 +1023,9 @@ namespace backend.Migrations
                     b.Property<int>("Invoice_ID")
                         .HasColumnType("int");
 
+                    b.Property<int?>("Invoice_ID1")
+                        .HasColumnType("int");
+
                     b.Property<int>("Product_ID")
                         .HasColumnType("int");
 
@@ -1049,11 +1052,13 @@ namespace backend.Migrations
 
                     b.HasIndex("Invoice_ID");
 
+                    b.HasIndex("Invoice_ID1");
+
                     b.HasIndex("Product_ID");
 
                     b.HasIndex("UOM_ID");
 
-                    b.ToTable("InvoiceLineItems");
+                    b.ToTable("InvoiceLineItems", (string)null);
                 });
 
             modelBuilder.Entity("backend.Models.LineItems.RestockLineItems", b =>
@@ -1635,21 +1640,25 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.LineItems.InvoiceLineItems", b =>
                 {
                     b.HasOne("backend.Models.InvoiceModel.Invoice", "Invoices")
-                        .WithMany("LineItems")
+                        .WithMany()
                         .HasForeignKey("Invoice_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("backend.Models.InvoiceModel.Invoice", null)
+                        .WithMany("LineItems")
+                        .HasForeignKey("Invoice_ID1");
 
                     b.HasOne("backend.Models.Inventory.Product", "Product")
                         .WithMany()
                         .HasForeignKey("Product_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("backend.Models.Unit.UnitOfMeasure", "UnitOfMeasure")
                         .WithMany()
                         .HasForeignKey("UOM_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Invoices");

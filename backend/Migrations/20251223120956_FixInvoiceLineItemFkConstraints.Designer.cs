@@ -12,8 +12,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20251117051733_UpdatedProductModel")]
-    partial class UpdatedProductModel
+    [Migration("20251223120956_FixInvoiceLineItemFkConstraints")]
+    partial class FixInvoiceLineItemFkConstraints
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -184,81 +184,6 @@ namespace backend.Migrations
                         {
                             UserId = "4",
                             RoleId = "4"
-                        },
-                        new
-                        {
-                            UserId = "a7f1f87f-8150-4c86-bef3-3b6f5b497c0b",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "56e2e671-7353-4bce-950b-b76d74915f0f",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "5cc99ded-fe07-4bbb-a761-4a6025891f9f",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "2813ffb1-e876-4183-9621-480f02708712",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "f542b6c8-24f1-4dbe-8a1c-05866a020016",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "31f025f2-60a3-4a15-8b3d-5e929e1f12f4",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "eba6a85d-944e-42af-b963-1a22b2c66bfc",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "acef761f-019a-4ca2-982a-d8e7dee767ed",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "e4f938e4-e3fc-4fe3-94d4-4a664de76e0d",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "fd9249ce-169c-457f-8513-7ada0ac1683b",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "be61d1f3-dfc4-4c60-bbc2-0136ae5cfb5c",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "64bc2df7-a283-40c6-aa76-cc79d5d2378a",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "e1615701-0602-4f0b-8815-c486c5e5fde0",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "4b33af44-e3f4-449c-becf-76dcc3b0f110",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "dd83701a-3664-44a0-b813-85d5e80532da",
-                            RoleId = "3"
                         });
                 });
 
@@ -505,9 +430,12 @@ namespace backend.Migrations
 
                     b.Property<string>("Inventory_Clerk")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Inventory_Number")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Product_ID")
                         .HasColumnType("int");
 
                     b.Property<int>("Total_Quantity")
@@ -516,163 +444,164 @@ namespace backend.Migrations
                     b.Property<DateTime>("Updated_At")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Variant_ID")
-                        .HasColumnType("int");
-
                     b.HasKey("Inventory_ID");
 
-                    b.ToTable("Inventories");
+                    b.HasIndex("Inventory_Clerk");
+
+                    b.HasIndex("Product_ID");
+
+                    b.ToTable("Inventory", (string)null);
 
                     b.HasData(
                         new
                         {
                             Inventory_ID = 1,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "John Smith",
+                            Inventory_Clerk = "1",
                             Inventory_Number = 1001,
+                            Product_ID = 1,
                             Total_Quantity = 150,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 1
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 2,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Sarah Johnson",
+                            Inventory_Clerk = "2",
                             Inventory_Number = 1002,
+                            Product_ID = 2,
                             Total_Quantity = 75,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 2
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 3,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Mike Davis",
+                            Inventory_Clerk = "1",
                             Inventory_Number = 1003,
+                            Product_ID = 3,
                             Total_Quantity = 200,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 3
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 4,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Lisa Wilson",
+                            Inventory_Clerk = "2",
                             Inventory_Number = 1004,
+                            Product_ID = 4,
                             Total_Quantity = 120,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 4
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 5,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Tom Brown",
+                            Inventory_Clerk = "1",
                             Inventory_Number = 1005,
+                            Product_ID = 5,
                             Total_Quantity = 80,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 5
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 6,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Emma Taylor",
+                            Inventory_Clerk = "2",
                             Inventory_Number = 1006,
+                            Product_ID = 6,
                             Total_Quantity = 300,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 6
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 7,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "John Smith",
+                            Inventory_Clerk = "1",
                             Inventory_Number = 1007,
+                            Product_ID = 7,
                             Total_Quantity = 50,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 7
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 8,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Sarah Johnson",
+                            Inventory_Clerk = "2",
                             Inventory_Number = 1008,
+                            Product_ID = 8,
                             Total_Quantity = 30,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 8
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 9,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Mike Davis",
+                            Inventory_Clerk = "1",
                             Inventory_Number = 1009,
+                            Product_ID = 9,
                             Total_Quantity = 40,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 9
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 10,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Lisa Wilson",
+                            Inventory_Clerk = "2",
                             Inventory_Number = 1010,
+                            Product_ID = 10,
                             Total_Quantity = 25,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 10
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 11,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Tom Brown",
+                            Inventory_Clerk = "1",
                             Inventory_Number = 1011,
+                            Product_ID = 11,
                             Total_Quantity = 60,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 11
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 12,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Emma Taylor",
+                            Inventory_Clerk = "2",
                             Inventory_Number = 1012,
+                            Product_ID = 12,
                             Total_Quantity = 100,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 12
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 13,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "John Smith",
+                            Inventory_Clerk = "1",
                             Inventory_Number = 1013,
+                            Product_ID = 13,
                             Total_Quantity = 200,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 13
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 14,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Sarah Johnson",
+                            Inventory_Clerk = "2",
                             Inventory_Number = 1014,
+                            Product_ID = 14,
                             Total_Quantity = 15,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 14
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Inventory_ID = 15,
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Inventory_Clerk = "Mike Davis",
+                            Inventory_Clerk = "1",
                             Inventory_Number = 1015,
+                            Product_ID = 15,
                             Total_Quantity = 25,
-                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Variant_ID = 15
+                            Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
@@ -719,7 +648,7 @@ namespace backend.Migrations
 
                     b.HasIndex("Variant_ID");
 
-                    b.ToTable("Product", (string)null);
+                    b.ToTable("Products", (string)null);
 
                     b.HasData(
                         new
@@ -915,9 +844,6 @@ namespace backend.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Product_ID")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -934,7 +860,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 1,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 1,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "Single Pack"
                         },
@@ -942,7 +867,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 2,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 2,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "12-Pack"
                         },
@@ -950,7 +874,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 3,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 3,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "3-Pack"
                         },
@@ -958,7 +881,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 4,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 4,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "4-Pack"
                         },
@@ -966,7 +888,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 5,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 5,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "4-Pack Assorted Colors"
                         },
@@ -974,7 +895,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 6,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 6,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "12-Pack"
                         },
@@ -982,7 +902,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 7,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 7,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "24-Count Box"
                         },
@@ -990,7 +909,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 8,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 8,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "12-Count Set"
                         },
@@ -998,7 +916,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 9,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 9,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "12-Count Assorted"
                         },
@@ -1006,7 +923,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 10,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 10,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "12-Count Set"
                         },
@@ -1014,7 +930,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 11,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 11,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "Large (5\" x 8.25\")"
                         },
@@ -1022,7 +937,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 12,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 12,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "200 Pages"
                         },
@@ -1030,7 +944,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 13,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 13,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "100 Sheets"
                         },
@@ -1038,7 +951,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 14,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 14,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "5000 Count Box"
                         },
@@ -1046,7 +958,6 @@ namespace backend.Migrations
                         {
                             Variant_ID = 15,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Product_ID = 15,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Variant_Name = "100 Count Mixed Sizes"
                         });
@@ -1099,22 +1010,6 @@ namespace backend.Migrations
                     b.HasIndex("Invoice_Clerk");
 
                     b.ToTable("Invoice", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Invoice_ID = 1,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Customer_ID = "4",
-                            Discount = 0.00m,
-                            Invoice_Clerk = "2",
-                            Invoice_Number = 1,
-                            Notes = "Sample Invoice Note",
-                            Status = "Sample Invoice Status",
-                            Term = 30,
-                            Total_Amount = 99999.00m,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("backend.Models.LineItems.InvoiceLineItems", b =>
@@ -1125,7 +1020,13 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LineItem_ID"));
 
+                    b.Property<int>("Discount")
+                        .HasColumnType("int");
+
                     b.Property<int>("Invoice_ID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Invoice_ID1")
                         .HasColumnType("int");
 
                     b.Property<int>("Product_ID")
@@ -1133,6 +1034,9 @@ namespace backend.Migrations
 
                     b.Property<decimal>("Sub_Total")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UOM_ID")
+                        .HasColumnType("int");
 
                     b.Property<string>("Unit")
                         .IsRequired()
@@ -1144,13 +1048,20 @@ namespace backend.Migrations
                     b.Property<int>("Unit_Quantity")
                         .HasColumnType("int");
 
+                    b.Property<bool>("isPercentageDiscount")
+                        .HasColumnType("bit");
+
                     b.HasKey("LineItem_ID");
 
                     b.HasIndex("Invoice_ID");
 
+                    b.HasIndex("Invoice_ID1");
+
                     b.HasIndex("Product_ID");
 
-                    b.ToTable("InvoiceLineItems");
+                    b.HasIndex("UOM_ID");
+
+                    b.ToTable("InvoiceLineItems", (string)null);
                 });
 
             modelBuilder.Entity("backend.Models.LineItems.RestockLineItems", b =>
@@ -1161,30 +1072,28 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LineItem_ID"));
 
+                    b.Property<int>("Base_UOM_ID")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Base_Unit_Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Base_Unit_Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Batch_ID")
+                        .HasColumnType("int");
+
                     b.Property<int>("Product_ID")
                         .HasColumnType("int");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Restock_ID")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Sub_Total")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Unit_Price")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("LineItem_ID");
 
-                    b.HasIndex("Product_ID");
+                    b.HasIndex("Base_UOM_ID");
 
-                    b.HasIndex("Restock_ID");
+                    b.HasIndex("Batch_ID");
+
+                    b.HasIndex("Product_ID");
 
                     b.ToTable("RestockLineItems", (string)null);
                 });
@@ -1196,6 +1105,10 @@ namespace backend.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
@@ -1274,6 +1187,7 @@ namespace backend.Migrations
                         {
                             Id = "1",
                             AccessFailedCount = 0,
+                            Address = "123 Admin St, Cityville",
                             CompanyName = "Prince Educational Supply",
                             ConcurrencyStamp = "8d5e6f7a-1b2c-3d4e-5f6a-7b8c9d0e1f2a",
                             Email = "admin@prince.edu",
@@ -1295,6 +1209,7 @@ namespace backend.Migrations
                         {
                             Id = "2",
                             AccessFailedCount = 0,
+                            Address = "456 Employee Rd, Cityville",
                             CompanyName = "Prince Educational Supply",
                             ConcurrencyStamp = "0e1f2a3b-4c5d-6e7f-8a9b-0c1d2e3f4a5b",
                             Email = "employee@prince.edu",
@@ -1316,6 +1231,7 @@ namespace backend.Migrations
                         {
                             Id = "3",
                             AccessFailedCount = 0,
+                            Address = "789 Supplier Ave, Townsville",
                             CompanyName = "Educational Supplies Inc.",
                             ConcurrencyStamp = "2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d",
                             Email = "supplier@example.com",
@@ -1337,6 +1253,7 @@ namespace backend.Migrations
                         {
                             Id = "4",
                             AccessFailedCount = 0,
+                            Address = "101 Customer Blvd, Villageville",
                             CompanyName = "Johnson Elementary School",
                             ConcurrencyStamp = "4c5d6e7f-8a9b-0c1d-2e3f-4a5b6c7d8e9f",
                             Email = "customer@example.com",
@@ -1353,321 +1270,6 @@ namespace backend.Migrations
                             SecurityStamp = "3b4c5d6e-7f8a-9b0c-1d2e-3f4a5b6c7d8e",
                             TwoFactorEnabled = false,
                             UserName = "customer"
-                        },
-                        new
-                        {
-                            Id = "a7f1f87f-8150-4c86-bef3-3b6f5b497c0b",
-                            AccessFailedCount = 0,
-                            CompanyName = "FastPrint Solutions",
-                            ConcurrencyStamp = "bb9bd41a-5582-49d2-be6e-3f576cefbbcb",
-                            Email = "support@fastprint.com",
-                            EmailConfirmed = true,
-                            FirstName = "Daniel",
-                            LastName = "Young",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "SUPPORT@FASTPRINT.COM",
-                            NormalizedUserName = "FASTPRINT",
-                            Notes = "Printing and stationery supplier",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789006",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "27f0738f-c40d-4766-be53-a6f42defc331",
-                            TwoFactorEnabled = false,
-                            UserName = "fastprint"
-                        },
-                        new
-                        {
-                            Id = "56e2e671-7353-4bce-950b-b76d74915f0f",
-                            AccessFailedCount = 0,
-                            CompanyName = "AlphaWorks Stationers",
-                            ConcurrencyStamp = "1b867235-a6e7-4c6b-8418-e66546026902",
-                            Email = "sales@alphaworks.com",
-                            EmailConfirmed = true,
-                            FirstName = "Emily",
-                            LastName = "Stewart",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "SALES@ALPHAWORKS.COM",
-                            NormalizedUserName = "ALPHAWORKS",
-                            Notes = "Office supplies distributor",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789007",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "666a4160-19a6-430d-896b-9edd6f61a21c",
-                            TwoFactorEnabled = false,
-                            UserName = "alphaworks"
-                        },
-                        new
-                        {
-                            Id = "5cc99ded-fe07-4bbb-a761-4a6025891f9f",
-                            AccessFailedCount = 0,
-                            CompanyName = "BrightBooks Inc.",
-                            ConcurrencyStamp = "cc8a4155-0a2e-45b9-8cd1-8627269b3ba5",
-                            Email = "info@brightbooks.com",
-                            EmailConfirmed = true,
-                            FirstName = "Jason",
-                            LastName = "Lee",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "INFO@BRIGHTBOOKS.COM",
-                            NormalizedUserName = "BRIGHTBOOKS",
-                            Notes = "Book and educational materials supplier",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789008",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "cc8a4155-0a2e-45b9-8cd1-8627269b3ba5",
-                            TwoFactorEnabled = false,
-                            UserName = "brightbooks"
-                        },
-                        new
-                        {
-                            Id = "2813ffb1-e876-4183-9621-480f02708712",
-                            AccessFailedCount = 0,
-                            CompanyName = "ColorCopy Ltd.",
-                            ConcurrencyStamp = "41b5702a-632f-4524-adc3-622b161713f6",
-                            Email = "hello@colorcopy.com",
-                            EmailConfirmed = true,
-                            FirstName = "Sophia",
-                            LastName = "Carter",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "HELLO@COLORCOPY.COM",
-                            NormalizedUserName = "COLORCOPY",
-                            Notes = "Printing and copying supplies",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789009",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "a439dd21-ceec-4f99-9600-6829b8211f9b",
-                            TwoFactorEnabled = false,
-                            UserName = "colorcopy"
-                        },
-                        new
-                        {
-                            Id = "f542b6c8-24f1-4dbe-8a1c-05866a020016",
-                            AccessFailedCount = 0,
-                            CompanyName = "NextGen Office Equipment",
-                            ConcurrencyStamp = "0b6683fb-059b-47f4-9457-41343c974d95",
-                            Email = "contact@nextgenoffice.com",
-                            EmailConfirmed = true,
-                            FirstName = "Ryan",
-                            LastName = "Turner",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "CONTACT@NEXTGENOFFICE.COM",
-                            NormalizedUserName = "NEXTGENOFFICE",
-                            Notes = "Office equipment and supplies",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789010",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "016609ef-88be-4c47-be8f-d417310834f0",
-                            TwoFactorEnabled = false,
-                            UserName = "nextgenoffice"
-                        },
-                        new
-                        {
-                            Id = "31f025f2-60a3-4a15-8b3d-5e929e1f12f4",
-                            AccessFailedCount = 0,
-                            CompanyName = "SmartStationers Co.",
-                            ConcurrencyStamp = "9bd94843-af22-4be5-b7c1-0795c89f8c6d",
-                            Email = "info@smartstationers.com",
-                            EmailConfirmed = true,
-                            FirstName = "Hannah",
-                            LastName = "King",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "INFO@SMARTSTATIONERS.COM",
-                            NormalizedUserName = "SMARTSTATIONERS",
-                            Notes = "Stationery and office supplies",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789011",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "da111342-cb10-48c8-80f2-3370f3468e43",
-                            TwoFactorEnabled = false,
-                            UserName = "smartstationers"
-                        },
-                        new
-                        {
-                            Id = "eba6a85d-944e-42af-b963-1a22b2c66bfc",
-                            AccessFailedCount = 0,
-                            CompanyName = "Offix Solutions",
-                            ConcurrencyStamp = "9cc56f99-01cf-442a-b397-93314ca67483",
-                            Email = "support@offixsolutions.com",
-                            EmailConfirmed = true,
-                            FirstName = "Jacob",
-                            LastName = "Moore",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "SUPPORT@OFFIXSOLUTIONS.COM",
-                            NormalizedUserName = "OFFIXSOLUTIONS",
-                            Notes = "Office solutions provider",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789012",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "d777e1f8-9893-48f4-8d00-93300ba89ad2",
-                            TwoFactorEnabled = false,
-                            UserName = "offixsolutions"
-                        },
-                        new
-                        {
-                            Id = "acef761f-019a-4ca2-982a-d8e7dee767ed",
-                            AccessFailedCount = 0,
-                            CompanyName = "Primo Educational Supplies",
-                            ConcurrencyStamp = "9d9977ed-ea32-4ab2-832b-0b70dd82e5a6",
-                            Email = "orders@primoeducational.com",
-                            EmailConfirmed = true,
-                            FirstName = "Ava",
-                            LastName = "White",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "ORDERS@PRIMOEDUCATIONAL.COM",
-                            NormalizedUserName = "PRIMOEDUCATIONAL",
-                            Notes = "Educational supplies distributor",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789013",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "a56c84c8-2d13-4243-8e53-9cb37ecdf9a8",
-                            TwoFactorEnabled = false,
-                            UserName = "primoeducational"
-                        },
-                        new
-                        {
-                            Id = "e4f938e4-e3fc-4fe3-94d4-4a664de76e0d",
-                            AccessFailedCount = 0,
-                            CompanyName = "EcoPaper Plus",
-                            ConcurrencyStamp = "ef2f7100-d8b9-4e69-a8a3-7a449275eca6",
-                            Email = "eco@ecopaperplus.com",
-                            EmailConfirmed = true,
-                            FirstName = "Mia",
-                            LastName = "Hill",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "ECO@ECOPAPERPLUS.COM",
-                            NormalizedUserName = "ECOPAPERPLUS",
-                            Notes = "Eco-friendly paper products",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789014",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "9bb73ee2-e28f-4711-9042-c9c1c29980d4",
-                            TwoFactorEnabled = false,
-                            UserName = "ecopaperplus"
-                        },
-                        new
-                        {
-                            Id = "fd9249ce-169c-457f-8513-7ada0ac1683b",
-                            AccessFailedCount = 0,
-                            CompanyName = "EduSmart Stationery",
-                            ConcurrencyStamp = "bb9a82b4-064d-4a1c-92b6-3982f074afcb",
-                            Email = "hello@edusmart.com",
-                            EmailConfirmed = true,
-                            FirstName = "Noah",
-                            LastName = "Adams",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "HELLO@EDUSMART.COM",
-                            NormalizedUserName = "EDUSMART",
-                            Notes = "Educational stationery supplier",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789015",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "be7551f4-6ea9-40cc-b337-1c2c6db91faf",
-                            TwoFactorEnabled = false,
-                            UserName = "edusmart"
-                        },
-                        new
-                        {
-                            Id = "be61d1f3-dfc4-4c60-bbc2-0136ae5cfb5c",
-                            AccessFailedCount = 0,
-                            CompanyName = "BrightTech Office Supplies",
-                            ConcurrencyStamp = "2b963347-0568-4532-ba63-bff4d948f7b0",
-                            Email = "sales@brighttech.com",
-                            EmailConfirmed = true,
-                            FirstName = "William",
-                            LastName = "Scott",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "SALES@BRIGHTTECH.COM",
-                            NormalizedUserName = "BRIGHTTECH",
-                            Notes = "Office technology and supplies",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789016",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "818c6e97-8d4b-47a6-a61c-6cf55fd61312",
-                            TwoFactorEnabled = false,
-                            UserName = "brighttech"
-                        },
-                        new
-                        {
-                            Id = "64bc2df7-a283-40c6-aa76-cc79d5d2378a",
-                            AccessFailedCount = 0,
-                            CompanyName = "Prime Papers Corporation",
-                            ConcurrencyStamp = "6aab628a-68f4-4e7e-95a3-03c42897f849",
-                            Email = "orders@primepapers.com",
-                            EmailConfirmed = true,
-                            FirstName = "Isabella",
-                            LastName = "Green",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "ORDERS@PRIMEPAPERS.COM",
-                            NormalizedUserName = "PRIMEPAPERS",
-                            Notes = "Paper products supplier",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789017",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "56358e25-aa23-4266-8a1a-c38a81e799e7",
-                            TwoFactorEnabled = false,
-                            UserName = "primepapers"
-                        },
-                        new
-                        {
-                            Id = "e1615701-0602-4f0b-8815-c486c5e5fde0",
-                            AccessFailedCount = 0,
-                            CompanyName = "Xpress Stationery Services",
-                            ConcurrencyStamp = "a6c7ada1-0576-48f0-a02f-5e6a625da32b",
-                            Email = "support@xpressstationery.com",
-                            EmailConfirmed = true,
-                            FirstName = "James",
-                            LastName = "Wright",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "SUPPORT@XPRESSSTATIONERY.COM",
-                            NormalizedUserName = "XPRESSSTATIONERY",
-                            Notes = "Fast delivery stationery service",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789018",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "e165ed1d-714e-4ebb-b81d-5823294e1934",
-                            TwoFactorEnabled = false,
-                            UserName = "xpressstationery"
-                        },
-                        new
-                        {
-                            Id = "4b33af44-e3f4-449c-becf-76dcc3b0f110",
-                            AccessFailedCount = 0,
-                            CompanyName = "Global Offices Ltd.",
-                            ConcurrencyStamp = "a37c40a4-1e7b-44ad-a4d1-3a76917fd82e",
-                            Email = "info@globaloffices.com",
-                            EmailConfirmed = true,
-                            FirstName = "Charlotte",
-                            LastName = "Baker",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "INFO@GLOBALOFFICES.COM",
-                            NormalizedUserName = "GLOBALOFFICES",
-                            Notes = "International office supplies",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789019",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "90b34228-cd8a-44fd-8de7-09d18dd05f3e",
-                            TwoFactorEnabled = false,
-                            UserName = "globaloffices"
-                        },
-                        new
-                        {
-                            Id = "dd83701a-3664-44a0-b813-85d5e80532da",
-                            AccessFailedCount = 0,
-                            CompanyName = "AceOffice Supplies",
-                            ConcurrencyStamp = "f56a3acc-f5e2-4dec-9d3c-62b6312f33cd",
-                            Email = "sales@aceoffice.com",
-                            EmailConfirmed = true,
-                            FirstName = "Lucas",
-                            LastName = "Mitchell",
-                            LockoutEnabled = true,
-                            NormalizedEmail = "SALES@ACEOFFICE.COM",
-                            NormalizedUserName = "ACEOFFICE",
-                            Notes = "Premium office supplies",
-                            PasswordHash = "$2a$12$pfsAFvDl3XlZxfqBfXoNR.L98a6.83LIqb.pZrZQmB738RCG5Hm5C",
-                            PhoneNumber = "3456789020",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "083ec1d5-0395-4aed-86d4-4facf40f7b64",
-                            TwoFactorEnabled = false,
-                            UserName = "aceoffice"
                         });
                 });
 
@@ -1679,23 +1281,25 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Restock_ID"));
 
-                    b.Property<int>("Batch_ID")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("LineItems_Total")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Restock_Clerk")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Restock_ID");
+                    b.Property<string>("Restock_Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasIndex("Batch_ID");
+                    b.Property<string>("Restock_Number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Restock_ID");
 
                     b.HasIndex("Restock_Clerk");
 
@@ -1716,6 +1320,9 @@ namespace backend.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Restock_ID")
+                        .HasColumnType("int");
+
                     b.Property<string>("Supplier_ID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -1725,9 +1332,11 @@ namespace backend.Migrations
 
                     b.HasKey("Batch_ID");
 
+                    b.HasIndex("Restock_ID");
+
                     b.HasIndex("Supplier_ID");
 
-                    b.ToTable("RestocksBatch");
+                    b.ToTable("RestockBatch", (string)null);
                 });
 
             modelBuilder.Entity("backend.Models.Unit.Product_UOM", b =>
@@ -1738,31 +1347,28 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Product_UOM_Id"));
 
-                    b.Property<int>("Batch_Id")
-                        .HasColumnType("int");
-
                     b.Property<int>("Conversion_Factor")
                         .HasColumnType("int");
 
-                    b.Property<int>("Parent_UOM_Id")
+                    b.Property<int>("LineItem_ID")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Price")
+                    b.Property<int?>("Parent_UOM_ID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UOM_ID")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Unit_Price")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Product_Id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UOM_Id")
-                        .HasColumnType("int");
 
                     b.HasKey("Product_UOM_Id");
 
-                    b.HasIndex("Batch_Id");
+                    b.HasIndex("LineItem_ID");
 
-                    b.HasIndex("Product_Id");
+                    b.HasIndex("Parent_UOM_ID");
 
-                    b.HasIndex("UOM_Id");
+                    b.HasIndex("UOM_ID");
 
                     b.ToTable("Product_UOM", (string)null);
                 });
@@ -1846,6 +1452,78 @@ namespace backend.Migrations
                         });
                 });
 
+            modelBuilder.Entity("backend.Models.Users.DeletedUsers", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeletedUsers");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1897,6 +1575,25 @@ namespace backend.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("backend.Models.Inventory.Inventory", b =>
+                {
+                    b.HasOne("backend.Models.PersonalDetails", "PersonalDetails")
+                        .WithMany()
+                        .HasForeignKey("Inventory_Clerk")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Inventory.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("Product_ID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("PersonalDetails");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("backend.Models.Inventory.Product", b =>
                 {
                     b.HasOne("backend.Models.Inventory.Brand", "Brand")
@@ -1946,49 +1643,63 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.LineItems.InvoiceLineItems", b =>
                 {
                     b.HasOne("backend.Models.InvoiceModel.Invoice", "Invoices")
-                        .WithMany("LineItems")
+                        .WithMany()
                         .HasForeignKey("Invoice_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("backend.Models.InvoiceModel.Invoice", null)
+                        .WithMany("LineItems")
+                        .HasForeignKey("Invoice_ID1");
 
                     b.HasOne("backend.Models.Inventory.Product", "Product")
                         .WithMany()
                         .HasForeignKey("Product_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Unit.UnitOfMeasure", "UnitOfMeasure")
+                        .WithMany()
+                        .HasForeignKey("UOM_ID")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Invoices");
 
                     b.Navigation("Product");
+
+                    b.Navigation("UnitOfMeasure");
                 });
 
             modelBuilder.Entity("backend.Models.LineItems.RestockLineItems", b =>
                 {
+                    b.HasOne("backend.Models.Unit.UnitOfMeasure", "BaseUnitOfMeasure")
+                        .WithMany()
+                        .HasForeignKey("Base_UOM_ID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.RestockModel.RestockBatch", "RestockBatch")
+                        .WithMany("RestockLineItems")
+                        .HasForeignKey("Batch_ID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("backend.Models.Inventory.Product", "Product")
                         .WithMany()
                         .HasForeignKey("Product_ID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("backend.Models.RestockModel.Restock", "Restock")
-                        .WithMany("LineItems")
-                        .HasForeignKey("Restock_ID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                    b.Navigation("BaseUnitOfMeasure");
 
                     b.Navigation("Product");
 
-                    b.Navigation("Restock");
+                    b.Navigation("RestockBatch");
                 });
 
             modelBuilder.Entity("backend.Models.RestockModel.Restock", b =>
                 {
-                    b.HasOne("backend.Models.RestockModel.RestockBatch", "restockBatch")
-                        .WithMany()
-                        .HasForeignKey("Batch_ID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("backend.Models.PersonalDetails", "Clerk")
                         .WithMany()
                         .HasForeignKey("Restock_Clerk")
@@ -1996,44 +1707,49 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Clerk");
-
-                    b.Navigation("restockBatch");
                 });
 
             modelBuilder.Entity("backend.Models.RestockModel.RestockBatch", b =>
                 {
+                    b.HasOne("backend.Models.RestockModel.Restock", "Restock")
+                        .WithMany("RestockBatches")
+                        .HasForeignKey("Restock_ID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("backend.Models.PersonalDetails", "Supplier")
                         .WithMany()
                         .HasForeignKey("Supplier_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Restock");
 
                     b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("backend.Models.Unit.Product_UOM", b =>
                 {
-                    b.HasOne("backend.Models.RestockModel.RestockBatch", "RestockBatch")
-                        .WithMany()
-                        .HasForeignKey("Batch_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                    b.HasOne("backend.Models.LineItems.RestockLineItems", "RestockLineItem")
+                        .WithMany("ProductUOMs")
+                        .HasForeignKey("LineItem_ID")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Models.Inventory.Product", "Product")
+                    b.HasOne("backend.Models.Unit.UnitOfMeasure", "ParentUnitOfMeasure")
                         .WithMany()
-                        .HasForeignKey("Product_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .HasForeignKey("Parent_UOM_ID")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("backend.Models.Unit.UnitOfMeasure", "UnitOfMeasure")
                         .WithMany()
-                        .HasForeignKey("UOM_Id")
+                        .HasForeignKey("UOM_ID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Product");
+                    b.Navigation("ParentUnitOfMeasure");
 
-                    b.Navigation("RestockBatch");
+                    b.Navigation("RestockLineItem");
 
                     b.Navigation("UnitOfMeasure");
                 });
@@ -2043,9 +1759,19 @@ namespace backend.Migrations
                     b.Navigation("LineItems");
                 });
 
+            modelBuilder.Entity("backend.Models.LineItems.RestockLineItems", b =>
+                {
+                    b.Navigation("ProductUOMs");
+                });
+
             modelBuilder.Entity("backend.Models.RestockModel.Restock", b =>
                 {
-                    b.Navigation("LineItems");
+                    b.Navigation("RestockBatches");
+                });
+
+            modelBuilder.Entity("backend.Models.RestockModel.RestockBatch", b =>
+                {
+                    b.Navigation("RestockLineItems");
                 });
 #pragma warning restore 612, 618
         }
