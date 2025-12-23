@@ -177,9 +177,9 @@ namespace backend.Data
                     .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(ili => ili.Invoices)
-                    .WithMany()
+                    .WithMany(i => i.LineItems)
                     .HasForeignKey(ili => ili.Invoice_ID)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(ili => ili.UnitOfMeasure)
                     .WithMany()

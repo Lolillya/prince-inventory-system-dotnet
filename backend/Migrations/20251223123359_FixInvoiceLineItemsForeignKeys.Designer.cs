@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251223123359_FixInvoiceLineItemsForeignKeys")]
+    partial class FixInvoiceLineItemsForeignKeys
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1023,6 +1026,9 @@ namespace backend.Migrations
                     b.Property<int>("Invoice_ID")
                         .HasColumnType("int");
 
+                    b.Property<int?>("Invoice_ID1")
+                        .HasColumnType("int");
+
                     b.Property<int>("Product_ID")
                         .HasColumnType("int");
 
@@ -1048,6 +1054,8 @@ namespace backend.Migrations
                     b.HasKey("LineItem_ID");
 
                     b.HasIndex("Invoice_ID");
+
+                    b.HasIndex("Invoice_ID1");
 
                     b.HasIndex("Product_ID");
 
@@ -1635,10 +1643,14 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.LineItems.InvoiceLineItems", b =>
                 {
                     b.HasOne("backend.Models.InvoiceModel.Invoice", "Invoices")
-                        .WithMany("LineItems")
+                        .WithMany()
                         .HasForeignKey("Invoice_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("backend.Models.InvoiceModel.Invoice", null)
+                        .WithMany("LineItems")
+                        .HasForeignKey("Invoice_ID1");
 
                     b.HasOne("backend.Models.Inventory.Product", "Product")
                         .WithMany()

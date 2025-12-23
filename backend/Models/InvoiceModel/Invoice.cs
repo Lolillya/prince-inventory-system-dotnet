@@ -32,7 +32,6 @@ namespace backend.Models.InvoiceModel
         public string? Status { get; set; }
         public int Term { get; set; }
 
-        [InverseProperty("Invoices")]
         public ICollection<LineItems.InvoiceLineItems> LineItems { get; set; } = new List<LineItems.InvoiceLineItems>();
     }
 }

@@ -15,8 +15,11 @@ namespace backend.Models.LineItems
         public int Product_ID { get; set; }
         public int Invoice_ID { get; set; }
         public int UOM_ID { get; set; }
+        [ForeignKey(nameof(Product_ID))]
         public Product Product { get; set; } = null!;
+        [ForeignKey(nameof(Invoice_ID))]
         public Invoice Invoices { get; set; } = null!;
+        [ForeignKey(nameof(UOM_ID))]
         public UnitOfMeasure UnitOfMeasure { get; set; } = null!;
 
 
