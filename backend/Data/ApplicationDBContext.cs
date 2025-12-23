@@ -167,6 +167,26 @@ namespace backend.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            builder.Entity<InvoiceLineItems>(entity =>
+            {
+                entity.ToTable("InvoiceLineItems");
+
+                entity.HasOne(ili => ili.Product)
+                    .WithMany()
+                    .HasForeignKey(ili => ili.Product_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(ili => ili.Invoices)
+                    .WithMany()
+                    .HasForeignKey(ili => ili.Invoice_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(ili => ili.UnitOfMeasure)
+                    .WithMany()
+                    .HasForeignKey(ili => ili.UOM_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             // Product_UOM Configuration
             builder.Entity<Product_UOM>(entity =>
             {

@@ -18,8 +18,5 @@ namespace backend.Dtos.InvoiceDTO
         public int Term { get; set; }
         [Required]
         public string Notes { get; set; } = "";
-
-
-
     }
 }

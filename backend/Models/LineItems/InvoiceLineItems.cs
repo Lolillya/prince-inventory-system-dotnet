@@ -14,13 +14,12 @@ namespace backend.Models.LineItems
         // FKs
         public int Product_ID { get; set; }
         public int Invoice_ID { get; set; }
-        [ForeignKey(nameof(Product_ID))]
-        public Product Product { get; set; } = null!;
-        [ForeignKey(nameof(Invoice_ID))]
-        public Invoice Invoices { get; set; } = null!;
         public int UOM_ID { get; set; }
-        [ForeignKey(nameof(UOM_ID))]
+        public Product Product { get; set; } = null!;
+        public Invoice Invoices { get; set; } = null!;
         public UnitOfMeasure UnitOfMeasure { get; set; } = null!;
+
+
 
         public string Unit { get; set; } = null!;
         [Column(TypeName = "decimal(18,2)")]
