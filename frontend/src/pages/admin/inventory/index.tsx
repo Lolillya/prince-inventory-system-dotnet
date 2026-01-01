@@ -71,7 +71,7 @@ const InventoryPage = () => {
 
   return (
     <section>
-      {/* HEADER */}
+      {/* ADD PRODUCT MODAL */}
       <Activity mode={isModalOpen ? "visible" : "hidden"}>
         <AddProductModal
           isModalOpen={isModalOpen}
@@ -90,6 +90,7 @@ const InventoryPage = () => {
           selectedProduct={selectedProduct}
         />
       )}
+      {/* HEADER */}
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3 max-w-lg w-full shrink-0">
@@ -105,13 +106,13 @@ const InventoryPage = () => {
               </i>
             </div>
 
-            <div className="p-3 bg-custom-gray rounded-lg">
+            <div className="p-3 bg-custom-gray rounded-lg inset-shadow-sm border">
               <FilterIcon />
             </div>
           </div>
 
           <div className="flex w-full justify-end gap-2">
-            <div className="bg-custom-gray p-3 rounded-lg">
+            <div className="bg-custom-gray p-3 rounded-lg inset-shadow-sm border">
               <FileDownIcon />
             </div>
             <button
@@ -130,7 +131,7 @@ const InventoryPage = () => {
       <div className="flex flex-1 gap-3 overflow-y-hidden">
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
-          <div className="bg-custom-gray p-1 rounded-lg flex justify-between">
+          <div className="bg-custom-gray p-1 rounded-lg flex justify-between shadow-sm border">
             <div className=" gap-10 flex items-center pl-2">
               <label className="capitalize text-saltbox-gray font-semibold text-sm">
                 inventory
@@ -158,7 +159,7 @@ const InventoryPage = () => {
             </DropdownMenu>
           </div>
 
-          <div className="w-full overflow-y-scroll flex flex-col gap-2 pr-2">
+          <div className="w-full overflow-y-scroll flex flex-col gap-2 p-2 inset-shadow-sm rounded-lg border">
             {filteredInventory?.map((data, index) => (
               <>
                 <div
@@ -190,13 +191,13 @@ const InventoryPage = () => {
 
         {/* RIGHT PANEL */}
         <div className="w-[70%] flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
+          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center shadow-sm border">
+            <label className="capitalize text-saltbox-gray font-semibold text-base">
               details
             </label>
           </div>
 
-          <div className="h-full bg-custom-gray rounded-lg flex p-5">
+          <div className="h-full bg-custom-gray rounded-lg flex p-5 shadow-lg border">
             {!selectedProduct ? (
               <NoSelectedState />
             ) : (

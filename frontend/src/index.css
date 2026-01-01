@@ -167,7 +167,7 @@
   }
 
   section {
-    @apply w-full h-full min-h-dvh max-h-dvh flex px-5 py-10 flex-col overflow-y-hidden z-10;
+    @apply w-full h-full min-h-dvh max-h-dvh flex px-5 py-10 flex-col overflow-y-hidden z-10 rounded-lg;
   }
 
   span {
@@ -179,9 +179,9 @@
   }
 
   button {
-    @apply rounded-sm w-full max-w-[10rem] py-3 px-4 
+    @apply rounded-sm w-full max-w-40 py-3 px-4 
       flex items-center justify-center gap-2
-      bg-river-green hover:bg-river-green/80
+      bg-river-green hover:brightness-105 text-primary/80 hover:shadow-lg
       text-sm font-semibold capitalize
       transition-all duration-200 cursor-pointer;
 
@@ -255,7 +255,7 @@
   }
 
   .input-style-2 {
-    @apply pl-10 w-full drop-shadow-none bg-custom-gray font-semibold text-saltbox-gray;
+    @apply pl-10 w-full drop-shadow-none bg-custom-gray font-semibold text-saltbox-gray inset-shadow-sm border;
   }
 
   .input-style-3 {

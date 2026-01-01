@@ -79,7 +79,7 @@ const Sidebar = () => {
     // },
   };
   return (
-    <div className="bg-custom-bg-white px-5 py-10 max-w-82.5 w-full flex flex-col justify-between">
+    <div className="bg-custom-bg-white px-5 py-10 max-w-82.5 w-full flex flex-col justify-between inset-shadow-sm border">
       <div className="flex flex-col">
         {/* LOGO */}
         <div className="flex items-center space-x-3.5 pb-5 pl-3">
@@ -124,7 +124,7 @@ const Sidebar = () => {
       <button onClick={() => logout()}>Logout</button>
 
       {/* USER DETAILS PANEL */}
-      <div className="flex items-center bg-white p-3 gap-3 rounded-full">
+      <div className="flex items-center bg-white p-3 gap-3 rounded-full shadow-md border">
         <div className="rounded-full w-10 h-10 bg-pink-400 flex items-center justify-center">
           <span className="text-custom-bg-white">AA</span>
         </div>
