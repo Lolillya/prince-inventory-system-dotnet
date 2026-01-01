@@ -1,10 +1,10 @@
-import { NoSelectedState } from "../../../components/no-selected-state";
-import { Separator } from "../../../components/separator";
-import { UseInventoryQuery } from "../../../features/inventory/get-inventory.query";
+import { NoSelectedState } from "@/components/no-selected-state";
+import { Separator } from "@/components/separator";
+import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import {
   useSelectedProductQuery,
   useSetSelectedProduct,
-} from "../../../features/inventory/product-selected";
+} from "@/features/inventory/product-selected";
 import {
   EditIcon,
   EllipsisIcon,
@@ -12,18 +12,27 @@ import {
   FilterIcon,
   PlusIcon,
   SearchIcon,
-} from "../../../icons";
+} from "@/icons";
 import { SelectedProduct } from "./_components/selected-product";
 import { Activity, useState } from "react";
 import { AddProductModal } from "./add-product/_components/AddProductModal";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
-import { EditProductModal } from "./_components/edit-product-modal";
+import { EditProductModal } from "./_components/edit-product.modal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
 
 const InventoryPage = () => {
   const { data: inventory, isLoading, error } = UseInventoryQuery();
   const { data: selectedProduct } = useSelectedProductQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
+  const [isPresetEditorOpen, setIsPresetEditorOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const setSelectedProduct = useSetSelectedProduct();
 
@@ -34,12 +43,20 @@ const InventoryPage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
+  const handlePresentEditor = () => {
+    setIsPresetEditorOpen(!isPresetEditorOpen);
+    setIsModalOpen(false);
+    setIsEditProductModalOpen(false);
+  };
+
   const handleClick = (product: InventoryProductModel) => {
     setSelectedProduct(product);
   };
 
   const handleEditProduct = () => {
     setIsEditProductModalOpen(!isEditProductModalOpen);
+    setIsModalOpen(false);
+    setIsPresetEditorOpen(false);
   };
 
   // Filter inventory based on search query
@@ -62,6 +79,11 @@ const InventoryPage = () => {
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}
         />
+      </Activity>
+
+      {/* PRESET EDITOR MODAL */}
+      <Activity mode={isPresetEditorOpen ? "visible" : "hidden"}>
+        <ProductUnitPresetModal />
       </Activity>
 
       {isEditProductModalOpen && selectedProduct && (
@@ -121,9 +143,22 @@ const InventoryPage = () => {
               </span>
             </div>
 
-            <div className="rounded-lg hover:bg-background p-2 text-xs flex items-center gap-2 cursor-pointer duration-300 transition-all">
-              <EllipsisIcon />
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs flex items-center gap-2 cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none">
+                <EllipsisIcon />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={handlePresentEditor}
+                  >
+                    Packaging Presets
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {/* <div className="rounded-lg hover:bg-background p-2 text-xs flex items-center gap-2 cursor-pointer duration-300 transition-all"></div> */}
           </div>
 
           <div className="w-full overflow-y-scroll flex flex-col gap-2 pr-2">
