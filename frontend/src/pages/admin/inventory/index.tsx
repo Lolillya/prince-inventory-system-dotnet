@@ -36,14 +36,12 @@ const InventoryPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const setSelectedProduct = useSetSelectedProduct();
 
-  console.log(selectedProduct);
-
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const handlePresentEditor = () => {
+  const handlePresetEditor = () => {
     setIsPresetEditorOpen(!isPresetEditorOpen);
     setIsModalOpen(false);
     setIsEditProductModalOpen(false);
@@ -83,7 +81,7 @@ const InventoryPage = () => {
 
       {/* PRESET EDITOR MODAL */}
       <Activity mode={isPresetEditorOpen ? "visible" : "hidden"}>
-        <ProductUnitPresetModal />
+        <ProductUnitPresetModal handlePresetEditor={handlePresetEditor} />
       </Activity>
 
       {isEditProductModalOpen && selectedProduct && (
@@ -151,14 +149,13 @@ const InventoryPage = () => {
                 <DropdownMenuGroup>
                   <DropdownMenuItem
                     className="cursor-pointer"
-                    onClick={handlePresentEditor}
+                    onClick={handlePresetEditor}
                   >
                     Packaging Presets
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
-            {/* <div className="rounded-lg hover:bg-background p-2 text-xs flex items-center gap-2 cursor-pointer duration-300 transition-all"></div> */}
           </div>
 
           <div className="w-full overflow-y-scroll flex flex-col gap-2 pr-2">
