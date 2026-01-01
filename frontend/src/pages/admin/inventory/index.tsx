@@ -162,7 +162,7 @@ const InventoryPage = () => {
             {filteredInventory?.map((data, index) => (
               <>
                 <div
-                  className="flex justify-between p-5 rounded-lg"
+                  className="flex justify-between p-2 rounded-lg"
                   key={index}
                   onClick={() => handleClick(data)}
                 >
@@ -177,7 +177,7 @@ const InventoryPage = () => {
                   </div>
                   <div
                     onClick={handleEditProduct}
-                    className="cursor-pointer hover:bg-accent p-3 rounded-lg duration-300 transition-all"
+                    className="cursor-pointer hover:bg-accent p-2 rounded-lg duration-300 transition-all"
                   >
                     <EditIcon />
                   </div>
