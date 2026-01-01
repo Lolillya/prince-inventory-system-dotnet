@@ -1,6 +1,6 @@
 import { NoSelectedState } from "@/components/no-selected-state";
 import { LeftArrowIcon, SearchIcon } from "@/icons";
-import { useState } from "react";
+import { Activity, useState } from "react";
 import { CreateRestockModal } from "./_components/restock-modal";
 import RestockCard from "./_components/restock-card";
 import {
@@ -72,7 +72,10 @@ const NewRestockPage = () => {
 
   return (
     <section>
-      {isModalOpen && <CreateRestockModal createRestock={createRestock} />}
+      <Activity mode={isModalOpen ? "visible" : "hidden"}>
+        <CreateRestockModal createRestock={createRestock} />
+      </Activity>
+
       <div className="flex flex-col min-h-0 flex-1 gap-5">
         <div className="flex flex-col gap-10">
           <div className="flex gap-3 border-b pb-5 items-center">
