@@ -13,7 +13,7 @@ import {
   SearchIcon,
 } from "../../../icons";
 import { SelectedProduct } from "./_components/selected-product";
-import { useState } from "react";
+import { Activity, useState } from "react";
 import { AddProductModal } from "./add-product/_components/AddProductModal";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { EditProductModal } from "./_components/edit-product-modal";
@@ -56,12 +56,12 @@ const InventoryPage = () => {
   return (
     <section>
       {/* HEADER */}
-      {isModalOpen && (
+      <Activity mode={isModalOpen ? "visible" : "hidden"}>
         <AddProductModal
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}
         />
-      )}
+      </Activity>
 
       {isEditProductModalOpen && selectedProduct && (
         <EditProductModal

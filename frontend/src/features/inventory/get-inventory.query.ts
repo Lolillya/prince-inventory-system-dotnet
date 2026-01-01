@@ -4,7 +4,7 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 
 export const UseInventoryQuery = () => {
   return useQuery<InventoryProductModel[]>({
-    queryKey: ["inventory"],
+    queryKey: ["inventory-products"],
     queryFn: async () => {
       const response = await GetInventory();
       if (!response) throw new Error("Failded to fetch inventory");

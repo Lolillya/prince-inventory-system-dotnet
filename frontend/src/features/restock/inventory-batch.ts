@@ -4,7 +4,7 @@ import { GetInventory } from "./get-inventory-batches";
 
 export const UseInventoryQuery = () => {
   return useQuery<InventoryBatchesModel[]>({
-    queryKey: ["inventory"],
+    queryKey: ["inventory-batches"],
     queryFn: async () => {
       const response = await GetInventory();
       if (!response) throw new Error("Failded to fetch inventory");
