@@ -29,6 +29,9 @@ services:
       - "8080:8080"
     volumes:
       - ./frontend:/web-app
-      - /web-app/node_modules
+      - node_modules:/web-app/node_modules
     depends_on:
       - backend
+
+volumes:
+  node_modules:
