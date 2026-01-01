@@ -79,7 +79,7 @@ const Sidebar = () => {
     // },
   };
   return (
-    <div className="bg-custom-bg-white px-5 py-10 max-w-[20.625rem] w-full flex flex-col justify-between">
+    <div className="bg-custom-bg-white px-5 py-10 max-w-82.5 w-full flex flex-col justify-between">
       <div className="flex flex-col">
         {/* LOGO */}
         <div className="flex items-center space-x-3.5 pb-5 pl-3">
@@ -88,11 +88,11 @@ const Sidebar = () => {
         </div>
 
         {/* TOP PANEL */}
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           {Object.entries(sidebarContent.main).map(([key, value]) => (
             <div
               key={key}
-              className={`flex items-center rounded-lg p-3 transition-colors duration-300 hover:cursor-pointer hover:bg-white text-custom-black ${location.pathname === value.redirect && "bg-white"}`}
+              className={`flex items-center rounded-lg p-3 transition-colors duration-300 hover:cursor-pointer hover:bg-white text-custom-black ${location.pathname === value.redirect && "bg-white shadow-md"}`}
               onClick={() => navigate(value.redirect)}
             >
               {value.icon}
@@ -107,11 +107,11 @@ const Sidebar = () => {
         </div>
 
         {/* RECORDS PANEL */}
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           {Object.entries(sidebarContent.records).map(([key, value]) => (
             <div
               key={key}
-              className={`flex items-center rounded-lg p-3 transition-colors duration-300 hover:cursor-pointer hover:bg-white text-custom-black ${location.pathname === value.redirect && "bg-white"}`}
+              className={`flex items-center rounded-lg p-3 transition-colors duration-300 hover:cursor-pointer hover:bg-white text-custom-black ${location.pathname === value.redirect && "bg-white shadow-md"}`}
               onClick={() => navigate(value.redirect)}
             >
               {value.icon}
