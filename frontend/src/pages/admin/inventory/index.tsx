@@ -7,6 +7,7 @@ import {
 } from "../../../features/inventory/product-selected";
 import {
   EditIcon,
+  EllipsisIcon,
   FileDownIcon,
   FilterIcon,
   PlusIcon,
@@ -109,10 +110,20 @@ const InventoryPage = () => {
       <div className="flex flex-1 gap-3 overflow-y-hidden">
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
-              records
-            </label>
+          <div className="bg-custom-gray p-1 rounded-lg flex justify-between">
+            <div className=" gap-10 flex items-center pl-2">
+              <label className="capitalize text-saltbox-gray font-semibold text-sm">
+                inventory
+              </label>
+
+              <span className="text-xs text-vesper-gray font-semibold">
+                {filteredInventory?.length} records
+              </span>
+            </div>
+
+            <div className="rounded-lg hover:bg-background p-2 text-xs flex items-center gap-2 cursor-pointer duration-300 transition-all">
+              <EllipsisIcon />
+            </div>
           </div>
 
           <div className="w-full overflow-y-scroll flex flex-col gap-2 pr-2">
