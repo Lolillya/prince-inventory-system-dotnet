@@ -11,8 +11,8 @@ interface PresetEditorFormProps {
 
 const schema = yup.object().shape({
   baseUnit: yup.string().required("Base Unit is required"),
-  conversion1: yup.string(),
-  conversion1Qty: yup.string(),
+  conversion1: yup.string().required("Conversion 1 is required"),
+  conversion1Qty: yup.string().required("Conversion 1 Quantity is required"),
   conversion2: yup.string(),
   conversion2Qty: yup.string(),
   conversion3: yup.string(),
@@ -39,12 +39,17 @@ export const PresetEditorForm = ({
     toast.success("Packaging Preset Confirmed");
   };
 
+  const handleFormError = (errors: any) => {
+    const firstError = Object.values(errors)[0] as any;
+    toast.error(firstError?.message || "Please fill in all required fields");
+  };
+
   console.log("Validation errors:", errors);
 
   return (
     <>
       <form
-        onSubmit={handleSubmit(handleSubmitForm)}
+        onSubmit={handleSubmit(handleSubmitForm, handleFormError)}
         className="flex flex-col flex-1 gap-5"
       >
         <div className="flex items-center justify-between">
