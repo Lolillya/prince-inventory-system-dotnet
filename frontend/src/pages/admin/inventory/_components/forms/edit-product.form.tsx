@@ -57,7 +57,7 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
 
   return (
     <form
-      className=" flex flex-col gap-5 overflow-y-scroll flex-1"
+      className="flex flex-col gap-5 overflow-y-scroll flex-1"
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col space-y-4 mb-auto">
