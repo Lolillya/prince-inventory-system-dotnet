@@ -171,7 +171,7 @@
   }
 
   span {
-    @apply text-custom-black capitalize;
+    @apply text-custom-black;
   }
 
   label {
@@ -186,6 +186,10 @@
       transition-all duration-200 cursor-pointer;
 
     color: var(--primary-foreground);
+  }
+
+  select {
+    @apply rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white;
   }
 
   input {

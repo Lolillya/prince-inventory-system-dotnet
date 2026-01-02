@@ -1,6 +1,6 @@
 import { XIcon } from "@/icons";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
-import { EditProductForm } from "./forms/edit-product-form";
+import { EditProductForm } from "./forms/edit-product.form";
 
 interface EditProductModalProps {
   setIsEditProductModalOpen: React.Dispatch<React.SetStateAction<boolean>>;

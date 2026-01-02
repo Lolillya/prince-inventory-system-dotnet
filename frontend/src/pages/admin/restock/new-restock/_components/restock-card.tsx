@@ -153,7 +153,6 @@ const RestockCard = ({ product, onRemove, units }: RestockCardProp) => {
         <div className="flex flex-col gap-1">
           <label>unit</label>
           <select
-            className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
             value={selectedUnit}
             onChange={(e) => handleChangeUnit(Number(e.target.value))}
           >
