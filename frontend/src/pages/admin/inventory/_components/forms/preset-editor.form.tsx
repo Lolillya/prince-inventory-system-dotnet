@@ -11,7 +11,6 @@ interface PresetEditorFormProps {
 
 const schema = yup.object().shape({
   baseUnit: yup.string().required("Base Unit is required"),
-  baseUnitQty: yup.string().required("Base Unit Quantity is required"),
   conversion1: yup.string(),
   conversion1Qty: yup.string(),
   conversion2: yup.string(),
@@ -64,11 +63,6 @@ export const PresetEditorForm = ({
                   </option>
                 ))}
               </select>
-              <input
-                placeholder="qty x"
-                className="input-style-3"
-                {...register("baseUnitQty")}
-              />
             </div>
           </div>
 
