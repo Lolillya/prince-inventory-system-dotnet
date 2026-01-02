@@ -92,7 +92,7 @@ const Sidebar = () => {
           {Object.entries(sidebarContent.main).map(([key, value]) => (
             <div
               key={key}
-              className={`flex items-center rounded-lg p-3 transition-colors duration-300 hover:cursor-pointer hover:bg-white text-custom-black ${location.pathname === value.redirect && "bg-white shadow-md"}`}
+              className={`flex items-center rounded-lg p-3 transition-colors duration-300 hover:cursor-pointer hover:bg-white text-custom-black ${location.pathname === value.redirect && "bg-white shadow-md border"}`}
               onClick={() => navigate(value.redirect)}
             >
               {value.icon}
@@ -111,7 +111,7 @@ const Sidebar = () => {
           {Object.entries(sidebarContent.records).map(([key, value]) => (
             <div
               key={key}
-              className={`flex items-center rounded-lg p-3 transition-colors duration-300 hover:cursor-pointer hover:bg-white text-custom-black ${location.pathname === value.redirect && "bg-white shadow-md"}`}
+              className={`flex items-center rounded-lg p-3 transition-colors duration-300 hover:cursor-pointer hover:bg-white text-custom-black ${location.pathname === value.redirect && "bg-white shadow-md border"}`}
               onClick={() => navigate(value.redirect)}
             >
               {value.icon}
