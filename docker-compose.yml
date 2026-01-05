@@ -27,9 +27,10 @@ services:
       dockerfile: frontend/Dockerfile
     ports:
       - "8080:8080"
-    volumes:
-      - ./frontend:/web-app
-      - node_modules:/web-app/node_modules
+    # Remove volume mounts for production-like setup
+    # volumes:
+    #   - ./frontend:/web-app
+    #   - node_modules:/web-app/node_modules
     depends_on:
       - backend
 
