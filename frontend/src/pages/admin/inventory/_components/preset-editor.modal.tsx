@@ -2,6 +2,8 @@ import { PlusIcon } from "@/icons";
 import { XIcon } from "lucide-react";
 import { Activity, useState } from "react";
 import { PresetEditorForm } from "./forms/preset-editor.form";
+import { UseInventoryQuery } from "@/features/restock/inventory-batch";
+import { ProductCard } from "@/components/product-card";
 
 interface ProductUnitPresetModalProp {
   handlePresetEditor: () => void;
@@ -13,6 +15,7 @@ export const ProductUnitPresetModal = ({
   const [isAddPresetOpen, setIsAddPresetOpen] = useState(false);
   const [isAddProductsToPresetOpen, setIsAddProductsToPresetOpen] =
     useState(false);
+  const { data: products } = UseInventoryQuery();
 
   const handleAddPreset = () => {
     setIsAddPresetOpen(!isAddPresetOpen);
@@ -101,8 +104,8 @@ export const ProductUnitPresetModal = ({
 
       {/*   PRODUCT SELECTOR */}
       <Activity mode={isAddProductsToPresetOpen ? "visible" : "hidden"}>
-        <div className="bg-white h-4/5 w-3/12 rounded-lg border shadow-lg py-10 px-5 flex flex-col justify-between">
-          <div className="flex flex-col gap-5">
+        <div className="bg-white rounded-lg border shadow-lg py-10 px-5 flex flex-col gap-5 max-h-4/5 max-w-3/12 w-full">
+          <div className="flex flex-col gap-5 flex-1 min-h-0">
             <div className="flex items-center justify-between">
               <h3 className="font-bold">Select Product/s</h3>
 
@@ -111,18 +114,11 @@ export const ProductUnitPresetModal = ({
               </label>
             </div>
 
-            <div className="flex flex-col overflow-y-scroll gap-3 border p-3 rounded-lg inset-shadow-sm">
+            <div className="flex flex-col overflow-y-scroll gap-3 border p-3 rounded-lg inset-shadow-sm flex-1 min-h-0">
               {/* PRODUCT SELECTOR FORM */}
-              <div className="flex items-center gap-3">
-                <input type="checkbox" />
-                <div className="flex items-center gap-3">
-                  <span>Product Name</span>
-                  <span>-</span>
-                  <span>Brand</span>
-                  <span>-</span>
-                  <span>Variant</span>
-                </div>
-              </div>
+              {products?.map((data, index) => (
+                <ProductCard product={data} key={index} />
+              ))}
             </div>
           </div>
 
