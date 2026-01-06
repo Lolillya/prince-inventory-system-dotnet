@@ -5,6 +5,7 @@ import { PresetEditorForm } from "./forms/preset-editor.form";
 import { UseInventoryQuery } from "@/features/restock/inventory-batch";
 import { ProductCard } from "@/components/product-card";
 import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
+import { UnitPresetCard } from "./unit-preset-card";
 
 interface ProductUnitPresetModalProp {
   handlePresetEditor: () => void;
@@ -83,56 +84,12 @@ export const ProductUnitPresetModal = ({
 
             <div className="flex flex-col gap-2 flex-1">
               {unitPresets?.map((p, i) => (
-                <div className="flex items-center justify-between p-2 bg-custom-gray rounded-lg flex-col gap-2">
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-sm font-semibold text-saltbox-gray w-full">
-                      {p.main_Unit_Name}
-                    </span>
-                    <div className="w-full flex items-center gap-2">
-                      {p.levels.map((l, idx) => (
-                        <span className="text-sm font-semibold text-saltbox-gray">
-                          {l.uoM_Name} {idx < p.levels.length - 1 ? ">" : ""}
-                        </span>
-                      ))}
-                    </div>
-                    <span className="text-sm font-semibold text-saltbox-gray cursor-pointer hover:underline w-full">
-                      {p.product_Count} Products
-                    </span>
-
-                    <span
-                      className="text-sm font-semibold hover:underline cursor-pointer w-full"
-                      onClick={handleAddProductsToPreset}
-                    >
-                      {isAddProductsToPresetOpen ? "Close" : "Add"}
-                    </span>
-                  </div>
-
-                  {/* <div className="w-full flex flex-col gap-2 p-2">
-                  <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
-                    <span>Product Name</span>
-                    <span>-</span>
-                    <span>Brand Name</span>
-                    <span>-</span>
-                    <span>Variant Name</span>
-                  </div>
-
-                  <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
-                    <span>Product Name</span>
-                    <span>-</span>
-                    <span>Brand Name</span>
-                    <span>-</span>
-                    <span>Variant Name</span>
-                  </div>
-
-                  <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
-                    <span>Product Name</span>
-                    <span>-</span>
-                    <span>Brand Name</span>
-                    <span>-</span>
-                    <span>Variant Name</span>
-                  </div>
-                </div> */}
-                </div>
+                <UnitPresetCard
+                  key={i}
+                  unitPreset={p}
+                  handleAddProductsToPreset={handleAddProductsToPreset}
+                  isAddProductsToPresetOpen={isAddProductsToPresetOpen}
+                />
               ))}
 
               {/* <div className="flex items-center justify-between p-2 bg-custom-gray rounded-lg flex-col gap-2">
