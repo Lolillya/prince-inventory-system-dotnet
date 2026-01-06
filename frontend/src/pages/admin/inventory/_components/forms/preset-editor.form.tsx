@@ -1,15 +1,19 @@
 import { Separator } from "@/components/separator";
 import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measure";
+import { createUnitPreset } from "@/features/unit-of-measure/create-unit-preset/create-unit-preset.service";
+import { CreateUnitPresetPayload } from "@/features/unit-of-measure/create-unit-preset/create-unit-preset.model";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as yup from "yup";
+import { useState } from "react";
 
 interface PresetEditorFormProps {
   handleCancelAddPreset: () => void;
 }
 
 const schema = yup.object().shape({
+  presetName: yup.string().required("Preset Name is required"),
   baseUnit: yup.string().required("Base Unit is required"),
   conversion1: yup.string().required("Conversion 1 is required"),
   conversion1Qty: yup.string().required("Conversion 1 Quantity is required"),
@@ -33,10 +37,91 @@ export const PresetEditorForm = ({
   });
 
   const { data: units = [] } = useUnitOfMeasureQuery();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmitForm = (data: any) => {
+  const handleSubmitForm = async (data: any) => {
     console.log("Form inputs:", data);
-    toast.success("Packaging Preset Confirmed");
+
+    setIsSubmitting(true);
+
+    try {
+      // Build the levels array
+      const levels = [];
+      let levelCounter = 1;
+
+      // Base unit (level 1)
+      levels.push({
+        uom_ID: Number(data.baseUnit),
+        level: levelCounter++,
+        conversion_Factor: 1.0,
+      });
+
+      // Add conversions if they exist
+      if (
+        data.conversion1 &&
+        data.conversion1 !== "None" &&
+        data.conversion1Qty
+      ) {
+        levels.push({
+          uom_ID: Number(data.conversion1),
+          level: levelCounter++,
+          conversion_Factor: Number(data.conversion1Qty),
+        });
+      }
+
+      if (
+        data.conversion2 &&
+        data.conversion2 !== "None" &&
+        data.conversion2Qty
+      ) {
+        levels.push({
+          uom_ID: Number(data.conversion2),
+          level: levelCounter++,
+          conversion_Factor: Number(data.conversion2Qty),
+        });
+      }
+
+      if (
+        data.conversion3 &&
+        data.conversion3 !== "None" &&
+        data.conversion3Qty
+      ) {
+        levels.push({
+          uom_ID: Number(data.conversion3),
+          level: levelCounter++,
+          conversion_Factor: Number(data.conversion3Qty),
+        });
+      }
+
+      if (
+        data.conversion4 &&
+        data.conversion4 !== "None" &&
+        data.conversion4Qty
+      ) {
+        levels.push({
+          uom_ID: Number(data.conversion4),
+          level: levelCounter++,
+          conversion_Factor: Number(data.conversion4Qty),
+        });
+      }
+
+      const payload: CreateUnitPresetPayload = {
+        preset_Name: data.presetName,
+        main_Unit_ID: Number(data.baseUnit),
+        levels: levels,
+      };
+
+      const response = await createUnitPreset(payload);
+      toast.success(
+        response.message || "Packaging Preset Created Successfully"
+      );
+      handleCancelAddPreset();
+    } catch (error: any) {
+      console.error("Error creating preset:", error);
+      toast.error(error?.response?.data || "Failed to create packaging preset");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFormError = (errors: any) => {
@@ -52,6 +137,20 @@ export const PresetEditorForm = ({
         onSubmit={handleSubmit(handleSubmitForm, handleFormError)}
         className="flex flex-col flex-1 gap-5"
       >
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold">Preset Name *</label>
+            <input
+              type="text"
+              placeholder="Enter preset name (e.g., Weight Measurement)"
+              className="input-style-3"
+              {...register("presetName")}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <label className="text-xs">Base Unit</label>
@@ -90,6 +189,8 @@ export const PresetEditorForm = ({
                 ))}
               </select>
               <input
+                type="number"
+                step="any"
                 placeholder="qty x"
                 className="input-style-3"
                 {...register("conversion1Qty")}
@@ -116,6 +217,8 @@ export const PresetEditorForm = ({
                 ))}
               </select>
               <input
+                type="number"
+                step="any"
                 placeholder="qty x"
                 className="input-style-3"
                 {...register("conversion2Qty")}
@@ -142,6 +245,8 @@ export const PresetEditorForm = ({
                 ))}
               </select>
               <input
+                type="number"
+                step="any"
                 placeholder="qty x"
                 className="input-style-3"
                 {...register("conversion3Qty")}
@@ -168,6 +273,8 @@ export const PresetEditorForm = ({
                 ))}
               </select>
               <input
+                type="number"
+                step="any"
                 placeholder="qty x"
                 className="input-style-3"
                 {...register("conversion4Qty")}
@@ -183,14 +290,19 @@ export const PresetEditorForm = ({
           </span>
 
           <div className="flex gap-1 w-full justify-center">
-            <button type="submit" className="w-full max-w-max">
-              Confirm Packaging Preset
+            <button
+              type="submit"
+              className="w-full max-w-max"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating..." : "Confirm Packaging Preset"}
             </button>
 
             <button
               type="button"
               className="w-full max-w-max"
               onClick={handleCancelAddPreset}
+              disabled={isSubmitting}
             >
               Cancel
             </button>
