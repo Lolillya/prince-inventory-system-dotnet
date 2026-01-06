@@ -4,6 +4,7 @@ import { Activity, useState } from "react";
 import { PresetEditorForm } from "./forms/preset-editor.form";
 import { UseInventoryQuery } from "@/features/restock/inventory-batch";
 import { ProductCard } from "@/components/product-card";
+import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
 
 interface ProductUnitPresetModalProp {
   handlePresetEditor: () => void;
@@ -19,6 +20,9 @@ export const ProductUnitPresetModal = ({
   const [isProductsShown, setIsProductsShown] = useState(false);
 
   const { data: products } = UseInventoryQuery();
+  const { data: unitPresets } = useUnitPresetQuery();
+
+  console.log(unitPresets);
 
   const handleAddPreset = () => {
     setIsAddPresetOpen(!isAddPresetOpen);
@@ -45,7 +49,7 @@ export const ProductUnitPresetModal = ({
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50 gap-3">
       <div
-        className={`w-3/6 ${isAddPresetOpen ? "h-4/12" : "h-4/5"} bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4 transition-all duration-200`}
+        className={`w-5/12 ${isAddPresetOpen ? "h-4/12" : "h-4/5"} bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4 transition-all duration-200`}
       >
         <div className="absolute top-4 right-4" onClick={handleCloseModal}>
           <XIcon />
@@ -63,22 +67,75 @@ export const ProductUnitPresetModal = ({
           <div className="flex flex-col gap-2 flex-1">
             {/* TABLE HEADER */}
             <div className="flex items-center justify-between p-2 border-b">
-              <label className="text-sm font-semibold text-saltbox-gray">
+              <label className="text-sm font-semibold text-saltbox-gray w-full">
                 Main
               </label>
-              <label className="text-sm font-semibold text-saltbox-gray">
+              <label className="text-sm font-semibold text-saltbox-gray w-full">
                 Conversion
               </label>
-              <label className="text-sm font-semibold text-saltbox-gray">
+              <label className="text-sm font-semibold text-saltbox-gray w-full">
                 Used by
               </label>
-              <label className="text-sm font-semibold text-saltbox-gray"></label>
+              <label className="text-sm font-semibold text-saltbox-gray w-full"></label>
             </div>
 
             {/* TABLE BODY */}
 
             <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center justify-between p-2 bg-custom-gray rounded-lg flex-col gap-2">
+              {unitPresets?.map((p, i) => (
+                <div className="flex items-center justify-between p-2 bg-custom-gray rounded-lg flex-col gap-2">
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-semibold text-saltbox-gray w-full">
+                      {p.main_Unit_Name}
+                    </span>
+                    <div className="w-full flex items-center gap-2">
+                      {p.levels.map((l, idx) => (
+                        <span className="text-sm font-semibold text-saltbox-gray">
+                          {l.uoM_Name} {idx < p.levels.length - 1 ? ">" : ""}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-sm font-semibold text-saltbox-gray cursor-pointer hover:underline w-full">
+                      {p.product_Count} Products
+                    </span>
+
+                    <span
+                      className="text-sm font-semibold hover:underline cursor-pointer w-full"
+                      onClick={handleAddProductsToPreset}
+                    >
+                      {isAddProductsToPresetOpen ? "Close" : "Add"}
+                    </span>
+                  </div>
+
+                  {/* <div className="w-full flex flex-col gap-2 p-2">
+                  <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
+                    <span>Product Name</span>
+                    <span>-</span>
+                    <span>Brand Name</span>
+                    <span>-</span>
+                    <span>Variant Name</span>
+                  </div>
+
+                  <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
+                    <span>Product Name</span>
+                    <span>-</span>
+                    <span>Brand Name</span>
+                    <span>-</span>
+                    <span>Variant Name</span>
+                  </div>
+
+                  <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
+                    <span>Product Name</span>
+                    <span>-</span>
+                    <span>Brand Name</span>
+                    <span>-</span>
+                    <span>Variant Name</span>
+                  </div>
+                </div> */}
+                </div>
+              ))}
+
+              {/* <div className="flex items-center justify-between p-2 bg-custom-gray rounded-lg flex-col gap-2">
                 <div className="flex items-center justify-between w-full">
                   <span className="text-sm font-semibold text-saltbox-gray">
                     Box
@@ -97,54 +154,7 @@ export const ProductUnitPresetModal = ({
                     {isAddProductsToPresetOpen ? "Close" : "Add"}
                   </span>
                 </div>
-
-                <div className="w-full flex flex-col gap-2 p-2">
-                  <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
-                    <span>Product Name</span>
-                    <span>-</span>
-                    <span>Brand Name</span>
-                    <span>-</span>
-                    <span>Variant Name</span>
-                  </div>
-
-                  <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
-                    <span>Product Name</span>
-                    <span>-</span>
-                    <span>Brand Name</span>
-                    <span>-</span>
-                    <span>Variant Name</span>
-                  </div>
-
-                  <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
-                    <span>Product Name</span>
-                    <span>-</span>
-                    <span>Brand Name</span>
-                    <span>-</span>
-                    <span>Variant Name</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-2 bg-custom-gray rounded-lg flex-col gap-2">
-                <div className="flex items-center justify-between w-full">
-                  <span className="text-sm font-semibold text-saltbox-gray">
-                    Box
-                  </span>
-                  <span className="text-sm font-semibold text-saltbox-gray">
-                    Box &gt; Cases &gt; Pieces
-                  </span>
-                  <span className="text-sm font-semibold text-saltbox-gray cursor-pointer hover:underline">
-                    # Products
-                  </span>
-
-                  <span
-                    className="text-sm font-semibold hover:underline cursor-pointer"
-                    onClick={handleAddProductsToPreset}
-                  >
-                    {isAddProductsToPresetOpen ? "Close" : "Add"}
-                  </span>
-                </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex justify-center w-full">
