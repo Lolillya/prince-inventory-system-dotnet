@@ -145,7 +145,7 @@ export const ProductUnitPresetModal = ({
             {/* TABLE HEADER */}
             <div className="flex items-center justify-between p-2 border-b">
               <label className="text-sm font-semibold text-saltbox-gray w-1/3">
-                Main
+                Main Unit
               </label>
               <label className="text-sm font-semibold text-saltbox-gray w-full">
                 Conversion
