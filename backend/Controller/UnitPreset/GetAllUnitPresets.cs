@@ -26,6 +26,11 @@ namespace backend.Controller.UnitPreset
                     .Include(p => p.PresetLevels)
                         .ThenInclude(l => l.UnitOfMeasure)
                     .Include(p => p.ProductPresets)
+                        .ThenInclude(pp => pp.Product)
+                            .ThenInclude(pr => pr.Brand)
+                    .Include(p => p.ProductPresets)
+                        .ThenInclude(pp => pp.Product)
+                            .ThenInclude(pr => pr.Variant)
                     .Select(p => new UnitPresetResponseDto
                     {
                         Preset_ID = p.Preset_ID,
@@ -44,6 +49,16 @@ namespace backend.Controller.UnitPreset
                                 UOM_Name = l.UnitOfMeasure.uom_Name,
                                 Level = l.Level,
                                 Conversion_Factor = l.Conversion_Factor
+                            })
+                            .ToList(),
+                        Products = p.ProductPresets
+                            .Select(pp => new ProductPresetDto
+                            {
+                                Product_ID = pp.Product_ID,
+                                Product_Name = pp.Product.product_Name,
+                                Brand_Name = pp.Product.Brand != null ? pp.Product.Brand.brand_Name : null,
+                                Variant_Name = pp.Product.Variant != null ? pp.Product.Variant.variant_Name : null,
+                                Assigned_At = pp.Assigned_At
                             })
                             .ToList()
                     })

@@ -10,6 +10,7 @@ namespace backend.Dtos.UnitPreset
         public DateTime Updated_At { get; set; }
         public List<UnitPresetLevelResponseDto> Levels { get; set; } = new List<UnitPresetLevelResponseDto>();
         public int Product_Count { get; set; }
+        public List<ProductPresetDto> Products { get; set; } = new List<ProductPresetDto>();
     }
 
     public class UnitPresetLevelResponseDto
@@ -19,5 +20,14 @@ namespace backend.Dtos.UnitPreset
         public string UOM_Name { get; set; } = null!;
         public int Level { get; set; }
         public int Conversion_Factor { get; set; }
+    }
+
+    public class ProductPresetDto
+    {
+        public int Product_ID { get; set; }
+        public string Product_Name { get; set; } = null!;
+        public string? Brand_Name { get; set; }
+        public string? Variant_Name { get; set; }
+        public DateTime Assigned_At { get; set; }
     }
 }
