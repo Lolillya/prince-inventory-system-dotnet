@@ -7,7 +7,10 @@ export type UnitPresetLevel = {
   updated_At: string;
   levels: PresetLevels[];
   product_Count: number;
+  products: Products[];
 };
+
+type Products = {};
 
 type PresetLevels = {
   level_ID: number;

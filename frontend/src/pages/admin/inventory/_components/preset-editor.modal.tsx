@@ -23,7 +23,7 @@ export const ProductUnitPresetModal = ({
   const { data: products } = UseInventoryQuery();
   const { data: unitPresets } = useUnitPresetQuery();
 
-  console.log(unitPresets);
+  console.log("unitPresets: ", unitPresets);
 
   const handleAddPreset = () => {
     setIsAddPresetOpen(!isAddPresetOpen);

@@ -55,9 +55,9 @@ namespace backend.Controller.UnitPreset
                             .Select(pp => new ProductPresetDto
                             {
                                 Product_ID = pp.Product_ID,
-                                Product_Name = pp.Product.product_Name,
-                                Brand_Name = pp.Product.Brand != null ? pp.Product.Brand.brand_Name : null,
-                                Variant_Name = pp.Product.Variant != null ? pp.Product.Variant.variant_Name : null,
+                                Product_Name = pp.Product.Product_Name,
+                                Brand_Name = pp.Product.Brand != null ? pp.Product.Brand.BrandName : null,
+                                Variant_Name = pp.Product.Variant != null ? pp.Product.Variant.Variant_Name : null,
                                 Assigned_At = pp.Assigned_At
                             })
                             .ToList()
