@@ -10,7 +10,13 @@ export type UnitPresetLevel = {
   products: Products[];
 };
 
-type Products = {};
+type Products = {
+  product_ID: number;
+  product_Name: string;
+  brand_Name: string;
+  variant_Name: string;
+  assigned_At: string;
+};
 
 type PresetLevels = {
   level_ID: number;

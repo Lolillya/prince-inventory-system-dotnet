@@ -68,16 +68,16 @@ export const ProductUnitPresetModal = ({
           <div className="flex flex-col gap-2 flex-1">
             {/* TABLE HEADER */}
             <div className="flex items-center justify-between p-2 border-b">
-              <label className="text-sm font-semibold text-saltbox-gray w-full">
+              <label className="text-sm font-semibold text-saltbox-gray w-1/3">
                 Main
               </label>
               <label className="text-sm font-semibold text-saltbox-gray w-full">
                 Conversion
               </label>
-              <label className="text-sm font-semibold text-saltbox-gray w-full">
+              <label className="text-sm font-semibold text-saltbox-gray w-1/2">
                 Used by
               </label>
-              <label className="text-sm font-semibold text-saltbox-gray w-full"></label>
+              <label className="text-sm font-semibold text-saltbox-gray w-1/3"></label>
             </div>
 
             {/* TABLE BODY */}
@@ -91,27 +91,6 @@ export const ProductUnitPresetModal = ({
                   isAddProductsToPresetOpen={isAddProductsToPresetOpen}
                 />
               ))}
-
-              {/* <div className="flex items-center justify-between p-2 bg-custom-gray rounded-lg flex-col gap-2">
-                <div className="flex items-center justify-between w-full">
-                  <span className="text-sm font-semibold text-saltbox-gray">
-                    Box
-                  </span>
-                  <span className="text-sm font-semibold text-saltbox-gray">
-                    Box &gt; Cases &gt; Pieces
-                  </span>
-                  <span className="text-sm font-semibold text-saltbox-gray cursor-pointer hover:underline">
-                    # Products
-                  </span>
-
-                  <span
-                    className="text-sm font-semibold hover:underline cursor-pointer"
-                    onClick={handleAddProductsToPreset}
-                  >
-                    {isAddProductsToPresetOpen ? "Close" : "Add"}
-                  </span>
-                </div>
-              </div> */}
             </div>
 
             <div className="flex justify-center w-full">
