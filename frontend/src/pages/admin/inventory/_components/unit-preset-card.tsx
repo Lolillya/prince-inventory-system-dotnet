@@ -4,20 +4,25 @@ import { useState } from "react";
 
 interface UnitPresetCardProps {
   unitPreset: UnitPresetLevel;
-  handleAddProductsToPreset: () => void;
+  handleAddProductsToPreset: (presetId?: number) => void;
   isAddProductsToPresetOpen: boolean;
+  selectedPresetId: number | null;
 }
 
 export const UnitPresetCard = ({
   unitPreset,
   handleAddProductsToPreset,
   isAddProductsToPresetOpen,
+  selectedPresetId,
 }: UnitPresetCardProps) => {
   const [isProductsShown, setIsProductsShown] = useState(false);
 
   const handleShowAssociatedProducts = () => {
     setIsProductsShown(!isProductsShown);
   };
+
+  const isThisPresetSelected =
+    isAddProductsToPresetOpen && selectedPresetId === unitPreset.preset_ID;
   return (
     <div className="flex items-center justify-between p-2 bg-custom-gray rounded-lg flex-col gap-2">
       <div className="flex items-center justify-between w-full">
@@ -40,9 +45,9 @@ export const UnitPresetCard = ({
 
         <span
           className="text-sm font-semibold hover:underline cursor-pointer w-1/3"
-          onClick={handleAddProductsToPreset}
+          onClick={() => handleAddProductsToPreset(unitPreset.preset_ID)}
         >
-          {isAddProductsToPresetOpen ? "Close" : "Add"}
+          {isThisPresetSelected ? "Close" : "Add"}
         </span>
       </div>
 
@@ -57,7 +62,10 @@ export const UnitPresetCard = ({
           <div className="w-full flex flex-col gap-2 p-2">
             <Separator orientation="horizontal" />
             {unitPreset.products.map((p, i) => (
-              <div className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm">
+              <div
+                className="flex gap-2 w-full text-sm text-saltbox-gray p-2 border rounded-lg inset-shadow-sm"
+                key={i}
+              >
                 <span>{p.product_Name}</span>
                 <span>-</span>
                 <span>{p.brand_Name}</span>
