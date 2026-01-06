@@ -211,6 +211,26 @@ namespace backend.Data
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            builder.Entity<Unit_Preset>(entity =>
+            {
+                entity.ToTable("Unit_Presets");
+
+                entity.HasOne(up => up.MainUnit)
+                    .WithMany()
+                    .HasForeignKey(up => up.Main_Unit_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasMany(up => up.PresetLevels)
+                    .WithOne(pl => pl.Preset)
+                    .HasForeignKey(pl => pl.Preset_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(up => up.ProductPresets)
+                    .WithOne(pp => pp.Preset)
+                    .HasForeignKey(pp => pp.Preset_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
         }
     }
 }

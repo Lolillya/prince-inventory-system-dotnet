@@ -37,7 +37,7 @@ namespace backend.Controller.UnitPreset
                         brand = new
                         {
                             brand_ID = p.Product.Brand.Brand_ID,
-                            brand_Name = p.Product.Brand.Brand_Name
+                            brand_Name = p.Product.Brand.BrandName
                         },
                         category = new
                         {
