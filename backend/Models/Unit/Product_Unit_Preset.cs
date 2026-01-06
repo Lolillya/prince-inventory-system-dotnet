@@ -1,0 +1,26 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using backend.Models.Inventory;
+
+namespace backend.Models.Unit
+{
+    public class Product_Unit_Preset
+    {
+        [Key]
+        public int Product_Preset_ID { get; set; }
+
+        public int Product_ID { get; set; } // FK to Product
+
+        public int Preset_ID { get; set; } // FK to Unit_Preset
+
+        public DateTime Assigned_At { get; set; } = DateTime.UtcNow;
+
+        // Navigation properties
+        [ForeignKey("Product_ID")]
+        public Product Product { get; set; } = null!;
+
+        [ForeignKey("Preset_ID")]
+        public Unit_Preset Preset { get; set; } = null!;
+    }
+}

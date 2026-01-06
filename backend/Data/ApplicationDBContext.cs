@@ -30,6 +30,9 @@ namespace backend.Data
         public DbSet<RestockLineItems> RestockLineItems { get; set; }
         public DbSet<UnitOfMeasure> UnitOfMeasure { get; set; }
         public DbSet<Product_UOM> Product_UOMs { get; set; }
+        public DbSet<Unit_Preset> Unit_Presets { get; set; }
+        public DbSet<Unit_Preset_Level> Unit_Preset_Levels { get; set; }
+        public DbSet<Product_Unit_Preset> Product_Unit_Presets { get; set; }
         public DbSet<DeletedUsers> DeletedUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
