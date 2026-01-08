@@ -50,27 +50,7 @@ export const SelectedProduct = (product: InventoryProductModel) => {
         </div>
         <Separator orientation="horizontal" />
         <div className="rounded-lg border inset-shadow-sm p-1">
-          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg">
-            <span>Box</span>
-            <span> &gt;</span>
-            <span>Cases</span>
-            <span> &gt;</span>
-            <span>Pieces</span>
-          </div>
-        </div>
-
-        <div className="rounded-lg border inset-shadow-sm p-1">
-          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg">
-            <span>Box</span>
-            <span> &gt;</span>
-            <span>Cases</span>
-            <span> &gt;</span>
-            <span>Pieces</span>
-          </div>
-        </div>
-
-        <div className="rounded-lg border inset-shadow-sm p-1">
-          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg">
+          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg cursor-default">
             <span>Box</span>
             <span> &gt;</span>
             <span>Cases</span>
