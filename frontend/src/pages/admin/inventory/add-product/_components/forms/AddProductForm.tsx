@@ -7,6 +7,7 @@ import {
 import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.query";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useState, useEffect } from "react";
 import { addProductService } from "@/features/inventory/add-product.service";
 
 const schema = yup.object().shape({
@@ -68,6 +69,7 @@ const AddProductForm = ({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<AddProductFormValues>({
     resolver: yupResolver(schema),
@@ -80,15 +82,82 @@ const AddProductForm = ({
   const { UPDATE_ADD_PRODUCT_PAYLOAD } = updateAddProductPayload();
   const { data: newProductData } = AddProductPayloadQuery();
 
+  const [generatedProductCode, setGeneratedProductCode] = useState<string>("");
+
+  // Watch form fields for auto-generation
+  const watchedBrandId = watch("brand_ID");
+  const watchedCategoryId = watch("category_Id");
+  const watchedVariantId = watch("variant_Id");
+  const watchedProductName = watch("productName");
+
+  // Function to generate product code
+  const generateProductCode = () => {
+    if (!productFields || !watchedBrandId || !watchedVariantId) {
+      setGeneratedProductCode("");
+      return;
+    }
+
+    // Find selected brand, category, and variant
+    const brand = productFields.brands.find(
+      (b) => b.brand_ID === Number(watchedBrandId)
+    );
+    const category = productFields.categories.find(
+      (c) => c.category_ID === Number(watchedCategoryId)
+    );
+    const variant = productFields.variants.find(
+      (v) => v.variant_ID === Number(watchedVariantId)
+    );
+
+    if (!brand || !variant) {
+      setGeneratedProductCode("");
+      return;
+    }
+
+    // Extract codes from each field
+    const brandCode = brand.brandName.substring(0, 4).toUpperCase();
+    const variantCode = variant.variant_Name.substring(0, 3).toUpperCase();
+    const categoryCode = category
+      ? category.category_Name.substring(0, 2).toUpperCase()
+      : "XX";
+
+    // Extract abbreviation from product name (first 3 letters of each word)
+    let nameCode = "XXX";
+    if (watchedProductName && watchedProductName.trim()) {
+      const words = watchedProductName.trim().split(/\s+/);
+      nameCode = words
+        .slice(0, 2) // Take first 2 words
+        .map((word) => word.substring(0, 3).toUpperCase())
+        .join("");
+      // Pad or truncate to 3 characters
+      nameCode = (nameCode + "XXX").substring(0, 3);
+    }
+
+    // Combine into product code: BRAND-VARIANT-CATEGORY-NAME
+    const code = `${brandCode}-${variantCode}-${categoryCode}-${nameCode}`;
+    setGeneratedProductCode(code);
+  };
+
+  // Auto-generate code when dependencies change
+  useEffect(() => {
+    generateProductCode();
+  }, [
+    watchedBrandId,
+    watchedCategoryId,
+    watchedVariantId,
+    watchedProductName,
+    productFields,
+  ]);
+
   const onSubmit = (data: AddProductFormValues) => {
     UPDATE_ADD_PRODUCT_PAYLOAD({
       ...data,
-      productCode: data.productCode || "",
+      productCode: generatedProductCode || "",
       inventory_Clerk: user?.user_ID || "",
     });
     if (newProductData && user) {
       addProductService(newProductData);
       reset();
+      setGeneratedProductCode("");
     }
   };
 
@@ -121,11 +190,14 @@ const AddProductForm = ({
             <input
               className="w-full drop-shadow-none bg-custom-gray p-2"
               placeholder="AUTO GENERATED"
+              value={generatedProductCode || ""}
               disabled
             />
           </div>
-          <span className="text-red-500 text-xs normal-case">
-            {errors.productCode?.message}
+          <span className="text-green-600 text-xs normal-case">
+            {generatedProductCode
+              ? "Auto-generated based on your selections"
+              : "Fill in the fields below to generate"}
           </span>
         </div>
         {/* PRODUCT NAME */}
