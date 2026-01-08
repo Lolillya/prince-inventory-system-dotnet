@@ -1,6 +1,6 @@
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
-import { Separator } from "../../../../components/separator";
-import { ChevronUpIcon } from "../../../../icons";
+import { Separator } from "@/components/separator";
+import { SupplierBatchCard } from "./supplier-batch-card";
 
 export const SelectedProduct = (product: InventoryProductModel) => {
   return (
@@ -24,9 +24,9 @@ export const SelectedProduct = (product: InventoryProductModel) => {
         <span>{product.product.product_Name}</span>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col">
         <label>notes</label>
-        <textarea disabled value={product.product.description} rows={4} />
+        <textarea disabled value={product.product.description} rows={2} />
       </div>
 
       <div className="flex flex-col gap-3">
@@ -38,43 +38,52 @@ export const SelectedProduct = (product: InventoryProductModel) => {
           <Separator />
         </div>
 
-        <div className="flex rounded-lg border">
-          <span className="p-5 bg-red-300 rounded-l-lg">1</span>
-          <div className="w-full p-5 bg-white rounded-r-lg">
-            <div className="flex w-full justify-between items-center">
-              <span>from SupplierName</span>
-              <ChevronUpIcon />
-            </div>
+        <SupplierBatchCard />
+      </div>
+
+      <div>
+        <div className="flex justify-between items-center">
+          <h3>Assocciated Preset</h3>
+          <span className="text-sm hover:underline cursor-pointer">
+            Add Unit Preset
+          </span>
+        </div>
+        <Separator orientation="horizontal" />
+        <div className="rounded-lg border inset-shadow-sm p-1">
+          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg">
+            <span>Box</span>
+            <span> &gt;</span>
+            <span>Cases</span>
+            <span> &gt;</span>
+            <span>Pieces</span>
           </div>
         </div>
 
-        <div className="flex rounded-lg border">
-          <span className="p-5 bg-red-300 rounded-l-lg">1</span>
-          <div className="w-full p-5 bg-white rounded-r-lg">
-            <div className="flex w-full justify-between items-center">
-              <span>from SupplierName</span>
-              <ChevronUpIcon />
-            </div>
+        <div className="rounded-lg border inset-shadow-sm p-1">
+          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg">
+            <span>Box</span>
+            <span> &gt;</span>
+            <span>Cases</span>
+            <span> &gt;</span>
+            <span>Pieces</span>
           </div>
         </div>
 
-        <div className="flex rounded-lg border">
-          <span className="p-5 bg-red-300 rounded-l-lg">1</span>
-          <div className="w-full p-5 bg-white rounded-r-lg">
-            <div className="flex w-full justify-between items-center">
-              <span>from SupplierName</span>
-              <ChevronUpIcon />
-            </div>
+        <div className="rounded-lg border inset-shadow-sm p-1">
+          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg">
+            <span>Box</span>
+            <span> &gt;</span>
+            <span>Cases</span>
+            <span> &gt;</span>
+            <span>Pieces</span>
           </div>
         </div>
 
-        <div className="flex rounded-lg border">
-          <span className="p-5 bg-red-300 rounded-l-lg">1</span>
-          <div className="w-full p-5 bg-white rounded-r-lg">
-            <div className="flex w-full justify-between items-center">
-              <span>from SupplierName</span>
-              <ChevronUpIcon />
-            </div>
+        <div className="rounded-lg border inset-shadow-sm p-1">
+          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg">
+            <span className="text-sm font-semibold">
+              No associated unit preset.
+            </span>
           </div>
         </div>
       </div>

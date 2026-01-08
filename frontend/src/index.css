@@ -212,7 +212,7 @@
   }
 
   textarea {
-    @apply rounded-lg bg-custom-gray p-3 resize-none;
+    @apply rounded-lg bg-custom-gray px-3 py-1 resize-none;
   }
 
   h1 {
