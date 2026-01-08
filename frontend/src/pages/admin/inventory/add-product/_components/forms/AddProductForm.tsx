@@ -12,7 +12,7 @@ import { addProductService } from "@/features/inventory/add-product.service";
 const schema = yup.object().shape({
   productName: yup.string().required("Product name is required"),
   description: yup.string().required("Description is required"),
-  productCode: yup.string().required("Product code is required"),
+  productCode: yup.string(),
   brand_ID: yup
     .number()
     .transform((value, originalValue) =>
@@ -36,7 +36,7 @@ const schema = yup.object().shape({
 type AddProductFormValues = {
   productName: string;
   description: string;
-  productCode: string;
+  productCode?: string;
   brand_ID: number;
   category_Id: number;
   variant_Id: number;
@@ -83,6 +83,7 @@ const AddProductForm = ({
   const onSubmit = (data: AddProductFormValues) => {
     UPDATE_ADD_PRODUCT_PAYLOAD({
       ...data,
+      productCode: data.productCode || "",
       inventory_Clerk: user?.user_ID || "",
     });
     if (newProductData && user) {
@@ -112,6 +113,21 @@ const AddProductForm = ({
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col space-y-4 mb-auto">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <label className="text-nowrap text-sm font-semibold">
+              Product Code:{" "}
+            </label>
+            <input
+              className="w-full drop-shadow-none bg-custom-gray p-2"
+              placeholder="AUTO GENERATED"
+              disabled
+            />
+          </div>
+          <span className="text-red-500 text-xs normal-case">
+            {errors.productCode?.message}
+          </span>
+        </div>
         {/* PRODUCT NAME */}
         <div>
           <label htmlFor="productName" className="block text-sm font-medium">
@@ -144,20 +160,6 @@ const AddProductForm = ({
         </div>
 
         {/* PRODUCT CODE */}
-        <div>
-          <label htmlFor="productCode" className="block text-sm font-medium">
-            Product Code
-          </label>
-          <input
-            id="productCode"
-            type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
-            {...register("productCode")}
-          />
-          <span className="text-red-500 text-xs normal-case">
-            {errors.productCode?.message}
-          </span>
-        </div>
 
         {/* BRANDS */}
         <div className="flex gap-2 items-center w-full">
