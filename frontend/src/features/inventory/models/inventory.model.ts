@@ -10,6 +10,8 @@ export type InventoryProductModel = {
   brand: brand;
   variant: variant;
   category: category;
+  unitPresets: UnitPresets[];
+  isComplete: boolean;
 };
 
 type brand = {
@@ -31,4 +33,34 @@ type category = {
   category_Name: string;
   createdAt: string;
   updatedAt: string;
+};
+
+type UnitPresets = {
+  assigned_At: string;
+  preset: Preset;
+  preset_ID: number;
+  product_Preset_ID: number;
+};
+
+type Preset = {
+  created_At: string;
+  main_Unit_ID: number;
+  presetLevels: PresetLevel[];
+  preset_ID: number;
+  preset_Name: string;
+  updated_At: string;
+};
+
+type PresetLevel = {
+  conversion_Factor: number;
+  created_At: string;
+  level: number;
+  level_ID: number;
+  unitOfMeasure: UnitOfMeasure;
+  uoM_ID: number;
+};
+
+type UnitOfMeasure = {
+  uom_ID: number;
+  uom_Name: string;
 };
