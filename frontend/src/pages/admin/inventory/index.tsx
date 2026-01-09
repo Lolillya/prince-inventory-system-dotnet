@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
 import { PresetSelectorModal } from "./_components/preset-selector.modal";
-import { set } from "react-hook-form";
 
 const InventoryPage = () => {
   const { data: inventory, isLoading, error } = UseInventoryQuery();
