@@ -26,6 +26,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
+import { PresetSelectorModal } from "./_components/preset-selector.modal";
+import { set } from "react-hook-form";
 
 const InventoryPage = () => {
   const { data: inventory, isLoading, error } = UseInventoryQuery();
@@ -33,6 +35,7 @@ const InventoryPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
   const [isPresetEditorOpen, setIsPresetEditorOpen] = useState(false);
+  const [isPresetSelectorOpen, setIsPresetSelectorOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const setSelectedProduct = useSetSelectedProduct();
 
@@ -55,6 +58,10 @@ const InventoryPage = () => {
     setIsEditProductModalOpen(!isEditProductModalOpen);
     setIsModalOpen(false);
     setIsPresetEditorOpen(false);
+  };
+
+  const handlePresetSelector = () => {
+    setIsPresetSelectorOpen(!isPresetSelectorOpen);
   };
 
   // Filter inventory based on search query
@@ -82,6 +89,11 @@ const InventoryPage = () => {
       {/* PRESET EDITOR MODAL */}
       <Activity mode={isPresetEditorOpen ? "visible" : "hidden"}>
         <ProductUnitPresetModal handlePresetEditor={handlePresetEditor} />
+      </Activity>
+
+      {/* PRESET SELECTOR MODAL */}
+      <Activity mode={isPresetSelectorOpen ? "visible" : "hidden"}>
+        <PresetSelectorModal handlePresetSelector={handlePresetSelector} />
       </Activity>
 
       {isEditProductModalOpen && selectedProduct && (
@@ -210,7 +222,10 @@ const InventoryPage = () => {
             {!selectedProduct ? (
               <NoSelectedState />
             ) : (
-              <SelectedProduct {...selectedProduct} />
+              <SelectedProduct
+                product={selectedProduct}
+                handlePresetSelector={handlePresetSelector}
+              />
             )}
           </div>
         </div>

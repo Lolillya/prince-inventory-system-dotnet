@@ -2,7 +2,15 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import { Separator } from "@/components/separator";
 import { SupplierBatchCard } from "./supplier-batch-card";
 
-export const SelectedProduct = (product: InventoryProductModel) => {
+interface SelectedProductProps {
+  product: InventoryProductModel;
+  handlePresetSelector: () => void;
+}
+
+export const SelectedProduct = ({
+  product,
+  handlePresetSelector,
+}: SelectedProductProps) => {
   console.log(product);
   return (
     <div className="w-full flex flex-col gap-3">
@@ -45,7 +53,10 @@ export const SelectedProduct = (product: InventoryProductModel) => {
       <div className="flex flex-col">
         <div className="flex justify-between items-center">
           <h3>Assocciated Preset</h3>
-          <span className="text-sm hover:underline cursor-pointer">
+          <span
+            className="text-sm hover:underline cursor-pointer"
+            onClick={handlePresetSelector}
+          >
             Add Unit Preset
           </span>
         </div>
@@ -59,7 +70,10 @@ export const SelectedProduct = (product: InventoryProductModel) => {
               </span>
             ) : (
               product.unitPresets.map((u, i) => (
-                <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg cursor-default">
+                <div
+                  className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg cursor-default"
+                  key={i}
+                >
                   {u.preset.presetLevels.map((level, idx) => (
                     <>
                       <span>{level.unitOfMeasure.uom_Name}</span>
