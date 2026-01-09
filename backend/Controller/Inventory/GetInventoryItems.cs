@@ -24,6 +24,16 @@ namespace backend.Controller.Inventory
             {
                 var results = await _db.Inventory
                     .Include(i => i.Product)
+                        .ThenInclude(p => p.Variant)
+                    .Include(i => i.Product)
+                        .ThenInclude(p => p.Brand)
+                    .Include(i => i.Product)
+                        .ThenInclude(p => p.Category)
+                    .Include(i => i.Product)
+                        .ThenInclude(p => p.ProductPresets)
+                            .ThenInclude(pp => pp.Preset)
+                                .ThenInclude(preset => preset.PresetLevels)
+                                    .ThenInclude(level => level.UnitOfMeasure)
                     .Select(i => new
                     {
                         Product = new
@@ -55,7 +65,35 @@ namespace backend.Controller.Inventory
                             i.Product.Category.Category_Name,
                             i.Product.Category.CreatedAt,
                             i.Product.Category.UpdatedAt
-                        }
+                        },
+                        UnitPresets = i.Product.ProductPresets.Select(pp => new
+                        {
+                            pp.Product_Preset_ID,
+                            pp.Preset_ID,
+                            pp.Assigned_At,
+                            Preset = new
+                            {
+                                pp.Preset.Preset_ID,
+                                pp.Preset.Preset_Name,
+                                pp.Preset.Main_Unit_ID,
+                                pp.Preset.Created_At,
+                                pp.Preset.Updated_At,
+                                PresetLevels = pp.Preset.PresetLevels.Select(level => new
+                                {
+                                    level.Level_ID,
+                                    level.UOM_ID,
+                                    level.Level,
+                                    level.Conversion_Factor,
+                                    level.Created_At,
+                                    UnitOfMeasure = new
+                                    {
+                                        level.UnitOfMeasure.uom_ID,
+                                        level.UnitOfMeasure.uom_Name
+                                    }
+                                }).OrderBy(l => l.Level).ToList()
+                            }
+                        }).ToList(),
+                        IsComplete = i.Product.ProductPresets.Any()
                     }).ToListAsync();
 
                 if (results == null || !results.Any())
@@ -64,7 +102,6 @@ namespace backend.Controller.Inventory
                 }
 
                 return Ok(results);
-                // return Ok();
             }
             catch (Exception ex)
             {
