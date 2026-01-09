@@ -3,6 +3,7 @@ import { Separator } from "@/components/separator";
 import { SupplierBatchCard } from "./supplier-batch-card";
 
 export const SelectedProduct = (product: InventoryProductModel) => {
+  console.log(product);
   return (
     <div className="w-full flex flex-col gap-3">
       <div className="flex justify-between w-full">
@@ -41,7 +42,7 @@ export const SelectedProduct = (product: InventoryProductModel) => {
         <SupplierBatchCard />
       </div>
 
-      <div>
+      <div className="flex flex-col">
         <div className="flex justify-between items-center">
           <h3>Assocciated Preset</h3>
           <span className="text-sm hover:underline cursor-pointer">
@@ -49,21 +50,27 @@ export const SelectedProduct = (product: InventoryProductModel) => {
           </span>
         </div>
         <Separator orientation="horizontal" />
-        <div className="rounded-lg border inset-shadow-sm p-1">
-          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg cursor-default">
-            <span>Box</span>
-            <span> &gt;</span>
-            <span>Cases</span>
-            <span> &gt;</span>
-            <span>Pieces</span>
-          </div>
-        </div>
 
         <div className="rounded-lg border inset-shadow-sm p-1">
           <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg">
-            <span className="text-sm font-semibold">
-              No associated unit preset.
-            </span>
+            {product.unitPresets.length === 0 ? (
+              <span className="text-sm font-semibold">
+                No associated unit preset.
+              </span>
+            ) : (
+              product.unitPresets.map((u, i) => (
+                <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg cursor-default">
+                  {u.preset.presetLevels.map((level, idx) => (
+                    <>
+                      <span>{level.unitOfMeasure.uom_Name}</span>
+                      {idx < u.preset.presetLevels.length - 1 && (
+                        <span>&gt;</span>
+                      )}
+                    </>
+                  ))}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

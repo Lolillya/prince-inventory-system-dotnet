@@ -163,11 +163,20 @@ const InventoryPage = () => {
             {filteredInventory?.map((data, index) => (
               <>
                 <div
-                  className="flex justify-between p-2 rounded-lg"
+                  className={`flex justify-between p-2 rounded-lg transition-all duration-300 ${
+                    !data.isComplete
+                      ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
+                      : "hover:bg-accent"
+                  }`}
                   key={index}
                   onClick={() => handleClick(data)}
                 >
                   <div className="flex gap-2 items-center">
+                    {!data.isComplete && (
+                      <span className="text-xs bg-saltbox-gray text-white px-2 py-0.5 rounded-full font-medium">
+                        Setup Required
+                      </span>
+                    )}
                     <span className="capitalize">
                       {data.product.product_Code}
                     </span>
