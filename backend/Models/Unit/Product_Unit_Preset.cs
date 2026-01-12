@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using backend.Models.Inventory;
@@ -13,6 +12,10 @@ namespace backend.Models.Unit
         public int Product_ID { get; set; } // FK to Product
 
         public int Preset_ID { get; set; } // FK to Unit_Preset
+
+        public int? Low_Stock_Level { get; set; } // Quantity in base unit for low stock indicator (e.g., 100 boxes)
+
+        public int? Very_Low_Stock_Level { get; set; } // Quantity in base unit for very low stock indicator (e.g., 20 boxes)
 
         public DateTime Assigned_At { get; set; } = DateTime.UtcNow;
 

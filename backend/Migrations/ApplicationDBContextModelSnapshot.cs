@@ -1376,10 +1376,16 @@ namespace backend.Migrations
                     b.Property<DateTime>("Assigned_At")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("Low_Stock_Level")
+                        .HasColumnType("int");
+
                     b.Property<int>("Preset_ID")
                         .HasColumnType("int");
 
                     b.Property<int>("Product_ID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Very_Low_Stock_Level")
                         .HasColumnType("int");
 
                     b.HasKey("Product_Preset_ID");
@@ -1837,7 +1843,7 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.HasOne("backend.Models.Inventory.Product", "Product")
-                        .WithMany()
+                        .WithMany("ProductPresets")
                         .HasForeignKey("Product_ID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1875,6 +1881,11 @@ namespace backend.Migrations
                     b.Navigation("Preset");
 
                     b.Navigation("UnitOfMeasure");
+                });
+
+            modelBuilder.Entity("backend.Models.Inventory.Product", b =>
+                {
+                    b.Navigation("ProductPresets");
                 });
 
             modelBuilder.Entity("backend.Models.InvoiceModel.Invoice", b =>
