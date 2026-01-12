@@ -27,6 +27,28 @@ const schema = yup.object().shape({
       String(originalValue).trim() === "" ? undefined : value
     )
     .required("Variant is required"),
+  unitPresets: yup.array().of(
+    yup.object().shape({
+      low_Stock_Level: yup
+        .number()
+        .transform((value, originalValue) =>
+          String(originalValue).trim() === "" ? undefined : value
+        )
+        .typeError("Must be a number")
+        .positive("Must be a positive number")
+        .integer("Must be a whole number")
+        .required("Low stock level is required"),
+      very_Low_Stock_Level: yup
+        .number()
+        .transform((value, originalValue) =>
+          String(originalValue).trim() === "" ? undefined : value
+        )
+        .typeError("Must be a number")
+        .positive("Must be a positive number")
+        .integer("Must be a whole number")
+        .required("Very low stock level is required"),
+    })
+  ),
 });
 
 interface EditProductFormProps {
@@ -48,13 +70,19 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
       brand_ID: selectedProduct.brand.brand_ID,
       category_Id: selectedProduct.category.category_ID,
       variant_Id: selectedProduct.variant.variant_ID,
+      unitPresets: selectedProduct.unitPresets.map((u) => ({
+        low_Stock_Level: u.low_Stock_Level,
+        very_Low_Stock_Level: u.very_Low_Stock_Level,
+      })),
     },
   });
 
   const { data: productFields, isLoading: productFieldsLoading } =
     UseProductFieldsQuery();
 
-  const onSubmit = () => {};
+  const onSubmit = () => {
+    console.log("Submitted Edit Product Form");
+  };
 
   console.log("Selected Product in Edit Form:", selectedProduct.unitPresets);
 
@@ -212,9 +240,13 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
             </div>
           ) : (
             selectedProduct.unitPresets.map((u, i) => (
-              <>
-                <EditProductUnitCard selectedProduct={u} key={i} />
-              </>
+              <EditProductUnitCard
+                selectedProduct={u}
+                register={register}
+                index={i}
+                errors={errors}
+                key={i}
+              />
             ))
           )}
         </div>
