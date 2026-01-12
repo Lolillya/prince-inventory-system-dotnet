@@ -15,23 +15,23 @@ export const SelectedProduct = ({
   return (
     <div className="w-full flex flex-col gap-3">
       <div className="flex justify-between w-full">
-        <div className="flex gap-3">
-          <span>{product.product.product_Name}</span>
-          <span>-</span>
-          <span>{product.brand.brandName}</span>
-          <span>-</span>
-          <span>{product.variant.variant_Name}</span>
+        <div className="flex gap-1">
+          <span className="text-sm">{product.product.product_Name}</span>
+          <span className="text-sm">-</span>
+          <span className="text-sm">{product.brand.brandName}</span>
+          <span className="text-sm">-</span>
+          <span className="text-sm">{product.variant.variant_Name}</span>
         </div>
 
-        <span className="bg-teal-200 rounded-full py-1 px-2 items-center flex text-center justify-center text-xs">
-          category
+        <span className="bg-teal-200 rounded-full py-1 px-2 items-center flex text-center justify-center text-xs text-nowrap">
+          {product.category.category_Name}
         </span>
       </div>
 
-      <div className="flex gap-1">
+      {/* <div className="flex gap-1">
         <label>ID: </label>
         <span>{product.product.product_Name}</span>
-      </div>
+      </div> */}
 
       <div className="flex flex-col">
         <label>notes</label>
@@ -47,7 +47,9 @@ export const SelectedProduct = ({
           <Separator />
         </div>
 
-        <SupplierBatchCard />
+        {product.restockInfo.map((r, i) => (
+          <SupplierBatchCard supplierBatch={r} />
+        ))}
       </div>
 
       <div className="flex flex-col h-full">
@@ -71,46 +73,52 @@ export const SelectedProduct = ({
             ) : (
               product.unitPresets.map((u, i) => (
                 <div
-                  className="flex items-center gap-2 bg-wash-gray text-sm rounded-lg cursor-default w-full"
+                  className="flex flex-col gap-2 bg-wash-gray text-sm rounded-lg cursor-default w-full"
                   key={i}
                 >
-                  <div className="w-full flex gap-2 items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    {u.preset.presetLevels.map((level, idx) => (
-                      <>
-                        <span>{level.unitOfMeasure.uom_Name}</span>
-                        {idx < u.preset.presetLevels.length - 1 && (
-                          <span>&gt;</span>
-                        )}
-                      </>
-                    ))}
+                  <div className="w-full flex">
+                    <div className="w-full flex gap-2 items-center">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      {u.preset.presetLevels.map((level, idx) => (
+                        <>
+                          <span>{level.unitOfMeasure.uom_Name}</span>
+                          {idx < u.preset.presetLevels.length - 1 && (
+                            <span>&gt;</span>
+                          )}
+                        </>
+                      ))}
+                    </div>
+                    <div className="w-full flex gap-4">
+                      <label>Total Batches:</label>
+                      <span>{product.restockInfo.length}</span>
+                    </div>
                   </div>
-                  {/* <div className="w-full flex gap-4">
-                    <label>Total Batches: </label>
-                    <span></span>
-                  </div> */}
+
+                  <div className="flex flex-col">
+                    <label className="text-sm text-saltbox-gray font-semibold">
+                      unit conversions
+                    </label>
+                    <div className="flex flex-col">
+                      {product.unitPresets.map((u, i) =>
+                        u.preset.presetLevels.map((l, idx) => (
+                          <div className="flex gap-2 items-center">
+                            <span
+                              key={idx}
+                              className="text-sm text-saltbox-gray"
+                            >
+                              {l.unitOfMeasure.uom_Name}:{" "}
+                            </span>
+                            <span className="text-sm text-saltbox-gray font-semibold">
+                              {l.conversion_Factor}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))
             )}
-            <div className="flex flex-col">
-              <label className="text-sm text-saltbox-gray font-semibold">
-                unit conversions
-              </label>
-              <div className="flex flex-col">
-                {product.unitPresets.map((u, i) =>
-                  u.preset.presetLevels.map((l, idx) => (
-                    <div className="flex gap-2 items-center">
-                      <span key={idx} className="text-sm text-saltbox-gray">
-                        {l.unitOfMeasure.uom_Name}:{" "}
-                      </span>
-                      <span className="text-sm text-saltbox-gray font-semibold">
-                        {l.conversion_Factor}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </div>
