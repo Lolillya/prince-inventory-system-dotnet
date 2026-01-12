@@ -75,6 +75,22 @@ const InventoryPage = () => {
     );
   });
 
+  // Check if product requires setup (incomplete or missing stock levels)
+  const requiresSetup = (product: InventoryProductModel) => {
+    if (!product.isComplete) return true;
+
+    // Check if any unitPreset has null stock levels
+    return product.unitPresets.some(
+      (preset) =>
+        preset.low_Stock_Level === null ||
+        preset.low_Stock_Level === undefined ||
+        preset.very_Low_Stock_Level === null ||
+        preset.very_Low_Stock_Level === undefined
+    );
+  };
+
+  console.log(filteredInventory);
+
   return (
     <section>
       {/* ADD PRODUCT MODAL */}
@@ -175,7 +191,7 @@ const InventoryPage = () => {
               <>
                 <div
                   className={`flex justify-between p-2 rounded-lg transition-all duration-300 ${
-                    !data.isComplete
+                    requiresSetup(data)
                       ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
                       : "hover:bg-accent"
                   }`}
@@ -183,7 +199,7 @@ const InventoryPage = () => {
                   onClick={() => handleClick(data)}
                 >
                   <div className="flex gap-2 items-center">
-                    {!data.isComplete && (
+                    {requiresSetup(data) && (
                       <span className="text-xs bg-saltbox-gray text-white px-2 py-0.5 rounded-full font-medium">
                         Setup Required
                       </span>
