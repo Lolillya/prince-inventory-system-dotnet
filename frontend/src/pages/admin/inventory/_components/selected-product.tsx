@@ -41,7 +41,7 @@ export const SelectedProduct = ({
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
           <div className="flex w-full justify-between">
-            <label># batches</label>
+            {/* <label>{product.} batches</label> */}
             <span>view all</span>
           </div>
           <Separator />
@@ -50,7 +50,7 @@ export const SelectedProduct = ({
         <SupplierBatchCard />
       </div>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col h-full">
         <div className="flex justify-between items-center">
           <h3>Assocciated Preset</h3>
           <span
@@ -62,8 +62,8 @@ export const SelectedProduct = ({
         </div>
         <Separator orientation="horizontal" />
 
-        <div className="rounded-lg border inset-shadow-sm p-1">
-          <div className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg">
+        <div className="rounded-lg border inset-shadow-sm p-1 h-full">
+          <div className="flex gap-2 bg-wash-gray p-2 rounded-lg shadow-sm flex-col">
             {product.unitPresets.length === 0 ? (
               <span className="text-sm font-semibold">
                 No associated unit preset.
@@ -71,20 +71,46 @@ export const SelectedProduct = ({
             ) : (
               product.unitPresets.map((u, i) => (
                 <div
-                  className="flex items-center gap-2 border bg-wash-gray p-2 rounded-lg cursor-default"
+                  className="flex items-center gap-2 bg-wash-gray text-sm rounded-lg cursor-default w-full"
                   key={i}
                 >
-                  {u.preset.presetLevels.map((level, idx) => (
-                    <>
-                      <span>{level.unitOfMeasure.uom_Name}</span>
-                      {idx < u.preset.presetLevels.length - 1 && (
-                        <span>&gt;</span>
-                      )}
-                    </>
-                  ))}
+                  <div className="w-full flex gap-2 items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    {u.preset.presetLevels.map((level, idx) => (
+                      <>
+                        <span>{level.unitOfMeasure.uom_Name}</span>
+                        {idx < u.preset.presetLevels.length - 1 && (
+                          <span>&gt;</span>
+                        )}
+                      </>
+                    ))}
+                  </div>
+                  {/* <div className="w-full flex gap-4">
+                    <label>Total Batches: </label>
+                    <span></span>
+                  </div> */}
                 </div>
               ))
             )}
+            <div className="flex flex-col">
+              <label className="text-sm text-saltbox-gray font-semibold">
+                unit conversions
+              </label>
+              <div className="flex flex-col">
+                {product.unitPresets.map((u, i) =>
+                  u.preset.presetLevels.map((l, idx) => (
+                    <div className="flex gap-2 items-center">
+                      <span key={idx} className="text-sm text-saltbox-gray">
+                        {l.unitOfMeasure.uom_Name}:{" "}
+                      </span>
+                      <span className="text-sm text-saltbox-gray font-semibold">
+                        {l.conversion_Factor}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
