@@ -71,6 +71,8 @@ namespace backend.Controller.Inventory
                             pp.Product_Preset_ID,
                             pp.Preset_ID,
                             pp.Assigned_At,
+                            pp.Low_Stock_Level,
+                            pp.Very_Low_Stock_Level,
                             Preset = new
                             {
                                 pp.Preset.Preset_ID,
