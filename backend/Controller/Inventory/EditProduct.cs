@@ -32,6 +32,10 @@ namespace backend.Controller.Inventory
                 await transaction.RollbackAsync();
                 return NotFound("Product not found.");
             }
+
+            // Update stock levels for unit presets
+            await UpdateStockLevels(payload);
+
             await transaction.CommitAsync();
 
             return Ok();
@@ -56,6 +60,34 @@ namespace backend.Controller.Inventory
             await _db.SaveChangesAsync();
 
             return true;
+        }
+
+        private async Task UpdateStockLevels(UpdateInventoryProductDto payload)
+        {
+            foreach (var unitPreset in payload.UnitPresets)
+            {
+                var stockLevel = await _db.Product_Unit_Presets
+                    .FirstOrDefaultAsync(sl => sl.Product_Preset_ID == unitPreset.Product_Preset_ID);
+
+                if (stockLevel != null)
+                {
+                    stockLevel.Low_Stock_Level = unitPreset.Low_Stock_Level;
+                    stockLevel.Very_Low_Stock_Level = unitPreset.Very_Low_Stock_Level;
+                    _db.Product_Unit_Presets.Update(stockLevel);
+                }
+                else
+                {
+                    var newStockLevel = new Models.Unit.Product_Unit_Preset
+                    {
+                        Product_Preset_ID = unitPreset.Product_Preset_ID,
+                        Low_Stock_Level = unitPreset.Low_Stock_Level,
+                        Very_Low_Stock_Level = unitPreset.Very_Low_Stock_Level
+                    };
+                    await _db.Product_Unit_Presets.AddAsync(newStockLevel);
+                }
+            }
+
+            await _db.SaveChangesAsync();
         }
     };
 

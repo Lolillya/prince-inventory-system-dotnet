@@ -4,6 +4,8 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { EditProductUnitCard } from "./_components/edit-product-unit-card";
+import { useEditProductMutation } from "@/features/inventory/edit-product/edit-product.mutation";
+import { EditProductPayload } from "@/features/inventory/edit-product/edit-product-payload.model";
 
 const schema = yup.object().shape({
   productName: yup.string().required("Product name is required"),
@@ -80,8 +82,25 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
   const { data: productFields, isLoading: productFieldsLoading } =
     UseProductFieldsQuery();
 
-  const onSubmit = () => {
-    console.log("Submitted Edit Product Form");
+  const { mutate: editProduct, isPending } = useEditProductMutation();
+
+  const onSubmit = (data: any) => {
+    const payload: EditProductPayload = {
+      productName: data.productName,
+      description: data.description,
+      productCode: data.productCode,
+      brand_ID: data.brand_ID,
+      category_Id: data.category_Id,
+      variant_Id: data.variant_Id,
+      unitPresets: selectedProduct.unitPresets.map((preset, index) => ({
+        product_Preset_ID: preset.product_Preset_ID,
+        low_Stock_Level: data.unitPresets[index].low_Stock_Level,
+        very_Low_Stock_Level: data.unitPresets[index].very_Low_Stock_Level,
+      })),
+    };
+
+    console.log("Submitting Edit Product Payload:", payload);
+    editProduct(payload);
   };
 
   console.log("Selected Product in Edit Form:", selectedProduct.unitPresets);
@@ -252,7 +271,9 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
         </div>
       </div>
 
-      <button type="submit">Confirm Edit</button>
+      <button type="submit" disabled={isPending}>
+        {isPending ? "Updating..." : "Confirm Edit"}
+      </button>
     </form>
   );
 };
