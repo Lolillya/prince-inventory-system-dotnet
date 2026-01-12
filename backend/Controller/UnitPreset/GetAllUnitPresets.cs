@@ -58,6 +58,8 @@ namespace backend.Controller.UnitPreset
                                 Product_Name = pp.Product.Product_Name,
                                 Brand_Name = pp.Product.Brand != null ? pp.Product.Brand.BrandName : null,
                                 Variant_Name = pp.Product.Variant != null ? pp.Product.Variant.Variant_Name : null,
+                                Low_Stock_Level = pp.Low_Stock_Level,
+                                Very_Low_Stock_Level = pp.Very_Low_Stock_Level,
                                 Assigned_At = pp.Assigned_At
                             })
                             .ToList()

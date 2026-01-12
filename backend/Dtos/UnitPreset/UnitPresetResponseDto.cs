@@ -28,6 +28,8 @@ namespace backend.Dtos.UnitPreset
         public string Product_Name { get; set; } = null!;
         public string? Brand_Name { get; set; }
         public string? Variant_Name { get; set; }
+        public int? Low_Stock_Level { get; set; }
+        public int? Very_Low_Stock_Level { get; set; }
         public DateTime Assigned_At { get; set; }
     }
 }
