@@ -56,6 +56,8 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
 
   const onSubmit = () => {};
 
+  console.log("Selected Product in Edit Form:", selectedProduct.unitPresets);
+
   return (
     <form
       className="flex flex-col gap-5 overflow-y-hidden flex-1"
@@ -209,7 +211,11 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
               </span>
             </div>
           ) : (
-            <EditProductUnitCard selectedProduct={selectedProduct} />
+            selectedProduct.unitPresets.map((u, i) => (
+              <>
+                <EditProductUnitCard selectedProduct={u} key={i} />
+              </>
+            ))
           )}
         </div>
       </div>

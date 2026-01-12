@@ -1,21 +1,45 @@
-import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
-
 interface EditProductUnitCardProps {
-  selectedProduct: InventoryProductModel;
+  selectedProduct: {
+    assigned_At: string;
+    preset: {
+      created_At: string;
+      main_Unit_ID: number;
+      presetLevels: Array<{
+        conversion_Factor: number;
+        created_At: string;
+        level: number;
+        level_ID: number;
+        unitOfMeasure: {
+          uom_ID: number;
+          uom_Name: string;
+        };
+      }>;
+
+      preset_ID: number;
+      preset_Name: string;
+      updated_At: string;
+    };
+    preset_ID: number;
+    product_Preset_ID: number;
+    low_Stock_Level?: number;
+    very_Low_Stock_Level?: number;
+  };
 }
 
 export const EditProductUnitCard = ({
   selectedProduct,
 }: EditProductUnitCardProps) => {
-  console.log(selectedProduct);
-
   return (
     <div className="p-2 rounded-lg shadow-sm border flex items-center">
       <div className="flex gap-1 w-[30%]">
-        <span>Box</span>
-        <span>&gt;</span>
-        <span>Cases</span>
-        <span>&gt;</span>s<span>Pieces</span>
+        {selectedProduct.preset.presetLevels.map((l, i) => (
+          <>
+            <span>{l.unitOfMeasure.uom_Name}</span>
+            {i < selectedProduct.preset.presetLevels.length - 1 && (
+              <span> &gt; </span>
+            )}
+          </>
+        ))}
       </div>
 
       <div className="flex w-full items-center gap-2">
@@ -25,6 +49,7 @@ export const EditProductUnitCard = ({
           <input
             className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray "
             placeholder="Low Stock"
+            value={selectedProduct.low_Stock_Level || "Low Stock"}
           />
         </div>
 
@@ -34,6 +59,7 @@ export const EditProductUnitCard = ({
           <input
             className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray "
             placeholder="Very Low Stock"
+            value={selectedProduct.very_Low_Stock_Level || "Very Low Stock"}
           />
         </div>
       </div>
