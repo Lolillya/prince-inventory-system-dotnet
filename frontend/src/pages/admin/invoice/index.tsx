@@ -8,7 +8,6 @@ import {
   SearchIcon,
 } from "../../../icons";
 import { useInvoiceQuery } from "@/features/invoice/invoice-get-all";
-import { NoSelectedState } from "@/components/no-selected-state";
 import { NoInvoiceState } from "./_components/no-invoice-state";
 
 const InvoicePage = () => {

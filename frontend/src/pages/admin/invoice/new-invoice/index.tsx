@@ -92,7 +92,7 @@ const NewInvoicePage = () => {
                 <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
                   {restockBatches?.map((data, i) => (
                     <ProductCard
-                      data={data}
+                      product={data}
                       onClick={() => handleClick(data)}
                       key={i}
                     />
