@@ -55,12 +55,33 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
 
   const onSubmit = () => {};
 
+  console.log(selectedProduct);
+
   return (
     <form
-      className="flex flex-col gap-5 overflow-y-scroll flex-1"
+      className="flex flex-col gap-5 overflow-y-hidden flex-1"
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col space-y-4 mb-auto">
+        {/* PRODUCT CODE */}
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="productCode"
+            className="block text-sm font-semibold text-nowrap"
+          >
+            Product Code:
+          </label>
+          <input
+            id="productCode"
+            type="text"
+            className="w-full drop-shadow-none bg-custom-gray p-2"
+            {...register("productCode")}
+            disabled
+          />
+          <span className="text-red-500 text-xs normal-case">
+            {errors.productCode?.message}
+          </span>
+        </div>
         {/* PRODUCT NAME */}
         <div>
           <label htmlFor="productName" className="block text-sm font-medium">
@@ -89,22 +110,6 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
           />
           <span className="text-red-500 text-xs normal-case">
             {errors.description?.message}
-          </span>
-        </div>
-
-        {/* PRODUCT CODE */}
-        <div>
-          <label htmlFor="productCode" className="block text-sm font-medium">
-            Product Code
-          </label>
-          <input
-            id="productCode"
-            type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
-            {...register("productCode")}
-          />
-          <span className="text-red-500 text-xs normal-case">
-            {errors.productCode?.message}
           </span>
         </div>
 
@@ -186,6 +191,114 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
           <span className="text-red-500 text-xs normal-case">
             {/* {errors.variant_Id?.message} */}
           </span>
+        </div>
+      </div>
+
+      <div className="h-full flex flex-col gap-2">
+        <div className="flex gap-2 items-center">
+          <label>Packaging Preset(s)</label>
+          <span className="text-sm text-gray-500">
+            - {selectedProduct.unitPresets.length || 0} preset(s) found
+          </span>
+        </div>
+
+        <div className="w-full inset-shadow-sm border h-full rounded-lg p-2 flex flex-col gap-2 overflow-y-scroll">
+          {/* PRESET CARD */}
+          <div className="p-2 rounded-lg shadow-sm border flex items-center">
+            <div className="flex gap-1 w-[30%]">
+              <span>Box</span>
+              <span>&gt;</span>
+              <span>Cases</span>
+              <span>&gt;</span>
+              <span>Pieces</span>
+            </div>
+
+            <div className="flex w-full items-center gap-2">
+              {/* LOW STOCK PILL */}
+              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
+                <div className="w-2.5 h-2.5 rounded-full bg-orange-300 shrink-0"></div>
+
+                <input
+                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
+                  placeholder="Low Stock"
+                />
+              </div>
+
+              {/* VERY LOW STOCK PILL */}
+              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-300 shrink-0"></div>
+
+                <input
+                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
+                  placeholder="Very Low Stock"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-2 rounded-lg shadow-sm border flex items-center">
+            <div className="flex gap-1 w-[30%]">
+              <span>Box</span>
+              <span>&gt;</span>
+              <span>Cases</span>
+              <span>&gt;</span>
+              <span>Pieces</span>
+            </div>
+
+            <div className="flex w-full items-center gap-2">
+              {/* LOW STOCK PILL */}
+              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
+                <div className="w-2.5 h-2.5 rounded-full bg-orange-300 shrink-0"></div>
+
+                <input
+                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
+                  placeholder="Low Stock"
+                />
+              </div>
+
+              {/* VERY LOW STOCK PILL */}
+              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-300 shrink-0"></div>
+
+                <input
+                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
+                  placeholder="Very Low Stock"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-2 rounded-lg shadow-sm border flex items-center">
+            <div className="flex gap-1 w-[30%]">
+              <span>Box</span>
+              <span>&gt;</span>
+              <span>Cases</span>
+              <span>&gt;</span>
+              <span>Pieces</span>
+            </div>
+
+            <div className="flex w-full items-center gap-2">
+              {/* LOW STOCK PILL */}
+              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
+                <div className="w-2.5 h-2.5 rounded-full bg-orange-300 shrink-0"></div>
+
+                <input
+                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
+                  placeholder="Low Stock"
+                />
+              </div>
+
+              {/* VERY LOW STOCK PILL */}
+              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-300 shrink-0"></div>
+
+                <input
+                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
+                  placeholder="Very Low Stock"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
