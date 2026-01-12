@@ -41,7 +41,7 @@ export const SelectedProduct = ({
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
           <div className="flex w-full justify-between">
-            {/* <label>{product.} batches</label> */}
+            <label>{product.restockInfo.length} batches</label>
             <span>view all</span>
           </div>
           <Separator />

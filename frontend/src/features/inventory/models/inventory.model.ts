@@ -12,6 +12,7 @@ export type InventoryProductModel = {
   category: category;
   unitPresets: UnitPresets[];
   isComplete: boolean;
+  restockInfo: RestockInfo[];
 };
 
 type brand = {
@@ -66,3 +67,49 @@ type UnitOfMeasure = {
   uom_ID: number;
   uom_Name: string;
 };
+
+type RestockInfo = {
+  restockId: number;
+  restockNumber: string;
+  clerk: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  batchId: number;
+  batchNumber: number;
+  supplier: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    companyName: string;
+  };
+  base_Unit_Price: number;
+  base_Unit_Quantity: number;
+};
+
+/* 
+
+"restockInfo": [
+            {
+                "restockId": 1,
+                "restockNumber": "RS-2026-001",
+                "clerk": {
+                    "id": "8bf2539c-0ebe-4a96-9121-87f2443f1e1e",
+                    "firstName": "Jane",
+                    "lastName": "Doe"
+                },
+                "batchId": 1,
+                "batchNumber": 1,
+                "supplier": {
+                    "id": "3",
+                    "firstName": "Jane",
+                    "lastName": "Smith",
+                    "companyName": "Educational Supplies Inc."
+                },
+                "base_Unit_Price": 2000.00,
+                "base_Unit_Quantity": 500
+            }
+        ],
+
+*/

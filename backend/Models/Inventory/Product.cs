@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using backend.Models.Unit;
+using backend.Models.LineItems;
 
 namespace backend.Models.Inventory
 {
@@ -24,6 +25,7 @@ namespace backend.Models.Inventory
         public Category Category { get; set; } = null!;
         public Variant Variant { get; set; } = null!;
         public ICollection<Product_Unit_Preset> ProductPresets { get; set; } = new List<Product_Unit_Preset>();
+        public ICollection<RestockLineItems> RestockLineItems { get; set; } = new List<RestockLineItems>();
 
     }
 }

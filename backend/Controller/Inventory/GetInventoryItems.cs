@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.Data;
-using backend.Models.Inventory;
 
 namespace backend.Controller.Inventory
 {
@@ -34,6 +33,25 @@ namespace backend.Controller.Inventory
                             .ThenInclude(pp => pp.Preset)
                                 .ThenInclude(preset => preset.PresetLevels)
                                     .ThenInclude(level => level.UnitOfMeasure)
+                    .Include(i => i.Product)
+                        .ThenInclude(p => p.RestockLineItems)
+                            .ThenInclude(rli => rli.RestockBatch)
+                                .ThenInclude(rb => rb.Supplier)
+                    .Include(i => i.Product)
+                        .ThenInclude(p => p.RestockLineItems)
+                            .ThenInclude(rli => rli.RestockBatch)
+                                .ThenInclude(rb => rb.Restock)
+                    .Include(i => i.Product)
+                        .ThenInclude(p => p.RestockLineItems)
+                            .ThenInclude(rli => rli.BaseUnitOfMeasure)
+                    .Include(i => i.Product)
+                        .ThenInclude(p => p.RestockLineItems)
+                            .ThenInclude(rli => rli.ProductUOMs)
+                                .ThenInclude(puom => puom.UnitOfMeasure)
+                    .Include(i => i.Product)
+                        .ThenInclude(p => p.RestockLineItems)
+                            .ThenInclude(rli => rli.ProductUOMs)
+                                .ThenInclude(puom => puom.ParentUnitOfMeasure)
                     .Select(i => new
                     {
                         Product = new
@@ -95,6 +113,38 @@ namespace backend.Controller.Inventory
                                 }).OrderBy(l => l.Level).ToList()
                             }
                         }).ToList(),
+
+                        RestockInfo = _db.RestockLineItems
+                                .Where(rli => rli.Product_ID == i.Product_ID)
+                                .Include(rli => rli.RestockBatch)
+                                .ThenInclude(rb => rb.Restock)
+                                .ThenInclude(r => r.Clerk)
+                                .Include(rli => rli.RestockBatch)
+                                .ThenInclude(rb => rb.Supplier)
+                                .Select(rli => new
+                                {
+                                    RestockId = rli.RestockBatch.Restock_ID,
+                                    RestockNumber = rli.RestockBatch.Restock.Restock_Number,
+                                    Clerk = rli.RestockBatch.Restock.Clerk != null ? new
+                                    {
+                                        rli.RestockBatch.Restock.Clerk.Id,
+                                        rli.RestockBatch.Restock.Clerk.FirstName,
+                                        rli.RestockBatch.Restock.Clerk.LastName
+                                    } : null,
+                                    BatchId = rli.Batch_ID,
+                                    BatchNumber = rli.RestockBatch.Batch_Number,
+                                    Supplier = rli.RestockBatch.Supplier != null ? new
+                                    {
+                                        rli.RestockBatch.Supplier.Id,
+                                        rli.RestockBatch.Supplier.FirstName,
+                                        rli.RestockBatch.Supplier.LastName,
+                                        rli.RestockBatch.Supplier.CompanyName
+                                    } : null,
+                                    rli.Base_Unit_Price,
+                                    rli.Base_Unit_Quantity
+                                })
+                                .ToList(),
+
                         IsComplete = i.Product.ProductPresets.Any()
                     }).ToListAsync();
 
