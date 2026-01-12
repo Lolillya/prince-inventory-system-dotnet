@@ -3,6 +3,7 @@ import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.q
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { EditProductUnitCard } from "./_components/edit-product-unit-card";
 
 const schema = yup.object().shape({
   productName: yup.string().required("Product name is required"),
@@ -194,7 +195,7 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
         </div>
       </div>
 
-      <div className="h-full flex flex-col gap-2">
+      <div className="flex flex-col gap-2 h-full overflow-y-hidden">
         <div className="flex gap-2 items-center">
           <label>Packaging Preset(s)</label>
           <span className="text-sm text-gray-500">
@@ -202,103 +203,16 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
           </span>
         </div>
 
-        <div className="w-full inset-shadow-sm border h-full rounded-lg p-2 flex flex-col gap-2 overflow-y-scroll">
-          {/* PRESET CARD */}
-          <div className="p-2 rounded-lg shadow-sm border flex items-center">
-            <div className="flex gap-1 w-[30%]">
-              <span>Box</span>
-              <span>&gt;</span>
-              <span>Cases</span>
-              <span>&gt;</span>
-              <span>Pieces</span>
+        <div className="w-full inset-shadow-sm border rounded-lg p-2 flex flex-col gap-2 overflow-y-scroll flex-1">
+          {selectedProduct.unitPresets.length === 0 ? (
+            <div className="p-2 rounded-lg shadow-sm border flex items-center">
+              <span className="text-vesper-gray text-sm font-semibold p-2">
+                No presets found
+              </span>
             </div>
-
-            <div className="flex w-full items-center gap-2">
-              {/* LOW STOCK PILL */}
-              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
-                <div className="w-2.5 h-2.5 rounded-full bg-orange-300 shrink-0"></div>
-
-                <input
-                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
-                  placeholder="Low Stock"
-                />
-              </div>
-
-              {/* VERY LOW STOCK PILL */}
-              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-300 shrink-0"></div>
-
-                <input
-                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
-                  placeholder="Very Low Stock"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="p-2 rounded-lg shadow-sm border flex items-center">
-            <div className="flex gap-1 w-[30%]">
-              <span>Box</span>
-              <span>&gt;</span>
-              <span>Cases</span>
-              <span>&gt;</span>
-              <span>Pieces</span>
-            </div>
-
-            <div className="flex w-full items-center gap-2">
-              {/* LOW STOCK PILL */}
-              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
-                <div className="w-2.5 h-2.5 rounded-full bg-orange-300 shrink-0"></div>
-
-                <input
-                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
-                  placeholder="Low Stock"
-                />
-              </div>
-
-              {/* VERY LOW STOCK PILL */}
-              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-300 shrink-0"></div>
-
-                <input
-                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
-                  placeholder="Very Low Stock"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="p-2 rounded-lg shadow-sm border flex items-center">
-            <div className="flex gap-1 w-[30%]">
-              <span>Box</span>
-              <span>&gt;</span>
-              <span>Cases</span>
-              <span>&gt;</span>
-              <span>Pieces</span>
-            </div>
-
-            <div className="flex w-full items-center gap-2">
-              {/* LOW STOCK PILL */}
-              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
-                <div className="w-2.5 h-2.5 rounded-full bg-orange-300 shrink-0"></div>
-
-                <input
-                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
-                  placeholder="Low Stock"
-                />
-              </div>
-
-              {/* VERY LOW STOCK PILL */}
-              <div className="bg-bellflower-gray rounded-lg flex items-center px-3 gap-2 w-36">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-300 shrink-0"></div>
-
-                <input
-                  className="w-full bg-bellflower-gray shadow-none drop-shadow-none text-xs font-semibold placeholder:font-semibold text-saltbox-gray"
-                  placeholder="Very Low Stock"
-                />
-              </div>
-            </div>
-          </div>
+          ) : (
+            <EditProductUnitCard />
+          )}
         </div>
       </div>
 
