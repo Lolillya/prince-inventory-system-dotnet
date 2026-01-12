@@ -40,6 +40,8 @@ type UnitPresets = {
   preset: Preset;
   preset_ID: number;
   product_Preset_ID: number;
+  low_Stock_Level?: number;
+  very_Low_Stock_Level?: number;
 };
 
 type Preset = {

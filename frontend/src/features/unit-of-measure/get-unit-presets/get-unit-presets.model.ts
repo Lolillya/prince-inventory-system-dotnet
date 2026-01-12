@@ -16,6 +16,8 @@ type Products = {
   brand_Name: string;
   variant_Name: string;
   assigned_At: string;
+  low_Stock_Level?: number;
+  very_Low_Stock_Level?: number;
 };
 
 type PresetLevels = {

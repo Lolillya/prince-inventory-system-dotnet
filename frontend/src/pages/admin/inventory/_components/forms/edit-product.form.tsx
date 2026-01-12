@@ -56,8 +56,6 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
 
   const onSubmit = () => {};
 
-  console.log(selectedProduct);
-
   return (
     <form
       className="flex flex-col gap-5 overflow-y-hidden flex-1"
@@ -211,7 +209,7 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
               </span>
             </div>
           ) : (
-            <EditProductUnitCard />
+            <EditProductUnitCard selectedProduct={selectedProduct} />
           )}
         </div>
       </div>
