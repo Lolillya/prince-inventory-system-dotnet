@@ -1,8 +1,8 @@
-import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { CheckIcon } from "lucide-react";
 
 interface SelectableProductCardProps {
-  product: InventoryBatchesModel;
+  product: InventoryProductModel;
   isSelected: boolean;
   isAlreadyAssigned: boolean;
   onToggle: (productId: number) => void;
@@ -40,12 +40,10 @@ export const SelectableProductCard = ({
               {product.product.product_Name}
             </span>
             <span className="text-saltbox-gray">•</span>
-            <span className="text-saltbox-gray">
-              {product.product.brand.brand_Name}
-            </span>
+            <span className="text-saltbox-gray">{product.brand.brandName}</span>
             <span className="text-saltbox-gray">•</span>
             <span className="text-saltbox-gray">
-              {product.product.variant.variant_Name}
+              {product.variant.variant_Name}
             </span>
           </div>
           {isAlreadyAssigned && isSelected && (
@@ -55,9 +53,9 @@ export const SelectableProductCard = ({
           )}
         </div>
       </div>
-      <span className="text-xs text-saltbox-gray whitespace-nowrap">
-        {product.totalBatches} batches
-      </span>
+      {/* <span className="text-xs text-saltbox-gray whitespace-nowrap">
+        {product.restockInfo.length} batches
+      </span> */}
     </div>
   );
 };
