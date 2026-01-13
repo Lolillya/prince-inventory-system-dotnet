@@ -14,10 +14,10 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
       >
         <div className="grid gap-3 items-center">
           <span>{product.product.product_Name}</span>
-          <span>{product.product.brand.brand_Name}</span>
-          <span>{product.product.variant.variant_Name}</span>
+          <span>{product.brand.brandName}</span>
+          <span>{product.variant.variant_Name}</span>
         </div>
-        <span>{product.totalBatches} batches</span>
+        <span>{product.unitPresets.length} preset(s)</span>
       </div>
     </div>
   );
