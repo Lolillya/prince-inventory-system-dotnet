@@ -28,6 +28,7 @@ namespace backend.Data
         public DbSet<Restock> Restocks { get; set; }
         public DbSet<RestockBatch> RestockBatches { get; set; }
         public DbSet<RestockLineItems> RestockLineItems { get; set; }
+        public DbSet<RestockLineItem_PresetPricing> RestockLineItem_PresetPricing { get; set; }
         public DbSet<UnitOfMeasure> UnitOfMeasure { get; set; }
         public DbSet<Product_UOM> Product_UOMs { get; set; }
         public DbSet<Unit_Preset> Unit_Presets { get; set; }
@@ -150,7 +151,7 @@ namespace backend.Data
                 entity.ToTable("RestockLineItems");
 
                 entity.HasOne(rli => rli.Product)
-                    .WithMany()
+                    .WithMany(p => p.RestockLineItems)
                     .HasForeignKey(rli => rli.Product_ID)
                     .OnDelete(DeleteBehavior.NoAction);
 
@@ -164,10 +165,37 @@ namespace backend.Data
                     .HasForeignKey(rli => rli.Base_UOM_ID)
                     .OnDelete(DeleteBehavior.NoAction);
 
+                entity.HasOne(rli => rli.UnitPreset)
+                    .WithMany()
+                    .HasForeignKey(rli => rli.Preset_ID)
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .IsRequired(false);
+
                 entity.HasMany(rli => rli.ProductUOMs)
                     .WithOne(puom => puom.RestockLineItem)
                     .HasForeignKey(puom => puom.LineItem_ID)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(rli => rli.PresetPricing)
+                    .WithOne(pp => pp.RestockLineItem)
+                    .HasForeignKey(pp => pp.LineItem_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // RestockLineItem_PresetPricing Configuration
+            builder.Entity<RestockLineItem_PresetPricing>(entity =>
+            {
+                entity.ToTable("RestockLineItem_PresetPricing");
+
+                entity.HasOne(pp => pp.RestockLineItem)
+                    .WithMany(rli => rli.PresetPricing)
+                    .HasForeignKey(pp => pp.LineItem_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pp => pp.UnitOfMeasure)
+                    .WithMany()
+                    .HasForeignKey(pp => pp.UOM_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
             builder.Entity<InvoiceLineItems>(entity =>

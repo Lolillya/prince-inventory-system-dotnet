@@ -47,6 +47,11 @@ type UnitPresets = {
 type Preset = {
   created_At: string;
   main_Unit_ID: number;
+  mainUnit: {
+    uom_ID: number;
+    unit_Name: string;
+    abbreviation: string;
+  };
   presetLevels: PresetLevel[];
   preset_ID: number;
   preset_Name: string;
@@ -64,7 +69,8 @@ type PresetLevel = {
 
 type UnitOfMeasure = {
   uom_ID: number;
-  uom_Name: string;
+  unit_Name: string;
+  abbreviation: string;
 };
 
 // type RestockInfo = {
