@@ -35,37 +35,37 @@ const NewRestockPage = () => {
   };
 
   const handleClick = (data: InventoryBatchesModel) => {
-    // const restock: NewRestockModel = {
-    //   restock: {
-    //     items: {
-    //       product: {
-    //         product_ID: data.product.product_ID,
-    //         product_Code: data.product.product_Code,
-    //         product_Name: data.product.product_Name,
-    //         desc: data.product.description,
-    //         brand_ID: data.product.brand_ID,
-    //         category_ID: data.product.category_ID,
-    //         created_At: data.product.created_At,
-    //         updated_At: data.product.updated_At,
-    //       },
-    //       variant: {
-    //         variant_Name: data.product.variant.variant_Name,
-    //         created_At: data.product.variant.created_At,
-    //         updated_At: data.product.variant.updated_At,
-    //       },
-    //       brand: {
-    //         brand_Name: data.product.brand.brand_Name,
-    //         created_At: data.product.brand.created_At,
-    //         updated_At: data.product.brand.updated_At,
-    //       },
-    //     },
-    //     uom_ID: productUnits[0].uom_ID,
-    //     unit_quantity: 0,
-    //     unit_price: 0,
-    //   },
-    // };
-    // console.log(restock);
-    // addProduct(restock);
+    const restock: NewRestockModel = {
+      restock: {
+        items: {
+          product: {
+            product_ID: data.product.product_ID,
+            product_Code: data.product.product_Code,
+            product_Name: data.product.product_Name,
+            desc: data.product.description,
+            brand_ID: data.brand.brand_ID,
+            category_ID: data.category.category_ID,
+            created_At: data.product.createdAt,
+            updated_At: data.product.createdAt,
+          },
+          variant: {
+            variant_Name: data.variant.variant_Name,
+            created_At: data.variant.createdAt,
+            updated_At: data.variant.updatedAt,
+          },
+          brand: {
+            brand_Name: data.brand.brandName,
+            created_At: data.brand.createdAt,
+            updated_At: data.brand.updatedAt,
+          },
+        },
+        uom_ID: productUnits[0].uom_ID,
+        unit_quantity: 0,
+        unit_price: 0,
+      },
+    };
+    console.log(restock);
+    addProduct(restock);
   };
 
   return (
