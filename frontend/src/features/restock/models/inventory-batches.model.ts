@@ -69,7 +69,7 @@ type PresetLevel = {
 
 type UnitOfMeasure = {
   uom_ID: number;
-  unit_Name: string;
+  uom_Name: string;
   abbreviation: string;
 };
 

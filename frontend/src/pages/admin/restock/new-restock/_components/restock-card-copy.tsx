@@ -127,7 +127,6 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
         <div className="flex flex-col gap-1">
           <label className="font-semibold">Packaging Presets</label>
           <select
-            className="input-style-3"
             value={selectedPresetId || ""}
             onChange={(e) => handlePresetChange(Number(e.target.value))}
           >
@@ -135,7 +134,13 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
             {product.unitPresets?.map((p) => (
               <option key={p.preset_ID} value={p.preset_ID}>
                 {p.preset.presetLevels
-                  .map((l) => l.unitOfMeasure.uom_Name)
+                  .map(
+                    (l) =>
+                      l.unitOfMeasure.uom_Name +
+                      " (" +
+                      l.conversion_Factor +
+                      "x)"
+                  )
                   .join(" → ")}
               </option>
             ))}

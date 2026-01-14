@@ -31,7 +31,7 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
               u.preset.presetLevels.map((l, idx) => (
                 <div key={idx} className="flex gap-1 items-center">
                   <span className="text-xs font-semibold">
-                    {l.conversion_Factor} {l.unitOfMeasure.uom_Name}
+                    {l.unitOfMeasure.uom_Name} ({l.conversion_Factor}x)
                   </span>
                   {idx < u.preset.presetLevels.length - 1 && (
                     <span className="text-xs font-semibold">&gt;</span>
