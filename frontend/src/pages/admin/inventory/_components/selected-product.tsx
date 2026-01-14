@@ -99,21 +99,16 @@ export const SelectedProduct = ({
                       unit conversions
                     </label>
                     <div className="flex flex-col">
-                      {product.unitPresets.map((u, i) =>
-                        u.preset.presetLevels.map((l, idx) => (
-                          <div className="flex gap-2 items-center">
-                            <span
-                              key={idx}
-                              className="text-sm text-saltbox-gray"
-                            >
-                              {l.unitOfMeasure.uom_Name}:{" "}
-                            </span>
-                            <span className="text-sm text-saltbox-gray font-semibold">
-                              {l.conversion_Factor}
-                            </span>
-                          </div>
-                        ))
-                      )}
+                      {u.preset.presetLevels.map((l, idx) => (
+                        <div className="flex gap-2 items-center" key={idx}>
+                          <span className="text-sm text-saltbox-gray">
+                            {l.unitOfMeasure.uom_Name}:{" "}
+                          </span>
+                          <span className="text-sm text-saltbox-gray font-semibold">
+                            {l.conversion_Factor}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
