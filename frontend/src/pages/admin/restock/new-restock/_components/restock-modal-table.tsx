@@ -59,11 +59,21 @@ export const RestockTable = () => {
     <div className="flex-1 flex flex-col overflow-hidden gap-2">
       {/* TABLE DATA HEADERS */}
       <div className="flex justify-between py-3 px-5 bg-custom-gray rounded-lg gap-2">
-        <label className="text-left w-full">Item</label>
-        <label className="text-left w-full">Preset</label>
-        <label className="text-left w-full">Quantity</label>
-        <label className="text-right w-full">Unit Price</label>
-        <label className="text-right w-full">Subtotal</label>
+        <label className="text-left w-full uppercase text-xs font-semibold">
+          Item
+        </label>
+        <label className="text-left w-full uppercase text-xs font-semibold">
+          Preset
+        </label>
+        <label className="text-left w-full uppercase text-xs font-semibold">
+          Quantity
+        </label>
+        <label className="text-right w-full uppercase text-xs font-semibold">
+          Unit Price
+        </label>
+        <label className="text-right w-full uppercase text-xs font-semibold">
+          Sub-total
+        </label>
       </div>
 
       {/* TABLE DATA BODY */}
