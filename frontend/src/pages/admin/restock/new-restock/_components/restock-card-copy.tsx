@@ -1,6 +1,7 @@
 import { Separator } from "@/components/separator";
 import { useUnitPresetRestock } from "@/features/restock/unit-preset-restock.query";
 import { XIcon } from "@/icons";
+import { PhilippinePeso } from "lucide-react";
 import { useState } from "react";
 
 interface RestockCardProp {
@@ -182,20 +183,28 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
                         <label className="w-20 text-xs uppercase">
                           {level.unitOfMeasure.uom_Name}
                         </label>
-                        <input
-                          type="number"
-                          className="input-style-3 w-full"
-                          value={levelPrices[level.level] || ""}
-                          onChange={(e) =>
-                            handlePriceChange(
-                              level.level,
-                              Number(e.target.value)
-                            )
-                          }
-                          placeholder="0.00"
-                          step="0.01"
-                          min="0"
-                        />
+
+                        <div className="relative w-full">
+                          <PhilippinePeso
+                            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-vesper-gray"
+                            width={12}
+                            height={12}
+                          />
+                          <input
+                            type="number"
+                            className="input-style-3 w-full pl-8"
+                            value={levelPrices[level.level] || ""}
+                            onChange={(e) =>
+                              handlePriceChange(
+                                level.level,
+                                Number(e.target.value)
+                              )
+                            }
+                            placeholder="0.00"
+                            step="0.01"
+                            min="0"
+                          />
+                        </div>
                       </div>
                     ))}
                 </div>
