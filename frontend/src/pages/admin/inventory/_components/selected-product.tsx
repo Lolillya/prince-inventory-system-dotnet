@@ -81,7 +81,10 @@ export const SelectedProduct = ({
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       {u.preset.presetLevels.map((level, idx) => (
                         <>
-                          <span>{level.unitOfMeasure.uom_Name}</span>
+                          <span>
+                            {level.unitOfMeasure.uom_Name} (
+                            {level.conversion_Factor}x)
+                          </span>
                           {idx < u.preset.presetLevels.length - 1 && (
                             <span>&gt;</span>
                           )}
@@ -98,17 +101,37 @@ export const SelectedProduct = ({
                     <label className="text-sm text-saltbox-gray font-semibold">
                       unit conversions
                     </label>
-                    <div className="flex flex-col">
+                    {/* <div className="flex flex-col">
                       {u.preset.presetLevels.map((l, idx) => (
-                        <div className="flex gap-2 items-center" key={idx}>
-                          <span className="text-sm text-saltbox-gray">
-                            {l.unitOfMeasure.uom_Name}:{" "}
-                          </span>
-                          <span className="text-sm text-saltbox-gray font-semibold">
-                            {l.conversion_Factor}
-                          </span>
-                        </div>
+                        <>
+                          <div className="flex gap-2 items-center" key={idx}>
+                            <span className="text-sm text-saltbox-gray">
+                              {l.unitOfMeasure.uom_Name}:{" "}
+                            </span>
+                            <span className="text-sm text-saltbox-gray font-semibold">
+                              {l.conversion_Factor}
+                            </span>
+                          </div>
+                        </>
                       ))}
+                    </div> */}
+
+                    <div className="flex flex-col">
+                      {product.restockInfo.map((b, idx) =>
+                        b.presetPricing.map((pp, pidx) => (
+                          <div
+                            className="flex gap-2 items-center"
+                            key={`${idx}-${pidx}`}
+                          >
+                            <span className="text-sm text-saltbox-gray">
+                              {pp.unitName} Price:{" "}
+                            </span>
+                            <span className="text-sm text-saltbox-gray font-semibold">
+                              ${pp.price_Per_Unit.toFixed(2)}
+                            </span>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>

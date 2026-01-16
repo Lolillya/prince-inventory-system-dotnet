@@ -121,8 +121,12 @@ namespace backend.Controller.Inventory
                                 .ThenInclude(r => r.Clerk)
                                 .Include(rli => rli.RestockBatch)
                                 .ThenInclude(rb => rb.Supplier)
+                                .Include(rli => rli.UnitPreset)
+                                .Include(rli => rli.PresetPricing)
+                                .ThenInclude(pp => pp.UnitOfMeasure)
                                 .Select(rli => new
                                 {
+                                    LineItemId = rli.LineItem_ID,
                                     RestockId = rli.RestockBatch.Restock_ID,
                                     RestockNumber = rli.RestockBatch.Restock.Restock_Number,
                                     Clerk = rli.RestockBatch.Restock.Clerk != null ? new
@@ -140,8 +144,19 @@ namespace backend.Controller.Inventory
                                         rli.RestockBatch.Supplier.LastName,
                                         rli.RestockBatch.Supplier.CompanyName
                                     } : null,
+                                    PresetId = rli.Preset_ID,
+                                    PresetName = rli.UnitPreset != null ? rli.UnitPreset.Preset_Name : null,
                                     rli.Base_Unit_Price,
-                                    rli.Base_Unit_Quantity
+                                    rli.Base_Unit_Quantity,
+                                    PresetPricing = rli.PresetPricing.Select(pp => new
+                                    {
+                                        pp.Pricing_ID,
+                                        pp.Level,
+                                        pp.UOM_ID,
+                                        UnitName = pp.UnitOfMeasure.uom_Name,
+                                        pp.Price_Per_Unit,
+                                        pp.Created_At
+                                    }).OrderBy(pp => pp.Level).ToList()
                                 })
                                 .ToList(),
 

@@ -86,16 +86,27 @@ type RestockInfo = {
   };
   base_Unit_Price: number;
   base_Unit_Quantity: number;
+  presetPricing: PresetPricing[];
+};
+
+type PresetPricing = {
+  pricing_ID: number;
+  level: number;
+  uoM_ID: number;
+  unitName: string;
+  price_Per_Unit: number;
+  created_At: string;
 };
 
 /* 
 
 "restockInfo": [
             {
+                "lineItemId": 1,
                 "restockId": 1,
-                "restockNumber": "RS-2026-001",
+                "restockNumber": "RS-2026-000001",
                 "clerk": {
-                    "id": "8bf2539c-0ebe-4a96-9121-87f2443f1e1e",
+                    "id": "89d1dd8c-b5c4-46ae-ab6c-9c84df9bcb80",
                     "firstName": "Jane",
                     "lastName": "Doe"
                 },
@@ -107,9 +118,36 @@ type RestockInfo = {
                     "lastName": "Smith",
                     "companyName": "Educational Supplies Inc."
                 },
-                "base_Unit_Price": 2000.00,
-                "base_Unit_Quantity": 500
+                "presetId": 1,
+                "presetName": "Test Unit Preset",
+                "base_Unit_Price": 120.00,
+                "base_Unit_Quantity": 1000,
+                "presetPricing": [
+                    {
+                        "pricing_ID": 1,
+                        "level": 1,
+                        "uoM_ID": 4,
+                        "unitName": "BOXES",
+                        "price_Per_Unit": 120.00,
+                        "created_At": "2026-01-16T00:49:40.2737834"
+                    },
+                    {
+                        "pricing_ID": 2,
+                        "level": 2,
+                        "uoM_ID": 11,
+                        "unitName": "CASE",
+                        "price_Per_Unit": 80.00,
+                        "created_At": "2026-01-16T00:49:40.2845"
+                    },
+                    {
+                        "pricing_ID": 3,
+                        "level": 3,
+                        "uoM_ID": 1,
+                        "unitName": "PIECES",
+                        "price_Per_Unit": 40.00,
+                        "created_At": "2026-01-16T00:49:40.2845964"
+                    }
+                ]
             }
         ],
-
 */
