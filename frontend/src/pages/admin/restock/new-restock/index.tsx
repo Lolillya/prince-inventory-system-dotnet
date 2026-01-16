@@ -2,25 +2,21 @@ import { NoSelectedState } from "@/components/no-selected-state";
 import { LeftArrowIcon, SearchIcon } from "@/icons";
 import { Activity, useState } from "react";
 import { CreateRestockModal } from "./_components/restock-modal";
-import RestockCard from "./_components/restock-card";
-import {
-  useSelectedRestock,
-  useSelectedRestockProduct,
-} from "@/features/restock/selected-restock";
-import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measure";
 import { ProductCard } from "../_components/product-card";
 import { UseInventoryQuery } from "@/features/restock/inventory-batch";
 import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
-import { NewRestockModel } from "@/features/restock/models/restock-add-new";
+import { RestockCard2 } from "./_components/restock-card-copy";
+import {
+  useUnitPresetRestockItems,
+  useUnitPresetRestock,
+} from "@/features/restock/unit-preset-restock.query";
+import { UnitPresetRestockItem } from "@/features/restock/models/unit-preset-restock.model";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
   const { data: inventoryData, isLoading, error } = UseInventoryQuery();
-  const { data: selectedProduct } = useSelectedRestockProduct();
-  const { data: productUnits = [] } = useUnitOfMeasureQuery();
-  const { addProduct, removeProduct } = useSelectedRestock();
-
-  // console.log(productUnits);
+  const { data: items = [] } = useUnitPresetRestockItems();
+  const { addProduct, removeProduct } = useUnitPresetRestock();
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,37 +31,34 @@ const NewRestockPage = () => {
   };
 
   const handleClick = (data: InventoryBatchesModel) => {
-    const restock: NewRestockModel = {
-      restock: {
-        items: {
-          product: {
-            product_ID: data.product.product_ID,
-            product_Code: data.product.product_Code,
-            product_Name: data.product.product_Name,
-            desc: data.product.description,
-            brand_ID: data.brand.brand_ID,
-            category_ID: data.category.category_ID,
-            created_At: data.product.createdAt,
-            updated_At: data.product.createdAt,
-          },
-          variant: {
-            variant_Name: data.variant.variant_Name,
-            created_At: data.variant.createdAt,
-            updated_At: data.variant.updatedAt,
-          },
-          brand: {
-            brand_Name: data.brand.brandName,
-            created_At: data.brand.createdAt,
-            updated_At: data.brand.updatedAt,
-          },
-        },
-        uom_ID: productUnits[0].uom_ID,
-        unit_quantity: 0,
-        unit_price: 0,
+    const restockItem: UnitPresetRestockItem = {
+      product: {
+        product_ID: data.product.product_ID,
+        product_Code: data.product.product_Code,
+        product_Name: data.product.product_Name,
+        desc: data.product.description,
+        brand_ID: data.brand.brand_ID,
+        category_ID: data.category.category_ID,
+        created_At: data.product.createdAt,
+        updated_At: data.product.updatedAt,
       },
+      variant: {
+        variant_Name: data.variant.variant_Name,
+        created_At: data.variant.createdAt,
+        updated_At: data.variant.updatedAt,
+      },
+      brand: {
+        brand_Name: data.brand.brandName,
+        created_At: data.brand.createdAt,
+        updated_At: data.brand.updatedAt,
+      },
+      unitPresets: (data.unitPresets as any) || [],
     };
-    console.log(restock);
-    addProduct(restock);
+    addProduct(restockItem);
+  };
+
+  const handleRemoveProduct = (productId: number) => {
+    removeProduct(productId);
   };
 
   return (
@@ -80,25 +73,24 @@ const NewRestockPage = () => {
             <LeftArrowIcon />
             <span>new restock</span>
             <span>#123456</span>
-            {/* <span>{selectedProduct?.product.product_ID}</span> */}
           </div>
-          {/* <Separator /> */}
         </div>
 
         <div className="flex flex-col gap-10 overflow-y-hidden flex-1">
           <div className="flex gap-5 overflow-y-hidden flex-1">
             {/* LEFT */}
             <div className="w-full flex">
-              {!selectedProduct || selectedProduct.length === 0 ? (
+              {!items || items.length === 0 ? (
                 <NoSelectedState />
               ) : (
                 <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
-                  {selectedProduct.map((item, i) => (
-                    <RestockCard
+                  {items.map((item, i) => (
+                    <RestockCard2
                       key={i}
-                      product={item.restock.items}
-                      onRemove={() => removeProduct(item)}
-                      units={productUnits}
+                      product={item}
+                      onRemove={() =>
+                        handleRemoveProduct(item.product.product_ID)
+                      }
                     />
                   ))}
                 </div>
