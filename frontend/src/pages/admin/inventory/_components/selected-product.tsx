@@ -1,6 +1,7 @@
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { Separator } from "@/components/separator";
 import { SupplierBatchCard } from "./supplier-batch-card";
+import { PhilippinePeso } from "lucide-react";
 
 interface SelectedProductProps {
   product: InventoryProductModel;
@@ -91,10 +92,10 @@ export const SelectedProduct = ({
                         </>
                       ))}
                     </div>
-                    <div className="w-full flex gap-4">
+                    {/* <div className="w-full flex gap-4">
                       <label>Total Batches:</label>
                       <span>{product.restockInfo.length}</span>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="flex flex-col">
@@ -117,20 +118,34 @@ export const SelectedProduct = ({
                     </div> */}
 
                     <div className="flex flex-col">
-                      {product.restockInfo.map((b, idx) =>
-                        b.presetPricing.map((pp, pidx) => (
-                          <div
-                            className="flex gap-2 items-center"
-                            key={`${idx}-${pidx}`}
-                          >
-                            <span className="text-sm text-saltbox-gray">
-                              {pp.unitName} Price:{" "}
-                            </span>
-                            <span className="text-sm text-saltbox-gray font-semibold">
-                              ${pp.price_Per_Unit.toFixed(2)}
-                            </span>
+                      {product.restockInfo.map(
+                        (b, idx) => (
+                          <div>
+                            <span>Batch #{b.batchNumber}</span>
+                            <div>
+                              {b.presetPricing.map((pp, pidx) => (
+                                <div>
+                                  {pp.unitName}{" "}
+                                  {pidx == 0 ? b.base_Unit_Quantity : "0"}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        ))
+                        )
+                        // b.presetPricing.map((pp, pidx) => (
+                        //   <div
+                        //     className="flex gap-2 items-center"
+                        //     key={`${idx}-${pidx}`}
+                        //   >
+                        //     <span className="text-sm text-saltbox-gray">
+                        //       {pp.unitName} Price:{" "}
+                        //     </span>
+                        //     <span className="text-sm text-saltbox-gray font-semibold flex gap-1">
+                        //       <PhilippinePeso width={12} />{" "}
+                        //       {pp.price_Per_Unit.toFixed(2)}
+                        //     </span>
+                        //   </div>
+                        // ))
                       )}
                     </div>
                   </div>
