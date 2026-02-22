@@ -19,37 +19,37 @@ namespace backend.Data.Seeders
                 new UnitOfMeasure
                 {
                     uom_ID = 1,
-                    uom_Name = "PIECES"
+                    uom_Name = "PIECE"
                 },
 
                 new UnitOfMeasure
                 {
                     uom_ID = 2,
-                    uom_Name = "PADS"
+                    uom_Name = "PAD"
                 },
 
                 new UnitOfMeasure
                 {
                     uom_ID = 3,
-                    uom_Name = "SETS"
+                    uom_Name = "SET"
                 },
 
                 new UnitOfMeasure
                 {
                     uom_ID = 4,
-                    uom_Name = "BOXES"
+                    uom_Name = "BOX"
                 },
 
                 new UnitOfMeasure
                 {
                     uom_ID = 5,
-                    uom_Name = "BUNDLES"
+                    uom_Name = "BUNDLE"
                 },
 
                 new UnitOfMeasure
                 {
                     uom_ID = 6,
-                    uom_Name = "ROLLS"
+                    uom_Name = "ROLL"
                 },
 
                 new UnitOfMeasure
@@ -61,19 +61,19 @@ namespace backend.Data.Seeders
                 new UnitOfMeasure
                 {
                     uom_ID = 8,
-                    uom_Name = "PACKS"
+                    uom_Name = "PACK"
                 },
 
                 new UnitOfMeasure
                 {
                     uom_ID = 9,
-                    uom_Name = "TUBES"
+                    uom_Name = "TUBE"
                 },
 
                 new UnitOfMeasure
                 {
                     uom_ID = 10,
-                    uom_Name = "CARTONS"
+                    uom_Name = "CARTON"
                 },
 
                 new UnitOfMeasure
@@ -85,12 +85,12 @@ namespace backend.Data.Seeders
                 new UnitOfMeasure
                 {
                     uom_ID = 12,
-                    uom_Name = "REAMS"
+                    uom_Name = "REAM"
                 },
                 new UnitOfMeasure
                 {
                     uom_ID = 13,
-                    uom_Name = "BOTTLES"
+                    uom_Name = "BOTTLE"
                 }
             };
             modelBuilder.Entity<UnitOfMeasure>().HasData(units);
