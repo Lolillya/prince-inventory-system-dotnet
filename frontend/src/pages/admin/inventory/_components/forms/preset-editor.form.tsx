@@ -47,17 +47,22 @@ export const PresetEditorForm = ({
   const conversion3 = watch("conversion3");
   const conversion4 = watch("conversion4");
 
-  // Helper function to filter available units for each dropdown
-  const getAvailableUnits = (currentField?: string) => {
-    const selectedUnits = [
-      baseUnit,
-      conversion1,
-      conversion2,
-      conversion3,
-      conversion4,
-    ].filter((unit) => unit && unit !== "None" && unit !== currentField);
+  // Get all selected unit IDs (excluding None)
+  const selectedUnitIds = [
+    baseUnit,
+    conversion1,
+    conversion2,
+    conversion3,
+    conversion4,
+  ].filter((unit) => unit && unit !== "None");
 
-    return units.filter((unit) => !selectedUnits.includes(String(unit.uom_ID)));
+  // Helper function to check if a unit is available for a specific field
+  const isUnitAvailable = (unitId: number, currentFieldValue?: string) => {
+    const unitIdStr = String(unitId);
+    // Show the unit if it's not selected anywhere, or if it's the current field's value
+    return (
+      !selectedUnitIds.includes(unitIdStr) || unitIdStr === currentFieldValue
+    );
   };
 
   const handleSubmitForm = async (data: any) => {
@@ -182,11 +187,13 @@ export const PresetEditorForm = ({
                 // value={selectedUnit}
                 // onChange={(e) => handleChangeUnit(Number(e.target.value))}
               >
-                {getAvailableUnits(baseUnit).map((u, i) => (
-                  <option value={u.uom_ID} key={i}>
-                    {u.uom_Name}
-                  </option>
-                ))}
+                {units.map((u, i) =>
+                  isUnitAvailable(u.uom_ID, baseUnit) ? (
+                    <option value={u.uom_ID} key={i}>
+                      {u.uom_Name}
+                    </option>
+                  ) : null,
+                )}
               </select>
             </div>
           </div>
@@ -203,11 +210,13 @@ export const PresetEditorForm = ({
                 {...register("conversion1")}
               >
                 <option value={"None"}>None</option>
-                {getAvailableUnits(conversion1).map((u, i) => (
-                  <option value={u.uom_ID} key={i}>
-                    {u.uom_Name}
-                  </option>
-                ))}
+                {units.map((u, i) =>
+                  isUnitAvailable(u.uom_ID, conversion1) ? (
+                    <option value={u.uom_ID} key={i}>
+                      {u.uom_Name}
+                    </option>
+                  ) : null,
+                )}
               </select>
               <input
                 type="number"
@@ -231,11 +240,13 @@ export const PresetEditorForm = ({
                 {...register("conversion2")}
               >
                 <option value={"None"}>None</option>
-                {getAvailableUnits(conversion2).map((u, i) => (
-                  <option value={u.uom_ID} key={i}>
-                    {u.uom_Name}
-                  </option>
-                ))}
+                {units.map((u, i) =>
+                  isUnitAvailable(u.uom_ID, conversion2) ? (
+                    <option value={u.uom_ID} key={i}>
+                      {u.uom_Name}
+                    </option>
+                  ) : null,
+                )}
               </select>
               <input
                 type="number"
@@ -259,11 +270,13 @@ export const PresetEditorForm = ({
                 {...register("conversion3")}
               >
                 <option value={"None"}>None</option>
-                {getAvailableUnits(conversion3).map((u, i) => (
-                  <option value={u.uom_ID} key={i}>
-                    {u.uom_Name}
-                  </option>
-                ))}
+                {units.map((u, i) =>
+                  isUnitAvailable(u.uom_ID, conversion3) ? (
+                    <option value={u.uom_ID} key={i}>
+                      {u.uom_Name}
+                    </option>
+                  ) : null,
+                )}
               </select>
               <input
                 type="number"
@@ -287,11 +300,13 @@ export const PresetEditorForm = ({
                 {...register("conversion4")}
               >
                 <option value={"None"}>None</option>
-                {getAvailableUnits(conversion4).map((u, i) => (
-                  <option value={u.uom_ID} key={i}>
-                    {u.uom_Name}
-                  </option>
-                ))}
+                {units.map((u, i) =>
+                  isUnitAvailable(u.uom_ID, conversion4) ? (
+                    <option value={u.uom_ID} key={i}>
+                      {u.uom_Name}
+                    </option>
+                  ) : null,
+                )}
               </select>
               <input
                 type="number"
