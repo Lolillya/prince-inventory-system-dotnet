@@ -17,12 +17,37 @@ const schema = yup.object().shape({
   baseUnit: yup.string().required("Base Unit is required"),
   conversion1: yup.string().required("Conversion 1 is required"),
   conversion1Qty: yup.string().required("Conversion 1 Quantity is required"),
-  conversion2: yup.string(),
-  conversion2Qty: yup.string(),
+  conversion2: yup
+    .string()
+    .test(
+      "minimum-conversions",
+      "You must select at least 2 conversions (in addition to the Base Unit). Please select Conversion 2.",
+      function (_value) {
+        const { conversion1, conversion2, conversion3, conversion4 } = this.parent;
+        const conversions = [
+          conversion1,
+          conversion2,
+          conversion3,
+          conversion4,
+        ].filter((conv) => conv && conv !== "None");
+        
+        return conversions.length >= 2;
+      }
+    ),
+  conversion2Qty: yup.string().when("conversion2", {
+    is: (val: string) => val && val !== "None",
+    then: (schema) => schema.required("Conversion 2 Quantity is required when Conversion 2 is selected"),
+  }),
   conversion3: yup.string(),
-  conversion3Qty: yup.string(),
+  conversion3Qty: yup.string().when("conversion3", {
+    is: (val: string) => val && val !== "None",
+    then: (schema) => schema.required("Conversion 3 Quantity is required when Conversion 3 is selected"),
+  }),
   conversion4: yup.string(),
-  conversion4Qty: yup.string(),
+  conversion4Qty: yup.string().when("conversion4", {
+    is: (val: string) => val && val !== "None",
+    then: (schema) => schema.required("Conversion 4 Quantity is required when Conversion 4 is selected"),
+  }),
 });
 
 export const PresetEditorForm = ({
@@ -55,6 +80,14 @@ export const PresetEditorForm = ({
     conversion3,
     conversion4,
   ].filter((unit) => unit && unit !== "None");
+
+  // Count valid conversions (excluding base unit)
+  const conversionCount = [
+    conversion1,
+    conversion2,
+    conversion3,
+    conversion4,
+  ].filter((conv) => conv && conv !== "None").length;
 
   // Helper function to check if a unit is available for a specific field
   const isUnitAvailable = (unitId: number, currentFieldValue?: string) => {
@@ -176,6 +209,12 @@ export const PresetEditorForm = ({
         </div>
 
         <Separator />
+
+        {(errors.conversion2?.message || (conversionCount < 2 && conversionCount > 0)) && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
+            {errors.conversion2?.message || "You must select at least 2 conversions (in addition to the Base Unit)"}
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
@@ -320,10 +359,20 @@ export const PresetEditorForm = ({
         </div>
 
         <div className="flex flex-col gap-3 mt-auto">
-          <span className="text-vesper-gray text-xs">
-            Note: The system only allow up to 5 unit conversions (including the
-            Base Unit).
-          </span>
+          <div className="flex flex-col gap-2">
+            <span className="text-vesper-gray text-xs">
+              Note: The system only allow up to 5 unit conversions (including
+              the Base Unit).
+            </span>
+            <div
+              className={`text-xs font-medium ${
+                conversionCount < 2 ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {conversionCount} conversion{conversionCount !== 1 ? "s" : ""}{" "}
+              selected (minimum 2 required)
+            </div>
+          </div>
 
           <div className="flex gap-1 w-full justify-center">
             <button

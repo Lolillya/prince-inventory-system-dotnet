@@ -103,7 +103,7 @@ export const ProductUnitPresetModal = ({
     } catch (error: any) {
       console.error("Error assigning products:", error);
       toast.error(
-        error?.response?.data || "Failed to assign products to preset"
+        error?.response?.data || "Failed to assign products to preset",
       );
     } finally {
       setIsSubmitting(false);
@@ -114,7 +114,7 @@ export const ProductUnitPresetModal = ({
     if (!selectedState?.selectedPresetId || !unitPresets) return [];
 
     const preset = unitPresets.find(
-      (p) => p.preset_ID === selectedState.selectedPresetId
+      (p) => p.preset_ID === selectedState.selectedPresetId,
     );
     return preset?.products.map((p) => p.product_ID) || [];
   };
@@ -126,7 +126,7 @@ export const ProductUnitPresetModal = ({
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50 gap-3">
       <div
-        className={`w-5/12 ${isAddPresetOpen ? "h-4/12" : "h-4/5"} bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4 transition-all duration-200`}
+        className={`w-5/12 ${isAddPresetOpen ? "h-fit" : "h-4/5"} bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4 transition-all duration-200`}
       >
         <div className="absolute top-4 right-4" onClick={handleCloseModal}>
           <XIcon />
@@ -198,11 +198,11 @@ export const ProductUnitPresetModal = ({
               {/* PRODUCT SELECTOR FORM */}
               {products?.map((data, index) => {
                 const isAlreadyAssigned = alreadyAssignedProductIds.includes(
-                  data.product.product_ID
+                  data.product.product_ID,
                 );
                 const isSelected =
                   selectedState?.selectedProductIds.includes(
-                    data.product.product_ID
+                    data.product.product_ID,
                   ) || false;
 
                 return (
