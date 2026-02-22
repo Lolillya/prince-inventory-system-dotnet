@@ -73,7 +73,7 @@ namespace backend.Data.Seeders
                 new UnitOfMeasure
                 {
                     uom_ID = 10,
-                    uom_Name = "CARTOONS"
+                    uom_Name = "CARTONS"
                 },
 
                 new UnitOfMeasure
@@ -87,6 +87,11 @@ namespace backend.Data.Seeders
                     uom_ID = 12,
                     uom_Name = "REAMS"
                 },
+                new UnitOfMeasure
+                {
+                    uom_ID = 13,
+                    uom_Name = "BOTTLES"
+                }
             };
             modelBuilder.Entity<UnitOfMeasure>().HasData(units);
         }
