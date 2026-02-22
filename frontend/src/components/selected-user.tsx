@@ -10,6 +10,7 @@ import {
 import { UserClientModel } from "../models/user-client.model";
 import { useState } from "react";
 import { Box, Calendar } from "lucide-react";
+import { RestocksModal } from "./restocks-modal";
 
 type UserType = "customer" | "supplier" | "employee";
 
@@ -136,64 +137,74 @@ export const SelectedUser = ({
 };
 
 const SupplierActions = () => {
-  return (
-    <div className="p-2 rounded-lg bg-wash-gray flex shrink-0 flex-1 flex-col">
-      <div className=" flex gap-3 items-center justify-between">
-        <button className="bg-transparent text-vesper-gray font-semibold tracking-wide w-fit hover:bg-bellflower-gray">
-          Restocks
-          <RightUpArrowIcon width={16} height={16} />
-        </button>
-        <label className="text-sm font-semibold text-vesper-gray">
-          1 record/s
-        </label>
-      </div>
+  const [isRestocksModalOpen, setIsRestocksModalOpen] = useState(false);
 
-      {/* <div className="w-full h-full flex items-center justify-center">
+  return (
+    <>
+      {isRestocksModalOpen && (
+        <RestocksModal setIsRestocksModalOpen={setIsRestocksModalOpen} />
+      )}
+      <div className="p-2 rounded-lg bg-wash-gray flex shrink-0 flex-1 flex-col">
+        <div className=" flex gap-3 items-center justify-between">
+          <button
+            className="bg-transparent text-vesper-gray font-semibold tracking-wide w-fit hover:bg-bellflower-gray"
+            onClick={() => setIsRestocksModalOpen(true)}
+          >
+            Restocks
+            <RightUpArrowIcon width={16} height={16} />
+          </button>
+          <label className="text-sm font-semibold text-vesper-gray">
+            1 record/s
+          </label>
+        </div>
+
+        {/* <div className="w-full h-full flex items-center justify-center">
         <span className="font-semibold info-name">No restock found</span>
       </div> */}
 
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2 px-2">
-          <label className="text-saltbox-gray font-semibold">#xxxxxx</label>
-          <div className="flex gap-2">
-            <div className="flex items-center gap-2">
-              <Calendar className="text-vesper-gray" size={16} />
-              <label className="text-vesper-gray text-sm font-semibold">
-                3/2/2025
-              </label>
-            </div>
-            <Separator orientation="vertical" className="flex-0!" />
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2 px-2">
+            <label className="text-saltbox-gray font-semibold">#xxxxxx</label>
+            <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <Calendar className="text-vesper-gray" size={16} />
+                <label className="text-vesper-gray text-sm font-semibold">
+                  3/2/2025
+                </label>
+              </div>
+              <Separator orientation="vertical" className="flex-0!" />
 
-            <div className="flex gap-2 items-center">
-              <Box className="text-vesper-gray" size={16} />
-              <label className="text-vesper-gray text-sm font-semibold">
-                100 items
-              </label>
+              <div className="flex gap-2 items-center">
+                <Box className="text-vesper-gray" size={16} />
+                <label className="text-vesper-gray text-sm font-semibold">
+                  100 items
+                </label>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex flex-col gap-2 px-2">
-          <label className="text-saltbox-gray font-semibold">#xxxxxx</label>
-          <div className="flex gap-2">
-            <div className="flex items-center gap-2">
-              <Calendar className="text-vesper-gray" size={16} />
-              <label className="text-vesper-gray text-sm font-semibold">
-                3/2/2025
-              </label>
-            </div>
-            <Separator orientation="vertical" className="flex-0!" />
+          <div className="flex flex-col gap-2 px-2">
+            <label className="text-saltbox-gray font-semibold">#xxxxxx</label>
+            <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <Calendar className="text-vesper-gray" size={16} />
+                <label className="text-vesper-gray text-sm font-semibold">
+                  3/2/2025
+                </label>
+              </div>
+              <Separator orientation="vertical" className="flex-0!" />
 
-            <div className="flex gap-2 items-center">
-              <Box className="text-vesper-gray" size={16} />
-              <label className="text-vesper-gray text-sm font-semibold">
-                100 items
-              </label>
+              <div className="flex gap-2 items-center">
+                <Box className="text-vesper-gray" size={16} />
+                <label className="text-vesper-gray text-sm font-semibold">
+                  100 items
+                </label>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
