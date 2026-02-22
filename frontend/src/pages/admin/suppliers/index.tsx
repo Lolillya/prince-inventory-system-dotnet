@@ -20,7 +20,7 @@ const SuppliersPage = () => {
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
   const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
-    null
+    null,
   );
 
   // FETCH DATA LOADING STATE
@@ -120,10 +120,10 @@ const SuppliersPage = () => {
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
+            <label className="capitalize text-saltbox-gray font-normal text-sm">
               suppiers
             </label>
-            <span className="capitalize text-vesper-gray">
+            <span className="capitalize text-vesper-gray text-xs">
               {filteredSuppliers?.length} records
             </span>
           </div>
@@ -145,9 +145,9 @@ const SuppliersPage = () => {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="w-[70%] flex flex-col gap-3">
+        <div className="w-[50%] flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
+            <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
             </label>
           </div>
