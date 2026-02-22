@@ -23,30 +23,40 @@ const schema = yup.object().shape({
       "minimum-conversions",
       "You must select at least 2 conversions (in addition to the Base Unit). Please select Conversion 2.",
       function (_value) {
-        const { conversion1, conversion2, conversion3, conversion4 } = this.parent;
+        const { conversion1, conversion2, conversion3, conversion4 } =
+          this.parent;
         const conversions = [
           conversion1,
           conversion2,
           conversion3,
           conversion4,
         ].filter((conv) => conv && conv !== "None");
-        
+
         return conversions.length >= 2;
-      }
+      },
     ),
   conversion2Qty: yup.string().when("conversion2", {
     is: (val: string) => val && val !== "None",
-    then: (schema) => schema.required("Conversion 2 Quantity is required when Conversion 2 is selected"),
+    then: (schema) =>
+      schema.required(
+        "Conversion 2 Quantity is required when Conversion 2 is selected",
+      ),
   }),
   conversion3: yup.string(),
   conversion3Qty: yup.string().when("conversion3", {
     is: (val: string) => val && val !== "None",
-    then: (schema) => schema.required("Conversion 3 Quantity is required when Conversion 3 is selected"),
+    then: (schema) =>
+      schema.required(
+        "Conversion 3 Quantity is required when Conversion 3 is selected",
+      ),
   }),
   conversion4: yup.string(),
   conversion4Qty: yup.string().when("conversion4", {
     is: (val: string) => val && val !== "None",
-    then: (schema) => schema.required("Conversion 4 Quantity is required when Conversion 4 is selected"),
+    then: (schema) =>
+      schema.required(
+        "Conversion 4 Quantity is required when Conversion 4 is selected",
+      ),
   }),
 });
 
@@ -210,9 +220,11 @@ export const PresetEditorForm = ({
 
         <Separator />
 
-        {(errors.conversion2?.message || (conversionCount < 2 && conversionCount > 0)) && (
+        {(errors.conversion2?.message ||
+          (conversionCount < 2 && conversionCount > 0)) && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-            {errors.conversion2?.message || "You must select at least 2 conversions (in addition to the Base Unit)"}
+            {errors.conversion2?.message ||
+              "You must select at least 2 conversions (in addition to the Base Unit)"}
           </div>
         )}
 
