@@ -18,7 +18,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 1,
                 Product_ID = 1,
-                Total_Quantity = 150,
+                Total_Quantity = 0,
                 Inventory_Number = 1001,
                 Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
@@ -27,7 +27,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 2,
                 Product_ID = 2,
-                Total_Quantity = 75,
+                Total_Quantity = 0,
                 Inventory_Number = 1002,
                 Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
@@ -36,7 +36,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 3,
                 Product_ID = 3,
-                Total_Quantity = 200,
+                Total_Quantity = 0,
                 Inventory_Number = 1003,
                 Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
@@ -45,7 +45,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 4,
                 Product_ID = 4,
-                Total_Quantity = 120,
+                Total_Quantity = 0,
                 Inventory_Number = 1004,
                 Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
@@ -54,7 +54,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 5,
                 Product_ID = 5,
-                Total_Quantity = 80,
+                Total_Quantity = 0,
                 Inventory_Number = 1005,
                 Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
@@ -63,7 +63,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 6,
                 Product_ID = 6,
-                Total_Quantity = 300,
+                Total_Quantity = 0,
                 Inventory_Number = 1006,
                 Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
@@ -74,7 +74,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 7,
                 Product_ID = 7,
-                Total_Quantity = 50,
+                Total_Quantity = 0,
                 Inventory_Number = 1007,
                 Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
@@ -83,7 +83,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 8,
                 Product_ID = 8,
-                Total_Quantity = 30,
+                Total_Quantity = 0,
                 Inventory_Number = 1008,
                 Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
@@ -92,7 +92,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 9,
                 Product_ID = 9,
-                Total_Quantity = 40,
+                Total_Quantity = 0,
                 Inventory_Number = 1009,
                 Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
@@ -101,7 +101,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 10,
                 Product_ID = 10,
-                Total_Quantity = 25,
+                Total_Quantity = 0,
                 Inventory_Number = 1010,
                 Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
@@ -112,7 +112,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 11,
                 Product_ID = 11,
-                Total_Quantity = 60,
+                Total_Quantity = 0,
                 Inventory_Number = 1011,
                 Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
@@ -121,7 +121,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 12,
                 Product_ID = 12,
-                Total_Quantity = 100,
+                Total_Quantity = 0,
                 Inventory_Number = 1012,
                 Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
@@ -130,7 +130,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 13,
                 Product_ID = 13,
-                Total_Quantity = 200,
+                Total_Quantity = 0,
                 Inventory_Number = 1013,
                 Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
@@ -141,7 +141,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 14,
                 Product_ID = 14,
-                Total_Quantity = 15,
+                Total_Quantity = 0,
                 Inventory_Number = 1014,
                 Inventory_Clerk = "2", // Employee User
                 Created_At = seededAt,
@@ -150,7 +150,7 @@ public static class SeedInventory
             new Inventory {
                 Inventory_ID = 15,
                 Product_ID = 15,
-                Total_Quantity = 25,
+                Total_Quantity = 0,
                 Inventory_Number = 1015,
                 Inventory_Clerk = "1", // Admin User
                 Created_At = seededAt,
