@@ -1,7 +1,7 @@
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { Separator } from "@/components/separator";
 import { SupplierBatchCard } from "./supplier-batch-card";
-import { PhilippinePeso } from "lucide-react";
+import { ChevronDown, PhilippinePeso } from "lucide-react";
 
 interface SelectedProductProps {
   product: InventoryProductModel;
@@ -73,36 +73,69 @@ export const SelectedProduct = ({
               </span>
             ) : (
               product.unitPresets.map((u, i) => (
-                <div
-                  className="flex flex-col gap-2 bg-wash-gray text-sm rounded-lg cursor-default w-full"
-                  key={i}
-                >
-                  <div className="w-full flex">
-                    <div className="w-full flex gap-2 items-center">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      {u.preset.presetLevels.map((level, idx) => (
-                        <>
-                          <span>
-                            {level.unitOfMeasure.uom_Name} (
-                            {level.conversion_Factor}x)
-                          </span>
-                          {idx < u.preset.presetLevels.length - 1 && (
-                            <span>&gt;</span>
-                          )}
-                        </>
-                      ))}
-                    </div>
-                    {/* <div className="w-full flex gap-4">
+                <>
+                  <div
+                    className="flex gap-2 bg-wash-gray text-sm rounded-lg cursor-default w-full"
+                    key={i}
+                  >
+                    <div className="w-full flex">
+                      <div className="w-full flex gap-2 h-fit items-center">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        {u.preset.presetLevels.map((level, idx) => (
+                          <>
+                            <span>
+                              {level.unitOfMeasure.uom_Name} (
+                              {level.conversion_Factor}x)
+                            </span>
+                            {idx < u.preset.presetLevels.length - 1 && (
+                              <span>&gt;</span>
+                            )}
+                          </>
+                        ))}
+                      </div>
+                      {/* <div className="w-full flex gap-4">
                       <label>Total Batches:</label>
                       <span>{product.restockInfo.length}</span>
                     </div> */}
-                  </div>
+                    </div>
 
-                  <div className="flex flex-col">
-                    <label className="text-sm text-saltbox-gray font-semibold">
-                      unit conversions
-                    </label>
-                    {/* <div className="flex flex-col">
+                    <div className="flex flex-col">
+                      <label className="text-sm text-saltbox-gray font-semibold text-nowrap">
+                        unit conversions
+                      </label>
+
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <label>100</label>
+                          <label>Box</label>
+                          <span>•</span>
+                          <div className="flex gap-1 items-center w-full justify-end">
+                            <PhilippinePeso width={12} />
+                            <span>100.00</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <label>0</label>
+                          <label>Packs</label>
+                          <span>•</span>
+                          <div className="flex gap-1 items-center w-full justify-end">
+                            <PhilippinePeso width={12} />
+                            <span>70.00</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <label>0</label>
+                          <label>Piece</label>
+                          <span>•</span>
+                          <div className="flex gap-1 items-center w-full justify-end">
+                            <PhilippinePeso width={12} />
+                            <span>30.00</span>
+                          </div>
+                        </div>
+                      </div>
+                      {/* <div className="flex flex-col">
                       {u.preset.presetLevels.map((l, idx) => (
                         <>
                           <div className="flex gap-2 items-center" key={idx}>
@@ -117,39 +150,114 @@ export const SelectedProduct = ({
                       ))}
                     </div> */}
 
-                    <div className="flex flex-col">
-                      {product.restockInfo.map(
-                        (b, idx) => (
-                          <div>
-                            <span>Batch #{b.batchNumber}</span>
+                      <div className="flex flex-col">
+                        {product.restockInfo.map(
+                          (b, idx) => (
                             <div>
-                              {b.presetPricing.map((pp, pidx) => (
-                                <div>
-                                  {pp.unitName}{" "}
-                                  {pidx == 0 ? b.base_Unit_Quantity : "0"}
-                                </div>
-                              ))}
+                              <span>Batch #{b.batchNumber}</span>
+                              <div>
+                                {b.presetPricing.map((pp, pidx) => (
+                                  <div>
+                                    {pp.unitName}{" "}
+                                    {pidx == 0 ? b.base_Unit_Quantity : "0"}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        )
-                        // b.presetPricing.map((pp, pidx) => (
-                        //   <div
-                        //     className="flex gap-2 items-center"
-                        //     key={`${idx}-${pidx}`}
-                        //   >
-                        //     <span className="text-sm text-saltbox-gray">
-                        //       {pp.unitName} Price:{" "}
-                        //     </span>
-                        //     <span className="text-sm text-saltbox-gray font-semibold flex gap-1">
-                        //       <PhilippinePeso width={12} />{" "}
-                        //       {pp.price_Per_Unit.toFixed(2)}
-                        //     </span>
-                        //   </div>
-                        // ))
-                      )}
+                          ),
+                          // b.presetPricing.map((pp, pidx) => (
+                          //   <div
+                          //     className="flex gap-2 items-center"
+                          //     key={`${idx}-${pidx}`}
+                          //   >
+                          //     <span className="text-sm text-saltbox-gray">
+                          //       {pp.unitName} Price:{" "}
+                          //     </span>
+                          //     <span className="text-sm text-saltbox-gray font-semibold flex gap-1">
+                          //       <PhilippinePeso width={12} />{" "}
+                          //       {pp.price_Per_Unit.toFixed(2)}
+                          //     </span>
+                          //   </div>
+                          // ))
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+
+                  <div className="flex flex-col border-t pt-3 mt-3">
+                    <div className="flex gap-2 items-center justify-center mb-3 cursor-pointer hover:bg-gray-50 rounded py-1">
+                      <ChevronDown className="w-4 h-4" />
+                      <span className="text-sm font-semibold">Breakdown</span>
+                    </div>
+
+                    <div className="flex w-full justify-between px-2">
+                      {/* Column 1: Restock Info */}
+                      <div className="flex flex-col gap-3 min-w-[100px]">
+                        <div className="flex flex-col">
+                          <label className="text-xs text-gray-500 font-semibold">
+                            Restock No.
+                          </label>
+                          <span className="text-sm font-semibold">#00123</span>
+                        </div>
+
+                        <div className="flex flex-col">
+                          <label className="text-xs text-gray-500 font-semibold">
+                            PO Ref.
+                          </label>
+                          <span className="text-sm font-semibold">#PO-456</span>
+                        </div>
+                      </div>
+
+                      {/* Column 2: Original Quantities */}
+                      <div className="flex flex-col gap-1 min-w-[100px]">
+                        <label className="text-xs text-gray-500 font-semibold mb-1">
+                          Original
+                        </label>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold">100</span>
+                            <span className="text-sm text-gray-600">Box</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold">0</span>
+                            <span className="text-sm text-gray-600">Pack</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold">0</span>
+                            <span className="text-sm text-gray-600">Piece</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Column 3: Remaining Quantities */}
+                      <div className="flex flex-col gap-1 min-w-fit">
+                        <label className="text-xs text-gray-500 font-semibold mb-1">
+                          Remaining
+                        </label>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-green-600">
+                              85
+                            </span>
+                            <span className="text-sm text-gray-600">Box</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-green-600">
+                              12
+                            </span>
+                            <span className="text-sm text-gray-600">Pack</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-green-600">
+                              45
+                            </span>
+                            <span className="text-sm text-gray-600">Piece</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
               ))
             )}
           </div>

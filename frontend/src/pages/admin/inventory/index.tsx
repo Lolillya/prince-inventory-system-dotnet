@@ -232,7 +232,7 @@ const InventoryPage = () => {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="w-[70%] flex flex-col gap-3">
+        <div className="w-[50%] flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center shadow-sm border">
             <label className="capitalize text-saltbox-gray font-semibold text-base">
               details
