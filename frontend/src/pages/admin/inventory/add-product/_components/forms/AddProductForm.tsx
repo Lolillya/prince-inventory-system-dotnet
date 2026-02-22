@@ -1,9 +1,6 @@
 import * as yup from "yup";
 import { useAuth } from "@/context/use-auth";
-import {
-  AddProductPayloadQuery,
-  updateAddProductPayload,
-} from "@/features/inventory/add-product.query";
+import { updateAddProductPayload } from "@/features/inventory/add-product.query";
 import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.query";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -14,6 +11,7 @@ import { PresetSelectorModal } from "../preset-selector.modal";
 import { AddProductUnitCard } from "./_components/add-product-unit-card";
 import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
 import { UnitPresetLevel } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.model";
+import { toast } from "sonner";
 
 const schema = yup.object().shape({
   productName: yup.string().required("Product name is required"),
@@ -126,11 +124,11 @@ const AddProductForm = ({
   const { data: unitPresets } = useUnitPresetQuery();
 
   const { UPDATE_ADD_PRODUCT_PAYLOAD } = updateAddProductPayload();
-  const { data: newProductData } = AddProductPayloadQuery();
 
   const [generatedProductCode, setGeneratedProductCode] = useState<string>("");
   const [isPresetSelectorOpen, setIsPresetSelectorOpen] = useState(false);
   const [selectedPresetIds, setSelectedPresetIds] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Watch form fields for auto-generation
   const watchedBrandId = watch("brand_ID");
@@ -230,17 +228,34 @@ const AddProductForm = ({
       .filter((p): p is UnitPresetLevel => p !== undefined);
   };
 
-  const onSubmit = (data: AddProductFormValues) => {
-    UPDATE_ADD_PRODUCT_PAYLOAD({
-      ...data,
-      productCode: generatedProductCode || "",
-      inventory_Clerk: user?.user_ID || "",
-    });
-    if (newProductData && user) {
-      addProductService(newProductData);
+  const onSubmit = async (data: AddProductFormValues) => {
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        ...data,
+        productCode: generatedProductCode || "",
+        inventory_Clerk: user?.user_ID || "",
+      };
+
+      UPDATE_ADD_PRODUCT_PAYLOAD(payload);
+
+      await addProductService(payload);
+
+      toast.success(
+        `Product added successfully! ${selectedPresetIds.length} packaging preset(s) assigned.`,
+      );
+
       reset();
       setGeneratedProductCode("");
       setSelectedPresetIds([]);
+    } catch (error: any) {
+      console.error("Error adding product:", error);
+      toast.error(
+        error?.response?.data || "Failed to add product. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -472,7 +487,13 @@ const AddProductForm = ({
         </div>
       </div>
 
-      <button type="submit">Add Product</button>
+      <button
+        type="submit"
+        disabled={isSubmitting || selectedPresetIds.length === 0}
+        className="w-full"
+      >
+        {isSubmitting ? "Adding Product..." : "Add Product"}
+      </button>
 
       {/* Preset Selector Modal */}
       {isPresetSelectorOpen && (
