@@ -56,6 +56,7 @@ namespace backend.Controller.Inventory
                     {
                         Product = new
                         {
+                            Quantity = i.Total_Quantity,
                             i.Product_ID,
                             i.Product.Product_Code,
                             i.Product.Product_Name,
