@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
 import { PresetSelectorModal } from "./_components/preset-selector.modal";
+import { PackageIcon, PackageOpen } from "lucide-react";
 
 const InventoryPage = () => {
   const { data: inventory, isLoading, error } = UseInventoryQuery();
@@ -85,7 +86,7 @@ const InventoryPage = () => {
         preset.low_Stock_Level === null ||
         preset.low_Stock_Level === undefined ||
         preset.very_Low_Stock_Level === null ||
-        preset.very_Low_Stock_Level === undefined
+        preset.very_Low_Stock_Level === undefined,
     );
   };
 
@@ -169,10 +170,15 @@ const InventoryPage = () => {
               </span>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger className="rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs flex items-center gap-2 cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none">
-                <EllipsisIcon />
-              </DropdownMenuTrigger>
+            <div
+              className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+              onClick={handlePresetEditor}
+            >
+              <PackageOpen />
+              <label className="cursor-pointer">Packaging Presets</label>
+            </div>
+            {/* <DropdownMenu>
+              <DropdownMenuTrigger className="rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs flex items-center gap-2 cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"></DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuGroup>
                   <DropdownMenuItem
@@ -183,7 +189,7 @@ const InventoryPage = () => {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
           </div>
 
           <div className="w-full overflow-y-scroll flex flex-col gap-2 p-2 inset-shadow-sm rounded-lg border">
