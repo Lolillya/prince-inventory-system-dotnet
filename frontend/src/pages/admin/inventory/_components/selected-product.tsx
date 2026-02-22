@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { Separator } from "@/components/separator";
 import { SupplierBatchCard } from "./supplier-batch-card";
@@ -12,19 +13,17 @@ export const SelectedProduct = ({
   product,
   handlePresetSelector,
 }: SelectedProductProps) => {
+  const [isBreakdownExpanded, setIsBreakdownExpanded] = useState(false);
   console.log(product);
   return (
     <div className="w-full flex flex-col gap-3">
       <div className="flex justify-between w-full">
-        <div className="flex gap-1">
-          <span className="text-sm">{product.product.product_Name}</span>
-          <span className="text-sm">-</span>
-          <span className="text-sm">{product.brand.brandName}</span>
-          <span className="text-sm">-</span>
+        <div className="flex flex-col gap-1 ">
           <span className="text-sm">{product.variant.variant_Name}</span>
+          <span className="text-sm">{product.product.product_Code}</span>
         </div>
 
-        <span className="bg-teal-200 rounded-full py-1 px-2 items-center flex text-center justify-center text-xs text-nowrap">
+        <span className="bg-teal-200 rounded-full py-1 px-2 items-center flex text-center justify-center text-xs text-nowrap h-fit">
           {product.category.category_Name}
         </span>
       </div>
@@ -34,19 +33,27 @@ export const SelectedProduct = ({
         <span>{product.product.product_Name}</span>
       </div> */}
 
+      <Separator />
+
+      <div className="flex flex-col">
+        <label>{product.product.product_Name}</label>
+        <label>{product.brand.brandName}</label>
+        <label>{product.category.category_Name}</label>
+      </div>
+
       <div className="flex flex-col">
         <label>notes</label>
         <textarea disabled value={product.product.description} rows={2} />
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <div className="flex w-full justify-between">
             <label>{product.restockInfo.length} batches</label>
             <span>view all</span>
           </div>
           <Separator />
-        </div>
+        </div> */}
 
         {product.restockInfo.map((r, i) => (
           <SupplierBatchCard supplierBatch={r} />
@@ -80,7 +87,10 @@ export const SelectedProduct = ({
                   >
                     <div className="w-full flex">
                       <div className="w-full flex gap-2 h-fit items-center">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        {product.product.quantity === 0 && (
+                          <div className="w-2 h-2 bg-gray-500 rounded-full" />
+                        )}
+                        <div className="w-2 h-2 bg-green-500 rounded-full" />
                         {u.preset.presetLevels.map((level, idx) => (
                           <>
                             <span>
@@ -185,77 +195,98 @@ export const SelectedProduct = ({
                   </div>
 
                   <div className="flex flex-col border-t pt-3 mt-3">
-                    <div className="flex gap-2 items-center justify-center mb-3 cursor-pointer hover:bg-gray-50 rounded py-1">
-                      <ChevronDown className="w-4 h-4" />
+                    <div
+                      className="flex gap-2 items-center justify-center mb-3 cursor-pointer hover:bg-gray-50 rounded py-1"
+                      onClick={() =>
+                        setIsBreakdownExpanded(!isBreakdownExpanded)
+                      }
+                    >
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${isBreakdownExpanded ? "rotate-180" : ""}`}
+                      />
                       <span className="text-sm font-semibold">Breakdown</span>
                     </div>
 
-                    <div className="flex w-full justify-between px-2">
-                      {/* Column 1: Restock Info */}
-                      <div className="flex flex-col gap-3 min-w-[100px]">
-                        <div className="flex flex-col">
-                          <label className="text-xs text-gray-500 font-semibold">
-                            Restock No.
+                    {isBreakdownExpanded && (
+                      <div className="flex w-full justify-between px-2">
+                        {/* Column 1: Restock Info */}
+                        <div className="flex flex-col gap-3 min-w-[100px]">
+                          <div className="flex flex-col">
+                            <label className="text-xs text-gray-500 font-semibold">
+                              Restock No.
+                            </label>
+                            <span className="text-sm font-semibold">
+                              #00123
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col">
+                            <label className="text-xs text-gray-500 font-semibold">
+                              PO Ref.
+                            </label>
+                            <span className="text-sm font-semibold">
+                              #PO-456
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Column 2: Original Quantities */}
+                        <div className="flex flex-col gap-1 min-w-[100px]">
+                          <label className="text-xs text-gray-500 font-semibold mb-1">
+                            Original
                           </label>
-                          <span className="text-sm font-semibold">#00123</span>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold">100</span>
+                              <span className="text-sm text-gray-600">Box</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold">0</span>
+                              <span className="text-sm text-gray-600">
+                                Pack
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold">0</span>
+                              <span className="text-sm text-gray-600">
+                                Piece
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="flex flex-col">
-                          <label className="text-xs text-gray-500 font-semibold">
-                            PO Ref.
+                        {/* Column 3: Remaining Quantities */}
+                        <div className="flex flex-col gap-1 min-w-fit">
+                          <label className="text-xs text-gray-500 font-semibold mb-1">
+                            Remaining
                           </label>
-                          <span className="text-sm font-semibold">#PO-456</span>
-                        </div>
-                      </div>
-
-                      {/* Column 2: Original Quantities */}
-                      <div className="flex flex-col gap-1 min-w-[100px]">
-                        <label className="text-xs text-gray-500 font-semibold mb-1">
-                          Original
-                        </label>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold">100</span>
-                            <span className="text-sm text-gray-600">Box</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold">0</span>
-                            <span className="text-sm text-gray-600">Pack</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold">0</span>
-                            <span className="text-sm text-gray-600">Piece</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Column 3: Remaining Quantities */}
-                      <div className="flex flex-col gap-1 min-w-fit">
-                        <label className="text-xs text-gray-500 font-semibold mb-1">
-                          Remaining
-                        </label>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-green-600">
-                              85
-                            </span>
-                            <span className="text-sm text-gray-600">Box</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-green-600">
-                              12
-                            </span>
-                            <span className="text-sm text-gray-600">Pack</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-green-600">
-                              45
-                            </span>
-                            <span className="text-sm text-gray-600">Piece</span>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-green-600">
+                                85
+                              </span>
+                              <span className="text-sm text-gray-600">Box</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-green-600">
+                                12
+                              </span>
+                              <span className="text-sm text-gray-600">
+                                Pack
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-green-600">
+                                45
+                              </span>
+                              <span className="text-sm text-gray-600">
+                                Piece
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </>
               ))
