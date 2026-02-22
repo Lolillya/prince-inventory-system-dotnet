@@ -1,14 +1,14 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import LoginPage from "../pages/login";
-import DashboardPage from "../pages/admin/dashboard";
-import MainLayout from "../layouts/main-layout";
-import DefaultLayout from "../layouts/default-layout";
-import SuppliersPage from "../pages/admin/suppliers";
-import CustomersPage from "../pages/admin/customers";
-import InventoryPage from "../pages/admin/inventory";
-import EmployeesPage from "../pages/admin/employees";
-import InvoicePage from "../pages/admin/invoice";
-import NewInvoicePage from "../pages/admin/invoice/new-invoice";
+import LoginPage from "@/pages/login";
+import DashboardPage from "@/pages/admin/dashboard";
+import MainLayout from "@/layouts/main-layout";
+import DefaultLayout from "@/layouts/default-layout";
+import SuppliersPage from "@/pages/admin/suppliers";
+import CustomersPage from "@/pages/admin/customers";
+import InventoryPage from "@/pages/admin/inventory";
+import EmployeesPage from "@/pages/admin/employees";
+import InvoicePage from "@/pages/admin/invoice";
+import NewInvoicePage from "@/pages/admin/invoice/new-invoice";
 import RestockPage from "@/pages/admin/restock";
 import NewRestockPage from "@/pages/admin/restock/new-restock";
 

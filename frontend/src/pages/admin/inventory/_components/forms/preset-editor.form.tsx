@@ -32,12 +32,33 @@ export const PresetEditorForm = ({
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm({
     resolver: yupResolver(schema),
   });
 
   const { data: units = [] } = useUnitOfMeasureQuery();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Watch all unit selections
+  const baseUnit = watch("baseUnit");
+  const conversion1 = watch("conversion1");
+  const conversion2 = watch("conversion2");
+  const conversion3 = watch("conversion3");
+  const conversion4 = watch("conversion4");
+
+  // Helper function to filter available units for each dropdown
+  const getAvailableUnits = (currentField?: string) => {
+    const selectedUnits = [
+      baseUnit,
+      conversion1,
+      conversion2,
+      conversion3,
+      conversion4,
+    ].filter((unit) => unit && unit !== "None" && unit !== currentField);
+
+    return units.filter((unit) => !selectedUnits.includes(String(unit.uom_ID)));
+  };
 
   const handleSubmitForm = async (data: any) => {
     console.log("Form inputs:", data);
@@ -113,7 +134,7 @@ export const PresetEditorForm = ({
 
       const response = await createUnitPreset(payload);
       toast.success(
-        response.message || "Packaging Preset Created Successfully"
+        response.message || "Packaging Preset Created Successfully",
       );
       handleCancelAddPreset();
     } catch (error: any) {
@@ -161,7 +182,7 @@ export const PresetEditorForm = ({
                 // value={selectedUnit}
                 // onChange={(e) => handleChangeUnit(Number(e.target.value))}
               >
-                {units.map((u, i) => (
+                {getAvailableUnits(baseUnit).map((u, i) => (
                   <option value={u.uom_ID} key={i}>
                     {u.uom_Name}
                   </option>
@@ -182,7 +203,7 @@ export const PresetEditorForm = ({
                 {...register("conversion1")}
               >
                 <option value={"None"}>None</option>
-                {units.map((u, i) => (
+                {getAvailableUnits(conversion1).map((u, i) => (
                   <option value={u.uom_ID} key={i}>
                     {u.uom_Name}
                   </option>
@@ -210,7 +231,7 @@ export const PresetEditorForm = ({
                 {...register("conversion2")}
               >
                 <option value={"None"}>None</option>
-                {units.map((u, i) => (
+                {getAvailableUnits(conversion2).map((u, i) => (
                   <option value={u.uom_ID} key={i}>
                     {u.uom_Name}
                   </option>
@@ -238,7 +259,7 @@ export const PresetEditorForm = ({
                 {...register("conversion3")}
               >
                 <option value={"None"}>None</option>
-                {units.map((u, i) => (
+                {getAvailableUnits(conversion3).map((u, i) => (
                   <option value={u.uom_ID} key={i}>
                     {u.uom_Name}
                   </option>
@@ -266,7 +287,7 @@ export const PresetEditorForm = ({
                 {...register("conversion4")}
               >
                 <option value={"None"}>None</option>
-                {units.map((u, i) => (
+                {getAvailableUnits(conversion4).map((u, i) => (
                   <option value={u.uom_ID} key={i}>
                     {u.uom_Name}
                   </option>
