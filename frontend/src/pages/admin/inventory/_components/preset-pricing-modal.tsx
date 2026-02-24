@@ -1,7 +1,6 @@
 import { XIcon, PhilippinePeso } from "lucide-react";
 import { useState, useEffect } from "react";
 import { UnitPresetLevel } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.model";
-import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 
 interface PresetPricingModalProps {
@@ -37,9 +36,29 @@ export const PresetPricingModal = ({
       const initialData = new Map<number, Map<string, string>>();
       selectedProducts.forEach((product) => {
         const productPrices = new Map<string, string>();
+        
         preset.levels.forEach((level) => {
-          productPrices.set(level.uoM_Name, "");
+          // Check if there's existing pricing from restock batches
+          let existingPrice = "";
+          
+          if (product.restockInfo && product.restockInfo.length > 0) {
+            // Get the most recent restock batch
+            const latestRestock = product.restockInfo[0];
+            
+            // Find pricing for this unit level
+            const pricingForUnit = latestRestock.presetPricing?.find(
+              (pp) => pp.unitName.toLowerCase() === level.uoM_Name.toLowerCase()
+            );
+            
+            if (pricingForUnit && pricingForUnit.price_Per_Unit) {
+              existingPrice = pricingForUnit.price_Per_Unit.toString();
+            }
+          }
+          
+          // Set existing price or default to "0"
+          productPrices.set(level.uoM_Name, existingPrice || "0");
         });
+        
         initialData.set(product.product.product_ID, productPrices);
       });
       setPricingData(initialData);
@@ -82,16 +101,11 @@ export const PresetPricingModal = ({
   };
 
   const isFormValid = () => {
-    // Check if at least one price is entered for each product
+    // Check if all prices are entered for each product (0 is valid)
     for (const [_, unitPrices] of pricingData) {
-      let hasAtLeastOnePrice = false;
       for (const [_, price] of unitPrices) {
-        if (price !== "" && parseFloat(price) > 0) {
-          hasAtLeastOnePrice = true;
-          break;
-        }
+        if (price === "") return false; // Empty is not valid
       }
-      if (!hasAtLeastOnePrice) return false;
     }
     return true;
   };

@@ -34,6 +34,7 @@ namespace backend.Data
         public DbSet<Unit_Preset> Unit_Presets { get; set; }
         public DbSet<Unit_Preset_Level> Unit_Preset_Levels { get; set; }
         public DbSet<Product_Unit_Preset> Product_Unit_Presets { get; set; }
+        public DbSet<Product_Unit_Preset_Pricing> Product_Unit_Preset_Pricing { get; set; }
         public DbSet<DeletedUsers> DeletedUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -257,6 +258,41 @@ namespace backend.Data
                     .WithOne(pp => pp.Preset)
                     .HasForeignKey(pp => pp.Preset_ID)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<Product_Unit_Preset>(entity =>
+            {
+                entity.ToTable("Product_Unit_Presets");
+
+                entity.HasOne(pup => pup.Product)
+                    .WithMany()
+                    .HasForeignKey(pup => pup.Product_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pup => pup.Preset)
+                    .WithMany(up => up.ProductPresets)
+                    .HasForeignKey(pup => pup.Preset_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(pup => pup.PresetPricing)
+                    .WithOne(pp => pp.ProductUnitPreset)
+                    .HasForeignKey(pp => pp.Product_Preset_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<Product_Unit_Preset_Pricing>(entity =>
+            {
+                entity.ToTable("Product_Unit_Preset_Pricing");
+
+                entity.HasOne(pp => pp.ProductUnitPreset)
+                    .WithMany(pup => pup.PresetPricing)
+                    .HasForeignKey(pp => pp.Product_Preset_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pp => pp.UnitOfMeasure)
+                    .WithMany()
+                    .HasForeignKey(pp => pp.UOM_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
         }

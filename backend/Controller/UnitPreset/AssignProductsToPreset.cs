@@ -29,7 +29,12 @@ namespace backend.Controller.UnitPreset
 
             try
             {
-                var preset = await _db.Unit_Presets.FindAsync(dto.Preset_ID);
+                // Load preset with levels to get UOM information
+                var preset = await _db.Unit_Presets
+                    .Include(p => p.PresetLevels)
+                        .ThenInclude(pl => pl.UnitOfMeasure)
+                    .FirstOrDefaultAsync(p => p.Preset_ID == dto.Preset_ID);
+
                 if (preset == null)
                 {
                     return NotFound($"Preset with ID {dto.Preset_ID} not found");
@@ -42,6 +47,7 @@ namespace backend.Controller.UnitPreset
                     .ToListAsync();
 
                 var newProductIds = dto.Product_IDs.Except(existingAssignments).ToList();
+                int assignedCount = 0;
 
                 foreach (var productId in newProductIds)
                 {
@@ -59,6 +65,40 @@ namespace backend.Controller.UnitPreset
                     };
 
                     await _db.Product_Unit_Presets.AddAsync(assignment);
+                    await _db.SaveChangesAsync(); // Save to get the Product_Preset_ID
+
+                    // Save pricing data if provided
+                    if (dto.PricingData != null && dto.PricingData.Any())
+                    {
+                        var productPricing = dto.PricingData.FirstOrDefault(pd => pd.Product_ID == productId);
+                        
+                        if (productPricing != null && productPricing.UnitPrices.Any())
+                        {
+                            foreach (var unitPrice in productPricing.UnitPrices)
+                            {
+                                // Find the corresponding preset level by unit name
+                                var presetLevel = preset.PresetLevels
+                                    .FirstOrDefault(pl => pl.UnitOfMeasure.uom_Name.Equals(unitPrice.UnitName, StringComparison.OrdinalIgnoreCase));
+
+                                if (presetLevel != null)
+                                {
+                                    var pricing = new Product_Unit_Preset_Pricing
+                                    {
+                                        Product_Preset_ID = assignment.Product_Preset_ID,
+                                        Level = presetLevel.Level,
+                                        UOM_ID = presetLevel.UOM_ID,
+                                        Price_Per_Unit = unitPrice.Price,
+                                        Created_At = DateTime.UtcNow,
+                                        Updated_At = DateTime.UtcNow
+                                    };
+
+                                    await _db.Product_Unit_Preset_Pricing.AddAsync(pricing);
+                                }
+                            }
+                        }
+                    }
+
+                    assignedCount++;
                 }
 
                 await _db.SaveChangesAsync();
@@ -67,7 +107,7 @@ namespace backend.Controller.UnitPreset
                 return Ok(new
                 {
                     message = "Products assigned successfully",
-                    assigned_count = newProductIds.Count,
+                    assigned_count = assignedCount,
                     skipped_count = existingAssignments.Count
                 });
             }

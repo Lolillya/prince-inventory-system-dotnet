@@ -25,5 +25,7 @@ namespace backend.Models.Unit
 
         [ForeignKey("Preset_ID")]
         public Unit_Preset Preset { get; set; } = null!;
+
+        public ICollection<Product_Unit_Preset_Pricing> PresetPricing { get; set; } = new List<Product_Unit_Preset_Pricing>();
     }
 }
