@@ -71,7 +71,7 @@ namespace backend.Controller.UnitPreset
                     if (dto.PricingData != null && dto.PricingData.Any())
                     {
                         var productPricing = dto.PricingData.FirstOrDefault(pd => pd.Product_ID == productId);
-                        
+
                         if (productPricing != null && productPricing.UnitPrices.Any())
                         {
                             foreach (var unitPrice in productPricing.UnitPrices)

@@ -34,6 +34,10 @@ namespace backend.Controller.Inventory
                                 .ThenInclude(preset => preset.PresetLevels)
                                     .ThenInclude(level => level.UnitOfMeasure)
                     .Include(i => i.Product)
+                        .ThenInclude(p => p.ProductPresets)
+                            .ThenInclude(pp => pp.PresetPricing)
+                                .ThenInclude(pricing => pricing.UnitOfMeasure)
+                    .Include(i => i.Product)
                         .ThenInclude(p => p.RestockLineItems)
                             .ThenInclude(rli => rli.RestockBatch)
                                 .ThenInclude(rb => rb.Supplier)
@@ -85,83 +89,136 @@ namespace backend.Controller.Inventory
                             i.Product.Category.CreatedAt,
                             i.Product.Category.UpdatedAt
                         },
-                        UnitPresets = i.Product.ProductPresets.Select(pp => new
-                        {
-                            pp.Product_Preset_ID,
-                            pp.Preset_ID,
-                            pp.Assigned_At,
-                            pp.Low_Stock_Level,
-                            pp.Very_Low_Stock_Level,
-                            Preset = new
+                        UnitPresets = _db.Product_Unit_Presets
+                            .Where(pup => pup.Product_ID == i.Product_ID)
+                            .Select(pup => new
                             {
-                                pp.Preset.Preset_ID,
-                                pp.Preset.Preset_Name,
-                                pp.Preset.Main_Unit_ID,
-                                pp.Preset.Created_At,
-                                pp.Preset.Updated_At,
-                                PresetLevels = pp.Preset.PresetLevels.Select(level => new
+                                pup.Product_Preset_ID,
+                                pup.Preset_ID,
+                                pup.Assigned_At,
+                                pup.Low_Stock_Level,
+                                pup.Very_Low_Stock_Level,
+                                Preset = new
                                 {
-                                    level.Level_ID,
-                                    level.UOM_ID,
-                                    level.Level,
-                                    level.Conversion_Factor,
-                                    level.Created_At,
-                                    UnitOfMeasure = new
+                                    pup.Preset.Preset_ID,
+                                    pup.Preset.Preset_Name,
+                                    pup.Preset.Main_Unit_ID,
+                                    pup.Preset.Created_At,
+                                    pup.Preset.Updated_At,
+                                    PresetLevels = pup.Preset.PresetLevels.Select(level => new
                                     {
-                                        level.UnitOfMeasure.uom_ID,
-                                        level.UnitOfMeasure.uom_Name
-                                    }
-                                }).OrderBy(l => l.Level).ToList()
-                            }
-                        }).ToList(),
-
-                        RestockInfo = _db.RestockLineItems
-                                .Where(rli => rli.Product_ID == i.Product_ID)
-                                .Include(rli => rli.RestockBatch)
-                                .ThenInclude(rb => rb.Restock)
-                                .ThenInclude(r => r.Clerk)
-                                .Include(rli => rli.RestockBatch)
-                                .ThenInclude(rb => rb.Supplier)
-                                .Include(rli => rli.UnitPreset)
-                                .Include(rli => rli.PresetPricing)
-                                .ThenInclude(pp => pp.UnitOfMeasure)
-                                .Select(rli => new
+                                        level.Level_ID,
+                                        level.UOM_ID,
+                                        level.Level,
+                                        level.Conversion_Factor,
+                                        level.Created_At,
+                                        UnitOfMeasure = new
+                                        {
+                                            level.UnitOfMeasure.uom_ID,
+                                            level.UnitOfMeasure.uom_Name
+                                        }
+                                    }).OrderBy(l => l.Level).ToList()
+                                },
+                                PresetPricing = pup.PresetPricing.Select(pricing => new
                                 {
-                                    LineItemId = rli.LineItem_ID,
-                                    RestockId = rli.RestockBatch.Restock_ID,
-                                    RestockNumber = rli.RestockBatch.Restock.Restock_Number,
-                                    Clerk = rli.RestockBatch.Restock.Clerk != null ? new
-                                    {
-                                        rli.RestockBatch.Restock.Clerk.Id,
-                                        rli.RestockBatch.Restock.Clerk.FirstName,
-                                        rli.RestockBatch.Restock.Clerk.LastName
-                                    } : null,
-                                    BatchId = rli.Batch_ID,
-                                    BatchNumber = rli.RestockBatch.Batch_Number,
-                                    Supplier = rli.RestockBatch.Supplier != null ? new
-                                    {
-                                        rli.RestockBatch.Supplier.Id,
-                                        rli.RestockBatch.Supplier.FirstName,
-                                        rli.RestockBatch.Supplier.LastName,
-                                        rli.RestockBatch.Supplier.CompanyName
-                                    } : null,
-                                    PresetId = rli.Preset_ID,
-                                    PresetName = rli.UnitPreset != null ? rli.UnitPreset.Preset_Name : null,
-                                    rli.Base_Unit_Price,
-                                    rli.Base_Unit_Quantity,
-                                    PresetPricing = rli.PresetPricing.Select(pp => new
-                                    {
-                                        pp.Pricing_ID,
-                                        pp.Level,
-                                        pp.UOM_ID,
-                                        UnitName = pp.UnitOfMeasure.uom_Name,
-                                        pp.Price_Per_Unit,
-                                        pp.Created_At
-                                    }).OrderBy(pp => pp.Level).ToList()
-                                })
-                                .ToList(),
+                                    pricing.Pricing_ID,
+                                    pricing.Level,
+                                    pricing.UOM_ID,
+                                    UnitName = pricing.UnitOfMeasure.uom_Name,
+                                    pricing.Price_Per_Unit,
+                                    pricing.Created_At,
+                                    pricing.Updated_At
+                                }).OrderBy(p => p.Level).ToList()
+                            }).ToList(),
 
-                        IsComplete = i.Product.ProductPresets.Any()
+                        // UnitPresets = i.Product.ProductPresets.Select(pp => new
+                        // {
+                        //     pp.Product_Preset_ID,
+                        //     pp.Preset_ID,
+                        //     pp.Assigned_At,
+                        //     pp.Low_Stock_Level,
+                        //     pp.Very_Low_Stock_Level,
+                        //     Preset = new
+                        //     {
+                        //         pp.Preset.Preset_ID,
+                        //         pp.Preset.Preset_Name,
+                        //         pp.Preset.Main_Unit_ID,
+                        //         pp.Preset.Created_At,
+                        //         pp.Preset.Updated_At,
+                        //         PresetLevels = pp.Preset.PresetLevels.Select(level => new
+                        //         {
+                        //             level.Level_ID,
+                        //             level.UOM_ID,
+                        //             level.Level,
+                        //             level.Conversion_Factor,
+                        //             level.Created_At,
+                        //             UnitOfMeasure = new
+                        //             {
+                        //                 level.UnitOfMeasure.uom_ID,
+                        //                 level.UnitOfMeasure.uom_Name
+                        //             }
+                        //         }).OrderBy(l => l.Level).ToList()
+                        //     },
+                        //     PresetPricing = pp.PresetPricing.Select(pricing => new
+                        //     {
+                        //         pricing.Pricing_ID,
+                        //         pricing.Level,
+                        //         pricing.UOM_ID,
+                        //         UnitName = pricing.UnitOfMeasure.uom_Name,
+                        //         pricing.Price_Per_Unit,
+                        //         pricing.Created_At,
+                        //         pricing.Updated_At
+                        //     }).OrderBy(p => p.Level).ToList()
+                        // }).ToList(),
+
+
+                        // RestockInfo = _db.RestockLineItems
+                        //         .Where(rli => rli.Product_ID == i.Product_ID)
+                        //         .Include(rli => rli.RestockBatch)
+                        //         .ThenInclude(rb => rb.Restock)
+                        //         .ThenInclude(r => r.Clerk)
+                        //         .Include(rli => rli.RestockBatch)
+                        //         .ThenInclude(rb => rb.Supplier)
+                        //         .Include(rli => rli.UnitPreset)
+                        //         .Include(rli => rli.PresetPricing)
+                        //         .ThenInclude(pp => pp.UnitOfMeasure)
+                        //         .Select(rli => new
+                        //         {
+                        //             LineItemId = rli.LineItem_ID,
+                        //             RestockId = rli.RestockBatch.Restock_ID,
+                        //             RestockNumber = rli.RestockBatch.Restock.Restock_Number,
+                        //             Clerk = rli.RestockBatch.Restock.Clerk != null ? new
+                        //             {
+                        //                 rli.RestockBatch.Restock.Clerk.Id,
+                        //                 rli.RestockBatch.Restock.Clerk.FirstName,
+                        //                 rli.RestockBatch.Restock.Clerk.LastName
+                        //             } : null,
+                        //             BatchId = rli.Batch_ID,
+                        //             BatchNumber = rli.RestockBatch.Batch_Number,
+                        //             Supplier = rli.RestockBatch.Supplier != null ? new
+                        //             {
+                        //                 rli.RestockBatch.Supplier.Id,
+                        //                 rli.RestockBatch.Supplier.FirstName,
+                        //                 rli.RestockBatch.Supplier.LastName,
+                        //                 rli.RestockBatch.Supplier.CompanyName
+                        //             } : null,
+                        //             PresetId = rli.Preset_ID,
+                        //             PresetName = rli.UnitPreset != null ? rli.UnitPreset.Preset_Name : null,
+                        //             rli.Base_Unit_Price,
+                        //             rli.Base_Unit_Quantity,
+                        //             PresetPricing = rli.PresetPricing.Select(pp => new
+                        //             {
+                        //                 pp.Pricing_ID,
+                        //                 pp.Level,
+                        //                 pp.UOM_ID,
+                        //                 UnitName = pp.UnitOfMeasure.uom_Name,
+                        //                 pp.Price_Per_Unit,
+                        //                 pp.Created_At
+                        //             }).OrderBy(pp => pp.Level).ToList()
+                        //         })
+                        //         .ToList(),
+
+                        IsComplete = _db.Product_Unit_Presets.Any(pup => pup.Product_ID == i.Product_ID)
                     }).ToListAsync();
 
                 if (results == null || !results.Any())
