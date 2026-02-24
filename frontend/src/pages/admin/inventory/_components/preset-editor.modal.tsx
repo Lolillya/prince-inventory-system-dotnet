@@ -4,7 +4,9 @@ import { Activity, useState } from "react";
 import { PresetEditorForm } from "./forms/preset-editor.form";
 // import { UseInventoryQuery } from "@/features/restock/inventory-batch";
 import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
+import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measure";
 import { UnitPresetCard } from "./unit-preset-card";
+import { AddUnitModal } from "./add-unit.modal";
 import { SelectableProductCard } from "@/features/unit-of-measure/assign-product-to-preset/selectable-product-card";
 import {
   useAssignProductToPresetState,
@@ -28,11 +30,13 @@ export const ProductUnitPresetModal = ({
   const [isAddProductsToPresetOpen, setIsAddProductsToPresetOpen] =
     useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [isAddUnitModalOpen, setIsAddUnitModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: products } = UseInventoryQuery();
   const { data: unitPresets, refetch: refetchUnitPresets } =
     useUnitPresetQuery();
+  const { refetch: refetchUnits } = useUnitOfMeasureQuery();
   const { data: selectedState } = useAssignProductToPresetState();
   const setSelectedState = useSetAssignProductToPresetState();
   const toggleProductSelection = useToggleProductSelection();
@@ -50,6 +54,18 @@ export const ProductUnitPresetModal = ({
 
   const handleCancelAddPreset = () => {
     setIsAddPresetOpen(false);
+  };
+
+  const handleOpenAddUnitModal = () => {
+    setIsAddUnitModalOpen(true);
+  };
+
+  const handleCloseAddUnitModal = () => {
+    setIsAddUnitModalOpen(false);
+  };
+
+  const handleAddUnitSuccess = async () => {
+    await refetchUnits();
   };
 
   const handleAddProductsToPreset = (presetId?: number) => {
@@ -168,7 +184,10 @@ export const ProductUnitPresetModal = ({
           </div>
 
           <Activity mode={isAddPresetOpen ? "visible" : "hidden"}>
-            <PresetEditorForm handleCancelAddPreset={handleCancelAddPreset} />
+            <PresetEditorForm
+              handleCancelAddPreset={handleCancelAddPreset}
+              onOpenAddUnitModal={handleOpenAddUnitModal}
+            />
           </Activity>
 
           {!isAddPresetOpen && (
@@ -284,6 +303,13 @@ export const ProductUnitPresetModal = ({
         selectedProducts={getSelectedProducts()}
         onClose={() => setIsPricingModalOpen(false)}
         onSubmit={handleSubmitProductAssignment}
+      />
+
+      {/* ADD UNIT MODAL */}
+      <AddUnitModal
+        isOpen={isAddUnitModalOpen}
+        onClose={handleCloseAddUnitModal}
+        onSuccess={handleAddUnitSuccess}
       />
     </div>
   );
