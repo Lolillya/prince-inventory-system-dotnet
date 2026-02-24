@@ -36,29 +36,50 @@ export const PresetPricingModal = ({
       const initialData = new Map<number, Map<string, string>>();
       selectedProducts.forEach((product) => {
         const productPrices = new Map<string, string>();
-        
+
         preset.levels.forEach((level) => {
-          // Check if there's existing pricing from restock batches
           let existingPrice = "";
-          
-          if (product.restockInfo && product.restockInfo.length > 0) {
+
+          // Priority 1: Check if there's existing pricing from Product_Unit_Preset_Pricing
+          const assignedPreset = product.unitPresets?.find(
+            (up) => up.preset_ID === preset.preset_ID,
+          );
+
+          if (assignedPreset && assignedPreset.presetPricing) {
+            const pricingForLevel = assignedPreset.presetPricing.find(
+              (pp) =>
+                pp.unitName.toLowerCase() === level.uoM_Name.toLowerCase(),
+            );
+
+            if (pricingForLevel && pricingForLevel.price_Per_Unit !== null) {
+              existingPrice = pricingForLevel.price_Per_Unit.toString();
+            }
+          }
+
+          // Priority 2: Fall back to restock batch pricing if no preset pricing exists
+          if (
+            !existingPrice &&
+            product.restockInfo &&
+            product.restockInfo.length > 0
+          ) {
             // Get the most recent restock batch
             const latestRestock = product.restockInfo[0];
-            
+
             // Find pricing for this unit level
             const pricingForUnit = latestRestock.presetPricing?.find(
-              (pp) => pp.unitName.toLowerCase() === level.uoM_Name.toLowerCase()
+              (pp: { unitName: string; price_Per_Unit: number }) =>
+                pp.unitName.toLowerCase() === level.uoM_Name.toLowerCase(),
             );
-            
+
             if (pricingForUnit && pricingForUnit.price_Per_Unit) {
               existingPrice = pricingForUnit.price_Per_Unit.toString();
             }
           }
-          
+
           // Set existing price or default to "0"
           productPrices.set(level.uoM_Name, existingPrice || "0");
         });
-        
+
         initialData.set(product.product.product_ID, productPrices);
       });
       setPricingData(initialData);

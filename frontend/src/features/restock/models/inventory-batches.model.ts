@@ -44,6 +44,7 @@ type UnitPresets = {
   product_Preset_ID: number;
   low_Stock_Level?: number;
   very_Low_Stock_Level?: number;
+  presetPricing: PresetPricing[];
 };
 
 type Preset = {

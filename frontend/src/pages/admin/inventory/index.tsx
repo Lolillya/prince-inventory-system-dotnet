@@ -46,7 +46,7 @@ const InventoryPage = () => {
     setSelectedProduct(product);
   };
 
-  // console.log(inventory);
+  console.log(inventory);
 
   const handleEditProduct = () => {
     setIsEditProductModalOpen(!isEditProductModalOpen);

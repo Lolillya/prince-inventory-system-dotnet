@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { Separator } from "@/components/separator";
-import { SupplierBatchCard } from "./supplier-batch-card";
 import { ChevronDown, PhilippinePeso } from "lucide-react";
 
 interface SelectedProductProps {
@@ -42,9 +41,9 @@ export const SelectedProduct = ({
       </div>
 
       <div className="flex flex-col gap-3">
-        {product.restockInfo.map((r, i) => (
+        {/* {product.unitPresets.map((r, i) => (
           <SupplierBatchCard supplierBatch={r} />
-        ))}
+        ))} */}
       </div>
 
       <div className="flex flex-col h-full">
@@ -103,7 +102,7 @@ export const SelectedProduct = ({
                         <label className="text-sm text-saltbox-gray font-semibold border-b pb-1 text-nowrap">
                           Batch Pricing
                         </label>
-                        {product.restockInfo.map((b, idx) => (
+                        {product.unitPresets.map((b, idx) => (
                           <div
                             key={idx}
                             className="flex flex-col gap-2 rounded-lg"
