@@ -1,8 +1,8 @@
-import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
+import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
 import { CheckIcon } from "lucide-react";
 
 interface SelectableProductCardProps {
-  product: InventoryProductModel;
+  product: InventoryBatchesModel;
   isSelected: boolean;
   isAlreadyAssigned: boolean;
   onToggle: (productId: number) => void;

@@ -73,22 +73,22 @@ type UnitOfMeasure = {
   abbreviation: string;
 };
 
-// type RestockInfo = {
-//   restockId: number;
-//   restockNumber: string;
-//   clerk: {
-//     id: string;
-//     firstName: string;
-//     lastName: string;
-//   };
-//   batchId: number;
-//   batchNumber: number;
-//   supplier: {
-//     id: string;
-//     firstName: string;
-//     lastName: string;
-//     companyName: string;
-//   };
-//   base_Unit_Price: number;
-//   base_Unit_Quantity: number;
-// };
+type RestockInfo = {
+  restockId: number;
+  restockNumber: string;
+  clerk: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  batchId: number;
+  batchNumber: number;
+  supplier: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    companyName: string;
+  };
+  base_Unit_Price: number;
+  base_Unit_Quantity: number;
+};

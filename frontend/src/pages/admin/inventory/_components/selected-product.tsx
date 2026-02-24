@@ -100,7 +100,7 @@ export const SelectedProduct = ({
 
                     <div className="flex flex-col">
                       <div className="flex flex-col gap-3">
-                        <label className="text-sm text-saltbox-gray font-semibold border-b pb-1">
+                        <label className="text-sm text-saltbox-gray font-semibold border-b pb-1 text-nowrap">
                           Batch Pricing
                         </label>
                         {product.restockInfo.map((b, idx) => (
