@@ -4,6 +4,7 @@ export type InventoryBatchesModel = {
     product_Code: string;
     product_Name: string;
     description: string;
+    quantity: number;
     createdAt: string;
     updatedAt: string;
   };
@@ -11,6 +12,7 @@ export type InventoryBatchesModel = {
   variant: variant;
   category: category;
   unitPresets: UnitPresets[];
+  restockInfo: RestockInfo[];
   isComplete: boolean;
 };
 
@@ -91,4 +93,14 @@ type RestockInfo = {
   };
   base_Unit_Price: number;
   base_Unit_Quantity: number;
+  presetPricing: PresetPricing[];
+};
+
+type PresetPricing = {
+  pricing_ID: number;
+  level: number;
+  uoM_ID: number;
+  unitName: string;
+  price_Per_Unit: number;
+  created_At: string;
 };

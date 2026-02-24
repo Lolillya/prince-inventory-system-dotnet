@@ -1,8 +1,8 @@
-import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { CheckIcon } from "lucide-react";
 
 interface SelectableProductCardProps {
-  product: InventoryBatchesModel;
+  product: InventoryProductModel;
   isSelected: boolean;
   isAlreadyAssigned: boolean;
   onToggle: (productId: number) => void;
@@ -14,14 +14,21 @@ export const SelectableProductCard = ({
   isAlreadyAssigned,
   onToggle,
 }: SelectableProductCardProps) => {
+  const hasRestockBatch = product.restockInfo && product.restockInfo.length > 0;
+
   const handleClick = () => {
+    if (!hasRestockBatch) return;
     onToggle(product.product.product_ID);
   };
 
   return (
     <div
-      className={`flex justify-between items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
-        isSelected ? "bg-blue-50 border-blue-300" : "bg-white hover:bg-gray-50"
+      className={`flex justify-between items-center gap-2 p-2 rounded-lg border transition-all ${
+        !hasRestockBatch
+          ? "bg-gray-50 border-gray-200 opacity-60 cursor-not-allowed"
+          : isSelected
+            ? "bg-blue-50 border-blue-300 cursor-pointer"
+            : "bg-white hover:bg-gray-50 border-gray-200 cursor-pointer"
       }`}
       onClick={handleClick}
     >
@@ -31,7 +38,8 @@ export const SelectableProductCard = ({
             type="checkbox"
             checked={isSelected}
             onChange={() => {}}
-            className="w-4 h-4 accent-blue-600 cursor-pointer"
+            disabled={!hasRestockBatch}
+            className="w-4 h-4 accent-blue-600 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
         <div className="flex flex-col gap-1 flex-1">
@@ -46,6 +54,11 @@ export const SelectableProductCard = ({
               {product.variant.variant_Name}
             </span>
           </div>
+          {!hasRestockBatch && (
+            <span className="text-xs text-red-600 font-medium">
+              No restock batch available
+            </span>
+          )}
           {isAlreadyAssigned && isSelected && (
             <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
               <CheckIcon size={12} /> Currently assigned
@@ -53,9 +66,6 @@ export const SelectableProductCard = ({
           )}
         </div>
       </div>
-      {/* <span className="text-xs text-saltbox-gray whitespace-nowrap">
-        {product.restockInfo.length} batches
-      </span> */}
     </div>
   );
 };

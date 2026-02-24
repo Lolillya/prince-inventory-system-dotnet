@@ -7,7 +7,6 @@ import {
 } from "@/features/inventory/product-selected";
 import {
   EditIcon,
-  EllipsisIcon,
   FileDownIcon,
   FilterIcon,
   PlusIcon,
@@ -18,16 +17,9 @@ import { Activity, useState } from "react";
 import { AddProductModal } from "./add-product/_components/AddProductModal";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { EditProductModal } from "./_components/edit-product.modal";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
 import { PresetSelectorModal } from "./_components/preset-selector.modal";
-import { PackageIcon, PackageOpen } from "lucide-react";
+import { PackageOpen } from "lucide-react";
 
 const InventoryPage = () => {
   const { data: inventory, isLoading, error } = UseInventoryQuery();
@@ -53,6 +45,8 @@ const InventoryPage = () => {
   const handleClick = (product: InventoryProductModel) => {
     setSelectedProduct(product);
   };
+
+  // console.log(inventory);
 
   const handleEditProduct = () => {
     setIsEditProductModalOpen(!isEditProductModalOpen);
@@ -90,7 +84,7 @@ const InventoryPage = () => {
     );
   };
 
-  console.log(filteredInventory);
+  // console.log(filteredInventory);
 
   return (
     <section>
@@ -177,19 +171,6 @@ const InventoryPage = () => {
               <PackageOpen />
               <label className="cursor-pointer">Packaging Presets</label>
             </div>
-            {/* <DropdownMenu>
-              <DropdownMenuTrigger className="rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs flex items-center gap-2 cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"></DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={handlePresetEditor}
-                  >
-                    Packaging Presets
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu> */}
           </div>
 
           <div className="w-full overflow-y-scroll flex flex-col gap-2 p-2 inset-shadow-sm rounded-lg border">

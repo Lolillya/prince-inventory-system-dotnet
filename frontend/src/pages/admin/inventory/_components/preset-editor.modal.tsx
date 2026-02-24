@@ -2,7 +2,7 @@ import { PlusIcon } from "@/icons";
 import { XIcon } from "lucide-react";
 import { Activity, useState } from "react";
 import { PresetEditorForm } from "./forms/preset-editor.form";
-import { UseInventoryQuery } from "@/features/restock/inventory-batch";
+// import { UseInventoryQuery } from "@/features/restock/inventory-batch";
 import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
 import { UnitPresetCard } from "./unit-preset-card";
 import { SelectableProductCard } from "@/features/unit-of-measure/assign-product-to-preset/selectable-product-card";
@@ -15,6 +15,7 @@ import {
 import { assignProductsToPreset } from "@/features/unit-of-measure/assign-product-to-preset/assign-product.service";
 import { toast } from "sonner";
 import { PresetPricingModal, ProductPricingData } from "./preset-pricing-modal";
+import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 
 interface ProductUnitPresetModalProp {
   handlePresetEditor: () => void;
@@ -36,8 +37,6 @@ export const ProductUnitPresetModal = ({
   const setSelectedState = useSetAssignProductToPresetState();
   const toggleProductSelection = useToggleProductSelection();
   const clearProductSelection = useClearProductSelection();
-
-  console.log("unitPresets: ", unitPresets);
 
   const handleAddPreset = () => {
     setIsAddPresetOpen(!isAddPresetOpen);

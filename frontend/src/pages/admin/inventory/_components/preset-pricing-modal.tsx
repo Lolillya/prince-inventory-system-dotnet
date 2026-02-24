@@ -2,11 +2,12 @@ import { XIcon, PhilippinePeso } from "lucide-react";
 import { useState, useEffect } from "react";
 import { UnitPresetLevel } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.model";
 import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 
 interface PresetPricingModalProps {
   isOpen: boolean;
   preset: UnitPresetLevel | null;
-  selectedProducts: InventoryBatchesModel[];
+  selectedProducts: InventoryProductModel[];
   onClose: () => void;
   onSubmit: (pricingData: ProductPricingData[]) => void;
 }
