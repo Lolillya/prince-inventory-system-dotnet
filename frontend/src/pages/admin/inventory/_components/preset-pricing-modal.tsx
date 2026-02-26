@@ -1,4 +1,4 @@
-import { XIcon, PhilippinePeso } from "lucide-react";
+import { XIcon, PhilippinePeso, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { UnitPresetLevel } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.model";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
@@ -131,6 +131,35 @@ export const PresetPricingModal = ({
     return true;
   };
 
+  const validatePriceHierarchy = (productId: number): boolean => {
+    if (!preset) return true;
+
+    const productPrices = pricingData.get(productId);
+    if (!productPrices) return true;
+
+    // Get prices in order of conversion levels
+    const prices: number[] = [];
+    preset.levels.forEach((level) => {
+      const priceStr = productPrices.get(level.uoM_Name);
+      const price = parseFloat(priceStr || "0");
+      prices.push(price);
+    });
+
+    // Check if prices are in descending order (base unit should be highest)
+    for (let i = 0; i < prices.length - 1; i++) {
+      if (prices[i] < prices[i + 1]) {
+        return false; // Invalid: next level has higher price
+      }
+    }
+    return true;
+  };
+
+  const hasAnyPriceHierarchyIssue = (): boolean => {
+    return selectedProducts.some(
+      (product) => !validatePriceHierarchy(product.product.product_ID),
+    );
+  };
+
   if (!isOpen || !preset) return null;
 
   return (
@@ -150,67 +179,97 @@ export const PresetPricingModal = ({
           </span>
         </div>
 
-        <div className="flex flex-col gap-6 overflow-y-auto flex-1 pr-2">
-          {selectedProducts.map((product) => (
-            <div
-              key={product.product.product_ID}
-              className="border rounded-lg p-4 bg-gray-50"
-            >
-              <div className="mb-3">
-                <h3 className="font-semibold text-sm">
-                  {product.product.product_Name}
-                </h3>
-                <div className="flex items-center gap-2 text-xs text-gray-600">
-                  <span>{product.brand.brandName}</span>
-                  <span>•</span>
-                  <span>{product.variant.variant_Name}</span>
-                </div>
-              </div>
+        {hasAnyPriceHierarchyIssue() && (
+          <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-300 rounded-lg">
+            <AlertTriangle
+              size={18}
+              className="text-amber-600 mt-0.5 shrink-0"
+            />
+            <div className="text-sm text-amber-800">
+              <span className="font-semibold">Price Hierarchy Warning:</span>{" "}
+              The main unit should have the highest price, with prices
+              decreasing for smaller units.
+            </div>
+          </div>
+        )}
 
-              <div className="flex flex-col gap-2">
-                {preset.levels.map((level, levelIdx) => (
-                  <div
-                    key={levelIdx}
-                    className="flex items-center justify-between gap-3"
-                  >
-                    <label className="text-sm font-medium min-w-20">
-                      {level.uoM_Name}
-                      <span className="text-xs text-gray-500 ml-1">
-                        ({level.conversion_Factor}x)
-                      </span>
-                    </label>
-                    <div className="flex items-center gap-2 flex-1 max-w-[200px]">
-                      <div className="flex items-center border rounded-md overflow-hidden bg-white flex-1">
-                        <div className="px-2 py-1.5 bg-gray-100 border-r">
-                          <PhilippinePeso
-                            width={14}
-                            className="text-gray-600"
-                          />
-                        </div>
-                        <input
-                          type="text"
-                          placeholder="0.00"
-                          className="px-3 py-1.5 w-full outline-none text-sm"
-                          value={
-                            pricingData
-                              .get(product.product.product_ID)
-                              ?.get(level.uoM_Name) || ""
-                          }
-                          onChange={(e) =>
-                            handlePriceChange(
-                              product.product.product_ID,
-                              level.uoM_Name,
-                              e.target.value,
-                            )
-                          }
-                        />
+        <div className="flex flex-col gap-6 overflow-y-auto flex-1 pr-2">
+          {selectedProducts.map((product) => {
+            const hasInvalidHierarchy = !validatePriceHierarchy(
+              product.product.product_ID,
+            );
+
+            return (
+              <div
+                key={product.product.product_ID}
+                className={`border rounded-lg p-4 ${hasInvalidHierarchy ? "bg-amber-50 border-amber-300" : "bg-gray-50"}`}
+              >
+                <div className="mb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-semibold text-sm">
+                        {product.product.product_Name}
+                      </h3>
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <span>{product.brand.brandName}</span>
+                        <span>•</span>
+                        <span>{product.variant.variant_Name}</span>
                       </div>
                     </div>
+                    {hasInvalidHierarchy && (
+                      <div className="flex items-center gap-1 text-xs text-amber-700 font-medium">
+                        <AlertTriangle size={14} />
+                        <span>Invalid price order</span>
+                      </div>
+                    )}
                   </div>
-                ))}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  {preset.levels.map((level, levelIdx) => (
+                    <div
+                      key={levelIdx}
+                      className="flex items-center justify-between gap-3"
+                    >
+                      <label className="text-sm font-medium min-w-20">
+                        {level.uoM_Name}
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({level.conversion_Factor}x)
+                        </span>
+                      </label>
+                      <div className="flex items-center gap-2 flex-1 max-w-[200px]">
+                        <div className="flex items-center border rounded-md overflow-hidden bg-white flex-1">
+                          <div className="px-2 py-1.5 bg-gray-100 border-r">
+                            <PhilippinePeso
+                              width={14}
+                              className="text-gray-600"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="0.00"
+                            className="px-3 py-1.5 w-full outline-none text-sm"
+                            value={
+                              pricingData
+                                .get(product.product.product_ID)
+                                ?.get(level.uoM_Name) || ""
+                            }
+                            onChange={(e) =>
+                              handlePriceChange(
+                                product.product.product_ID,
+                                level.uoM_Name,
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="flex gap-3 pt-4 border-t">

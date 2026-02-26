@@ -46,11 +46,24 @@ export const SelectableProductCard = ({
               {product.variant.variant_Name}
             </span>
           </div>
-          {isAlreadyAssigned && isSelected && (
-            <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
-              <CheckIcon size={12} /> Currently assigned
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {isAlreadyAssigned && isSelected && (
+              <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
+                <CheckIcon size={12} /> Currently assigned
+              </span>
+            )}
+            {!product.isSetupComplete && (
+              <span className="text-xs text-red-600 font-medium flex items-center gap-1">
+                Incomplete Setup
+              </span>
+            )}
+            {product.isSetupComplete && (
+              <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                <CheckIcon size={12} />
+                Complete Setup
+              </span>
+            )}
+          </div>
         </div>
       </div>
       {/* <span className="text-xs text-saltbox-gray whitespace-nowrap">
