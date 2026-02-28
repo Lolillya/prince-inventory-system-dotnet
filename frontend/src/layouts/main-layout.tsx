@@ -9,7 +9,7 @@ const MainLayout = () => {
       <main>
         <Sidebar />
         <Outlet />
-        {/* <Toaster /> */}
+        <Toaster position="top-right" />
       </main>
     </ProtectedRoute>
   );
