@@ -58,7 +58,11 @@ interface EditProductFormProps {
   setIsEditProductModalOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+<<<<<<< HEAD
 export const EditProductForm = ({ selectedProduct, setIsEditProductModalOpen }: EditProductFormProps }: EditProductFormProps) => {
+=======
+export const EditProductForm = ({ selectedProduct, setIsEditProductModalOpen }: EditProductFormProps) => {
+>>>>>>> c4022793e6ee223d422c3011d0814868b5a255bf
   const {
     register,
     handleSubmit,
