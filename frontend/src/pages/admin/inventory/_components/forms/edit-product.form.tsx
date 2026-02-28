@@ -55,9 +55,14 @@ const schema = yup.object().shape({
 
 interface EditProductFormProps {
   selectedProduct: InventoryProductModel;
+  setIsEditProductModalOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
+<<<<<<< HEAD
+export const EditProductForm = ({ selectedProduct, setIsEditProductModalOpen }: EditProductFormProps }: EditProductFormProps) => {
+=======
+export const EditProductForm = ({ selectedProduct, setIsEditProductModalOpen }: EditProductFormProps) => {
+>>>>>>> c4022793e6ee223d422c3011d0814868b5a255bf
   const {
     register,
     handleSubmit,
@@ -82,7 +87,11 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
   const { data: productFields, isLoading: productFieldsLoading } =
     UseProductFieldsQuery();
 
-  const { mutate: editProduct, isPending } = useEditProductMutation();
+  const { mutate: editProduct, isPending } = useEditProductMutation(() => {
+    if (setIsEditProductModalOpen) {
+      setIsEditProductModalOpen(false);
+    }
+  });
 
   const onSubmit = (data: any) => {
     const payload: EditProductPayload = {
