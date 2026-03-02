@@ -124,7 +124,9 @@ export const SelectedProduct = ({
                                 className="flex items-center gap-2 text-sm"
                                 key={pidx}
                               >
-                                <label>100</label>
+                                {pp.uoM_ID === u.preset.main_Unit_ID && (
+                                  <label>{u.main_Unit_Quantity}</label>
+                                )}
                                 <span className="text-gray-600">
                                   {pp.unitName}
                                 </span>
