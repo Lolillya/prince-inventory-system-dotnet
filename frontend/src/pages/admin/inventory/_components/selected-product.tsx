@@ -12,7 +12,22 @@ export const SelectedProduct = ({
   product,
   handlePresetSelector,
 }: SelectedProductProps) => {
-  const [isBreakdownExpanded, setIsBreakdownExpanded] = useState(false);
+  const [expandedBreakdowns, setExpandedBreakdowns] = useState<Set<number>>(
+    new Set(),
+  );
+
+  const toggleBreakdown = (index: number) => {
+    setExpandedBreakdowns((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+
   console.log(product);
   return (
     <div className="w-full flex flex-col gap-3">
@@ -59,7 +74,7 @@ export const SelectedProduct = ({
         <Separator orientation="horizontal" />
 
         <div className="rounded-lg border inset-shadow-sm p-1 h-full">
-          <div className="flex gap-2 bg-wash-gray p-2 rounded-lg shadow-sm flex-col">
+          <div className="flex gap-2 bg-wash-gray p-2 rounded-lg shadow-sm flex-col overflow-y-scroll">
             {product.unitPresets.length === 0 ? (
               <span className="text-sm font-semibold">
                 No associated unit preset.
@@ -102,40 +117,33 @@ export const SelectedProduct = ({
                         <label className="text-sm text-saltbox-gray font-semibold border-b pb-1 text-nowrap">
                           Batch Pricing
                         </label>
-                        {product.unitPresets.map((b, idx) => (
-                          <div
-                            key={idx}
-                            className="flex flex-col gap-2 rounded-lg"
-                          >
-                            <div className="flex flex-col gap-1">
-                              {b.presetPricing.map((pp, pidx) => (
-                                <div
-                                  className="flex items-center gap-2 text-sm"
-                                  key={pidx}
-                                >
-                                  <label>100</label>
-                                  <span className="text-gray-600">
-                                    {pp.unitName}
-                                  </span>
-                                  <div className="flex items-center gap-1">
-                                    {pp.price_Per_Unit ? (
-                                      <>
-                                        <PhilippinePeso width={12} />
-                                        <span className="font-semibold">
-                                          {pp.price_Per_Unit.toFixed(2)}
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <span className="text-gray-400">
-                                        0.00
+                        <div className="flex flex-col gap-2 rounded-lg overflow-y-hidden">
+                          <div className="flex flex-col gap-1">
+                            {u.presetPricing.map((pp, pidx) => (
+                              <div
+                                className="flex items-center gap-2 text-sm"
+                                key={pidx}
+                              >
+                                <label>100</label>
+                                <span className="text-gray-600">
+                                  {pp.unitName}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  {pp.price_Per_Unit ? (
+                                    <>
+                                      <PhilippinePeso width={12} />
+                                      <span className="font-semibold">
+                                        {pp.price_Per_Unit.toFixed(2)}
                                       </span>
-                                    )}
-                                  </div>
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400">0.00</span>
+                                  )}
                                 </div>
-                              ))}
-                            </div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -143,17 +151,15 @@ export const SelectedProduct = ({
                   <div className="flex flex-col border-t pt-3 mt-3">
                     <div
                       className="flex gap-2 items-center justify-center mb-3 cursor-pointer hover:bg-gray-50 rounded py-1"
-                      onClick={() =>
-                        setIsBreakdownExpanded(!isBreakdownExpanded)
-                      }
+                      onClick={() => toggleBreakdown(i)}
                     >
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform ${isBreakdownExpanded ? "rotate-180" : ""}`}
+                        className={`w-4 h-4 transition-transform ${expandedBreakdowns.has(i) ? "rotate-180" : ""}`}
                       />
                       <span className="text-sm font-semibold">Breakdown</span>
                     </div>
 
-                    {isBreakdownExpanded && (
+                    {expandedBreakdowns.has(i) && (
                       <div className="flex w-full justify-between px-2">
                         {/* Column 1: Restock Info */}
                         <div className="flex flex-col gap-3 min-w-[100px]">
@@ -182,22 +188,19 @@ export const SelectedProduct = ({
                             Original
                           </label>
                           <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold">100</span>
-                              <span className="text-sm text-gray-600">Box</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold">0</span>
-                              <span className="text-sm text-gray-600">
-                                Pack
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold">0</span>
-                              <span className="text-sm text-gray-600">
-                                Piece
-                              </span>
-                            </div>
+                            {u.preset.presetLevels.map((level, idx) => (
+                              <div
+                                className="flex items-center gap-2"
+                                key={idx}
+                              >
+                                <span className="text-sm font-semibold">
+                                  100
+                                </span>
+                                <span className="text-sm text-gray-600">
+                                  {level.unitOfMeasure.uom_Name}
+                                </span>
+                              </div>
+                            ))}
                           </div>
                         </div>
 
@@ -207,28 +210,19 @@ export const SelectedProduct = ({
                             Remaining
                           </label>
                           <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-green-600">
-                                85
-                              </span>
-                              <span className="text-sm text-gray-600">Box</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-green-600">
-                                3
-                              </span>
-                              <span className="text-sm text-gray-600">
-                                Pack
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-green-600">
-                                0
-                              </span>
-                              <span className="text-sm text-gray-600">
-                                Piece
-                              </span>
-                            </div>
+                            {u.preset.presetLevels.map((level, idx) => (
+                              <div
+                                className="flex items-center gap-2"
+                                key={idx}
+                              >
+                                <span className="text-sm font-semibold text-green-600">
+                                  85
+                                </span>
+                                <span className="text-sm text-gray-600">
+                                  {level.unitOfMeasure.uom_Name}
+                                </span>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>
