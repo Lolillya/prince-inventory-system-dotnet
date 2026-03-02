@@ -67,6 +67,23 @@ namespace backend.Controller.UnitPreset
                     await _db.Product_Unit_Presets.AddAsync(assignment);
                     await _db.SaveChangesAsync(); // Save to get the Product_Preset_ID
 
+                    // Create quantity records for each preset level (default to 0)
+                    foreach (var presetLevel in preset.PresetLevels)
+                    {
+                        var quantity = new Product_Unit_Preset_Quantity
+                        {
+                            Product_Preset_ID = assignment.Product_Preset_ID,
+                            Level = presetLevel.Level,
+                            UOM_ID = presetLevel.UOM_ID,
+                            Original_Quantity = 0,
+                            Remaining_Quantity = 0,
+                            Created_At = DateTime.UtcNow,
+                            Updated_At = DateTime.UtcNow
+                        };
+
+                        await _db.Product_Unit_Preset_Quantities.AddAsync(quantity);
+                    }
+
                     // Save pricing data if provided
                     if (dto.PricingData != null && dto.PricingData.Any())
                     {

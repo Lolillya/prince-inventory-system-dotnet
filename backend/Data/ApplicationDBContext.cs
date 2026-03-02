@@ -35,6 +35,7 @@ namespace backend.Data
         public DbSet<Unit_Preset_Level> Unit_Preset_Levels { get; set; }
         public DbSet<Product_Unit_Preset> Product_Unit_Presets { get; set; }
         public DbSet<Product_Unit_Preset_Pricing> Product_Unit_Preset_Pricing { get; set; }
+        public DbSet<Product_Unit_Preset_Quantity> Product_Unit_Preset_Quantities { get; set; }
         public DbSet<DeletedUsers> DeletedUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -267,7 +268,7 @@ namespace backend.Data
                 entity.HasOne(pup => pup.Product)
                     .WithMany()
                     .HasForeignKey(pup => pup.Product_ID)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(pup => pup.Preset)
                     .WithMany(up => up.ProductPresets)
@@ -277,6 +278,11 @@ namespace backend.Data
                 entity.HasMany(pup => pup.PresetPricing)
                     .WithOne(pp => pp.ProductUnitPreset)
                     .HasForeignKey(pp => pp.Product_Preset_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(pup => pup.PresetQuantities)
+                    .WithOne(pq => pq.ProductUnitPreset)
+                    .HasForeignKey(pq => pq.Product_Preset_ID)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -292,6 +298,21 @@ namespace backend.Data
                 entity.HasOne(pp => pp.UnitOfMeasure)
                     .WithMany()
                     .HasForeignKey(pp => pp.UOM_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<Product_Unit_Preset_Quantity>(entity =>
+            {
+                entity.ToTable("Product_Unit_Preset_Quantities");
+
+                entity.HasOne(pq => pq.ProductUnitPreset)
+                    .WithMany(pup => pup.PresetQuantities)
+                    .HasForeignKey(pq => pq.Product_Preset_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pq => pq.UnitOfMeasure)
+                    .WithMany()
+                    .HasForeignKey(pq => pq.UOM_ID)
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
