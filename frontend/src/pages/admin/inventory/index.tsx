@@ -58,6 +58,11 @@ const InventoryPage = () => {
     setIsPresetSelectorOpen(!isPresetSelectorOpen);
   };
 
+  const handleAddPackagingPreset = () => {
+    setIsPresetEditorOpen(true);
+    setIsEditProductModalOpen(false);
+  };
+
   // Filter inventory based on search query
   const filteredInventory = inventory?.filter((item) => {
     const query = searchQuery.toLowerCase();
@@ -110,6 +115,7 @@ const InventoryPage = () => {
         <EditProductModal
           setIsEditProductModalOpen={setIsEditProductModalOpen}
           selectedProduct={selectedProduct}
+          handleAddPackagingPreset={handleAddPackagingPreset}
         />
       )}
       {/* HEADER */}

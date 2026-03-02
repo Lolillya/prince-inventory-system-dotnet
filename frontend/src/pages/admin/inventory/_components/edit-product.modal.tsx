@@ -5,9 +5,11 @@ import { EditProductForm } from "./forms/edit-product.form";
 interface EditProductModalProps {
   setIsEditProductModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedProduct: InventoryProductModel;
+  handleAddPackagingPreset: () => void;
 }
 
 export const EditProductModal = ({
+  handleAddPackagingPreset,
   setIsEditProductModalOpen,
   selectedProduct,
 }: EditProductModalProps) => {
@@ -29,7 +31,10 @@ export const EditProductModal = ({
           </div>
         </div>
 
-        <EditProductForm selectedProduct={selectedProduct} />
+        <EditProductForm
+          selectedProduct={selectedProduct}
+          handleAddPackagingPreset={handleAddPackagingPreset}
+        />
       </div>
     </div>
   );

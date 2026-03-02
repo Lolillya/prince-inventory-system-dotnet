@@ -207,7 +207,6 @@ export const ProductUnitPresetModal = ({
               </div>
 
               {/* TABLE BODY */}
-
               <div className="flex flex-col gap-2 flex-1">
                 {unitPresets?.map((p, i) => (
                   <UnitPresetCard
