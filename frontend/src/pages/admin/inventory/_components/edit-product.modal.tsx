@@ -39,7 +39,7 @@ export const EditProductModal = ({
           </div>
         </div>
 
-        <EditProductForm selectedProduct={selectedProduct} setIsEditProductModalOpen={setIsEditProductModalOpen} />
+        <EditProductForm selectedProduct={selectedProduct} />
       </div>
     </div>
   );
