@@ -252,25 +252,35 @@ export const ProductUnitPresetModal = ({
 
             <div className="flex flex-col overflow-y-scroll gap-3 border p-3 rounded-lg inset-shadow-sm flex-1 min-h-0">
               {/* PRODUCT SELECTOR FORM */}
-              {products?.map((data, index) => {
-                const isAlreadyAssigned = alreadyAssignedProductIds.includes(
-                  data.product.product_ID,
-                );
-                const isSelected =
-                  selectedState?.selectedProductIds.includes(
-                    data.product.product_ID,
-                  ) || false;
+              {products
+                ?.sort((a, b) => {
+                  // Products with no presets come first
+                  const aHasNoPresets = a.unitPresets.length === 0;
+                  const bHasNoPresets = b.unitPresets.length === 0;
 
-                return (
-                  <SelectableProductCard
-                    key={index}
-                    product={data}
-                    isSelected={isSelected}
-                    isAlreadyAssigned={isAlreadyAssigned}
-                    onToggle={toggleProductSelection}
-                  />
-                );
-              })}
+                  if (aHasNoPresets && !bHasNoPresets) return -1;
+                  if (!aHasNoPresets && bHasNoPresets) return 1;
+                  return 0;
+                })
+                .map((data, index) => {
+                  const isAlreadyAssigned = alreadyAssignedProductIds.includes(
+                    data.product.product_ID,
+                  );
+                  const isSelected =
+                    selectedState?.selectedProductIds.includes(
+                      data.product.product_ID,
+                    ) || false;
+
+                  return (
+                    <SelectableProductCard
+                      key={index}
+                      product={data}
+                      isSelected={isSelected}
+                      isAlreadyAssigned={isAlreadyAssigned}
+                      onToggle={toggleProductSelection}
+                    />
+                  );
+                })}
             </div>
           </div>
 
