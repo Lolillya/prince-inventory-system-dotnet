@@ -22,12 +22,18 @@ import { PresetSelectorModal } from "./_components/preset-selector.modal";
 import { PackageOpen } from "lucide-react";
 
 const InventoryPage = () => {
-  const { data: inventory, isLoading, error } = UseInventoryQuery();
+  const {
+    data: inventory,
+    isLoading,
+    error,
+    refetch: refetchInventory,
+  } = UseInventoryQuery();
   const { data: selectedProduct } = useSelectedProductQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
   const [isPresetEditorOpen, setIsPresetEditorOpen] = useState(false);
   const [isPresetSelectorOpen, setIsPresetSelectorOpen] = useState(false);
+  const [isFromEditModal, setIsFromEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const setSelectedProduct = useSetSelectedProduct();
 
@@ -36,10 +42,32 @@ const InventoryPage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const handlePresetEditor = () => {
-    setIsPresetEditorOpen(!isPresetEditorOpen);
-    setIsModalOpen(false);
-    setIsEditProductModalOpen(false);
+  const handlePresetEditor = async () => {
+    if (isPresetEditorOpen && isFromEditModal) {
+      // Closing preset editor from edit modal flow - reopen edit modal and refresh data
+      const { data: freshData } = await refetchInventory();
+
+      // Update the selected product with fresh data
+      if (selectedProduct && freshData) {
+        const updatedProduct = freshData.find(
+          (item) =>
+            item.product.product_ID === selectedProduct.product.product_ID,
+        );
+        if (updatedProduct) {
+          setSelectedProduct(updatedProduct);
+        }
+      }
+
+      setIsPresetEditorOpen(false);
+      setIsEditProductModalOpen(true);
+      setIsFromEditModal(false);
+    } else {
+      // Normal toggle behavior
+      setIsPresetEditorOpen(!isPresetEditorOpen);
+      setIsModalOpen(false);
+      setIsEditProductModalOpen(false);
+      setIsFromEditModal(false);
+    }
   };
 
   const handleClick = (product: InventoryProductModel) => {
@@ -59,6 +87,7 @@ const InventoryPage = () => {
   };
 
   const handleAddPackagingPreset = () => {
+    setIsFromEditModal(true);
     setIsPresetEditorOpen(true);
     setIsEditProductModalOpen(false);
   };
