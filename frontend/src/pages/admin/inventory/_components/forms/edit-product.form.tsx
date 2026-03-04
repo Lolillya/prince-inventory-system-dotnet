@@ -14,19 +14,19 @@ const schema = yup.object().shape({
   brand_ID: yup
     .number()
     .transform((value, originalValue) =>
-      String(originalValue).trim() === "" ? undefined : value,
+      String(originalValue).trim() === "" ? undefined : value
     )
     .required("Brand is required"),
   category_Id: yup
     .number()
     .transform((value, originalValue) =>
-      String(originalValue).trim() === "" ? undefined : value,
+      String(originalValue).trim() === "" ? undefined : value
     )
     .required("Category is required"),
   variant_Id: yup
     .number()
     .transform((value, originalValue) =>
-      String(originalValue).trim() === "" ? undefined : value,
+      String(originalValue).trim() === "" ? undefined : value
     )
     .required("Variant is required"),
   unitPresets: yup.array().of(
@@ -34,7 +34,7 @@ const schema = yup.object().shape({
       low_Stock_Level: yup
         .number()
         .transform((value, originalValue) =>
-          String(originalValue).trim() === "" ? undefined : value,
+          String(originalValue).trim() === "" ? undefined : value
         )
         .typeError("Must be a number")
         .positive("Must be a positive number")
@@ -43,24 +43,24 @@ const schema = yup.object().shape({
       very_Low_Stock_Level: yup
         .number()
         .transform((value, originalValue) =>
-          String(originalValue).trim() === "" ? undefined : value,
+          String(originalValue).trim() === "" ? undefined : value
         )
         .typeError("Must be a number")
         .positive("Must be a positive number")
         .integer("Must be a whole number")
         .required("Very low stock level is required"),
-    }),
+    })
   ),
 });
 
 interface EditProductFormProps {
   selectedProduct: InventoryProductModel;
-  setIsEditProductModalOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  onEditSuccess: () => void;
 }
 
 export const EditProductForm = ({
   selectedProduct,
-  setIsEditProductModalOpen,
+  onEditSuccess,
 }: EditProductFormProps) => {
   const {
     register,
@@ -86,11 +86,7 @@ export const EditProductForm = ({
   const { data: productFields, isLoading: productFieldsLoading } =
     UseProductFieldsQuery();
 
-  const { mutate: editProduct, isPending } = useEditProductMutation(() => {
-    if (setIsEditProductModalOpen) {
-      setIsEditProductModalOpen(false);
-    }
-  });
+  const { mutate: editProduct, isPending } = useEditProductMutation();
 
   const onSubmit = (data: any) => {
     const payload: EditProductPayload = {
@@ -108,7 +104,11 @@ export const EditProductForm = ({
     };
 
     console.log("Submitting Edit Product Payload:", payload);
-    editProduct(payload);
+    editProduct(payload, {
+      onSuccess: () => {
+        onEditSuccess();
+      },
+    });
   };
 
   console.log("Selected Product in Edit Form:", selectedProduct.unitPresets);
