@@ -7,7 +7,6 @@ import {
 } from "@/features/inventory/product-selected";
 import {
   EditIcon,
-  EllipsisIcon,
   FileDownIcon,
   FilterIcon,
   PlusIcon,
@@ -18,24 +17,27 @@ import { Activity, useState } from "react";
 import { AddProductModal } from "./add-product/_components/AddProductModal";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { EditProductModal } from "./_components/edit-product.modal";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
 import { PresetSelectorModal } from "./_components/preset-selector.modal";
-import { PackageIcon, PackageOpen } from "lucide-react";
+import { PackageOpen, Star } from "lucide-react";
+import {
+  AddProductAsFavoriteService,
+  RemoveProductFromFavoritesService,
+} from "@/features/inventory/favorites/add-product-as-favorite.service";
 
 const InventoryPage = () => {
-  const { data: inventory, isLoading, error } = UseInventoryQuery();
+  const {
+    data: inventory,
+    isLoading,
+    error,
+    refetch: refetchInventory,
+  } = UseInventoryQuery();
   const { data: selectedProduct } = useSelectedProductQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
   const [isPresetEditorOpen, setIsPresetEditorOpen] = useState(false);
   const [isPresetSelectorOpen, setIsPresetSelectorOpen] = useState(false);
+  const [isFromEditModal, setIsFromEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const setSelectedProduct = useSetSelectedProduct();
 
@@ -44,15 +46,39 @@ const InventoryPage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const handlePresetEditor = () => {
-    setIsPresetEditorOpen(!isPresetEditorOpen);
-    setIsModalOpen(false);
-    setIsEditProductModalOpen(false);
+  const handlePresetEditor = async () => {
+    if (isPresetEditorOpen && isFromEditModal) {
+      // Closing preset editor from edit modal flow - reopen edit modal and refresh data
+      const { data: freshData } = await refetchInventory();
+
+      // Update the selected product with fresh data
+      if (selectedProduct && freshData) {
+        const updatedProduct = freshData.find(
+          (item) =>
+            item.product.product_ID === selectedProduct.product.product_ID,
+        );
+        if (updatedProduct) {
+          setSelectedProduct(updatedProduct);
+        }
+      }
+
+      setIsPresetEditorOpen(false);
+      setIsEditProductModalOpen(true);
+      setIsFromEditModal(false);
+    } else {
+      // Normal toggle behavior
+      setIsPresetEditorOpen(!isPresetEditorOpen);
+      setIsModalOpen(false);
+      setIsEditProductModalOpen(false);
+      setIsFromEditModal(false);
+    }
   };
 
   const handleClick = (product: InventoryProductModel) => {
     setSelectedProduct(product);
   };
+
+  console.log(inventory);
 
   const handleEditProduct = () => {
     setIsEditProductModalOpen(!isEditProductModalOpen);
@@ -64,17 +90,45 @@ const InventoryPage = () => {
     setIsPresetSelectorOpen(!isPresetSelectorOpen);
   };
 
+  const handleAddPackagingPreset = () => {
+    setIsFromEditModal(true);
+    setIsPresetEditorOpen(true);
+    setIsEditProductModalOpen(false);
+  };
+
+  const handleSetAsFavorite = async (
+    e: React.MouseEvent,
+    productId: number,
+    isFavorited: boolean,
+  ) => {
+    e.stopPropagation(); // Prevent triggering the parent onClick
+
+    try {
+      if (isFavorited) {
+        await RemoveProductFromFavoritesService(productId);
+      } else {
+        await AddProductAsFavoriteService(productId);
+      }
+      // Refetch inventory to update the UI
+      await refetchInventory();
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
+
   // Filter inventory based on search query
-  const filteredInventory = inventory?.filter((item) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      item.product.product_Code.toLowerCase().includes(query) ||
-      item.product.product_Name.toLowerCase().includes(query) ||
-      item.brand.brandName.toLowerCase().includes(query) ||
-      item.variant.variant_Name.toLowerCase().includes(query) ||
-      item.category.category_Name.toLowerCase().includes(query)
-    );
-  });
+  const filteredInventory = inventory
+    ?.filter((item) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        item.product.product_Code.toLowerCase().includes(query) ||
+        item.product.product_Name.toLowerCase().includes(query) ||
+        item.brand.brandName.toLowerCase().includes(query) ||
+        item.variant.variant_Name.toLowerCase().includes(query) ||
+        item.category.category_Name.toLowerCase().includes(query)
+      );
+    })
+    .sort((a, b) => Number(b.isFavorited) - Number(a.isFavorited));
 
   // Check if product requires setup (incomplete or missing stock levels)
   const requiresSetup = (product: InventoryProductModel) => {
@@ -89,8 +143,6 @@ const InventoryPage = () => {
         preset.very_Low_Stock_Level === undefined,
     );
   };
-
-  console.log(filteredInventory);
 
   return (
     <section>
@@ -116,6 +168,7 @@ const InventoryPage = () => {
         <EditProductModal
           setIsEditProductModalOpen={setIsEditProductModalOpen}
           selectedProduct={selectedProduct}
+          handleAddPackagingPreset={handleAddPackagingPreset}
         />
       )}
       {/* HEADER */}
@@ -177,30 +230,13 @@ const InventoryPage = () => {
               <PackageOpen />
               <label className="cursor-pointer">Packaging Presets</label>
             </div>
-            {/* <DropdownMenu>
-              <DropdownMenuTrigger className="rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs flex items-center gap-2 cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"></DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={handlePresetEditor}
-                  >
-                    Packaging Presets
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu> */}
           </div>
 
           <div className="w-full overflow-y-scroll flex flex-col gap-2 p-2 inset-shadow-sm rounded-lg border">
             {filteredInventory?.map((data, index) => (
               <>
                 <div
-                  className={`flex justify-between p-2 rounded-lg transition-all duration-300 ${
-                    requiresSetup(data)
-                      ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
-                      : "hover:bg-accent"
-                  }`}
+                  className={`flex justify-between ${data.isFavorited ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30" : "hover:bg-accent"} p-2 rounded-lg transition-all duration-300`}
                   key={index}
                   onClick={() => handleClick(data)}
                 >
@@ -218,11 +254,27 @@ const InventoryPage = () => {
                       {data.variant.variant_Name}
                     </span>
                   </div>
-                  <div
-                    onClick={handleEditProduct}
-                    className="cursor-pointer hover:bg-accent p-2 rounded-lg duration-300 transition-all"
-                  >
-                    <EditIcon />
+                  <div className="flex items-center gap-2 ">
+                    <div
+                      onClick={(e) =>
+                        handleSetAsFavorite(
+                          e,
+                          data.product.product_ID,
+                          data.isFavorited,
+                        )
+                      }
+                      className={`cursor-pointer hover:bg-amber-200 hover:text-amber-400 p-2 rounded-lg duration-300 transition-all ${data.isFavorited ? "text-yellow-400" : "text-gray-400"}`}
+                    >
+                      <Star
+                        className={data.isFavorited ? "fill-yellow-400" : ""}
+                      />
+                    </div>
+                    <div
+                      onClick={handleEditProduct}
+                      className="cursor-pointer hover:bg-accent p-2 rounded-lg duration-300 transition-all"
+                    >
+                      <EditIcon />
+                    </div>
                   </div>
                 </div>
                 <Separator />

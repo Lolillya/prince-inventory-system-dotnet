@@ -1,5 +1,5 @@
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
-import { CheckIcon } from "lucide-react";
+import { AlertCircle, CheckIcon } from "lucide-react";
 
 interface SelectableProductCardProps {
   product: InventoryProductModel;
@@ -18,10 +18,16 @@ export const SelectableProductCard = ({
     onToggle(product.product.product_ID);
   };
 
+  const hasNoPresets = product.unitPresets.length === 0;
+
   return (
     <div
       className={`flex justify-between items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
-        isSelected ? "bg-blue-50 border-blue-300" : "bg-white hover:bg-gray-50"
+        hasNoPresets
+          ? "border-amber-300 bg-amber-50"
+          : isSelected
+            ? "bg-blue-50 border-blue-300"
+            : "bg-white hover:bg-gray-50"
       }`}
       onClick={handleClick}
     >
@@ -46,11 +52,29 @@ export const SelectableProductCard = ({
               {product.variant.variant_Name}
             </span>
           </div>
-          {isAlreadyAssigned && isSelected && (
-            <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
-              <CheckIcon size={12} /> Currently assigned
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {hasNoPresets && (
+              <span className="text-xs text-amber-700 font-medium flex items-center gap-1">
+                <AlertCircle size={12} /> Needs preset assignment
+              </span>
+            )}
+            {isAlreadyAssigned && isSelected && !hasNoPresets && (
+              <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
+                <CheckIcon size={12} /> Currently assigned
+              </span>
+            )}
+            {!product.isComplete && !hasNoPresets && (
+              <span className="text-xs text-red-600 font-medium flex items-center gap-1">
+                Incomplete Setup
+              </span>
+            )}
+            {product.isComplete && !hasNoPresets && !isAlreadyAssigned && (
+              <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                <CheckIcon size={12} />
+                Complete Setup
+              </span>
+            )}
+          </div>
         </div>
       </div>
       {/* <span className="text-xs text-saltbox-gray whitespace-nowrap">

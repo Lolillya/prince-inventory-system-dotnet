@@ -13,6 +13,8 @@ export type InventoryProductModel = {
   category: category;
   unitPresets: UnitPresets[];
   isComplete: boolean;
+  isFavorited: boolean;
+  isSetupComplete: boolean;
   restockInfo: RestockInfo[];
 };
 
@@ -44,6 +46,8 @@ type UnitPresets = {
   product_Preset_ID: number;
   low_Stock_Level?: number;
   very_Low_Stock_Level?: number;
+  main_Unit_Quantity?: number;
+  presetPricing: PresetPricing[];
 };
 
 type Preset = {
@@ -70,6 +74,7 @@ type UnitOfMeasure = {
 };
 
 type RestockInfo = {
+  lineItemId: number;
   restockId: number;
   restockNumber: string;
   clerk: {
@@ -85,6 +90,8 @@ type RestockInfo = {
     lastName: string;
     companyName: string;
   };
+  presetId: number;
+  presetName: string;
   base_Unit_Price: number;
   base_Unit_Quantity: number;
   presetPricing: PresetPricing[];

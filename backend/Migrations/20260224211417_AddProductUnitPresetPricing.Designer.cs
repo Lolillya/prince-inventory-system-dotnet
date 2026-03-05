@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260224211417_AddProductUnitPresetPricing")]
+    partial class AddProductUnitPresetPricing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1416,9 +1419,6 @@ namespace backend.Migrations
                     b.Property<int?>("Low_Stock_Level")
                         .HasColumnType("int");
 
-                    b.Property<int>("Main_Unit_Quantity")
-                        .HasColumnType("int");
-
                     b.Property<int>("Preset_ID")
                         .HasColumnType("int");
 
@@ -1475,44 +1475,6 @@ namespace backend.Migrations
                     b.HasIndex("UOM_ID");
 
                     b.ToTable("Product_Unit_Preset_Pricing", (string)null);
-                });
-
-            modelBuilder.Entity("backend.Models.Unit.Product_Unit_Preset_Quantity", b =>
-                {
-                    b.Property<int>("Quantity_ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Quantity_ID"));
-
-                    b.Property<DateTime>("Created_At")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Original_Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Product_Preset_ID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Remaining_Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UOM_ID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Updated_At")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Quantity_ID");
-
-                    b.HasIndex("Product_Preset_ID");
-
-                    b.HasIndex("UOM_ID");
-
-                    b.ToTable("Product_Unit_Preset_Quantities", (string)null);
                 });
 
             modelBuilder.Entity("backend.Models.Unit.UnitOfMeasure", b =>
@@ -1729,34 +1691,6 @@ namespace backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DeletedUsers");
-                });
-
-            modelBuilder.Entity("backend.Models.Users.UserInventoryFavorites", b =>
-                {
-                    b.Property<int>("Favorite_ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Favorite_ID"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Product_ID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("User_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Favorite_ID");
-
-                    b.HasIndex("Product_ID");
-
-                    b.HasIndex("User_ID", "Product_ID")
-                        .IsUnique();
-
-                    b.ToTable("UserInventoryFavorites", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -2022,7 +1956,7 @@ namespace backend.Migrations
                     b.HasOne("backend.Models.Inventory.Product", "Product")
                         .WithMany()
                         .HasForeignKey("Product_ID")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("backend.Models.Inventory.Product", null)
@@ -2038,25 +1972,6 @@ namespace backend.Migrations
                 {
                     b.HasOne("backend.Models.Unit.Product_Unit_Preset", "ProductUnitPreset")
                         .WithMany("PresetPricing")
-                        .HasForeignKey("Product_Preset_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.Unit.UnitOfMeasure", "UnitOfMeasure")
-                        .WithMany()
-                        .HasForeignKey("UOM_ID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("ProductUnitPreset");
-
-                    b.Navigation("UnitOfMeasure");
-                });
-
-            modelBuilder.Entity("backend.Models.Unit.Product_Unit_Preset_Quantity", b =>
-                {
-                    b.HasOne("backend.Models.Unit.Product_Unit_Preset", "ProductUnitPreset")
-                        .WithMany("PresetQuantities")
                         .HasForeignKey("Product_Preset_ID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2102,25 +2017,6 @@ namespace backend.Migrations
                     b.Navigation("UnitOfMeasure");
                 });
 
-            modelBuilder.Entity("backend.Models.Users.UserInventoryFavorites", b =>
-                {
-                    b.HasOne("backend.Models.Inventory.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("Product_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.PersonalDetails", "User")
-                        .WithMany("FavoriteInventoryItems")
-                        .HasForeignKey("User_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("backend.Models.Inventory.Product", b =>
                 {
                     b.Navigation("ProductPresets");
@@ -2140,11 +2036,6 @@ namespace backend.Migrations
                     b.Navigation("ProductUOMs");
                 });
 
-            modelBuilder.Entity("backend.Models.PersonalDetails", b =>
-                {
-                    b.Navigation("FavoriteInventoryItems");
-                });
-
             modelBuilder.Entity("backend.Models.RestockModel.Restock", b =>
                 {
                     b.Navigation("RestockBatches");
@@ -2158,8 +2049,6 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.Unit.Product_Unit_Preset", b =>
                 {
                     b.Navigation("PresetPricing");
-
-                    b.Navigation("PresetQuantities");
                 });
 
             modelBuilder.Entity("backend.Models.Unit.Unit_Preset", b =>

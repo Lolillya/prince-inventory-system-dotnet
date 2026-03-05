@@ -7,9 +7,30 @@ export const UseInventoryQuery = () => {
     queryKey: ["inventory-products"],
     queryFn: async () => {
       const response = await GetInventory();
-      if (!response) throw new Error("Failded to fetch inventory");
-      // MODIFY LATER ANY AS DATA TYPE
-      return response.data as any;
+      if (!response) throw new Error("Failed to fetch inventory");
+      const inventoryData = response.data as unknown as InventoryProductModel[];
+
+      const processedData = inventoryData.map((product) => {
+        const hasUnitPresets =
+          product.unitPresets && product.unitPresets.length > 0;
+
+        let isSetupComplete = false;
+        if (hasUnitPresets) {
+          isSetupComplete = product.unitPresets.every(
+            (up) =>
+              up.presetPricing &&
+              up.presetPricing.length > 0 &&
+              up.presetPricing.every((pp) => pp.price_Per_Unit > 0),
+          );
+        }
+
+        return {
+          ...product,
+          isSetupComplete: isSetupComplete,
+        };
+      });
+
+      return processedData;
     },
     staleTime: 60 * 1000,
   });

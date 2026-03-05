@@ -17,6 +17,8 @@ namespace backend.Models.Unit
 
         public int? Very_Low_Stock_Level { get; set; } // Quantity in base unit for very low stock indicator (e.g., 20 boxes)
 
+        public int Main_Unit_Quantity { get; set; } // Total quantity in main/base unit (e.g., 100 boxes total)
+
         public DateTime Assigned_At { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
@@ -25,5 +27,9 @@ namespace backend.Models.Unit
 
         [ForeignKey("Preset_ID")]
         public Unit_Preset Preset { get; set; } = null!;
+
+        public ICollection<Product_Unit_Preset_Pricing> PresetPricing { get; set; } = new List<Product_Unit_Preset_Pricing>();
+
+        public ICollection<Product_Unit_Preset_Quantity> PresetQuantities { get; set; } = new List<Product_Unit_Preset_Quantity>();
     }
 }
