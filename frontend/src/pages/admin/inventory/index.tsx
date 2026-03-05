@@ -19,7 +19,11 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import { EditProductModal } from "./_components/edit-product.modal";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
 import { PresetSelectorModal } from "./_components/preset-selector.modal";
-import { PackageOpen } from "lucide-react";
+import { PackageOpen, Star } from "lucide-react";
+import {
+  AddProductAsFavoriteService,
+  RemoveProductFromFavoritesService,
+} from "@/features/inventory/favorites/add-product-as-favorite.service";
 
 const InventoryPage = () => {
   const {
@@ -92,17 +96,39 @@ const InventoryPage = () => {
     setIsEditProductModalOpen(false);
   };
 
+  const handleSetAsFavorite = async (
+    e: React.MouseEvent,
+    productId: number,
+    isFavorited: boolean,
+  ) => {
+    e.stopPropagation(); // Prevent triggering the parent onClick
+
+    try {
+      if (isFavorited) {
+        await RemoveProductFromFavoritesService(productId);
+      } else {
+        await AddProductAsFavoriteService(productId);
+      }
+      // Refetch inventory to update the UI
+      await refetchInventory();
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
+
   // Filter inventory based on search query
-  const filteredInventory = inventory?.filter((item) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      item.product.product_Code.toLowerCase().includes(query) ||
-      item.product.product_Name.toLowerCase().includes(query) ||
-      item.brand.brandName.toLowerCase().includes(query) ||
-      item.variant.variant_Name.toLowerCase().includes(query) ||
-      item.category.category_Name.toLowerCase().includes(query)
-    );
-  });
+  const filteredInventory = inventory
+    ?.filter((item) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        item.product.product_Code.toLowerCase().includes(query) ||
+        item.product.product_Name.toLowerCase().includes(query) ||
+        item.brand.brandName.toLowerCase().includes(query) ||
+        item.variant.variant_Name.toLowerCase().includes(query) ||
+        item.category.category_Name.toLowerCase().includes(query)
+      );
+    })
+    .sort((a, b) => Number(b.isFavorited) - Number(a.isFavorited));
 
   // Check if product requires setup (incomplete or missing stock levels)
   const requiresSetup = (product: InventoryProductModel) => {
@@ -117,8 +143,6 @@ const InventoryPage = () => {
         preset.very_Low_Stock_Level === undefined,
     );
   };
-
-  // console.log(filteredInventory);
 
   return (
     <section>
@@ -212,11 +236,7 @@ const InventoryPage = () => {
             {filteredInventory?.map((data, index) => (
               <>
                 <div
-                  className={`flex justify-between p-2 rounded-lg transition-all duration-300 ${
-                    requiresSetup(data)
-                      ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
-                      : "hover:bg-accent"
-                  }`}
+                  className={`flex justify-between ${data.isFavorited ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30" : "hover:bg-accent"} p-2 rounded-lg transition-all duration-300`}
                   key={index}
                   onClick={() => handleClick(data)}
                 >
@@ -234,11 +254,27 @@ const InventoryPage = () => {
                       {data.variant.variant_Name}
                     </span>
                   </div>
-                  <div
-                    onClick={handleEditProduct}
-                    className="cursor-pointer hover:bg-accent p-2 rounded-lg duration-300 transition-all"
-                  >
-                    <EditIcon />
+                  <div className="flex items-center gap-2 ">
+                    <div
+                      onClick={(e) =>
+                        handleSetAsFavorite(
+                          e,
+                          data.product.product_ID,
+                          data.isFavorited,
+                        )
+                      }
+                      className={`cursor-pointer hover:bg-amber-200 hover:text-amber-400 p-2 rounded-lg duration-300 transition-all ${data.isFavorited ? "text-yellow-400" : "text-gray-400"}`}
+                    >
+                      <Star
+                        className={data.isFavorited ? "fill-yellow-400" : ""}
+                      />
+                    </div>
+                    <div
+                      onClick={handleEditProduct}
+                      className="cursor-pointer hover:bg-accent p-2 rounded-lg duration-300 transition-all"
+                    >
+                      <EditIcon />
+                    </div>
                   </div>
                 </div>
                 <Separator />

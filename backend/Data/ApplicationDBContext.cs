@@ -37,6 +37,7 @@ namespace backend.Data
         public DbSet<Product_Unit_Preset_Pricing> Product_Unit_Preset_Pricing { get; set; }
         public DbSet<Product_Unit_Preset_Quantity> Product_Unit_Preset_Quantities { get; set; }
         public DbSet<DeletedUsers> DeletedUsers { get; set; }
+        public DbSet<UserInventoryFavorites> UserInventoryFavorites { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -314,6 +315,26 @@ namespace backend.Data
                     .WithMany()
                     .HasForeignKey(pq => pq.UOM_ID)
                     .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // UserInventoryFavorites Configuration
+            builder.Entity<UserInventoryFavorites>(entity =>
+            {
+                entity.ToTable("UserInventoryFavorites");
+
+                entity.HasOne(f => f.User)
+                    .WithMany(u => u.FavoriteInventoryItems)
+                    .HasForeignKey(f => f.User_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(f => f.Product)
+                    .WithMany()
+                    .HasForeignKey(f => f.Product_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Create a unique constraint to prevent duplicate favorites
+                entity.HasIndex(f => new { f.User_ID, f.Product_ID })
+                    .IsUnique();
             });
 
         }

@@ -13,6 +13,7 @@ export type InventoryProductModel = {
   category: category;
   unitPresets: UnitPresets[];
   isComplete: boolean;
+  isFavorited: boolean;
   isSetupComplete: boolean;
   restockInfo: RestockInfo[];
 };

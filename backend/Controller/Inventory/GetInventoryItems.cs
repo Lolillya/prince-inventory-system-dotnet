@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.Data;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend.Controller.Inventory
 {
@@ -21,6 +23,9 @@ namespace backend.Controller.Inventory
         {
             try
             {
+                // Get the current user's ID (null if not authenticated)
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
                 var results = await _db.Inventory
                     .Include(i => i.Product)
                         .ThenInclude(p => p.Variant)
@@ -149,7 +154,10 @@ namespace backend.Controller.Inventory
 
 
 
-                        IsComplete = _db.Product_Unit_Presets.Any(pup => pup.Product_ID == i.Product_ID)
+                        IsComplete = _db.Product_Unit_Presets.Any(pup => pup.Product_ID == i.Product_ID),
+
+                        IsFavorited = userId != null && _db.UserInventoryFavorites
+                            .Any(f => f.User_ID == userId && f.Product_ID == i.Product_ID)
                     }).ToListAsync();
 
                 if (results == null || !results.Any())
