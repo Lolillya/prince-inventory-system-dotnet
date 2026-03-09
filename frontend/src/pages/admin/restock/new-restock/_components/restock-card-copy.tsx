@@ -84,7 +84,7 @@ export const RestockCard2 = ({
     }
   }, [product]);
 
-  console.log(product);
+  // console.log(product);
 
   const selectedPreset = product.unitPresets?.find(
     (p) => p.preset_ID === selectedPresetId,
