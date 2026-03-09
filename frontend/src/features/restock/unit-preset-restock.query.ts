@@ -5,6 +5,7 @@ import {
 } from "./models/unit-preset-restock.model";
 import { unitPresetRestockService } from "./unit-preset-restock.service";
 import { toast } from "sonner";
+import { InventoryProductModel } from "../inventory/models/inventory.model";
 
 const UNIT_PRESET_RESTOCK_KEY = ["unit-preset-restock"];
 
@@ -12,7 +13,7 @@ const UNIT_PRESET_RESTOCK_KEY = ["unit-preset-restock"];
  * Hook to get the selected restock items
  */
 export const useUnitPresetRestockItems = () => {
-  return useQuery<UnitPresetRestockItem[]>({
+  return useQuery<InventoryProductModel[]>({
     queryKey: UNIT_PRESET_RESTOCK_KEY,
     queryFn: async () => {
       return [];
@@ -36,10 +37,10 @@ export const useUnitPresetRestock = () => {
       (old = []) => {
         // Check if product already exists
         const exists = old.some(
-          (item) => item.product.product_ID === product.product.product_ID
+          (item) => item.product.product_ID === product.product.product_ID,
         );
         return exists ? old : [...old, product];
-      }
+      },
     );
   };
 
@@ -51,7 +52,7 @@ export const useUnitPresetRestock = () => {
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
         return old.filter((item) => item.product.product_ID !== productId);
-      }
+      },
     );
   };
 
@@ -85,7 +86,7 @@ export const useUnitPresetRestock = () => {
             },
           };
         });
-      }
+      },
     );
   };
 
@@ -109,7 +110,7 @@ export const useUnitPresetRestock = () => {
             },
           };
         });
-      }
+      },
     );
   };
 
@@ -119,7 +120,7 @@ export const useUnitPresetRestock = () => {
   const updateLevelPricing = (
     productId: number,
     level: number,
-    price: number
+    price: number,
   ) => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
@@ -134,12 +135,12 @@ export const useUnitPresetRestock = () => {
             selectedPreset: {
               ...item.selectedPreset,
               levelPricing: item.selectedPreset.levelPricing.map((lp) =>
-                lp.level === level ? { ...lp, price_Per_Unit: price } : lp
+                lp.level === level ? { ...lp, price_Per_Unit: price } : lp,
               ),
             },
           };
         });
-      }
+      },
     );
   };
 
@@ -149,7 +150,7 @@ export const useUnitPresetRestock = () => {
   const clearAll = () => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
-      []
+      [],
     );
   };
 
@@ -170,12 +171,12 @@ export const useUnitPresetRestock = () => {
   } => {
     const items =
       queryClient.getQueryData<UnitPresetRestockItem[]>(
-        UNIT_PRESET_RESTOCK_KEY
+        UNIT_PRESET_RESTOCK_KEY,
       ) || [];
 
     console.log(
       "Items in state before getPayload:",
-      JSON.stringify(items, null, 2)
+      JSON.stringify(items, null, 2),
     );
 
     const lineItems = items
@@ -216,12 +217,12 @@ export const useCreateUnitPresetRestock = () => {
       unitPresetRestockService.create(payload),
     onSuccess: (data) => {
       toast.success(
-        `Restock created successfully! Restock Number: ${data.restock_Number}`
+        `Restock created successfully! Restock Number: ${data.restock_Number}`,
       );
       // Clear the restock items
       queryClient.setQueryData<UnitPresetRestockItem[]>(
         UNIT_PRESET_RESTOCK_KEY,
-        []
+        [],
       );
       // Invalidate inventory to refetch updated quantities
       queryClient.invalidateQueries({ queryKey: ["inventory"] });

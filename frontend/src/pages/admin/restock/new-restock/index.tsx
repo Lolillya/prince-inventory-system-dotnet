@@ -3,7 +3,7 @@ import { LeftArrowIcon, SearchIcon } from "@/icons";
 import { Activity, useState } from "react";
 import { CreateRestockModal } from "./_components/restock-modal";
 import { ProductCard } from "../_components/product-card";
-import { UseInventoryQuery } from "@/features/restock/inventory-batch";
+// import { UseInventoryQuery } from "@/features/restock/inventory-batch";
 import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
 import { RestockCard2 } from "./_components/restock-card-copy";
 import {
@@ -11,6 +11,8 @@ import {
   useUnitPresetRestock,
 } from "@/features/restock/unit-preset-restock.query";
 import { UnitPresetRestockItem } from "@/features/restock/models/unit-preset-restock.model";
+import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
@@ -26,11 +28,13 @@ const NewRestockPage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
+  console.log(inventoryData);
+
   const createRestock = () => {
     setIsModalOpen((prev) => !prev);
   };
 
-  const handleClick = (data: InventoryBatchesModel) => {
+  const handleClick = (data: InventoryProductModel) => {
     const restockItem: UnitPresetRestockItem = {
       product: {
         product_ID: data.product.product_ID,
