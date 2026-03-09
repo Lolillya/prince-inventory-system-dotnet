@@ -3,7 +3,7 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import { useUnitPresetRestock } from "@/features/restock/unit-preset-restock.query";
 import { XIcon } from "@/icons";
 import { PhilippinePeso } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface RestockCardProp {
   onClick?: () => void;
@@ -65,21 +65,24 @@ export const RestockCard2 = ({
   const [levelPrices, setLevelPrices] = useState<{ [level: number]: number }>(
     {},
   );
-  // const [dropdownOpen, setDropdownOpen] = useState(false);
-  // const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // useEffect(() => {
-  //   const handleClickOutside = (e: MouseEvent) => {
-  //     if (
-  //       dropdownRef.current &&
-  //       !dropdownRef.current.contains(e.target as Node)
-  //     ) {
-  //       setDropdownOpen(false);
-  //     }
-  //   };
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => document.removeEventListener("mousedown", handleClickOutside);
-  // }, []);
+  // Initialize state from product if it has selectedPreset
+  useEffect(() => {
+    const typedProduct = product as any;
+    if (typedProduct.selectedPreset) {
+      setSelectedPresetId(typedProduct.selectedPreset.preset_ID);
+      setMainQuantity(typedProduct.selectedPreset.main_Unit_Quantity || 0);
+
+      // Initialize level prices if they exist
+      if (typedProduct.selectedPreset.levelPricing) {
+        const prices: { [level: number]: number } = {};
+        typedProduct.selectedPreset.levelPricing.forEach((lp: any) => {
+          prices[lp.level] = lp.price_Per_Unit || 0;
+        });
+        setLevelPrices(prices);
+      }
+    }
+  }, [product]);
 
   console.log(product);
 
@@ -119,8 +122,27 @@ export const RestockCard2 = ({
     }
   };
 
+  const isCardComplete = selectedPresetId !== null && mainQuantity > 0;
+
   return (
-    <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
+    <div
+      className={`p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs relative ${
+        isCardComplete ? "border-green-500" : "border-gray-300"
+      }`}
+    >
+      {/* Completion Badge */}
+      <div className="absolute -top-1 ">
+        {isCardComplete ? (
+          <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+            Ready
+          </div>
+        ) : (
+          <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+            Incomplete
+          </div>
+        )}
+      </div>
+
       <div className="flex gap-2 items-center text-xs justify-between">
         <div>
           <span>{product.product.product_Name}</span>
