@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { EditProductUnitCard } from "./_components/edit-product-unit-card";
 import { useEditProductMutation } from "@/features/inventory/edit-product/edit-product.mutation";
 import { EditProductPayload } from "@/features/inventory/edit-product/edit-product-payload.model";
+import { Plus } from "lucide-react";
 
 const schema = yup.object().shape({
   productName: yup.string().required("Product name is required"),
@@ -14,19 +15,19 @@ const schema = yup.object().shape({
   brand_ID: yup
     .number()
     .transform((value, originalValue) =>
-      String(originalValue).trim() === "" ? undefined : value
+      String(originalValue).trim() === "" ? undefined : value,
     )
     .required("Brand is required"),
   category_Id: yup
     .number()
     .transform((value, originalValue) =>
-      String(originalValue).trim() === "" ? undefined : value
+      String(originalValue).trim() === "" ? undefined : value,
     )
     .required("Category is required"),
   variant_Id: yup
     .number()
     .transform((value, originalValue) =>
-      String(originalValue).trim() === "" ? undefined : value
+      String(originalValue).trim() === "" ? undefined : value,
     )
     .required("Variant is required"),
   unitPresets: yup.array().of(
@@ -34,7 +35,7 @@ const schema = yup.object().shape({
       low_Stock_Level: yup
         .number()
         .transform((value, originalValue) =>
-          String(originalValue).trim() === "" ? undefined : value
+          String(originalValue).trim() === "" ? undefined : value,
         )
         .typeError("Must be a number")
         .positive("Must be a positive number")
@@ -43,21 +44,27 @@ const schema = yup.object().shape({
       very_Low_Stock_Level: yup
         .number()
         .transform((value, originalValue) =>
-          String(originalValue).trim() === "" ? undefined : value
+          String(originalValue).trim() === "" ? undefined : value,
         )
         .typeError("Must be a number")
         .positive("Must be a positive number")
         .integer("Must be a whole number")
         .required("Very low stock level is required"),
-    })
+    }),
   ),
 });
 
 interface EditProductFormProps {
   selectedProduct: InventoryProductModel;
+  onEditSuccess: () => void;
+  handleAddPackagingPreset: () => void;
 }
 
-export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
+export const EditProductForm = ({
+  selectedProduct,
+  onEditSuccess,
+  handleAddPackagingPreset,
+}: EditProductFormProps) => {
   const {
     register,
     handleSubmit,
@@ -100,10 +107,12 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
     };
 
     console.log("Submitting Edit Product Payload:", payload);
-    editProduct(payload);
+    editProduct(payload, {
+      onSuccess: () => {
+        onEditSuccess();
+      },
+    });
   };
-
-  console.log("Selected Product in Edit Form:", selectedProduct.unitPresets);
 
   return (
     <form
@@ -268,6 +277,15 @@ export const EditProductForm = ({ selectedProduct }: EditProductFormProps) => {
               />
             ))
           )}
+          <div
+            className="px-2 py-4 rounded-lg border border-border bg-custom-gray-lighter inset-shadow-sm flex items-center justify-center cursor-pointer"
+            onClick={handleAddPackagingPreset}
+          >
+            <label className="text-gray-400 text-sm tracking-wider font-semibold text-center flex gap-2 items-center cursor-pointer">
+              <Plus size={18} />
+              Add Another Packaging Preset to this Product
+            </label>
+          </div>
         </div>
       </div>
 

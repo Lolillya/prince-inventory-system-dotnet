@@ -12,5 +12,6 @@ export const editProductService = async (payload: EditProductPayload) => {
     return data;
   } catch (err) {
     handleError(err);
+    throw err;
   }
 };

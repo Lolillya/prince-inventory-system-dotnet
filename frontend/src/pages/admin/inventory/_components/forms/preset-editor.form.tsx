@@ -10,6 +10,7 @@ import { useState } from "react";
 
 interface PresetEditorFormProps {
   handleCancelAddPreset: () => void;
+  onOpenAddUnitModal: () => void;
 }
 
 const schema = yup.object().shape({
@@ -62,6 +63,7 @@ const schema = yup.object().shape({
 
 export const PresetEditorForm = ({
   handleCancelAddPreset,
+  onOpenAddUnitModal,
 }: PresetEditorFormProps) => {
   const {
     register,
@@ -219,6 +221,19 @@ export const PresetEditorForm = ({
         </div>
 
         <Separator />
+
+        <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
+          <span className="text-xs text-gray-600">
+            Need a new unit that's not in the list?
+          </span>
+          <button
+            type="button"
+            onClick={onOpenAddUnitModal}
+            className="text-xs font-semibold"
+          >
+            + Add New Unit
+          </button>
+        </div>
 
         {(errors.conversion2?.message ||
           (conversionCount < 2 && conversionCount > 0)) && (

@@ -9,10 +9,10 @@ export const useEditProductMutation = () => {
   return useMutation({
     mutationFn: (payload: EditProductPayload) => editProductService(payload),
     onSuccess: () => {
-      toast.success("Product updated successfully!");
+      toast.success("Product updated successfully!", { duration: 2000 });
       // Invalidate inventory query to refetch the updated data
-      queryClient.invalidateQueries({ queryKey: ["inventory"] });
-      queryClient.invalidateQueries({ queryKey: ["selected-product"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-products"] });
+      queryClient.invalidateQueries({ queryKey: ["product-selected"] });
     },
     onError: (error) => {
       toast.error("Failed to update product");

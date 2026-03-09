@@ -7,7 +7,7 @@ export const UseInventoryQuery = () => {
     queryKey: ["inventory-batches"],
     queryFn: async () => {
       const response = await GetInventory();
-      if (!response) throw new Error("Failded to fetch inventory");
+      if (!response) throw new Error("Failed to fetch inventory");
       return response.data as any;
     },
     staleTime: 60 * 1000,

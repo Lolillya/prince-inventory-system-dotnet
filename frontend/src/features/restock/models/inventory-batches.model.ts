@@ -4,6 +4,7 @@ export type InventoryBatchesModel = {
     product_Code: string;
     product_Name: string;
     description: string;
+    quantity: number;
     createdAt: string;
     updatedAt: string;
   };
@@ -11,6 +12,7 @@ export type InventoryBatchesModel = {
   variant: variant;
   category: category;
   unitPresets: UnitPresets[];
+  restockInfo: RestockInfo[];
   isComplete: boolean;
 };
 
@@ -42,6 +44,7 @@ type UnitPresets = {
   product_Preset_ID: number;
   low_Stock_Level?: number;
   very_Low_Stock_Level?: number;
+  presetPricing: PresetPricing[];
 };
 
 type Preset = {
@@ -73,22 +76,32 @@ type UnitOfMeasure = {
   abbreviation: string;
 };
 
-// type RestockInfo = {
-//   restockId: number;
-//   restockNumber: string;
-//   clerk: {
-//     id: string;
-//     firstName: string;
-//     lastName: string;
-//   };
-//   batchId: number;
-//   batchNumber: number;
-//   supplier: {
-//     id: string;
-//     firstName: string;
-//     lastName: string;
-//     companyName: string;
-//   };
-//   base_Unit_Price: number;
-//   base_Unit_Quantity: number;
-// };
+type RestockInfo = {
+  restockId: number;
+  restockNumber: string;
+  clerk: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  batchId: number;
+  batchNumber: number;
+  supplier: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    companyName: string;
+  };
+  base_Unit_Price: number;
+  base_Unit_Quantity: number;
+  presetPricing: PresetPricing[];
+};
+
+type PresetPricing = {
+  pricing_ID: number;
+  level: number;
+  uoM_ID: number;
+  unitName: string;
+  price_Per_Unit: number;
+  created_At: string;
+};
