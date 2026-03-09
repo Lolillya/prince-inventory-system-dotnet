@@ -28,35 +28,43 @@ const NewRestockPage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  console.log(inventoryData);
+  // console.log(inventoryData);
 
   const createRestock = () => {
     setIsModalOpen((prev) => !prev);
   };
 
   const handleClick = (data: InventoryProductModel) => {
-    const restockItem: UnitPresetRestockItem = {
+    const restockItem: InventoryProductModel = {
       product: {
         product_ID: data.product.product_ID,
         product_Code: data.product.product_Code,
         product_Name: data.product.product_Name,
-        desc: data.product.description,
-        brand_ID: data.brand.brand_ID,
-        category_ID: data.category.category_ID,
-        created_At: data.product.createdAt,
-        updated_At: data.product.updatedAt,
+        description: data.product.description,
+        // brandId: data.brand.brand_ID,
+        // categoryID: data.category.category_ID,
+        createdAt: data.product.createdAt,
+        updatedAt: data.product.updatedAt,
+        quantity: data.product.quantity,
       },
       variant: {
+        variant_ID: data.variant.variant_ID,
         variant_Name: data.variant.variant_Name,
-        created_At: data.variant.createdAt,
-        updated_At: data.variant.updatedAt,
+        createdAt: data.variant.createdAt,
+        updatedAt: data.variant.updatedAt,
       },
       brand: {
-        brand_Name: data.brand.brandName,
-        created_At: data.brand.createdAt,
-        updated_At: data.brand.updatedAt,
+        brand_ID: data.brand.brand_ID,
+        brandName: data.brand.brandName,
+        createdAt: data.brand.createdAt,
+        updatedAt: data.brand.updatedAt,
       },
+      category: data.category,
       unitPresets: (data.unitPresets as any) || [],
+      isComplete: data.isComplete,
+      isFavorited: data.isFavorited,
+      isSetupComplete: data.isSetupComplete,
+      restockInfo: data.restockInfo,
     };
     addProduct(restockItem);
   };

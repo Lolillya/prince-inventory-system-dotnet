@@ -31,8 +31,8 @@ export const useUnitPresetRestock = () => {
   /**
    * Add product to restock list
    */
-  const addProduct = (product: UnitPresetRestockItem) => {
-    queryClient.setQueryData<UnitPresetRestockItem[]>(
+  const addProduct = (product: InventoryProductModel) => {
+    queryClient.setQueryData<InventoryProductModel[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
         // Check if product already exists

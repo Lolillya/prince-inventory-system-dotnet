@@ -3,7 +3,7 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import { useUnitPresetRestock } from "@/features/restock/unit-preset-restock.query";
 import { XIcon } from "@/icons";
 import { PhilippinePeso } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface RestockCardProp {
   onClick?: () => void;
@@ -81,12 +81,30 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
   const [levelPrices, setLevelPrices] = useState<{ [level: number]: number }>(
     {},
   );
+  // const [dropdownOpen, setDropdownOpen] = useState(false);
+  // const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // useEffect(() => {
+  //   const handleClickOutside = (e: MouseEvent) => {
+  //     if (
+  //       dropdownRef.current &&
+  //       !dropdownRef.current.contains(e.target as Node)
+  //     ) {
+  //       setDropdownOpen(false);
+  //     }
+  //   };
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
 
   console.log(product);
 
   const selectedPreset = product.unitPresets?.find(
     (p) => p.preset_ID === selectedPresetId,
   );
+
+  // Use selected preset for stock levels, or fall back to first preset
+  // const stockLevelPreset = selectedPreset || product.unitPresets?.[0];
 
   const handlePresetChange = (presetId: number) => {
     setSelectedPresetId(presetId);
@@ -103,6 +121,18 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
   const handlePriceChange = (level: number, price: number) => {
     setLevelPrices((prev) => ({ ...prev, [level]: price }));
     updateLevelPricing(product.product.product_ID, level, price);
+  };
+
+  const getStockIndicator = (preset: (typeof product.unitPresets)[0]) => {
+    if (product.product.quantity === 0) {
+      return "⚫"; // Gray indicator (no stock)
+    } else if (product.product.quantity <= preset.very_Low_Stock_Level!) {
+      return "🔴"; // Red indicator (very low stock)
+    } else if (product.product.quantity <= preset.low_Stock_Level!) {
+      return "🟡"; // Yellow indicator (low stock)
+    } else {
+      return "🟢"; // Green indicator (adequate stock)
+    }
   };
 
   return (
@@ -136,6 +166,7 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
             <option value="">Select a preset</option>
             {product.unitPresets?.map((p) => (
               <option key={p.preset_ID} value={p.preset_ID}>
+                {getStockIndicator(p)}{" "}
                 {p.preset.presetLevels
                   .map(
                     (l) =>
@@ -170,7 +201,7 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
                 />
               </div>
 
-              <Separator orientation="horizontal" />
+              {/* <Separator orientation="horizontal" />
 
               <div className="flex flex-col gap-2">
                 <label className="font-semibold">Pricing (per unit)</label>
@@ -210,7 +241,7 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
                       </div>
                     ))}
                 </div>
-              </div>
+              </div> */}
             </div>
           </>
         )}
