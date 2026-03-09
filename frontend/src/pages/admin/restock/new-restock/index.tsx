@@ -3,14 +3,11 @@ import { LeftArrowIcon, SearchIcon } from "@/icons";
 import { Activity, useState } from "react";
 import { CreateRestockModal } from "./_components/restock-modal";
 import { ProductCard } from "../_components/product-card";
-// import { UseInventoryQuery } from "@/features/restock/inventory-batch";
-import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
 import { RestockCard2 } from "./_components/restock-card-copy";
 import {
   useUnitPresetRestockItems,
   useUnitPresetRestock,
 } from "@/features/restock/unit-preset-restock.query";
-import { UnitPresetRestockItem } from "@/features/restock/models/unit-preset-restock.model";
 import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 
@@ -69,8 +66,8 @@ const NewRestockPage = () => {
     addProduct(restockItem);
   };
 
-  const handleRemoveProduct = (productId: number) => {
-    removeProduct(productId);
+  const handleRemoveProduct = (itemId: string) => {
+    removeProduct(itemId);
   };
 
   return (
@@ -96,15 +93,30 @@ const NewRestockPage = () => {
                 <NoSelectedState />
               ) : (
                 <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
-                  {items.map((item, i) => (
-                    <RestockCard2
-                      key={i}
-                      product={item}
-                      onRemove={() =>
-                        handleRemoveProduct(item.product.product_ID)
-                      }
-                    />
-                  ))}
+                  {items.map((item, i) => {
+                    // Get all selected presets for this product from other items
+                    const selectedPresetIds = items
+                      .filter(
+                        (otherItem) =>
+                          otherItem.product.product_ID ===
+                            item.product.product_ID &&
+                          (otherItem as any).itemId !== (item as any).itemId,
+                      )
+                      .map((otherItem) => (otherItem as any).selectedPreset?.preset_ID)
+                      .filter((id): id is number => id !== undefined);
+
+                    return (
+                      <RestockCard2
+                        key={(item as any).itemId || i}
+                        product={item}
+                        itemId={(item as any).itemId}
+                        excludePresetIds={selectedPresetIds}
+                        onRemove={() =>
+                          handleRemoveProduct((item as any).itemId)
+                        }
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>

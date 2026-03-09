@@ -30,41 +30,43 @@ export const useUnitPresetRestock = () => {
 
   /**
    * Add product to restock list
+   * Allows duplicate products as long as they have different presets
    */
   const addProduct = (product: InventoryProductModel) => {
     queryClient.setQueryData<InventoryProductModel[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
-        // Check if product already exists
-        const exists = old.some(
-          (item) => item.product.product_ID === product.product.product_ID,
-        );
-        return exists ? old : [...old, product];
+        // Always add product - duplicates are allowed with different presets
+        const newItem = {
+          ...product,
+          itemId: `${product.product.product_ID}-${Date.now()}-${Math.random()}`,
+        };
+        return [...old, newItem as any];
       },
     );
   };
 
   /**
-   * Remove product from restock list
+   * Remove product from restock list by itemId
    */
-  const removeProduct = (productId: number) => {
+  const removeProduct = (itemId: string) => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
-        return old.filter((item) => item.product.product_ID !== productId);
+        return old.filter((item) => (item as any).itemId !== itemId);
       },
     );
   };
 
   /**
-   * Select a preset for a product
+   * Select a preset for a specific restock item
    */
-  const selectPreset = (productId: number, presetId: number) => {
+  const selectPreset = (itemId: string, presetId: number) => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
         return old.map((item) => {
-          if (item.product.product_ID !== productId) return item;
+          if ((item as any).itemId !== itemId) return item;
 
           const preset = item.unitPresets.find((p) => p.preset_ID === presetId);
           if (!preset) return item;
@@ -91,14 +93,14 @@ export const useUnitPresetRestock = () => {
   };
 
   /**
-   * Update main unit quantity for a product
+   * Update main unit quantity for a specific restock item
    */
-  const updateMainQuantity = (productId: number, quantity: number) => {
+  const updateMainQuantity = (itemId: string, quantity: number) => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
         return old.map((item) => {
-          if (item.product.product_ID !== productId || !item.selectedPreset) {
+          if ((item as any).itemId !== itemId || !item.selectedPreset) {
             return item;
           }
 
@@ -115,18 +117,14 @@ export const useUnitPresetRestock = () => {
   };
 
   /**
-   * Update pricing for a specific level
+   * Update pricing for a specific level on a specific restock item
    */
-  const updateLevelPricing = (
-    productId: number,
-    level: number,
-    price: number,
-  ) => {
+  const updateLevelPricing = (itemId: string, level: number, price: number) => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
         return old.map((item) => {
-          if (item.product.product_ID !== productId || !item.selectedPreset) {
+          if ((item as any).itemId !== itemId || !item.selectedPreset) {
             return item;
           }
 

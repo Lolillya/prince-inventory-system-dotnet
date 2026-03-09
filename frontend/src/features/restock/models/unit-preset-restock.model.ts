@@ -26,6 +26,7 @@ export interface UnitPresetPricing {
  * Local state model for managing restock in the UI
  */
 export interface UnitPresetRestockItem {
+  itemId: string; // Unique identifier for this restock item instance
   product: {
     product_ID: number;
     product_Code: string;

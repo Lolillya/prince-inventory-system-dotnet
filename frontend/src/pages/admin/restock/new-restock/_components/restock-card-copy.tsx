@@ -7,30 +7,9 @@ import { useEffect, useRef, useState } from "react";
 
 interface RestockCardProp {
   onClick?: () => void;
-  // product: {
-  //   product: {
-  //     product_ID: number;
-  //     product_Code: string;
-  //     product_Name: string;
-  //     desc: string;
-  //     brand_ID: number;
-  //     category_ID: number;
-  //     created_At: string;
-  //     updated_At: string;
-  //   };
-  //   variant: {
-  //     variant_Name: string;
-  //     created_At: string;
-  //     updated_At: string;
-  //   };
-  //   brand: {
-  //     brand_Name: string;
-  //     created_At: string;
-  //     updated_At: string;
-  //   };
-  //   unitPresets?: UnitPresets[];
-  // };
   product: InventoryProductModel;
+  itemId: string;
+  excludePresetIds?: number[];
   onRemove?: () => void;
 }
 
@@ -72,7 +51,12 @@ type UnitOfMeasure = {
   abbreviation: string;
 };
 
-export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
+export const RestockCard2 = ({
+  product,
+  itemId,
+  excludePresetIds = [],
+  onRemove,
+}: RestockCardProp) => {
   const { selectPreset, updateMainQuantity, updateLevelPricing } =
     useUnitPresetRestock();
 
@@ -110,17 +94,17 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
     setSelectedPresetId(presetId);
     setMainQuantity(0);
     setLevelPrices({});
-    selectPreset(product.product.product_ID, presetId);
+    selectPreset(itemId, presetId);
   };
 
   const handleQuantityChange = (quantity: number) => {
     setMainQuantity(quantity);
-    updateMainQuantity(product.product.product_ID, quantity);
+    updateMainQuantity(itemId, quantity);
   };
 
   const handlePriceChange = (level: number, price: number) => {
     setLevelPrices((prev) => ({ ...prev, [level]: price }));
-    updateLevelPricing(product.product.product_ID, level, price);
+    updateLevelPricing(itemId, level, price);
   };
 
   const getStockIndicator = (preset: (typeof product.unitPresets)[0]) => {
@@ -164,20 +148,22 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
             onChange={(e) => handlePresetChange(Number(e.target.value))}
           >
             <option value="">Select a preset</option>
-            {product.unitPresets?.map((p) => (
-              <option key={p.preset_ID} value={p.preset_ID}>
-                {getStockIndicator(p)}{" "}
-                {p.preset.presetLevels
-                  .map(
-                    (l) =>
-                      l.unitOfMeasure.uom_Name +
-                      " (" +
-                      l.conversion_Factor +
-                      "x)",
-                  )
-                  .join(" → ")}
-              </option>
-            ))}
+            {product.unitPresets
+              ?.filter((p) => !excludePresetIds.includes(p.preset_ID))
+              .map((p) => (
+                <option key={p.preset_ID} value={p.preset_ID}>
+                  {getStockIndicator(p)}{" "}
+                  {p.preset.presetLevels
+                    .map(
+                      (l) =>
+                        l.unitOfMeasure.uom_Name +
+                        " (" +
+                        l.conversion_Factor +
+                        "x)",
+                    )
+                    .join(" → ")}
+                </option>
+              ))}
           </select>
         </div>
 
