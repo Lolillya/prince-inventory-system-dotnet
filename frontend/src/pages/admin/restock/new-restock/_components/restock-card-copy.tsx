@@ -1,4 +1,5 @@
 import { Separator } from "@/components/separator";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { useUnitPresetRestock } from "@/features/restock/unit-preset-restock.query";
 import { XIcon } from "@/icons";
 import { PhilippinePeso } from "lucide-react";
@@ -6,29 +7,30 @@ import { useState } from "react";
 
 interface RestockCardProp {
   onClick?: () => void;
-  product: {
-    product: {
-      product_ID: number;
-      product_Code: string;
-      product_Name: string;
-      desc: string;
-      brand_ID: number;
-      category_ID: number;
-      created_At: string;
-      updated_At: string;
-    };
-    variant: {
-      variant_Name: string;
-      created_At: string;
-      updated_At: string;
-    };
-    brand: {
-      brand_Name: string;
-      created_At: string;
-      updated_At: string;
-    };
-    unitPresets?: UnitPresets[];
-  };
+  // product: {
+  //   product: {
+  //     product_ID: number;
+  //     product_Code: string;
+  //     product_Name: string;
+  //     desc: string;
+  //     brand_ID: number;
+  //     category_ID: number;
+  //     created_At: string;
+  //     updated_At: string;
+  //   };
+  //   variant: {
+  //     variant_Name: string;
+  //     created_At: string;
+  //     updated_At: string;
+  //   };
+  //   brand: {
+  //     brand_Name: string;
+  //     created_At: string;
+  //     updated_At: string;
+  //   };
+  //   unitPresets?: UnitPresets[];
+  // };
+  product: InventoryProductModel;
   onRemove?: () => void;
 }
 
@@ -77,13 +79,13 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
   const [mainQuantity, setMainQuantity] = useState<number>(0);
   const [levelPrices, setLevelPrices] = useState<{ [level: number]: number }>(
-    {}
+    {},
   );
 
   console.log(product);
 
   const selectedPreset = product.unitPresets?.find(
-    (p) => p.preset_ID === selectedPresetId
+    (p) => p.preset_ID === selectedPresetId,
   );
 
   const handlePresetChange = (presetId: number) => {
@@ -109,7 +111,7 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
         <div>
           <span>{product.product.product_Name}</span>
           <span> - </span>
-          <span>{product.brand.brand_Name}</span>
+          <span>{product.brand.brandName}</span>
           <span> - </span>
           <span>{product.variant.variant_Name}</span>
         </div>
@@ -140,7 +142,7 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
                       l.unitOfMeasure.uom_Name +
                       " (" +
                       l.conversion_Factor +
-                      "x)"
+                      "x)",
                   )
                   .join(" → ")}
               </option>
@@ -197,7 +199,7 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
                             onChange={(e) =>
                               handlePriceChange(
                                 level.level,
-                                Number(e.target.value)
+                                Number(e.target.value),
                               )
                             }
                             placeholder="0.00"

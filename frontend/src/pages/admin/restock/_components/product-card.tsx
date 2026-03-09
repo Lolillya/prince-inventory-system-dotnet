@@ -3,11 +3,12 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
 
 interface ProductCardProps {
   onClick?: () => void;
-  product: InventoryBatchesModel;
+  product: InventoryProductModel;
 }
 
 export const ProductCard = ({ product, onClick }: ProductCardProps) => {
@@ -26,12 +27,21 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
           <HoverCardTrigger>
             {product.unitPresets.length} Preset(s)
           </HoverCardTrigger>
-          <HoverCardContent className="flex flex-col gap-2 w-fit">
+          <HoverCardContent className="flex flex-col gap-2 w-fit ">
             {product.unitPresets.map((u, presetIdx) => (
               <div
                 key={presetIdx}
-                className="flex items-center gap-1 rounded-lg border shadow-sm p-2"
+                className="flex items-center gap-1 rounded-lg  p-2"
               >
+                {product.product.quantity === 0 ? (
+                  <div className="w-2 h-2 bg-gray-500 rounded-full" />
+                ) : product.product.quantity <= u.very_Low_Stock_Level! ? (
+                  <div className="w-2 h-2 bg-red-500 rounded-full" />
+                ) : product.product.quantity <= u.low_Stock_Level! ? (
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                ) : (
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                )}
                 {u.preset.presetLevels.map((l, idx) => (
                   <div key={idx} className="flex gap-1 items-center">
                     <span className="text-xs font-semibold whitespace-nowrap">
