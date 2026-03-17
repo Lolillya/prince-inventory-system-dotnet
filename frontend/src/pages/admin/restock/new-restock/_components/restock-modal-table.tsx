@@ -41,6 +41,8 @@ export const RestockTable = () => {
     createRestock(restockPayload);
   };
 
+  const handleCreateRestock_2 = async () => {};
+
   const calculateTotalQuantity = () => {
     // Sum all subtotals for items with selected presets
     return items
