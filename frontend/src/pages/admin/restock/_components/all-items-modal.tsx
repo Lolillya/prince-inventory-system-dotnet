@@ -92,7 +92,16 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                     <span>{item.product.variant.variant_Name}</span>
                   </div>
                   <span className="text-left w-[70%]">
-                    BOX {">"} CASE(x10) {">"} PIECE (x20)
+                    {item.unit_Preset?.preset_Levels
+                      ?.map(
+                        (l) =>
+                          l.unit?.uom_Name +
+                          (l.conversion_Factor !== 1
+                            ? ` (x${l.conversion_Factor})`
+                            : ""),
+                      )
+                      .filter(Boolean)
+                      .join(" → ") || "No preset"}
                   </span>
 
                   <span className="text-left w-[30%]">
