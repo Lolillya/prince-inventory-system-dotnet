@@ -1,5 +1,6 @@
 import { Separator } from "@/components/separator";
 import { useRestockQuery } from "@/features/restock/restock-get-all";
+import { RestockAllModel } from "@/features/restock/models/restock-all.model";
 import { SearchIcon, FilterIcon, PlusIcon, EllipsisIcon } from "@/icons";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,13 +11,35 @@ const RestockPage = () => {
   const navigate = useNavigate();
   const { data: restockItems } = useRestockQuery();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedRestock, setSelectedRestock] =
+    useState<RestockAllModel | null>(null);
 
-  const handleModal = () => {
-    setIsModalOpen(!isModalOpen);
+  const handleOpenModal = (restock: RestockAllModel) => {
+    setSelectedRestock(restock);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedRestock(null);
   };
   console.log(restockItems);
   return (
     <section>
+      {isModalOpen && selectedRestock && (
+        <ShowAllModal
+          selectedRestock={selectedRestock}
+          onClose={handleCloseModal}
+        />
+      )}
+
+      {/* <Activity mode={isModalOpen && selectedLineItems ? "visible" : "hidden"}>
+        <ShowAllModal
+          lineItems={selectedLineItems}
+          onClose={handleCloseModal}
+        />
+      </Activity> */}
+
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3 max-w-lg w-full shrink-0">
@@ -49,57 +72,50 @@ const RestockPage = () => {
             <NoRestockState />
           </div>
         ) : (
-          restockItems?.map((r, i) => (
-            <>
-              {isModalOpen && (
-                <ShowAllModal lineItems={r.line_Items} onClose={handleModal} />
-              )}
-              <div
-                key={i}
-                className="flex flex-col justify-between gap-5 border shadow-lg rounded-lg p-5"
-              >
-                <div className="flex flex-1 p-3">
-                  <div className="flex flex-col gap-3 w-full">
-                    <div className="flex gap-3">
-                      <span>#{r.restock_Number}</span>
-                      <span>-</span>
-                      <span>
-                        {new Intl.DateTimeFormat("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }).format(new Date(r.created_At))}
-                      </span>
-                    </div>
-
-                    <div className="flex gap-3">
-                      <span>Supplier: </span>
-                      <span>{r.supplier.companyName}</span>
-                    </div>
+          restockItems?.map((r) => (
+            <div
+              key={r.restock_Id}
+              className="flex flex-col justify-between gap-5 border shadow-lg rounded-lg py-3 px-5"
+            >
+              <div className="flex flex-1 p-3">
+                <div className="flex flex-col gap-3 w-full">
+                  <div className="flex gap-3">
+                    <span>#{r.restock_Number}</span>
+                    <span>-</span>
+                    <span>
+                      {new Intl.DateTimeFormat("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }).format(new Date(r.created_At))}
+                    </span>
                   </div>
 
-                  <Separator orientation="vertical" />
-
-                  <div className="flex flex-col gap-3 w-full">
-                    <div className="flex gap-3">
-                      <span>total added stock</span>
-                    </div>
-
-                    {/* <div className="flex gap-3">
-                      <span>P {r.grand_Total}</span>
-                    </div> */}
-                  </div>
-
-                  <div className="bg-gray-bg border flex items-center justify-center rounded-lg p-2 h-12 w-12 my-auto">
-                    <EllipsisIcon />
+                  <div className="flex gap-3">
+                    <span>Supplier: </span>
+                    <span>{r.supplier.companyName}</span>
                   </div>
                 </div>
 
-                <div className="flex justify-center">
-                  <button onClick={handleModal}>view all items</button>
+                <Separator orientation="vertical" />
+
+                <div className="flex flex-col gap-3 w-full">
+                  <div className="flex gap-3">
+                    <span>total added stock</span>
+                  </div>
+                </div>
+
+                <div className="bg-gray-bg border flex items-center justify-center rounded-lg p-2 h-12 w-12 my-auto">
+                  <EllipsisIcon />
                 </div>
               </div>
-            </>
+
+              <div className="flex justify-center">
+                <button onClick={() => handleOpenModal(r)}>
+                  view all items
+                </button>
+              </div>
+            </div>
           ))
         )}
       </div>
