@@ -256,18 +256,18 @@ namespace backend.Controller.RestockControllers
                                         .ToList()
                                 } : null,
 
-                                unit_Conversions = rli.ProductUOMs.Select(puom => new
-                                {
-                                    product_UOM_Id = puom.Product_UOM_Id,
-                                    unit = puom.UnitOfMeasure != null ? new
-                                    {
-                                        puom.UnitOfMeasure.uom_ID,
-                                        puom.UnitOfMeasure.uom_Name
-                                    } : null,
-                                    parent_UOM_ID = puom.Parent_UOM_ID,
-                                    conversion_Factor = puom.Conversion_Factor,
-                                    unit_Price = puom.Unit_Price
-                                }).ToList()
+                                // unit_Conversions = rli.ProductUOMs.Select(puom => new
+                                // {
+                                //     product_UOM_Id = puom.Product_UOM_Id,
+                                //     unit = puom.UnitOfMeasure != null ? new
+                                //     {
+                                //         puom.UnitOfMeasure.uom_ID,
+                                //         puom.UnitOfMeasure.uom_Name
+                                //     } : null,
+                                //     parent_UOM_ID = puom.Parent_UOM_ID,
+                                //     conversion_Factor = puom.Conversion_Factor,
+                                //     unit_Price = puom.Unit_Price
+                                // }).ToList()
                             }))
                             .ToList(),
 
