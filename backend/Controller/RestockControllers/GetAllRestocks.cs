@@ -157,6 +157,15 @@ namespace backend.Controller.RestockControllers
                         .ThenInclude(rb => rb.RestockLineItems)
                             .ThenInclude(rli => rli.ProductUOMs)
                                 .ThenInclude(puom => puom.UnitOfMeasure)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.UnitPreset)
+                                .ThenInclude(up => up!.MainUnit)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.UnitPreset)
+                                .ThenInclude(up => up!.PresetLevels)
+                                    .ThenInclude(pl => pl.UnitOfMeasure)
                     .Select(r => new
                     {
                         restock_Id = r.Restock_ID,
@@ -219,6 +228,33 @@ namespace backend.Controller.RestockControllers
                                 base_Unit_Price = rli.Base_Unit_Price,
                                 base_Unit_Quantity = rli.Base_Unit_Quantity,
                                 line_Item_Total = rli.Base_Unit_Price * rli.Base_Unit_Quantity,
+
+                                unit_Preset = rli.UnitPreset != null ? new
+                                {
+                                    rli.UnitPreset.Preset_ID,
+                                    rli.UnitPreset.Preset_Name,
+                                    rli.UnitPreset.Main_Unit_ID,
+                                    main_Unit = rli.UnitPreset.MainUnit != null ? new
+                                    {
+                                        rli.UnitPreset.MainUnit.uom_ID,
+                                        rli.UnitPreset.MainUnit.uom_Name
+                                    } : null,
+                                    preset_Levels = rli.UnitPreset.PresetLevels
+                                        .OrderBy(pl => pl.Level)
+                                        .Select(pl => new
+                                        {
+                                            pl.Level_ID,
+                                            pl.Level,
+                                            pl.UOM_ID,
+                                            pl.Conversion_Factor,
+                                            unit = pl.UnitOfMeasure != null ? new
+                                            {
+                                                pl.UnitOfMeasure.uom_ID,
+                                                pl.UnitOfMeasure.uom_Name
+                                            } : null
+                                        })
+                                        .ToList()
+                                } : null,
 
                                 unit_Conversions = rli.ProductUOMs.Select(puom => new
                                 {
