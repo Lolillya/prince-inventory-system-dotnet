@@ -1,11 +1,18 @@
-import { Separator } from "@/components/separator";
 import { useRestockQuery } from "@/features/restock/restock-get-all";
 import { RestockAllModel } from "@/features/restock/models/restock-all.model";
-import { SearchIcon, FilterIcon, PlusIcon, EllipsisIcon } from "@/icons";
+import { SearchIcon, FilterIcon, PlusIcon } from "@/icons";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShowAllModal } from "./_components/all-items-modal";
 import { NoRestockState } from "./_components/no-restock-state";
+import {
+  Box,
+  Calendar,
+  CornerRightUp,
+  Ellipsis,
+  Pin,
+  Truck,
+} from "lucide-react";
 
 const RestockPage = () => {
   const navigate = useNavigate();
@@ -66,7 +73,7 @@ const RestockPage = () => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-5 overflow-y-scroll pb-5 pr-2 flex-1">
+      <div className="columns-1 lg:columns-2 gap-5 overflow-y-scroll flex-1 space-y-5">
         {restockItems?.length === 0 ? (
           <div className="flex-1 flex justify-center items-center">
             <NoRestockState />
@@ -75,45 +82,109 @@ const RestockPage = () => {
           restockItems?.map((r) => (
             <div
               key={r.restock_Id}
-              className="flex flex-col justify-between gap-5 border shadow-lg rounded-lg py-3 px-5"
+              className="flex flex-col justify-between gap-5 border rounded-lg py-3 px-5 bg-custom-gray h-fit w-full break-inside-avoid"
             >
               <div className="flex flex-1 p-3">
                 <div className="flex flex-col gap-3 w-full">
-                  <div className="flex gap-3">
-                    <span>#{r.restock_Number}</span>
-                    <span>-</span>
-                    <span>
-                      {new Intl.DateTimeFormat("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      }).format(new Date(r.created_At))}
-                    </span>
-                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-5">
+                      <span className="text-lg font-semibold text-saltbox-gray tracking-wide">
+                        #{r.restock_Number}
+                      </span>
+                      <Pin className="text-amber-300 rotate-45" size={20} />
+                      <Ellipsis className="text-saltbox-gray" />
+                    </div>
 
-                  <div className="flex gap-3">
-                    <span>Supplier: </span>
-                    <span>{r.supplier.companyName}</span>
+                    <div className="flex items-center flex-1">
+                      <div className="flex gap-3 items-center">
+                        <Calendar className="text-saltbox-gray" size={18} />
+                        <span className="text-saltbox-gray text-sm">
+                          {new Intl.DateTimeFormat("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }).format(new Date(r.created_At))}
+                        </span>
+                      </div>
+
+                      {/* <Separator orientation="vertical" /> */}
+
+                      <div className="flex gap-3 items-center ml-5 border-l-2 border-gray-300 pl-5">
+                        <Truck className="text-saltbox-gray" scale={18} />
+                        <span className="text-saltbox-gray text-sm">
+                          {r.supplier.companyName}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <Separator orientation="vertical" />
+                {/* <Separator orientation="vertical" /> */}
 
-                <div className="flex flex-col gap-3 w-full">
-                  <div className="flex gap-3">
-                    <span>total added stock</span>
-                  </div>
+                <div className="flex flex-col justify-between">
+                  <span className="text-saltbox-gray text-xl font-semibold text-right">
+                    {r.line_Items.reduce(
+                      (total, item) => total + item.base_Unit_Quantity,
+                      0,
+                    )}
+                  </span>
+
+                  <span className="text-nowrap text-saltbox-gray text-sm font-semibold">
+                    added stock
+                  </span>
                 </div>
 
-                <div className="bg-gray-bg border flex items-center justify-center rounded-lg p-2 h-12 w-12 my-auto">
+                {/* <div className="bg-gray-bg border flex items-center justify-center rounded-lg p-2 h-12 w-12 my-auto">
                   <EllipsisIcon />
+                </div> */}
+              </div>
+
+              <div className="bg-background rounded-lg flex flex-col p-3 gap-2">
+                <div className="flex w-full justify-between ">
+                  <span className="text-saltbox-gray text-sm font-semibold">
+                    {r?.line_Items[0].product.product_Name}
+                  </span>
+                  <span className="text-saltbox-gray text-xl font-semibold">
+                    {r?.line_Items[0].base_Unit_Quantity}{" "}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-saltbox-gray">
+                  <Box className="" size={18} />
+                  <span className="text-sm text-saltbox-gray font-semibold">
+                    1 Conversions
+                  </span>
                 </div>
               </div>
 
-              <div className="flex justify-center">
-                <button onClick={() => handleOpenModal(r)}>
-                  view all items
+              <div className="bg-background rounded-lg flex items-center justify-between px-3 py-1">
+                <label className="text-saltbox-gray text-sm font-semibold tracking-wide">
+                  No more items...
+                </label>
+
+                <button
+                  onClick={() => handleOpenModal(r)}
+                  className="bg-background text-saltbox-gray w-fit cursor-pointer hover:underline hover:shadow-none hover:bg-gray-300 transition-colors"
+                >
+                  view details
+                  <CornerRightUp size={18} />
                 </button>
+
+                {/* <div className="flex w-full justify-between ">
+                  <span className="text-saltbox-gray text-sm font-semibold">
+                    Eraser - Gamma Goods - black
+                  </span>
+                  <span className="text-saltbox-gray text-sm font-semibold">
+                    200
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-saltbox-gray">
+                  <Box className="" size={18} />
+                  <span className="text-sm text-saltbox-gray font-semibold">
+                    1 Conversions
+                  </span>
+                </div> */}
               </div>
             </div>
           ))
