@@ -13,6 +13,12 @@ import {
   Pin,
   Truck,
 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Separator } from "@/components/separator";
 
 const RestockPage = () => {
   const navigate = useNavigate();
@@ -92,7 +98,37 @@ const RestockPage = () => {
                         #{r.restock_Number}
                       </span>
                       <Pin className="text-amber-300 rotate-45" size={20} />
-                      <Ellipsis className="text-saltbox-gray" />
+
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Ellipsis className="text-saltbox-gray" />
+                        </PopoverTrigger>
+                        <PopoverContent className="w-fit">
+                          <ul className="flex flex-col gap-1">
+                            <li className="text-sm cursor-pointer hover:underline">
+                              Print
+                            </li>
+                            <li className="text-sm cursor-pointer hover:underline">
+                              Export
+                            </li>
+                          </ul>
+                          <Separator orientation="horizontal" />
+                          <ul className="flex flex-col gap-1">
+                            <li className="text-sm cursor-pointer hover:underline ">
+                              View Restock
+                            </li>
+                            <li className="text-sm cursor-pointer hover:underline">
+                              View Supplier
+                            </li>
+                          </ul>
+                          <Separator orientation="horizontal" />
+                          <ul>
+                            <li className="text-red-400 text-sm cursor-pointer hover:underline">
+                              Void
+                            </li>
+                          </ul>
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
                     <div className="flex items-center flex-1">
