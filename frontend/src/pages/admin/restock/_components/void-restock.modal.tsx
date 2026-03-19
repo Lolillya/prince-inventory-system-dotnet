@@ -1,4 +1,5 @@
 import { RestockAllModel } from "@/features/restock/models/restock-all.model";
+import axios from "axios";
 import { CircleAlert } from "lucide-react";
 import { useState } from "react";
 
@@ -42,11 +43,20 @@ export const VoidRestockModal = ({
     }
 
     setPasswordError("");
-    await onConfirm({
-      restockId: selectedRestock.restock_Id,
-      reason: reason.trim(),
-      password: password.trim(),
-    });
+    try {
+      await onConfirm({
+        restockId: selectedRestock.restock_Id,
+        reason: reason.trim(),
+        password: password.trim(),
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        setPasswordError("Incorrect password. Please try again.");
+        return;
+      }
+
+      setPasswordError("Unable to void restock. Please try again.");
+    }
   };
 
   return (
