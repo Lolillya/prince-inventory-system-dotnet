@@ -19,9 +19,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/separator";
+import { useSetSupplierSelected } from "@/features/suppliers/supplier-selected.query";
+import { UserClientModel } from "@/models/user-client.model";
+import { GetAllSuppliers } from "@/features/suppliers/get-all-suppliers.service";
+import { useVoidRestockMutation } from "@/features/restock/void-restock.query";
 
 const RestockPage = () => {
   const navigate = useNavigate();
+  const setSupplierSelected = useSetSupplierSelected();
+  const { mutateAsync: voidRestockMutation, isPending: isVoidingRestock } =
+    useVoidRestockMutation();
   const { data: restockItems } = useRestockQuery();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedRestock, setSelectedRestock] =
@@ -36,6 +43,41 @@ const RestockPage = () => {
     setIsModalOpen(false);
     setSelectedRestock(null);
   };
+
+  const handleViewSupplier = async (restock: RestockAllModel) => {
+    const supplier = restock.supplier;
+    const fallbackSupplier: UserClientModel = {
+      id: supplier.id ?? "",
+      username: "",
+      email: supplier.email ?? "",
+      firstName: supplier.firstName ?? "",
+      lastName: supplier.lastName ?? "",
+      companyName: supplier.companyName ?? "",
+      notes: "",
+      phoneNumber: "",
+      role: "supplier",
+      address: "",
+    };
+
+    try {
+      const response = await GetAllSuppliers();
+      const suppliers = response?.data ?? [];
+      const fullSupplier = suppliers.find((item) => item.id === supplier.id);
+
+      setSupplierSelected(fullSupplier ?? fallbackSupplier);
+    } catch {
+      setSupplierSelected(fallbackSupplier);
+    }
+
+    navigate("/admin/suppliers");
+  };
+
+  const handleVoidRestock = async (restockId: number) => {
+    if (isVoidingRestock) return;
+
+    await voidRestockMutation(restockId);
+  };
+
   console.log(restockItems);
   return (
     <section>
@@ -100,7 +142,7 @@ const RestockPage = () => {
                       <Pin className="text-amber-300 rotate-45" size={20} />
 
                       <Popover>
-                        <PopoverTrigger asChild>
+                        <PopoverTrigger asChild className="cursor-pointer ">
                           <Ellipsis className="text-saltbox-gray" />
                         </PopoverTrigger>
                         <PopoverContent className="w-fit">
@@ -117,14 +159,24 @@ const RestockPage = () => {
                             <li className="text-sm cursor-pointer hover:underline ">
                               View Restock
                             </li>
-                            <li className="text-sm cursor-pointer hover:underline">
+                            <li
+                              className="text-sm cursor-pointer hover:underline"
+                              onClick={() => handleViewSupplier(r)}
+                            >
                               View Supplier
                             </li>
                           </ul>
                           <Separator orientation="horizontal" />
                           <ul>
-                            <li className="text-red-400 text-sm cursor-pointer hover:underline">
-                              Void
+                            <li
+                              className={`text-sm hover:underline ${
+                                isVoidingRestock
+                                  ? "text-red-300 cursor-not-allowed"
+                                  : "text-red-400 cursor-pointer"
+                              }`}
+                              onClick={() => handleVoidRestock(r.restock_Id)}
+                            >
+                              {isVoidingRestock ? "Voiding..." : "Void"}
                             </li>
                           </ul>
                         </PopoverContent>
@@ -165,8 +217,8 @@ const RestockPage = () => {
                     )}
                   </span>
 
-                  <span className="text-nowrap text-saltbox-gray text-sm font-semibold">
-                    added stock
+                  <span className="text-nowrap text-saltbox-gray text-sm font-semibold tracking-wide">
+                    Added Stock
                   </span>
                 </div>
 

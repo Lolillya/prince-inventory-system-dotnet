@@ -4,7 +4,6 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
-import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
 
 interface ProductCardProps {
   onClick?: () => void;
