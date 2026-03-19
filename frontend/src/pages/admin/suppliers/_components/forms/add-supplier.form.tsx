@@ -2,6 +2,8 @@ import { UserModel } from "@/features/auth-login/models/user.model";
 import { AddNewSupplierService } from "@/features/suppliers/add-new-supplier/add-new-supplier.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import * as yup from "yup";
 
 const schema = yup.object().shape({
@@ -24,7 +26,15 @@ const schema = yup.object().shape({
   roleID: yup.number().required(),
 });
 
-export const AddSupplierForm = () => {
+interface AddSupplierFormProps {
+  setIsAddSupplierModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const AddSupplierForm = ({
+  setIsAddSupplierModalOpen,
+}: AddSupplierFormProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -42,8 +52,18 @@ export const AddSupplierForm = () => {
     },
   });
 
-  const onSubmit = (data: yup.InferType<typeof schema>) => {
-    AddNewSupplierService(data as UserModel);
+  const onSubmit = async (data: yup.InferType<typeof schema>) => {
+    setIsLoading(true);
+    try {
+      await AddNewSupplierService(data as UserModel);
+      // Invalidate suppliers query to refresh the list
+      await queryClient.invalidateQueries({ queryKey: ["suppliers"] });
+      // Close modal on successful submission
+      setIsAddSupplierModalOpen(false);
+    } catch (error) {
+      // Error is already handled by the error handler in the service
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -195,7 +215,9 @@ export const AddSupplierForm = () => {
         </div>
       </div>
 
-      <button type="submit">Add Supplier</button>
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? "Adding..." : "Add Supplier"}
+      </button>
     </form>
   );
 };
