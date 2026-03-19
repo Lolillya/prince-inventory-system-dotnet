@@ -139,13 +139,27 @@ const RestockPage = () => {
           </div>
 
           <div className="flex w/full justify-end gap-2">
-            <button
-              className="flex items-center justify-center gap-2"
-              onClick={() => navigate("/admin/restock/new")}
-            >
-              <PlusIcon />
-              new restock
-            </button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="flex items-center justify-center gap-2">
+                  <PlusIcon />
+                  new restock
+                </button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <ul className="flex flex-col gap-1">
+                  <li
+                    className="text-sm cursor-pointer hover:underline"
+                    onClick={() => navigate("/admin/restock/new")}
+                  >
+                    Manual
+                  </li>
+                  <li className="text-sm cursor-pointer hover:underline">
+                    PO Restock
+                  </li>
+                </ul>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>
