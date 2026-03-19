@@ -17,12 +17,22 @@ export type VoidRestockResponse = {
   }[];
 };
 
+export type VoidRestockPayload = {
+  restockId: number;
+  reason: string;
+  password: string;
+};
+
 export const voidRestock = async (
-  restockId: number,
+  payload: VoidRestockPayload,
 ): Promise<VoidRestockResponse> => {
   try {
     const response = await axios.put<VoidRestockResponse>(
-      `${api}restock/void/${restockId}`,
+      `${api}restock/void/${payload.restockId}`,
+      {
+        reason: payload.reason,
+        password: payload.password,
+      },
     );
 
     return response.data;

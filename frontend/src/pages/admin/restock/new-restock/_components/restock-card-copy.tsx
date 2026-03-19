@@ -2,7 +2,6 @@ import { Separator } from "@/components/separator";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { useUnitPresetRestock } from "@/features/restock/unit-preset-restock.query";
 import { XIcon } from "@/icons";
-import { PhilippinePeso } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface RestockCardProp {
@@ -12,44 +11,6 @@ interface RestockCardProp {
   excludePresetIds?: number[];
   onRemove?: () => void;
 }
-
-type UnitPresets = {
-  assigned_At: string;
-  preset: Preset;
-  preset_ID: number;
-  product_Preset_ID: number;
-  low_Stock_Level?: number;
-  very_Low_Stock_Level?: number;
-};
-
-type Preset = {
-  created_At: string;
-  main_Unit_ID: number;
-  mainUnit: {
-    uom_ID: number;
-    unit_Name: string;
-    abbreviation: string;
-  };
-  presetLevels: PresetLevel[];
-  preset_ID: number;
-  preset_Name: string;
-  updated_At: string;
-};
-
-type PresetLevel = {
-  conversion_Factor: number;
-  created_At: string;
-  level: number;
-  level_ID: number;
-  unitOfMeasure: UnitOfMeasure;
-  uom_ID: number;
-};
-
-type UnitOfMeasure = {
-  uom_ID: number;
-  uom_Name: string;
-  abbreviation: string;
-};
 
 export const RestockCard2 = ({
   product,

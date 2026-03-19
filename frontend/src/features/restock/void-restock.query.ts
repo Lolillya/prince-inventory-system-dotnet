@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { voidRestock } from "./void-restock.service";
+import { VoidRestockPayload, voidRestock } from "./void-restock.service";
 
 export const useVoidRestockMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (restockId: number) => voidRestock(restockId),
+    mutationFn: (payload: VoidRestockPayload) => voidRestock(payload),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["restock-items"] }),

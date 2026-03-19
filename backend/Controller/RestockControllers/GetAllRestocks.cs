@@ -168,6 +168,7 @@ namespace backend.Controller.RestockControllers
                                     .ThenInclude(pl => pl.UnitOfMeasure)
                     .Select(r => new
                     {
+                        r.Status,
                         restock_Id = r.Restock_ID,
                         restock_Number = r.Restock_Number,
                         restock_Notes = r.Restock_Notes,

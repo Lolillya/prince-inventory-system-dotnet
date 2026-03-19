@@ -2,6 +2,7 @@ export type RestockAllModel = {
   restock_Id: number;
   restock_Number: string;
   restock_Notes: string;
+  status: string;
   clerk: Clerk;
   supplier: Supplier;
   created_At: string;

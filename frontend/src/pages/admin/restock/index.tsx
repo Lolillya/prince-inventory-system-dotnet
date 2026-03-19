@@ -23,6 +23,7 @@ import { useSetSupplierSelected } from "@/features/suppliers/supplier-selected.q
 import { UserClientModel } from "@/models/user-client.model";
 import { GetAllSuppliers } from "@/features/suppliers/get-all-suppliers.service";
 import { useVoidRestockMutation } from "@/features/restock/void-restock.query";
+import { VoidRestockModal } from "./_components/void-restock.modal";
 
 const RestockPage = () => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ const RestockPage = () => {
     useVoidRestockMutation();
   const { data: restockItems } = useRestockQuery();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isVoidModalOpen, setIsVoidModalOpen] = useState<boolean>(false);
   const [selectedRestock, setSelectedRestock] =
     useState<RestockAllModel | null>(null);
 
@@ -72,10 +74,27 @@ const RestockPage = () => {
     navigate("/admin/suppliers");
   };
 
-  const handleVoidRestock = async (restockId: number) => {
+  const handleVoidRestock = async (payload: {
+    restockId: number;
+    reason: string;
+    password: string;
+  }) => {
     if (isVoidingRestock) return;
 
-    await voidRestockMutation(restockId);
+    await voidRestockMutation(payload);
+    setIsVoidModalOpen(false);
+    setSelectedRestock(null);
+  };
+
+  const handleVoidPrompt = (r: RestockAllModel) => {
+    if (isVoidingRestock) return;
+    setSelectedRestock(r);
+    setIsVoidModalOpen(true);
+  };
+
+  const handleCloseVoidModal = () => {
+    setIsVoidModalOpen(false);
+    setSelectedRestock(null);
   };
 
   console.log(restockItems);
@@ -94,6 +113,15 @@ const RestockPage = () => {
           onClose={handleCloseModal}
         />
       </Activity> */}
+
+      {isVoidModalOpen && selectedRestock && (
+        <VoidRestockModal
+          selectedRestock={selectedRestock}
+          onClose={handleCloseVoidModal}
+          onConfirm={handleVoidRestock}
+          isVoiding={isVoidingRestock}
+        />
+      )}
 
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
@@ -130,8 +158,15 @@ const RestockPage = () => {
           restockItems?.map((r) => (
             <div
               key={r.restock_Id}
-              className="flex flex-col justify-between gap-5 border rounded-lg py-3 px-5 bg-custom-gray h-fit w-full break-inside-avoid"
+              className="relative flex flex-col justify-between gap-5 border rounded-lg py-3 px-5 bg-custom-gray h-fit w-full break-inside-avoid"
             >
+              <div className="absolute -top-1">
+                {r.status === "VOIDED" && (
+                  <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+                    Voided
+                  </div>
+                )}
+              </div>
               <div className="flex flex-1 p-3">
                 <div className="flex flex-col gap-3 w-full">
                   <div className="flex flex-col gap-2">
@@ -166,19 +201,24 @@ const RestockPage = () => {
                               View Supplier
                             </li>
                           </ul>
-                          <Separator orientation="horizontal" />
-                          <ul>
-                            <li
-                              className={`text-sm hover:underline ${
-                                isVoidingRestock
-                                  ? "text-red-300 cursor-not-allowed"
-                                  : "text-red-400 cursor-pointer"
-                              }`}
-                              onClick={() => handleVoidRestock(r.restock_Id)}
-                            >
-                              {isVoidingRestock ? "Voiding..." : "Void"}
-                            </li>
-                          </ul>
+                          {r.status !== "VOIDED" && (
+                            <>
+                              <Separator orientation="horizontal" />
+                              <ul>
+                                <li
+                                  className={`text-sm hover:underline ${
+                                    isVoidingRestock
+                                      ? "text-red-300 cursor-not-allowed"
+                                      : "text-red-400 cursor-pointer"
+                                  }`}
+                                  // onClick={() => handleVoidRestock(r.restock_Id)}
+                                  onClick={() => handleVoidPrompt(r)}
+                                >
+                                  {isVoidingRestock ? "Voiding..." : "Void"}
+                                </li>
+                              </ul>
+                            </>
+                          )}
                         </PopoverContent>
                       </Popover>
                     </div>
