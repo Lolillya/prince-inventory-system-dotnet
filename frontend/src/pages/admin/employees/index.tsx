@@ -111,7 +111,7 @@ const EmployeesPage = () => {
             onClick={handleAddEmployee}
           >
             <PlusIcon />
-            new supplier
+            new employee
           </button>
         </div>
       </div>
@@ -121,7 +121,7 @@ const EmployeesPage = () => {
         <div className="w-full flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
             <label className="capitalize text-saltbox-gray font-normal text-lg">
-              suppiers
+              Employees
             </label>
             <span className="capitalize text-vesper-gray">
               {filteredEmployees?.length} records

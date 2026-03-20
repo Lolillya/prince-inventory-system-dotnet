@@ -2,6 +2,8 @@ import { UserModel } from "@/features/auth-login/models/user.model";
 import { EditEmployeeService } from "@/features/employees/edit-employee/edit-employee.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
+import { Dispatch, SetStateAction } from "react";
 import * as yup from "yup";
 
 const schema = yup.object().shape({
@@ -27,11 +29,14 @@ const schema = yup.object().shape({
 
 interface EditEmployeeFormProps {
   selectedEmployee: UserModel;
+  setIsEditEmployeeModalOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export const EditEmployeeForm = ({
   selectedEmployee,
+  setIsEditEmployeeModalOpen,
 }: EditEmployeeFormProps) => {
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -53,9 +58,16 @@ export const EditEmployeeForm = ({
     },
   });
 
-  const onSubmit = (data: UserModel) => {
+  const onSubmit = async (data: UserModel) => {
     // EditCustomerService(data);
-    EditEmployeeService(data);
+    const result = await EditEmployeeService(data);
+    if (result) {
+      // Close the modal
+      setIsEditEmployeeModalOpen(false);
+      // Refetch the employee list and selected employee details
+      queryClient.invalidateQueries({ queryKey: ["employee"] });
+      queryClient.invalidateQueries({ queryKey: ["employee-selected"] });
+    }
   };
 
   return (
@@ -216,17 +228,17 @@ export const EditEmployeeForm = ({
             type="text"
             className="w-full drop-shadow-none bg-custom-gray p-2"
             disabled
-            placeholder="SUPPLIER"
-            // {...register("role")}
+            placeholder="EMPLOYEE"
+          // {...register("role")}
           />
         </div>
         {/* DESCRIPTION */}
         <div>
-          <label htmlFor="supplierNotes" className="block text-sm font-medium">
-            Supplier Notes
+          <label htmlFor="employeeNotes" className="block text-sm font-medium">
+            Employee Notes
           </label>
           <textarea
-            id="supplierNotes"
+            id="employeeNotes"
             className="w-full p-2 rounded-lg "
             {...register("notes")}
           />

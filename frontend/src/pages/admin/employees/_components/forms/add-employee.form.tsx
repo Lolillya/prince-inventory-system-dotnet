@@ -2,6 +2,8 @@ import { UserModel } from "@/features/auth-login/models/user.model";
 import { AddNewEmployeeService } from "@/features/employees/add-employee/add-employee.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
+import { Dispatch, SetStateAction } from "react";
 import * as yup from "yup";
 
 const schema = yup.object().shape({
@@ -24,7 +26,12 @@ const schema = yup.object().shape({
   roleID: yup.number().required(),
 });
 
-export const AddEmployeeForm = () => {
+interface AddEmployeeFormProps {
+  setIsAddEmployeeModalOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormProps) => {
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -38,10 +45,16 @@ export const AddEmployeeForm = () => {
     },
   });
 
-  const onSubmit = (data: UserModel) => {
+  const onSubmit = async (data: UserModel) => {
     // AddNewSupplierService(data);
     // AddNewEmployeeService(data);
-    AddNewEmployeeService(data);
+    const result = await AddNewEmployeeService(data);
+    if (result) {
+      // Close the modal
+      setIsAddEmployeeModalOpen(false);
+      // Refetch the employee list
+      queryClient.invalidateQueries({ queryKey: ["employee"] });
+    }
   };
 
   return (
@@ -203,16 +216,16 @@ export const AddEmployeeForm = () => {
             className="w-full drop-shadow-none bg-custom-gray p-2"
             disabled
             placeholder="EMPLOYEE"
-            // {...register("role")}
+          // {...register("role")}
           />
         </div>
         {/* DESCRIPTION */}
         <div>
-          <label htmlFor="supplierNotes" className="block text-sm font-medium">
-            Supplier Notes
+          <label htmlFor="employeeNotes" className="block text-sm font-medium">
+            Employee Notes
           </label>
           <textarea
-            id="supplierNotes"
+            id="employeeNotes"
             className="w-full p-2 rounded-lg "
             {...register("notes")}
           />
@@ -222,7 +235,7 @@ export const AddEmployeeForm = () => {
         </div>
       </div>
 
-      <button type="submit">Add Supplier</button>
+      <button type="submit">Add Employee</button>
     </form>
   );
 };

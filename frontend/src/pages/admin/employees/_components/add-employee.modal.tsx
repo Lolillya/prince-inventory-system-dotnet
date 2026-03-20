@@ -21,14 +21,14 @@ export const AddEmployeeModal = ({
             <XIcon />
           </div>
           <div className="w-full">
-            <h1 className="text-2xl font-bold">Add Customer</h1>
+            <h1 className="text-2xl font-bold">Add Employee</h1>
             <p className="text-gray-500">
-              Fill in the details to add a new customer to the database.
+              Fill in the details to add a new employee to the database.
             </p>
           </div>
         </div>
 
-        <AddEmployeeForm />
+        <AddEmployeeForm setIsAddEmployeeModalOpen={setIsAddEmployeeModalOpen} />
       </div>
     </div>
   );
