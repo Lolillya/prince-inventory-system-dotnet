@@ -62,13 +62,6 @@ namespace backend.Controller.Suppliers
                                     rb.Restock.Status,
                                     rb.Restock.CreatedAt,
                                     rb.Restock.UpdatedAt,
-                                    clerk = rb.Restock.Clerk != null ? new
-                                    {
-                                        rb.Restock.Clerk.Id,
-                                        rb.Restock.Clerk.FirstName,
-                                        rb.Restock.Clerk.LastName,
-                                        rb.Restock.Clerk.Email
-                                    } : null
                                 },
 
                                 line_Items = rb.RestockLineItems.Select(rli => new
@@ -102,12 +95,6 @@ namespace backend.Controller.Suppliers
                                             rli.Product.Variant.Variant_ID,
                                             rli.Product.Variant.Variant_Name
                                         } : null
-                                    } : null,
-
-                                    base_Unit = rli.BaseUnitOfMeasure != null ? new
-                                    {
-                                        rli.BaseUnitOfMeasure.uom_ID,
-                                        rli.BaseUnitOfMeasure.uom_Name
                                     } : null,
 
                                     unit_Preset = rli.UnitPreset != null ? new
@@ -150,8 +137,6 @@ namespace backend.Controller.Suppliers
                                     }).ToList()
                                 }).ToList(),
 
-                                batch_Total = rb.RestockLineItems
-                                    .Sum(rli => rli.Base_Unit_Price * rli.Base_Unit_Quantity)
                             })
                             .ToList(),
 
