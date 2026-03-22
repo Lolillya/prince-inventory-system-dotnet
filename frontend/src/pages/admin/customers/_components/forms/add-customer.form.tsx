@@ -24,7 +24,11 @@ const schema = yup.object().shape({
   roleID: yup.number().required(),
 });
 
-export const AddCustomerForm = () => {
+interface AddCustomerFormProps {
+  onSuccess?: (newCustomer: UserModel) => void;
+}
+
+export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
   const {
     register,
     handleSubmit,
@@ -38,9 +42,14 @@ export const AddCustomerForm = () => {
     },
   });
 
-  const onSubmit = (data: UserModel) => {
-    // AddNewSupplierService(data);
-    AddNewCustomerService(data);
+  const onSubmit = async (data: UserModel) => {
+    try {
+      // AddNewSupplierService(data);
+      await AddNewCustomerService(data);
+      onSuccess?.(data);
+    } catch (error) {
+      console.error("Error adding customer:", error);
+    }
   };
 
   return (
@@ -202,16 +211,16 @@ export const AddCustomerForm = () => {
             className="w-full drop-shadow-none bg-custom-gray p-2"
             disabled
             placeholder="CUSTOMER"
-            // {...register("role")}
+          // {...register("role")}
           />
         </div>
         {/* DESCRIPTION */}
         <div>
-          <label htmlFor="supplierNotes" className="block text-sm font-medium">
-            Supplier Notes
+          <label htmlFor="customerNotes" className="block text-sm font-medium">
+            Customer Notes
           </label>
           <textarea
-            id="supplierNotes"
+            id="customerNotes"
             className="w-full p-2 rounded-lg "
             {...register("notes")}
           />
@@ -221,7 +230,7 @@ export const AddCustomerForm = () => {
         </div>
       </div>
 
-      <button type="submit">Add Supplier</button>
+      <button type="submit">Add Customer</button>
     </form>
   );
 };

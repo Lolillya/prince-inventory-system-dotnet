@@ -30,7 +30,10 @@ export const EditSupplierModal = ({
           </div>
         </div>
 
-        <EditSupplierForm selectedSupplier={selectedSupplier} />
+        <EditSupplierForm
+          selectedSupplier={selectedSupplier}
+          onSuccess={handleCloseModal}
+        />
       </div>
     </div>
   );

@@ -31,7 +31,10 @@ export const EditEmployeeModal = ({
           </div>
         </div>
 
-        <EditEmployeeForm selectedEmployee={selectedEmployee} />
+        <EditEmployeeForm
+          setIsEditEmployeeModalOpen={setIsEditEmployeeModalOpen}
+          selectedEmployee={selectedEmployee}
+        />
       </div>
     </div>
   );

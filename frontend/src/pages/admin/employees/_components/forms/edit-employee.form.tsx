@@ -2,6 +2,9 @@ import { UserModel } from "@/features/auth-login/models/user.model";
 import { EditEmployeeService } from "@/features/employees/edit-employee/edit-employee.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
+import { Dispatch, SetStateAction } from "react";
+import { UserClientModel } from "@/models/user-client.model";
 import * as yup from "yup";
 
 const schema = yup.object().shape({
@@ -27,16 +30,19 @@ const schema = yup.object().shape({
 
 interface EditEmployeeFormProps {
   selectedEmployee: UserModel;
+  setIsEditEmployeeModalOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export const EditEmployeeForm = ({
   selectedEmployee,
+  setIsEditEmployeeModalOpen,
 }: EditEmployeeFormProps) => {
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<UserModel>({
     resolver: yupResolver(schema),
     defaultValues: {
       roleID: 2,
@@ -53,9 +59,56 @@ export const EditEmployeeForm = ({
     },
   });
 
-  const onSubmit = (data: UserModel) => {
-    // EditCustomerService(data);
-    EditEmployeeService(data);
+  const onSubmit = async (data: UserModel) => {
+    const payload: UserModel = {
+      ...data,
+      id: selectedEmployee.id,
+      roleID: selectedEmployee.roleID || 2,
+      username: selectedEmployee.username || data.username || "N/A",
+      notes: data.notes?.trim() ? data.notes : "N/A",
+    };
+
+    const result = await EditEmployeeService(payload);
+
+    if (result) {
+      const currentSelected = queryClient.getQueryData<UserClientModel>([
+        "employee-selected",
+      ]);
+
+      const updatedSelectedEmployee: UserClientModel = {
+        id: payload.id || "",
+        username: payload.username || "",
+        email: payload.email,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        companyName: payload.companyName,
+        notes: payload.notes || "",
+        phoneNumber: payload.phoneNumber,
+        address: payload.address,
+        role: currentSelected?.role || "employee",
+      };
+
+      // Close the modal
+      setIsEditEmployeeModalOpen(false);
+
+      // Keep details pane and list in sync immediately after a successful edit
+      queryClient.setQueryData<UserClientModel>(
+        ["employee-selected"],
+        updatedSelectedEmployee
+      );
+
+      queryClient.setQueryData<UserClientModel[]>(["employee"], (previous) => {
+        if (!previous) return previous;
+
+        return previous.map((employee) =>
+          employee.id === updatedSelectedEmployee.id
+            ? { ...employee, ...updatedSelectedEmployee }
+            : employee
+        );
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["employee"] });
+    }
   };
 
   return (
@@ -216,17 +269,17 @@ export const EditEmployeeForm = ({
             type="text"
             className="w-full drop-shadow-none bg-custom-gray p-2"
             disabled
-            placeholder="SUPPLIER"
-            // {...register("role")}
+            placeholder="EMPLOYEE"
+          // {...register("role")}
           />
         </div>
         {/* DESCRIPTION */}
         <div>
-          <label htmlFor="supplierNotes" className="block text-sm font-medium">
-            Supplier Notes
+          <label htmlFor="employeeNotes" className="block text-sm font-medium">
+            Employee Notes
           </label>
           <textarea
-            id="supplierNotes"
+            id="employeeNotes"
             className="w-full p-2 rounded-lg "
             {...register("notes")}
           />
