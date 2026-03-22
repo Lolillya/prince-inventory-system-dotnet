@@ -7,6 +7,7 @@ using backend.Models.RestockModel;
 using backend.Models.LineItems;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using backend.Models.Unit;
 
 namespace backend.Controller.RestockControllers
 {
@@ -72,8 +73,8 @@ namespace backend.Controller.RestockControllers
                     var productPreset = await _db.Product_Unit_Presets
                         .Include(pp => pp.Preset)
                             .ThenInclude(p => p.PresetLevels)
-                        .FirstOrDefaultAsync(pp => 
-                            pp.Product_ID == lineItemDto.Product_ID && 
+                        .FirstOrDefaultAsync(pp =>
+                            pp.Product_ID == lineItemDto.Product_ID &&
                             pp.Preset_ID == lineItemDto.Preset_ID);
 
                     if (productPreset == null)
@@ -150,6 +151,51 @@ namespace backend.Controller.RestockControllers
                             Updated_At = DateTime.UtcNow
                         };
                         _db.Inventory.Add(inventory);
+                    }
+
+                    await _db.SaveChangesAsync();
+
+                    // Update Product_Unit_Preset.Main_Unit_Quantity
+                    productPreset.Main_Unit_Quantity += lineItemDto.Main_Unit_Quantity;
+                    _db.Product_Unit_Presets.Update(productPreset);
+                    await _db.SaveChangesAsync();
+
+                    // Update Product_Unit_Preset_Quantity for main level only
+                    var presetLevels = productPreset.Preset.PresetLevels
+                        .OrderBy(pl => pl.Level)
+                        .ToList();
+
+                    // Prefer main level (Level 1); fallback to highest level if main is not configured.
+                    var targetLevel = presetLevels.FirstOrDefault(pl => pl.Level == 1)
+                        ?? presetLevels.Last();
+
+                    var quantityRecord = await _db.Product_Unit_Preset_Quantities
+                        .FirstOrDefaultAsync(q =>
+                            q.Product_Preset_ID == productPreset.Product_Preset_ID &&
+                            q.Level == targetLevel.Level);
+
+                    if (quantityRecord != null)
+                    {
+                        // Update only the selected level quantity.
+                        quantityRecord.Original_Quantity += lineItemDto.Main_Unit_Quantity;
+                        quantityRecord.Remaining_Quantity += lineItemDto.Main_Unit_Quantity;
+                        quantityRecord.Updated_At = DateTime.UtcNow;
+                        _db.Product_Unit_Preset_Quantities.Update(quantityRecord);
+                    }
+                    else
+                    {
+                        // Create quantity record only for the selected level.
+                        quantityRecord = new Product_Unit_Preset_Quantity
+                        {
+                            Product_Preset_ID = productPreset.Product_Preset_ID,
+                            Level = targetLevel.Level,
+                            UOM_ID = targetLevel.UOM_ID,
+                            Original_Quantity = lineItemDto.Main_Unit_Quantity,
+                            Remaining_Quantity = lineItemDto.Main_Unit_Quantity,
+                            Created_At = DateTime.UtcNow,
+                            Updated_At = DateTime.UtcNow
+                        };
+                        _db.Product_Unit_Preset_Quantities.Add(quantityRecord);
                     }
 
                     await _db.SaveChangesAsync();

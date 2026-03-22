@@ -27,10 +27,12 @@ const schema = yup.object().shape({
 
 interface EditCustomerFormProps {
   selectedCustomer: UserModel;
+  onSuccess?: (updatedCustomer: UserModel) => void;
 }
 
 export const EditCustomerForm = ({
   selectedCustomer,
+  onSuccess,
 }: EditCustomerFormProps) => {
   const {
     register,
@@ -53,8 +55,13 @@ export const EditCustomerForm = ({
     },
   });
 
-  const onSubmit = (data: UserModel) => {
-    EditCustomerService(data);
+  const onSubmit = async (data: UserModel) => {
+    try {
+      await EditCustomerService(data);
+      onSuccess?.(data);
+    } catch (error) {
+      console.error("Error editing customer:", error);
+    }
   };
 
   return (
@@ -215,17 +222,17 @@ export const EditCustomerForm = ({
             type="text"
             className="w-full drop-shadow-none bg-custom-gray p-2"
             disabled
-            placeholder="SUPPLIER"
-            // {...register("role")}
+            placeholder="CUSTOMER"
+          // {...register("role")}
           />
         </div>
         {/* DESCRIPTION */}
         <div>
-          <label htmlFor="supplierNotes" className="block text-sm font-medium">
-            Supplier Notes
+          <label htmlFor="customerNotes" className="block text-sm font-medium">
+            Customer Notes
           </label>
           <textarea
-            id="supplierNotes"
+            id="customerNotes"
             className="w-full p-2 rounded-lg "
             {...register("notes")}
           />

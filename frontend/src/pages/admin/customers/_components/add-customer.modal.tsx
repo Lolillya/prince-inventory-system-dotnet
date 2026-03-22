@@ -1,20 +1,29 @@
 import { XIcon } from "@/icons";
 import { Dispatch, SetStateAction } from "react";
 import { AddCustomerForm } from "./forms/add-customer.form";
+import { UserModel } from "@/features/auth-login/models/user.model";
 
 interface AddCustomerModalProps {
   setIsAddCustomerModalOpen: Dispatch<SetStateAction<boolean>>;
+  onSuccess?: (newCustomer: UserModel) => void;
 }
 
 export const AddCustomerModal = ({
   setIsAddCustomerModalOpen,
+  onSuccess,
 }: AddCustomerModalProps) => {
   const handleCloseModal = () => {
     setIsAddCustomerModalOpen(false);
   };
+
+  const handleSuccess = (newCustomer: UserModel) => {
+    handleCloseModal();
+    onSuccess?.(newCustomer);
+  };
+
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
-      <div className="w-2/4 h-4/5 bg-white px-20 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4">
+      <div className="w-[800px] h-[750px] bg-white px-20 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4">
         <div>
           <div className="absolute top-4 right-4" onClick={handleCloseModal}>
             <XIcon />
@@ -27,7 +36,7 @@ export const AddCustomerModal = ({
           </div>
         </div>
 
-        <AddCustomerForm />
+        <AddCustomerForm onSuccess={handleSuccess} />
       </div>
     </div>
   );

@@ -2,8 +2,7 @@ import { Separator } from "@/components/separator";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { useUnitPresetRestock } from "@/features/restock/unit-preset-restock.query";
 import { XIcon } from "@/icons";
-import { PhilippinePeso } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface RestockCardProp {
   onClick?: () => void;
@@ -12,44 +11,6 @@ interface RestockCardProp {
   excludePresetIds?: number[];
   onRemove?: () => void;
 }
-
-type UnitPresets = {
-  assigned_At: string;
-  preset: Preset;
-  preset_ID: number;
-  product_Preset_ID: number;
-  low_Stock_Level?: number;
-  very_Low_Stock_Level?: number;
-};
-
-type Preset = {
-  created_At: string;
-  main_Unit_ID: number;
-  mainUnit: {
-    uom_ID: number;
-    unit_Name: string;
-    abbreviation: string;
-  };
-  presetLevels: PresetLevel[];
-  preset_ID: number;
-  preset_Name: string;
-  updated_At: string;
-};
-
-type PresetLevel = {
-  conversion_Factor: number;
-  created_At: string;
-  level: number;
-  level_ID: number;
-  unitOfMeasure: UnitOfMeasure;
-  uom_ID: number;
-};
-
-type UnitOfMeasure = {
-  uom_ID: number;
-  uom_Name: string;
-  abbreviation: string;
-};
 
 export const RestockCard2 = ({
   product,
@@ -65,21 +26,24 @@ export const RestockCard2 = ({
   const [levelPrices, setLevelPrices] = useState<{ [level: number]: number }>(
     {},
   );
-  // const [dropdownOpen, setDropdownOpen] = useState(false);
-  // const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // useEffect(() => {
-  //   const handleClickOutside = (e: MouseEvent) => {
-  //     if (
-  //       dropdownRef.current &&
-  //       !dropdownRef.current.contains(e.target as Node)
-  //     ) {
-  //       setDropdownOpen(false);
-  //     }
-  //   };
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => document.removeEventListener("mousedown", handleClickOutside);
-  // }, []);
+  // Initialize state from product if it has selectedPreset
+  useEffect(() => {
+    const typedProduct = product as any;
+    if (typedProduct.selectedPreset) {
+      setSelectedPresetId(typedProduct.selectedPreset.preset_ID);
+      setMainQuantity(typedProduct.selectedPreset.main_Unit_Quantity || 0);
+
+      // Initialize level prices if they exist
+      if (typedProduct.selectedPreset.levelPricing) {
+        const prices: { [level: number]: number } = {};
+        typedProduct.selectedPreset.levelPricing.forEach((lp: any) => {
+          prices[lp.level] = lp.price_Per_Unit || 0;
+        });
+        setLevelPrices(prices);
+      }
+    }
+  }, [product]);
 
   console.log(product);
 
@@ -119,8 +83,27 @@ export const RestockCard2 = ({
     }
   };
 
+  const isCardComplete = selectedPresetId !== null && mainQuantity > 0;
+
   return (
-    <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
+    <div
+      className={`p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs relative ${
+        isCardComplete ? "border-green-500" : "border-gray-300"
+      }`}
+    >
+      {/* Completion Badge */}
+      <div className="absolute -top-1 ">
+        {isCardComplete ? (
+          <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+            Ready
+          </div>
+        ) : (
+          <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+            Incomplete
+          </div>
+        )}
+      </div>
+
       <div className="flex gap-2 items-center text-xs justify-between">
         <div>
           <span>{product.product.product_Name}</span>

@@ -20,10 +20,8 @@ namespace backend.Dtos.Account
         public string Id { get; set; }
         [Required]
         public string LastName { get; set; }
-        [Required]
-        public string Notes { get; set; }
-        [Required]
-        public string PhoneNumber { get; set; }
+        public string? Notes { get; set; }
+        public string? PhoneNumber { get; set; }
         [Required]
         public int RoleID { get; set; }
         [Required]
