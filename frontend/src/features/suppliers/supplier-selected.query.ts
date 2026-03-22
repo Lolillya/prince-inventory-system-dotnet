@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { UserClientModel } from "../../models/user-client.model";
+import { SupplierDataModel } from "./get-all-suppliers.model";
 
 const supplierSelectedKey = ["supplier-selected"];
 
 export const useSelectedSupplierQuery = () => {
-  return useQuery<UserClientModel>({
+  return useQuery<SupplierDataModel>({
     queryKey: supplierSelectedKey,
     queryFn: async () => {
-      return null as unknown as UserClientModel;
+      return null as unknown as SupplierDataModel;
     },
     enabled: false,
   });
@@ -16,7 +16,7 @@ export const useSelectedSupplierQuery = () => {
 export const useSetSupplierSelected = () => {
   const queryClient = useQueryClient();
 
-  return (supplier: UserClientModel) => {
-    queryClient.setQueryData<UserClientModel>(supplierSelectedKey, supplier);
+  return (supplier: SupplierDataModel) => {
+    queryClient.setQueryData<SupplierDataModel>(supplierSelectedKey, supplier);
   };
 };

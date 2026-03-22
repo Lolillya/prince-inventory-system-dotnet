@@ -7,6 +7,7 @@ export type SupplierDataModel = {
   phone_Number: string;
   address: string;
   notes: string;
+  username: string;
   restocks: RestockBatchModel[];
   total_Restock_Value: number;
 };

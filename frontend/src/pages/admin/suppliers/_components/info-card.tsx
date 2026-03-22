@@ -1,11 +1,11 @@
-import { StarIcon, TrashIcon } from "../icons";
-import { UserClientModel } from "../models/user-client.model";
-import { useSetEmployeeSelected } from "../features/employees/empployee-selected.query";
-import { useSetCustomerSelected } from "@/features/customers/customer-selector.query";
+import { useSetSupplierSelected } from "@/features/suppliers/supplier-selected.query";
+
+import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
+import { StarIcon, TrashIcon } from "@/icons";
 
 type UserType = "customer" | "supplier" | "employee";
 
-interface InfoCardProps extends UserClientModel {
+interface InfoCardProps extends SupplierDataModel {
   type: UserType;
   handleDelete?: () => void;
   setIsConfirmRemoveModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -17,12 +17,10 @@ export const InfoCard = ({
   setIsConfirmRemoveModalOpen,
   ...data
 }: InfoCardProps) => {
-  const setCustomerSelected = useSetCustomerSelected();
-  const setEmployeeSelected = useSetEmployeeSelected();
+  const setSupplierSelected = useSetSupplierSelected();
 
-  const handleClick = (user: UserClientModel) => {
-    if (type === "employee") setEmployeeSelected(user);
-    if (type === "customer") setCustomerSelected(user);
+  const handleClick = (user: SupplierDataModel) => {
+    if (type === "supplier") setSupplierSelected(user);
   };
 
   return (
@@ -34,8 +32,8 @@ export const InfoCard = ({
         <div className="bg-black h-11 w-11 rounded-lg"></div>
 
         <div className="flex flex-col">
-          <span className="info-name">{data.companyName}</span>
-          <span className="info-id">{data.id}</span>
+          <span className="info-name">{data.company_Name}</span>
+          <span className="info-id">{data.supplier_Id}</span>
         </div>
       </div>
 

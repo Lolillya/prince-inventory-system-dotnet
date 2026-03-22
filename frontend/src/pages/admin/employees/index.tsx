@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { InfoCard } from "@/components/info-card";
+import { InfoCard } from "@/pages/admin/suppliers/_components/info-card";
 import { NoSelectedState } from "@/components/no-selected-state";
 import { SelectedUser } from "@/components/selected-user";
 import { Separator } from "@/components/separator";
@@ -21,7 +21,7 @@ const EmployeesPage = () => {
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
   const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
-    null
+    null,
   );
 
   // FETCH DATA LOADING STATE

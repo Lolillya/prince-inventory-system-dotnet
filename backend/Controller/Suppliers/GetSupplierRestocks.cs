@@ -48,6 +48,7 @@ namespace backend.Controller.Suppliers
                         phone_Number = supplier.PhoneNumber,
                         address = supplier.Address,
                         notes = supplier.Notes,
+                        username = supplier.UserName,
 
                         restocks = _db.RestockBatches
                             .Where(rb => rb.Supplier_ID == supplier.Id)
