@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using backend.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,9 +25,13 @@ namespace backend.Controller.Suppliers
         {
             try
             {
-                // Get all supplier IDs from RestockBatch table
-                var supplierIds = await _db.RestockBatches
-                    .Select(rb => rb.Supplier_ID)
+                // Get all user IDs assigned to the Supplier role.
+                var supplierIds = await (
+                    from userRole in _db.Set<IdentityUserRole<string>>()
+                    join role in _db.Roles on userRole.RoleId equals role.Id
+                    where role.NormalizedName == "SUPPLIER"
+                    select userRole.UserId
+                )
                     .Distinct()
                     .ToListAsync();
 
@@ -140,10 +145,7 @@ namespace backend.Controller.Suppliers
                             })
                             .ToList(),
 
-                        total_Restock_Value = _db.RestockBatches
-                            .Where(rb => rb.Supplier_ID == supplier.Id)
-                            .SelectMany(rb => rb.RestockLineItems)
-                            .Sum(rli => rli.Base_Unit_Price * rli.Base_Unit_Quantity)
+
                     })
                     .ToListAsync();
 
