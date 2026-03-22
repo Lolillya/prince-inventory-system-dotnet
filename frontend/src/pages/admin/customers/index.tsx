@@ -4,16 +4,23 @@ import { SelectedUser } from "@/components/selected-user";
 import { NoSelectedState } from "@/components/no-selected-state";
 import { Separator } from "@/components/separator";
 import { useCustomersQuery } from "@/features/customers/customer-get-all.query";
-import { useSelectedCustomer } from "@/features/customers/customer-selector.query";
+import {
+  useSelectedCustomer,
+  useSetCustomerSelected,
+} from "@/features/customers/customer-selector.query";
 import { Fragment, useState } from "react";
 import { AddCustomerModal } from "./_components/add-customer.modal";
 import { EditCustomerModal } from "./_components/edit-customer,modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { useQueryClient } from "@tanstack/react-query";
+import { UserModel } from "@/features/auth-login/models/user.model";
 
 const SuppliersPage = () => {
+  const queryClient = useQueryClient();
   const { data: customers, isLoading, error } = useCustomersQuery();
   const { data: selectedCustomer } = useSelectedCustomer();
+  const setCustomerSelected = useSetCustomerSelected();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
@@ -32,13 +39,49 @@ const SuppliersPage = () => {
     setIsAddCustomerModalOpen(!isAddCustomerModalOpen);
   };
 
+  const handleAddCustomerSuccess = (newCustomer: UserModel) => {
+    // Add the new customer to the cache with proper formatting
+    const newCustomerWithRole = {
+      ...newCustomer,
+      roleID: 4,
+      role: "Customer", // Add the role field for tag display
+    } as UserClientModel;
+
+    // Update the cache with the new customer added to the list
+    queryClient.setQueryData<UserClientModel[]>(["customer"], (oldData) => {
+      if (!oldData) return [newCustomerWithRole];
+      return [...oldData, newCustomerWithRole];
+    });
+  };
+
   const handleEdit = () => {
     setIsEditCustomerModalOpen(!isEditCustomerModalOpen);
+  };
+
+  const handleEditCustomerSuccess = (updatedCustomer: UserModel) => {
+    // Update the selected customer in the query cache
+    const updatedCustomerWithRole = {
+      ...updatedCustomer,
+      roleID: 3,
+      role: "Customer", // Add the role field for tag display
+    } as UserClientModel;
+    setCustomerSelected(updatedCustomerWithRole);
+    // Invalidate the customers query to refresh the list
+    queryClient.invalidateQueries({ queryKey: ["customer"] });
   };
 
   const handleDelete = (data: UserClientModel) => {
     setUserToDelete(data);
     setIsConfirmRemoveModalOpen(true);
+  };
+
+  const handleDeleteCustomerSuccess = (deletedUserId: string) => {
+    // Invalidate the customers query to refresh the list
+    queryClient.invalidateQueries({ queryKey: ["customer"] });
+    // Clear selected customer if the deleted customer was selected
+    if (selectedCustomer?.id === deletedUserId) {
+      queryClient.setQueryData(["invoice-customer"], null);
+    }
   };
 
   const filteredCustomers = customers?.filter((customer) => {
@@ -58,6 +101,7 @@ const SuppliersPage = () => {
       {isAddCustomerModalOpen && (
         <AddCustomerModal
           setIsAddCustomerModalOpen={setIsAddCustomerModalOpen}
+          onSuccess={handleAddCustomerSuccess}
         />
       )}
 
@@ -77,6 +121,7 @@ const SuppliersPage = () => {
             notes: selectedCustomer.notes,
             roleID: 3,
           }}
+          onSuccess={handleEditCustomerSuccess}
         />
       )}
 
@@ -85,6 +130,7 @@ const SuppliersPage = () => {
         <ConfirmRemoveModal
           setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
           userId={userToDelete.id}
+          onSuccess={handleDeleteCustomerSuccess}
         />
       )}
       <div className="w-full mb-8">

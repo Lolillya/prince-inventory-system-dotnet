@@ -3,19 +3,27 @@ import { DeleteUserService } from "@/features/suppliers/remove-supplier/remove-s
 interface ConfirmRemoveModalProps {
   setIsConfirmRemoveModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   userId: string;
+  onSuccess?: (deletedUserId: string) => void;
 }
 
 export const ConfirmRemoveModal = ({
   setIsConfirmRemoveModalOpen,
   userId,
+  onSuccess,
 }: ConfirmRemoveModalProps) => {
   const handleCloseModal = () => {
     setIsConfirmRemoveModalOpen(false);
   };
 
   const handleRemove = async () => {
-    await DeleteUserService(userId);
-    handleCloseModal();
+    try {
+      await DeleteUserService(userId);
+      handleCloseModal();
+      onSuccess?.(userId);
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      handleCloseModal();
+    }
   };
 
   return (
