@@ -27,7 +27,7 @@ export const AddSupplierModal = ({
           </div>
         </div>
 
-        <AddSupplierForm />
+        <AddSupplierForm setIsAddSupplierModalOpen={setIsAddSupplierModalOpen} />
       </div>
     </div>
   );
