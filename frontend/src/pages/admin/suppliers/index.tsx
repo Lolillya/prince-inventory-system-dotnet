@@ -3,13 +3,13 @@ import { useSuppliersQuery } from "@/features/suppliers/supplier-get-all.query";
 import { useSelectedSupplierQuery } from "@/features/suppliers/supplier-selected.query";
 import { Separator } from "@/components/separator";
 import { NoSelectedState } from "@/components/no-selected-state";
-import { SelectedUser } from "@/components/selected-user";
 import { Fragment, useState } from "react";
 import { AddSupplierModal } from "./_components/add-supplier.modal";
 import { EditSupplierModal } from "./_components/edit-supplier.modal";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 import { InfoCard } from "./_components/info-card";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
+import { SelectedUser } from "./_components/selected-user";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
@@ -52,7 +52,7 @@ const SuppliersPage = () => {
     );
   });
 
-  console.log(suppliers);
+  // console.log(suppliers);
 
   return (
     <section>
@@ -118,7 +118,7 @@ const SuppliersPage = () => {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-3 overflow-y-hidden">
+      <div className="flex min-h-0 flex-1 gap-3 overflow-y-hidden">
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
@@ -147,20 +147,19 @@ const SuppliersPage = () => {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="w-[50%] flex flex-col gap-3">
+        <div className="flex min-h-0 w-[50%] flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
             <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
             </label>
           </div>
 
-          <div className="h-full bg-custom-gray rounded-lg flex">
+          <div className="flex h-full min-h-0 rounded-lg bg-custom-gray">
             {!selectedSupplier ? (
               <NoSelectedState />
             ) : (
               <SelectedUser
-                type="supplier"
-                {...selectedSupplier}
+                selectedSupplier={selectedSupplier}
                 handleEdit={handleEdit}
               />
             )}

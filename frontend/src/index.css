@@ -181,7 +181,7 @@
   button {
     @apply rounded-sm w-full max-w-40 py-3 px-4 
       flex items-center justify-center gap-2
-      bg-river-green hover:brightness-105 text-primary/80 hover:shadow-lg
+      bg-river-green hover:brightness-105 text-primary/80 hover:shadow-md
       text-sm font-semibold capitalize
       transition-all duration-200 cursor-pointer;
 
