@@ -41,28 +41,30 @@ const SuppliersPage = () => {
     setIsConfirmRemoveModalOpen(true);
   };
 
-  const filteredSuppliers = suppliers?.filter((supplier) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      supplier.firstName.toLowerCase().includes(query) ||
-      supplier.lastName.toLowerCase().includes(query) ||
-      supplier.email.toLowerCase().includes(query) ||
-      supplier.companyName.toLowerCase().includes(query) ||
-      supplier.phoneNumber.toLowerCase().includes(query)
-    );
-  });
+  // const filteredSuppliers = suppliers?.filter((supplier) => {
+  //   const query = searchQuery.toLowerCase();
+  //   return (
+  //     supplier.firstName.toLowerCase().includes(query) ||
+  //     supplier.lastName.toLowerCase().includes(query) ||
+  //     supplier.email.toLowerCase().includes(query) ||
+  //     supplier.companyName.toLowerCase().includes(query) ||
+  //     supplier.phoneNumber.toLowerCase().includes(query)
+  //   );
+  // });
+
+  console.log(suppliers);
 
   return (
     <section>
       {/* ADD SUPPLIER MODAL */}
-      {isAddSupplierModalOpen && (
+      {/* {isAddSupplierModalOpen && (
         <AddSupplierModal
           setIsAddSupplierModalOpen={setIsAddSupplierModalOpen}
         />
-      )}
+      )} */}
 
       {/* EDIT SUPPLIER MODAL */}
-      {isEditSupplierModalOpen && selectedSupplier && (
+      {/* {isEditSupplierModalOpen && selectedSupplier && (
         <EditSupplierModal
           setIsEditSupplierModalOpen={setIsEditSupplierModalOpen}
           selectedSupplier={{
@@ -78,10 +80,10 @@ const SuppliersPage = () => {
             roleID: 3,
           }}
         />
-      )}
+      )} */}
 
       {/* CONFIRM DELETE MODAL */}
-      {isConfirmRemoveModalOpen && userToDelete && (
+      {/* {isConfirmRemoveModalOpen && userToDelete && (
         <ConfirmRemoveModal
           setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
           userId={userToDelete.id}
@@ -114,11 +116,11 @@ const SuppliersPage = () => {
             new supplier
           </button>
         </div>
-      </div>
+      </div> */}
 
       <div className="flex flex-1 gap-3 overflow-y-hidden">
         {/*  LEFT PANEL */}
-        <div className="w-full flex flex-col gap-3">
+        {/* <div className="w-full flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
             <label className="capitalize text-saltbox-gray font-normal text-sm">
               suppiers
@@ -142,10 +144,10 @@ const SuppliersPage = () => {
               </Fragment>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* RIGHT PANEL */}
-        <div className="w-[50%] flex flex-col gap-3">
+        {/* <div className="w-[50%] flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
             <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
@@ -163,7 +165,7 @@ const SuppliersPage = () => {
               />
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );
