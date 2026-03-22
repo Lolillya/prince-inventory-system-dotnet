@@ -157,8 +157,18 @@ namespace backend.Controller.RestockControllers
                         .ThenInclude(rb => rb.RestockLineItems)
                             .ThenInclude(rli => rli.ProductUOMs)
                                 .ThenInclude(puom => puom.UnitOfMeasure)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.UnitPreset)
+                                .ThenInclude(up => up!.MainUnit)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.UnitPreset)
+                                .ThenInclude(up => up!.PresetLevels)
+                                    .ThenInclude(pl => pl.UnitOfMeasure)
                     .Select(r => new
                     {
+                        r.Status,
                         restock_Id = r.Restock_ID,
                         restock_Number = r.Restock_Number,
                         restock_Notes = r.Restock_Notes,
@@ -220,18 +230,45 @@ namespace backend.Controller.RestockControllers
                                 base_Unit_Quantity = rli.Base_Unit_Quantity,
                                 line_Item_Total = rli.Base_Unit_Price * rli.Base_Unit_Quantity,
 
-                                unit_Conversions = rli.ProductUOMs.Select(puom => new
+                                unit_Preset = rli.UnitPreset != null ? new
                                 {
-                                    product_UOM_Id = puom.Product_UOM_Id,
-                                    unit = puom.UnitOfMeasure != null ? new
+                                    rli.UnitPreset.Preset_ID,
+                                    rli.UnitPreset.Preset_Name,
+                                    rli.UnitPreset.Main_Unit_ID,
+                                    main_Unit = rli.UnitPreset.MainUnit != null ? new
                                     {
-                                        puom.UnitOfMeasure.uom_ID,
-                                        puom.UnitOfMeasure.uom_Name
+                                        rli.UnitPreset.MainUnit.uom_ID,
+                                        rli.UnitPreset.MainUnit.uom_Name
                                     } : null,
-                                    parent_UOM_ID = puom.Parent_UOM_ID,
-                                    conversion_Factor = puom.Conversion_Factor,
-                                    unit_Price = puom.Unit_Price
-                                }).ToList()
+                                    preset_Levels = rli.UnitPreset.PresetLevels
+                                        .OrderBy(pl => pl.Level)
+                                        .Select(pl => new
+                                        {
+                                            pl.Level_ID,
+                                            pl.Level,
+                                            pl.UOM_ID,
+                                            pl.Conversion_Factor,
+                                            unit = pl.UnitOfMeasure != null ? new
+                                            {
+                                                pl.UnitOfMeasure.uom_ID,
+                                                pl.UnitOfMeasure.uom_Name
+                                            } : null
+                                        })
+                                        .ToList()
+                                } : null,
+
+                                // unit_Conversions = rli.ProductUOMs.Select(puom => new
+                                // {
+                                //     product_UOM_Id = puom.Product_UOM_Id,
+                                //     unit = puom.UnitOfMeasure != null ? new
+                                //     {
+                                //         puom.UnitOfMeasure.uom_ID,
+                                //         puom.UnitOfMeasure.uom_Name
+                                //     } : null,
+                                //     parent_UOM_ID = puom.Parent_UOM_ID,
+                                //     conversion_Factor = puom.Conversion_Factor,
+                                //     unit_Price = puom.Unit_Price
+                                // }).ToList()
                             }))
                             .ToList(),
 

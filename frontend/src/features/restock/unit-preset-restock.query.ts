@@ -5,6 +5,7 @@ import {
 } from "./models/unit-preset-restock.model";
 import { unitPresetRestockService } from "./unit-preset-restock.service";
 import { toast } from "sonner";
+import { InventoryProductModel } from "../inventory/models/inventory.model";
 
 const UNIT_PRESET_RESTOCK_KEY = ["unit-preset-restock"];
 
@@ -12,7 +13,7 @@ const UNIT_PRESET_RESTOCK_KEY = ["unit-preset-restock"];
  * Hook to get the selected restock items
  */
 export const useUnitPresetRestockItems = () => {
-  return useQuery<UnitPresetRestockItem[]>({
+  return useQuery<InventoryProductModel[]>({
     queryKey: UNIT_PRESET_RESTOCK_KEY,
     queryFn: async () => {
       return [];
@@ -29,41 +30,43 @@ export const useUnitPresetRestock = () => {
 
   /**
    * Add product to restock list
+   * Allows duplicate products as long as they have different presets
    */
-  const addProduct = (product: UnitPresetRestockItem) => {
-    queryClient.setQueryData<UnitPresetRestockItem[]>(
+  const addProduct = (product: InventoryProductModel) => {
+    queryClient.setQueryData<InventoryProductModel[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
-        // Check if product already exists
-        const exists = old.some(
-          (item) => item.product.product_ID === product.product.product_ID
-        );
-        return exists ? old : [...old, product];
-      }
+        // Always add product - duplicates are allowed with different presets
+        const newItem = {
+          ...product,
+          itemId: `${product.product.product_ID}-${Date.now()}-${Math.random()}`,
+        };
+        return [...old, newItem as any];
+      },
     );
   };
 
   /**
-   * Remove product from restock list
+   * Remove product from restock list by itemId
    */
-  const removeProduct = (productId: number) => {
+  const removeProduct = (itemId: string) => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
-        return old.filter((item) => item.product.product_ID !== productId);
-      }
+        return old.filter((item) => (item as any).itemId !== itemId);
+      },
     );
   };
 
   /**
-   * Select a preset for a product
+   * Select a preset for a specific restock item
    */
-  const selectPreset = (productId: number, presetId: number) => {
+  const selectPreset = (itemId: string, presetId: number) => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
         return old.map((item) => {
-          if (item.product.product_ID !== productId) return item;
+          if ((item as any).itemId !== itemId) return item;
 
           const preset = item.unitPresets.find((p) => p.preset_ID === presetId);
           if (!preset) return item;
@@ -85,19 +88,19 @@ export const useUnitPresetRestock = () => {
             },
           };
         });
-      }
+      },
     );
   };
 
   /**
-   * Update main unit quantity for a product
+   * Update main unit quantity for a specific restock item
    */
-  const updateMainQuantity = (productId: number, quantity: number) => {
+  const updateMainQuantity = (itemId: string, quantity: number) => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
         return old.map((item) => {
-          if (item.product.product_ID !== productId || !item.selectedPreset) {
+          if ((item as any).itemId !== itemId || !item.selectedPreset) {
             return item;
           }
 
@@ -109,23 +112,19 @@ export const useUnitPresetRestock = () => {
             },
           };
         });
-      }
+      },
     );
   };
 
   /**
-   * Update pricing for a specific level
+   * Update pricing for a specific level on a specific restock item
    */
-  const updateLevelPricing = (
-    productId: number,
-    level: number,
-    price: number
-  ) => {
+  const updateLevelPricing = (itemId: string, level: number, price: number) => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
         return old.map((item) => {
-          if (item.product.product_ID !== productId || !item.selectedPreset) {
+          if ((item as any).itemId !== itemId || !item.selectedPreset) {
             return item;
           }
 
@@ -134,12 +133,12 @@ export const useUnitPresetRestock = () => {
             selectedPreset: {
               ...item.selectedPreset,
               levelPricing: item.selectedPreset.levelPricing.map((lp) =>
-                lp.level === level ? { ...lp, price_Per_Unit: price } : lp
+                lp.level === level ? { ...lp, price_Per_Unit: price } : lp,
               ),
             },
           };
         });
-      }
+      },
     );
   };
 
@@ -149,7 +148,7 @@ export const useUnitPresetRestock = () => {
   const clearAll = () => {
     queryClient.setQueryData<UnitPresetRestockItem[]>(
       UNIT_PRESET_RESTOCK_KEY,
-      []
+      [],
     );
   };
 
@@ -170,12 +169,12 @@ export const useUnitPresetRestock = () => {
   } => {
     const items =
       queryClient.getQueryData<UnitPresetRestockItem[]>(
-        UNIT_PRESET_RESTOCK_KEY
+        UNIT_PRESET_RESTOCK_KEY,
       ) || [];
 
     console.log(
       "Items in state before getPayload:",
-      JSON.stringify(items, null, 2)
+      JSON.stringify(items, null, 2),
     );
 
     const lineItems = items
@@ -216,12 +215,12 @@ export const useCreateUnitPresetRestock = () => {
       unitPresetRestockService.create(payload),
     onSuccess: (data) => {
       toast.success(
-        `Restock created successfully! Restock Number: ${data.restock_Number}`
+        `Restock created successfully! Restock Number: ${data.restock_Number}`,
       );
       // Clear the restock items
       queryClient.setQueryData<UnitPresetRestockItem[]>(
         UNIT_PRESET_RESTOCK_KEY,
-        []
+        [],
       );
       // Invalidate inventory to refetch updated quantities
       queryClient.invalidateQueries({ queryKey: ["inventory"] });

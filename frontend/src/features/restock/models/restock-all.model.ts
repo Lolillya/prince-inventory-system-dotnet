@@ -2,6 +2,7 @@ export type RestockAllModel = {
   restock_Id: number;
   restock_Number: string;
   restock_Notes: string;
+  status: string;
   clerk: Clerk;
   supplier: Supplier;
   created_At: string;
@@ -32,7 +33,26 @@ type LineItem = {
   base_Unit: Unit;
   base_Unit_Price: number;
   base_Unit_Quantity: number;
-  unit_Conversions: Unit_Conversions[];
+  unit_Preset: UnitPreset;
+  // unit_Conversions: Unit_Conversions[];
+};
+
+type UnitPreset = {
+  preset_ID: number;
+  preset_Name: string;
+  main_Unit: {
+    uom_ID: number;
+    uom_Name: string;
+  };
+  preset_Levels: Preset_Levels[];
+};
+
+type Preset_Levels = {
+  level_ID: number;
+  level: number;
+  uoM_ID: number;
+  conversion_Factor: number;
+  unit: Unit;
 };
 
 type Product = {
@@ -60,13 +80,13 @@ type Variant = {
   variant_Name: string;
 };
 
-type Unit_Conversions = {
-  product_UOM_Id: number;
-  unit: Unit;
-  parent_UOM_ID: number;
-  conversion_Factor: number;
-  unit_Price: number;
-};
+// type Unit_Conversions = {
+//   product_UOM_Id: number;
+//   unit: Unit;
+//   parent_UOM_ID: number;
+//   conversion_Factor: number;
+//   unit_Price: number;
+// };
 
 type Unit = {
   uom_ID: number;

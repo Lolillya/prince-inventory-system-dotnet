@@ -41,18 +41,16 @@ export const RestockTable = () => {
     createRestock(restockPayload);
   };
 
-  const calculateSubtotal = (item: (typeof items)[0]) => {
-    if (!item.selectedPreset) return 0;
+  const handleCreateRestock_2 = async () => {};
 
-    // Calculate based on main unit quantity and main unit price
-    const mainPrice =
-      item.selectedPreset.levelPricing.find((lp) => lp.level === 1)
-        ?.price_Per_Unit || 0;
-    return mainPrice * item.selectedPreset.main_Unit_Quantity;
-  };
-
-  const calculateTotal = () => {
-    return items.reduce((sum, item) => sum + calculateSubtotal(item), 0);
+  const calculateTotalQuantity = () => {
+    // Sum all subtotals for items with selected presets
+    return items
+      .filter((item) => (item as any).selectedPreset)
+      .reduce((total, item) => {
+        const typedItem = item as any;
+        return total + (typedItem.selectedPreset?.main_Unit_Quantity || 0);
+      }, 0);
   };
 
   return (
@@ -62,32 +60,23 @@ export const RestockTable = () => {
         <label className="text-left w-full uppercase text-xs font-semibold">
           Item
         </label>
-        <label className="text-left w-full uppercase text-xs font-semibold">
-          Preset
+        <label className="text-left w-[70%] uppercase text-xs font-semibold">
+          Conversion
         </label>
-        <label className="text-left w-full uppercase text-xs font-semibold">
+        <label className="text-left w-[30%] uppercase text-xs font-semibold">
           Quantity
-        </label>
-        <label className="text-right w-full uppercase text-xs font-semibold">
-          Unit Price
-        </label>
-        <label className="text-right w-full uppercase text-xs font-semibold">
-          Sub-total
         </label>
       </div>
 
       {/* TABLE DATA BODY */}
       <div className="overflow-auto flex flex-col h-full">
         {items
-          .filter((item) => item.selectedPreset)
+          .filter((item) => (item as any).selectedPreset)
           .map((item, i) => {
+            const typedItem = item as any;
             const preset = item.unitPresets.find(
-              (p) => p.preset_ID === item.selectedPreset?.preset_ID
+              (p) => p.preset_ID === typedItem.selectedPreset?.preset_ID,
             );
-            const mainUnitPrice =
-              item.selectedPreset?.levelPricing.find((lp) => lp.level === 1)
-                ?.price_Per_Unit || 0;
-            const subtotal = calculateSubtotal(item);
 
             return (
               <div
@@ -98,25 +87,19 @@ export const RestockTable = () => {
                   <div>
                     <span>{item.product.product_Name}</span>
                     <span> - </span>
-                    <span>{item.brand.brand_Name}</span>
+                    <span>{item.brand.brandName}</span>
                     <span> - </span>
                     <span>{item.variant.variant_Name}</span>
                   </div>
                 </span>
-                <span className="text-left w-full">
+                <span className="text-left w-[70%]">
                   {preset?.preset.presetLevels
                     .map((l) => l.unitOfMeasure.uom_Name)
                     .join(" → ")}
                 </span>
-                <span className="text-left w-full">
-                  {item.selectedPreset?.main_Unit_Quantity}{" "}
+                <span className="text-left w-[30%]">
+                  {typedItem.selectedPreset?.main_Unit_Quantity}{" "}
                   {preset?.preset.presetLevels[0].unitOfMeasure.uom_Name}
-                </span>
-                <span className="text-right w-full">
-                  ₱ {mainUnitPrice.toFixed(2)}
-                </span>
-                <span className="text-right w-full">
-                  ₱ {subtotal.toFixed(2)}
                 </span>
               </div>
             );
@@ -133,8 +116,14 @@ export const RestockTable = () => {
       <div className="flex justify-between">
         <div className="flex flex-col">
           <div className="flex gap-2 font-bold tracking-wider">
-            <span>TOTAL: </span>
-            <label>₱ {calculateTotal().toFixed(2)}</label>
+            <span>TOTAL PRODUCTS: </span>
+            <label>
+              {items.filter((item) => (item as any).selectedPreset).length}
+            </label>
+          </div>
+          <div className="flex gap-2 font-bold tracking-wider">
+            <span>TOTAL QUANTITY: </span>
+            <label>{calculateTotalQuantity()}</label>
           </div>
         </div>
 

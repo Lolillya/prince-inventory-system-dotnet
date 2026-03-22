@@ -3,14 +3,13 @@ import { LeftArrowIcon, SearchIcon } from "@/icons";
 import { Activity, useState } from "react";
 import { CreateRestockModal } from "./_components/restock-modal";
 import { ProductCard } from "../_components/product-card";
-import { UseInventoryQuery } from "@/features/restock/inventory-batch";
-import { InventoryBatchesModel } from "@/features/restock/models/inventory-batches.model";
 import { RestockCard2 } from "./_components/restock-card-copy";
 import {
   useUnitPresetRestockItems,
   useUnitPresetRestock,
 } from "@/features/restock/unit-preset-restock.query";
-import { UnitPresetRestockItem } from "@/features/restock/models/unit-preset-restock.model";
+import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
@@ -26,109 +25,176 @@ const NewRestockPage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
+  // console.log(inventoryData);
+
   const createRestock = () => {
     setIsModalOpen((prev) => !prev);
   };
 
-  const handleClick = (data: InventoryBatchesModel) => {
-    const restockItem: UnitPresetRestockItem = {
+  const handleClick = (data: InventoryProductModel) => {
+    const restockItem: InventoryProductModel = {
       product: {
         product_ID: data.product.product_ID,
         product_Code: data.product.product_Code,
         product_Name: data.product.product_Name,
-        desc: data.product.description,
-        brand_ID: data.brand.brand_ID,
-        category_ID: data.category.category_ID,
-        created_At: data.product.createdAt,
-        updated_At: data.product.updatedAt,
+        description: data.product.description,
+        // brandId: data.brand.brand_ID,
+        // categoryID: data.category.category_ID,
+        createdAt: data.product.createdAt,
+        updatedAt: data.product.updatedAt,
+        quantity: data.product.quantity,
       },
       variant: {
+        variant_ID: data.variant.variant_ID,
         variant_Name: data.variant.variant_Name,
-        created_At: data.variant.createdAt,
-        updated_At: data.variant.updatedAt,
+        createdAt: data.variant.createdAt,
+        updatedAt: data.variant.updatedAt,
       },
       brand: {
-        brand_Name: data.brand.brandName,
-        created_At: data.brand.createdAt,
-        updated_At: data.brand.updatedAt,
+        brand_ID: data.brand.brand_ID,
+        brandName: data.brand.brandName,
+        createdAt: data.brand.createdAt,
+        updatedAt: data.brand.updatedAt,
       },
+      category: data.category,
       unitPresets: (data.unitPresets as any) || [],
+      isComplete: data.isComplete,
+      isFavorited: data.isFavorited,
+      isSetupComplete: data.isSetupComplete,
+      restockInfo: data.restockInfo,
     };
     addProduct(restockItem);
   };
 
-  const handleRemoveProduct = (productId: number) => {
-    removeProduct(productId);
+  const handleRemoveProduct = (itemId: string) => {
+    removeProduct(itemId);
   };
 
+  // Calculate if all items are ready for restock
+  const readyItemsCount = items.filter((item) => {
+    const typedItem = item as any;
+    return (
+      typedItem.selectedPreset &&
+      typedItem.selectedPreset.main_Unit_Quantity > 0
+    );
+  }).length;
+
+  const allItemsReady = items.length > 0 && readyItemsCount === items.length;
+
   return (
-    <section>
+    <>
       <Activity mode={isModalOpen ? "visible" : "hidden"}>
         <CreateRestockModal createRestock={createRestock} />
       </Activity>
-
-      <div className="flex flex-col min-h-0 flex-1 gap-5">
-        <div className="flex flex-col gap-10">
-          <div className="flex gap-3 border-b pb-5 items-center">
-            <LeftArrowIcon />
-            <span>new restock</span>
-            <span>#123456</span>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-10 overflow-y-hidden flex-1">
-          <div className="flex gap-5 overflow-y-hidden flex-1">
-            {/* LEFT */}
-            <div className="w-full flex">
-              {!items || items.length === 0 ? (
-                <NoSelectedState />
-              ) : (
-                <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
-                  {items.map((item, i) => (
-                    <RestockCard2
-                      key={i}
-                      product={item}
-                      onRemove={() =>
-                        handleRemoveProduct(item.product.product_ID)
-                      }
-                    />
-                  ))}
-                </div>
-              )}
+      <section className="relative">
+        <div className="flex flex-col min-h-0 flex-1 gap-5">
+          <div className="flex flex-col gap-10">
+            <div className="flex gap-3 border-b pb-5 items-center">
+              <LeftArrowIcon />
+              <span>new restock</span>
+              <span>#123456</span>
             </div>
+          </div>
 
-            {/* RIGHT */}
-            <div className="flex flex-col w-2/5 gap-5">
-              <div className="rounded-lg shadow-lg p-5 border h-full overflow-y-hidden flex-1 flex flex-col gap-5">
-                <div className="flex flex-col gap-1">
-                  <div className="relative w-full">
-                    <input placeholder="Search..." className="input-style-2" />
-                    <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <SearchIcon />
-                    </i>
+          <div className="flex flex-col gap-10 overflow-y-hidden flex-1">
+            <div className="flex gap-5 overflow-y-hidden flex-1">
+              {/* LEFT */}
+              <div className="w-full flex relative">
+                {items.length === 0 ? (
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border-border border shadow-sm px-4 py-2 bg-white">
+                    <label className="text-sm font-medium">
+                      No items added
+                    </label>
+                  </div>
+                ) : (
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border-border border shadow-sm px-4 py-2 bg-white z-10">
+                    <label className="text-sm font-medium">
+                      {readyItemsCount}/{items.length} product
+                      {items.length !== 1 ? "s" : ""} ready for restock
+                    </label>
+                  </div>
+                )}
+                {!items || items.length === 0 ? (
+                  <NoSelectedState />
+                ) : (
+                  <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
+                    {items.map((item, i) => {
+                      // Get all selected presets for this product from other items
+                      const selectedPresetIds = items
+                        .filter(
+                          (otherItem) =>
+                            otherItem.product.product_ID ===
+                              item.product.product_ID &&
+                            (otherItem as any).itemId !== (item as any).itemId,
+                        )
+                        .map(
+                          (otherItem) =>
+                            (otherItem as any).selectedPreset?.preset_ID,
+                        )
+                        .filter((id): id is number => id !== undefined);
+
+                      return (
+                        <RestockCard2
+                          key={(item as any).itemId || i}
+                          product={item}
+                          itemId={(item as any).itemId}
+                          excludePresetIds={selectedPresetIds}
+                          onRemove={() =>
+                            handleRemoveProduct((item as any).itemId)
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT */}
+              <div className="flex flex-col w-2/5 gap-5">
+                <div className="rounded-lg shadow-lg p-5 border h-full overflow-y-hidden flex-1 flex flex-col gap-5">
+                  <div className="flex flex-col gap-1">
+                    <div className="relative w-full">
+                      <input
+                        placeholder="Search..."
+                        className="input-style-2"
+                      />
+                      <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <SearchIcon />
+                      </i>
+                    </div>
+                  </div>
+
+                  <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
+                    {inventoryData?.map((data, i) => (
+                      <ProductCard
+                        product={data}
+                        onClick={() => handleClick(data)}
+                        key={i}
+                      />
+                    ))}
                   </div>
                 </div>
 
-                <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
-                  {inventoryData?.map((data, i) => (
-                    <ProductCard
-                      product={data}
-                      onClick={() => handleClick(data)}
-                      key={i}
-                    />
-                  ))}
+                <div className="flex gap-5 justify-between">
+                  <button>clear</button>
+                  <button
+                    onClick={createRestock}
+                    disabled={!allItemsReady}
+                    className={`px-4 py-2 rounded ${
+                      allItemsReady
+                        ? "text-white cursor-pointer"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
+                    confirm restock
+                  </button>
                 </div>
-              </div>
-
-              <div className="flex gap-5 justify-between">
-                <button>clear</button>
-                <button onClick={createRestock}>create restock</button>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 

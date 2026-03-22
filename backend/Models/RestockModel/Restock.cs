@@ -18,6 +18,7 @@ namespace backend.Models.RestockModel
         public string Restock_Notes { get; set; } = string.Empty; // restock notes
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // timestamp for creation
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; // timestamp for last update
+        public string Status { get; set; } = null!; // restock status (e.g., "Pending", "Completed", "Voided")
 
         // Navigation properties
         public ICollection<RestockBatch> RestockBatches { get; set; } = new List<RestockBatch>();

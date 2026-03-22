@@ -1,115 +1,114 @@
 import { Separator } from "@/components/separator";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { useUnitPresetRestock } from "@/features/restock/unit-preset-restock.query";
 import { XIcon } from "@/icons";
-import { PhilippinePeso } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface RestockCardProp {
   onClick?: () => void;
-  product: {
-    product: {
-      product_ID: number;
-      product_Code: string;
-      product_Name: string;
-      desc: string;
-      brand_ID: number;
-      category_ID: number;
-      created_At: string;
-      updated_At: string;
-    };
-    variant: {
-      variant_Name: string;
-      created_At: string;
-      updated_At: string;
-    };
-    brand: {
-      brand_Name: string;
-      created_At: string;
-      updated_At: string;
-    };
-    unitPresets?: UnitPresets[];
-  };
+  product: InventoryProductModel;
+  itemId: string;
+  excludePresetIds?: number[];
   onRemove?: () => void;
 }
 
-type UnitPresets = {
-  assigned_At: string;
-  preset: Preset;
-  preset_ID: number;
-  product_Preset_ID: number;
-  low_Stock_Level?: number;
-  very_Low_Stock_Level?: number;
-};
-
-type Preset = {
-  created_At: string;
-  main_Unit_ID: number;
-  mainUnit: {
-    uom_ID: number;
-    unit_Name: string;
-    abbreviation: string;
-  };
-  presetLevels: PresetLevel[];
-  preset_ID: number;
-  preset_Name: string;
-  updated_At: string;
-};
-
-type PresetLevel = {
-  conversion_Factor: number;
-  created_At: string;
-  level: number;
-  level_ID: number;
-  unitOfMeasure: UnitOfMeasure;
-  uom_ID: number;
-};
-
-type UnitOfMeasure = {
-  uom_ID: number;
-  uom_Name: string;
-  abbreviation: string;
-};
-
-export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
+export const RestockCard2 = ({
+  product,
+  itemId,
+  excludePresetIds = [],
+  onRemove,
+}: RestockCardProp) => {
   const { selectPreset, updateMainQuantity, updateLevelPricing } =
     useUnitPresetRestock();
 
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
   const [mainQuantity, setMainQuantity] = useState<number>(0);
   const [levelPrices, setLevelPrices] = useState<{ [level: number]: number }>(
-    {}
+    {},
   );
+
+  // Initialize state from product if it has selectedPreset
+  useEffect(() => {
+    const typedProduct = product as any;
+    if (typedProduct.selectedPreset) {
+      setSelectedPresetId(typedProduct.selectedPreset.preset_ID);
+      setMainQuantity(typedProduct.selectedPreset.main_Unit_Quantity || 0);
+
+      // Initialize level prices if they exist
+      if (typedProduct.selectedPreset.levelPricing) {
+        const prices: { [level: number]: number } = {};
+        typedProduct.selectedPreset.levelPricing.forEach((lp: any) => {
+          prices[lp.level] = lp.price_Per_Unit || 0;
+        });
+        setLevelPrices(prices);
+      }
+    }
+  }, [product]);
 
   console.log(product);
 
   const selectedPreset = product.unitPresets?.find(
-    (p) => p.preset_ID === selectedPresetId
+    (p) => p.preset_ID === selectedPresetId,
   );
+
+  // Use selected preset for stock levels, or fall back to first preset
+  // const stockLevelPreset = selectedPreset || product.unitPresets?.[0];
 
   const handlePresetChange = (presetId: number) => {
     setSelectedPresetId(presetId);
     setMainQuantity(0);
     setLevelPrices({});
-    selectPreset(product.product.product_ID, presetId);
+    selectPreset(itemId, presetId);
   };
 
   const handleQuantityChange = (quantity: number) => {
     setMainQuantity(quantity);
-    updateMainQuantity(product.product.product_ID, quantity);
+    updateMainQuantity(itemId, quantity);
   };
 
   const handlePriceChange = (level: number, price: number) => {
     setLevelPrices((prev) => ({ ...prev, [level]: price }));
-    updateLevelPricing(product.product.product_ID, level, price);
+    updateLevelPricing(itemId, level, price);
   };
 
+  const getStockIndicator = (preset: (typeof product.unitPresets)[0]) => {
+    if (product.product.quantity === 0) {
+      return "⚫"; // Gray indicator (no stock)
+    } else if (product.product.quantity <= preset.very_Low_Stock_Level!) {
+      return "🔴"; // Red indicator (very low stock)
+    } else if (product.product.quantity <= preset.low_Stock_Level!) {
+      return "🟡"; // Yellow indicator (low stock)
+    } else {
+      return "🟢"; // Green indicator (adequate stock)
+    }
+  };
+
+  const isCardComplete = selectedPresetId !== null && mainQuantity > 0;
+
   return (
-    <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
+    <div
+      className={`p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs relative ${
+        isCardComplete ? "border-green-500" : "border-gray-300"
+      }`}
+    >
+      {/* Completion Badge */}
+      <div className="absolute -top-1 ">
+        {isCardComplete ? (
+          <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+            Ready
+          </div>
+        ) : (
+          <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+            Incomplete
+          </div>
+        )}
+      </div>
+
       <div className="flex gap-2 items-center text-xs justify-between">
         <div>
           <span>{product.product.product_Name}</span>
           <span> - </span>
-          <span>{product.brand.brand_Name}</span>
+          <span>{product.brand.brandName}</span>
           <span> - </span>
           <span>{product.variant.variant_Name}</span>
         </div>
@@ -132,19 +131,22 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
             onChange={(e) => handlePresetChange(Number(e.target.value))}
           >
             <option value="">Select a preset</option>
-            {product.unitPresets?.map((p) => (
-              <option key={p.preset_ID} value={p.preset_ID}>
-                {p.preset.presetLevels
-                  .map(
-                    (l) =>
-                      l.unitOfMeasure.uom_Name +
-                      " (" +
-                      l.conversion_Factor +
-                      "x)"
-                  )
-                  .join(" → ")}
-              </option>
-            ))}
+            {product.unitPresets
+              ?.filter((p) => !excludePresetIds.includes(p.preset_ID))
+              .map((p) => (
+                <option key={p.preset_ID} value={p.preset_ID}>
+                  {getStockIndicator(p)}{" "}
+                  {p.preset.presetLevels
+                    .map(
+                      (l) =>
+                        l.unitOfMeasure.uom_Name +
+                        " (" +
+                        l.conversion_Factor +
+                        "x)",
+                    )
+                    .join(" → ")}
+                </option>
+              ))}
           </select>
         </div>
 
@@ -168,7 +170,7 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
                 />
               </div>
 
-              <Separator orientation="horizontal" />
+              {/* <Separator orientation="horizontal" />
 
               <div className="flex flex-col gap-2">
                 <label className="font-semibold">Pricing (per unit)</label>
@@ -197,7 +199,7 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
                             onChange={(e) =>
                               handlePriceChange(
                                 level.level,
-                                Number(e.target.value)
+                                Number(e.target.value),
                               )
                             }
                             placeholder="0.00"
@@ -208,7 +210,7 @@ export const RestockCard2 = ({ product, onRemove }: RestockCardProp) => {
                       </div>
                     ))}
                 </div>
-              </div>
+              </div> */}
             </div>
           </>
         )}
