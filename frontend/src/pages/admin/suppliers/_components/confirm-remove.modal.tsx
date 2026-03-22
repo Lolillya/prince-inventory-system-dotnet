@@ -1,5 +1,6 @@
 import { DeleteUserService } from "@/features/suppliers/remove-supplier/remove-supplier.service";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface ConfirmRemoveModalProps {
   setIsConfirmRemoveModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -17,9 +18,20 @@ export const ConfirmRemoveModal = ({
   };
 
   const handleRemove = async () => {
-    await DeleteUserService(userId);
-    queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-    handleCloseModal();
+    try {
+      const result = await DeleteUserService(userId);
+
+      if (result) {
+        toast.success("Supplier deleted successfully");
+        queryClient.invalidateQueries({ queryKey: ["suppliers"] });
+        handleCloseModal();
+        return;
+      }
+
+      toast.error("Unable to delete supplier");
+    } catch {
+      toast.error("Unable to delete supplier");
+    }
   };
 
   return (

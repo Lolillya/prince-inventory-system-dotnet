@@ -10,6 +10,7 @@ import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 import { InfoCard } from "./_components/info-card";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 import { SelectedUser } from "./_components/selected-user";
+import { toast } from "sonner";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
@@ -37,6 +38,11 @@ const SuppliersPage = () => {
   };
 
   const handleDelete = (data: SupplierDataModel) => {
+    if (data.restocks.length > 0) {
+      toast.error("Cannot delete supplier with existing restocks");
+      return;
+    }
+
     setUserToDelete(data);
     setIsConfirmRemoveModalOpen(true);
   };
