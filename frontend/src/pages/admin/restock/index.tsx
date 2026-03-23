@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/separator";
 import { useSetSupplierSelected } from "@/features/suppliers/supplier-selected.query";
-import { UserClientModel } from "@/models/user-client.model";
 import { GetAllSuppliers } from "@/features/suppliers/get-all-suppliers.service";
 import { useVoidRestockMutation } from "@/features/restock/void-restock.query";
 import { VoidRestockModal } from "./_components/void-restock.modal";
@@ -167,7 +166,7 @@ const RestockPage = () => {
           </div>
         </div>
       </div>
-      <div className="columns-1 lg:columns-2 gap-5 overflow-y-scroll flex-1 space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 overflow-y-auto overflow-x-hidden flex-1 pr-1">
         {restockItems?.length === 0 ? (
           <div className="flex-1 flex justify-center items-center">
             <NoRestockState />
