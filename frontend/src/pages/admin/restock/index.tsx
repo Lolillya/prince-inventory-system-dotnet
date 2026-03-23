@@ -24,6 +24,7 @@ import { UserClientModel } from "@/models/user-client.model";
 import { GetAllSuppliers } from "@/features/suppliers/get-all-suppliers.service";
 import { useVoidRestockMutation } from "@/features/restock/void-restock.query";
 import { VoidRestockModal } from "./_components/void-restock.modal";
+import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 
 const RestockPage = () => {
   const navigate = useNavigate();
@@ -48,23 +49,26 @@ const RestockPage = () => {
 
   const handleViewSupplier = async (restock: RestockAllModel) => {
     const supplier = restock.supplier;
-    const fallbackSupplier: UserClientModel = {
-      id: supplier.id ?? "",
+    const fallbackSupplier: SupplierDataModel = {
+      supplier_Id: supplier.id ?? "",
       username: "",
       email: supplier.email ?? "",
-      firstName: supplier.firstName ?? "",
-      lastName: supplier.lastName ?? "",
-      companyName: supplier.companyName ?? "",
+      first_Name: supplier.firstName ?? "",
+      last_Name: supplier.lastName ?? "",
+      company_Name: supplier.companyName ?? "",
       notes: "",
-      phoneNumber: "",
-      role: "supplier",
+      phone_Number: "",
       address: "",
+      restocks: [],
+      total_Restock_Value: 0,
     };
 
     try {
       const response = await GetAllSuppliers();
       const suppliers = response?.data ?? [];
-      const fullSupplier = suppliers.find((item) => item.id === supplier.id);
+      const fullSupplier = suppliers.find(
+        (item) => item.supplier_Id === supplier.id,
+      );
 
       setSupplierSelected(fullSupplier ?? fallbackSupplier);
     } catch {
