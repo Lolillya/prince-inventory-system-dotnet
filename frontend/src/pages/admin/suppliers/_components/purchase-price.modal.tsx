@@ -131,7 +131,9 @@ export const PurchasePriceModal = ({
   };
 
   const getSelectedPresetKey = (product: ProductGroup) => {
-    return selectedPresetByProduct[product.productId] ?? getDefaultPresetKey(product);
+    return (
+      selectedPresetByProduct[product.productId] ?? getDefaultPresetKey(product)
+    );
   };
 
   const sortedProducts = useMemo(() => {
@@ -291,8 +293,8 @@ export const PurchasePriceModal = ({
             </h3>
             <p className="text-sm text-slate-500">
               {selectedSupplier?.company_Name ?? "No supplier selected"} can
-              provide {groupedProducts.length} products with {groupedRows.length}{" "}
-              distinct packaging presets.
+              provide {groupedProducts.length} products with{" "}
+              {groupedRows.length} distinct packaging presets.
             </p>
           </div>
 
@@ -328,7 +330,9 @@ export const PurchasePriceModal = ({
                           type="checkbox"
                           className="mt-1"
                           checked={isSelected}
-                          onChange={() => togglePresetSelection(selectedPresetKey)}
+                          onChange={() =>
+                            togglePresetSelection(selectedPresetKey)
+                          }
                         />
 
                         <div className="min-w-0 flex-1 space-y-2">
@@ -354,7 +358,8 @@ export const PurchasePriceModal = ({
                                 const presetKey = `${preset.productId}:${preset.presetId}`;
                                 return (
                                   <option key={presetKey} value={presetKey}>
-                                    {preset.presetName} ({preset.primaryUnitName})
+                                    {preset.presetName} (
+                                    {preset.primaryUnitName})
                                   </option>
                                 );
                               })}
@@ -363,7 +368,8 @@ export const PurchasePriceModal = ({
 
                           {selectedPresetRow ? (
                             <p className="text-xs text-slate-500">
-                              Selected: {selectedPresetRow.presetName} ({selectedPresetRow.primaryUnitName})
+                              Selected: {selectedPresetRow.presetName} (
+                              {selectedPresetRow.primaryUnitName})
                             </p>
                           ) : null}
                         </div>
@@ -456,7 +462,7 @@ export const PurchasePriceModal = ({
                   })()}
                 </div>
 
-                <div className="rounded-lg border border-slate-200 p-3">
+                {/* <div className="rounded-lg border border-slate-200 p-3">
                   <p className="text-xs text-slate-500">
                     Last updated:{" "}
                     {lastUpdatedMeta[activeKey]
@@ -497,7 +503,7 @@ export const PurchasePriceModal = ({
                       )}
                     </div>
                   ) : null}
-                </div>
+                </div> */}
               </div>
 
               {(() => {
