@@ -33,6 +33,33 @@ namespace backend.Controller.RestockControllers
                 return BadRequest(ModelState);
             }
 
+            if (dto.LineItems == null || dto.LineItems.Count == 0)
+            {
+                return BadRequest("At least one line item is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Supplier_ID))
+            {
+                return BadRequest("Supplier_ID is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Restock_Clerk))
+            {
+                return BadRequest("Restock_Clerk is required.");
+            }
+
+            var supplierExists = await _db.Users.AnyAsync(u => u.Id == dto.Supplier_ID);
+            if (!supplierExists)
+            {
+                return BadRequest($"Supplier with id '{dto.Supplier_ID}' was not found.");
+            }
+
+            var clerkExists = await _db.Users.AnyAsync(u => u.Id == dto.Restock_Clerk);
+            if (!clerkExists)
+            {
+                return BadRequest($"Restock clerk with id '{dto.Restock_Clerk}' was not found.");
+            }
+
             using var transaction = await _db.Database.BeginTransactionAsync();
             try
             {
@@ -46,6 +73,7 @@ namespace backend.Controller.RestockControllers
                     Restock_Number = restockNumber,
                     Restock_Clerk = dto.Restock_Clerk,
                     Restock_Notes = dto.Notes,
+                    Status = "COMPLETE",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -69,6 +97,12 @@ namespace backend.Controller.RestockControllers
                 // Process each line item
                 foreach (var lineItemDto in dto.LineItems)
                 {
+                    if (lineItemDto.LevelPricing == null || lineItemDto.LevelPricing.Count == 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest($"Line item for product {lineItemDto.Product_ID} must include level pricing.");
+                    }
+
                     // Verify preset exists and belongs to product
                     var productPreset = await _db.Product_Unit_Presets
                         .Include(pp => pp.Preset)
@@ -91,6 +125,24 @@ namespace backend.Controller.RestockControllers
                     {
                         await transaction.RollbackAsync();
                         return BadRequest($"Preset {lineItemDto.Preset_ID} does not have a main unit (Level 1)");
+                    }
+
+                    var presetLevelsByLevel = productPreset.Preset.PresetLevels
+                        .ToDictionary(pl => pl.Level, pl => pl);
+
+                    foreach (var pricing in lineItemDto.LevelPricing)
+                    {
+                        if (!presetLevelsByLevel.TryGetValue(pricing.Level, out var levelConfig))
+                        {
+                            await transaction.RollbackAsync();
+                            return BadRequest($"Preset {lineItemDto.Preset_ID} does not define level {pricing.Level}.");
+                        }
+
+                        if (pricing.UOM_ID != levelConfig.UOM_ID)
+                        {
+                            await transaction.RollbackAsync();
+                            return BadRequest($"Invalid UOM_ID {pricing.UOM_ID} for preset {lineItemDto.Preset_ID} level {pricing.Level}. Expected {levelConfig.UOM_ID}.");
+                        }
                     }
 
                     // Get the price for the main unit
@@ -213,7 +265,12 @@ namespace backend.Controller.RestockControllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, $"Error creating restock: {ex.Message}");
+                var inner = ex.InnerException?.Message;
+                var detail = string.IsNullOrWhiteSpace(inner)
+                    ? ex.Message
+                    : $"{ex.Message} | Inner: {inner}";
+
+                return StatusCode(500, $"Error creating restock: {detail}");
             }
         }
     }
