@@ -3,7 +3,7 @@ import { useSuppliersQuery } from "@/features/suppliers/supplier-get-all.query";
 import { useSelectedSupplierQuery } from "@/features/suppliers/supplier-selected.query";
 import { Separator } from "@/components/separator";
 import { NoSelectedState } from "@/components/no-selected-state";
-import { Fragment, useState } from "react";
+import { Activity, Fragment, useState } from "react";
 import { AddSupplierModal } from "./_components/add-supplier.modal";
 import { EditSupplierModal } from "./_components/edit-supplier.modal";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
@@ -11,6 +11,8 @@ import { InfoCard } from "./_components/info-card";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 import { SelectedUser } from "./_components/selected-user";
 import { toast } from "sonner";
+import { PackageOpen } from "lucide-react";
+import { PurchasePriceModal } from "./_components/purchase-price.modal";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
@@ -19,6 +21,8 @@ const SuppliersPage = () => {
   const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
   const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
+    useState(false);
+  const [isPurchasePriceModalOpen, setIsPurchasePriceModalOpen] =
     useState(false);
   const [userToDelete, setUserToDelete] = useState<SupplierDataModel | null>(
     null,
@@ -47,6 +51,10 @@ const SuppliersPage = () => {
     setIsConfirmRemoveModalOpen(true);
   };
 
+  const handlePurchasePrice = () => {
+    setIsPurchasePriceModalOpen(!isPurchasePriceModalOpen);
+  };
+
   const filteredSuppliers = suppliers?.filter((supplier) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -68,6 +76,13 @@ const SuppliersPage = () => {
           setIsAddSupplierModalOpen={setIsAddSupplierModalOpen}
         />
       )}
+
+      <Activity mode={isPurchasePriceModalOpen ? "visible" : "hidden"}>
+        <PurchasePriceModal
+          handlePurchasePrice={handlePurchasePrice}
+          selectedSupplier={selectedSupplier ?? null}
+        />
+      </Activity>
 
       {/* EDIT SUPPLIER MODAL */}
       {isEditSupplierModalOpen && selectedSupplier && (
@@ -127,13 +142,19 @@ const SuppliersPage = () => {
       <div className="flex min-h-0 flex-1 gap-3 overflow-y-hidden">
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-sm">
-              suppiers
-            </label>
-            <span className="capitalize text-vesper-gray text-xs">
-              {filteredSuppliers?.length} records
-            </span>
+          <div className="bg-custom-gray p-1 rounded-lg flex justify-between shadow-sm border items-center">
+            <div className="gap-10 flex items-center pl-2">
+              <label className="capitalize text-saltbox-gray font-normal text-sm">
+                suppiers
+              </label>
+              <span className="capitalize text-vesper-gray text-xs">
+                {filteredSuppliers?.length} records
+              </span>
+            </div>
+            <div className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none">
+              <PackageOpen />
+              <label className="cursor-pointer">Generate PO</label>
+            </div>
           </div>
 
           <div className="w-full overflow-y-scroll">
@@ -154,7 +175,7 @@ const SuppliersPage = () => {
 
         {/* RIGHT PANEL */}
         <div className="flex min-h-0 w-[50%] flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
+          <div className="bg-custom-gray px-3 py-4 rounded-lg gap-10 flex items-center">
             <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
             </label>
@@ -167,6 +188,7 @@ const SuppliersPage = () => {
               <SelectedUser
                 selectedSupplier={selectedSupplier}
                 handleEdit={handleEdit}
+                handlePurchasePrice={handlePurchasePrice}
               />
             )}
           </div>

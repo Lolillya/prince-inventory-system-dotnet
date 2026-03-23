@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   Calendar,
+  CornerRightUp,
   EditIcon,
   MailIcon,
+  NotebookPen,
   Package,
   PhoneIcon,
   PinIcon,
@@ -18,13 +20,33 @@ import { RestocksModal } from "@/components/restocks-modal";
 interface SelectedUserProps {
   handleEdit: () => void;
   selectedSupplier: SupplierDataModel;
+  handlePurchasePrice: () => void;
 }
 
 export const SelectedUser = ({
   selectedSupplier,
   handleEdit,
-}: SelectedUserProps & { handleEdit: () => void }) => {
+  handlePurchasePrice,
+}: SelectedUserProps & {
+  handleEdit: () => void;
+  handlePurchasePrice: () => void;
+}) => {
   const [isRestocksModalOpen, setIsRestocksModalOpen] = useState(false);
+
+  const distinctLineItems = useMemo(() => {
+    const allLineItems = selectedSupplier.restocks.flatMap((restock) =>
+      restock.line_Items.map((lineItem) => ({
+        key: lineItem.product_ID,
+        line_Item_ID: lineItem.line_Item_ID,
+        product_Name:
+          lineItem.product?.product_Name ?? `Product #${lineItem.product_ID}`,
+      })),
+    );
+
+    return Array.from(
+      new Map(allLineItems.map((item) => [item.key, item])).values(),
+    );
+  }, [selectedSupplier.restocks]);
 
   const formatRestockDate = (value: string) => {
     const date = new Date(value);
@@ -67,18 +89,39 @@ export const SelectedUser = ({
       <Separator />
 
       {/* user FULLNAME SECTION */}
-      <div className="p-2 rounded-lg bg-wash-gray">
+      <div
+        className="p-2 rounded-lg bg-wash-gray hover:cursor-pointer hover:shadow-md transition-shadow"
+        onClick={handlePurchasePrice}
+      >
         <div className=" flex items-center gap-3">
           <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-            <UserIcon />
+            <NotebookPen />
           </div>
-          <div className="flex flex-col justify-center">
-            <p className="info-id text-sm">Representative</p>
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 ">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold info-name ">
-                {selectedSupplier.first_Name} {selectedSupplier.last_Name}
+              <p className="text-sm font-semibold info-name flex gap-2">
+                {distinctLineItems.length} Products
               </p>
             </div>
+            <div className="flex items-center gap-3">
+              <p className="info-id text-sm">Supplier Purchase Price</p>
+              <CornerRightUp size={18} className="text-vesper-gray" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-2 rounded-lg bg-wash-gray flex items-center gap-3">
+        <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+          <UserIcon />
+        </div>
+
+        <div className="flex flex-col justify-center">
+          <p className="info-id text-sm">Representative</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold info-name ">
+              {selectedSupplier.first_Name} {selectedSupplier.last_Name}
+            </p>
           </div>
         </div>
       </div>
@@ -184,7 +227,7 @@ export const SelectedUser = ({
                   </label>
                   <div className="grid grid-cols-3 items-center text-vesper-gray text-xs font-semibold">
                     <div className="flex items-center gap-2 ">
-                      <Calendar className="text-vesper-gray" size={18} />
+                      <Calendar className="h-[18px] w-[18px] shrink-0 text-vesper-gray" />
                       <label className="text-vesper-gray text-sm font-semibold text-nowrap">
                         {formatRestockDate(r.created_At)}
                       </label>
@@ -192,7 +235,7 @@ export const SelectedUser = ({
                     {/* <Separator orientation="vertical" className="h-5 flex-none" /> */}
 
                     <div className="flex gap-2 items-center">
-                      <Package className="text-vesper-gray" size={18} />
+                      <Package className="h-[18px] w-[18px] shrink-0 text-vesper-gray" />
                       <label className="text-vesper-gray text-sm font-semibold text-nowrap">
                         {r.line_Items.reduce(
                           (total, lineItem) =>
@@ -206,7 +249,7 @@ export const SelectedUser = ({
                     {/* <Separator orientation="vertical" className="h-5 flex-none" /> */}
 
                     <div className="flex gap-2 items-center">
-                      <Box className="text-vesper-gray" size={18} />
+                      <Box className="h-[18px] w-[18px] shrink-0 text-vesper-gray" />
                       <label className="text-vesper-gray text-sm font-semibold text-nowrap">
                         {r.line_Items.length} product/s
                       </label>
