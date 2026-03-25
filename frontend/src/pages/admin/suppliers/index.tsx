@@ -11,6 +11,7 @@ import { EditSupplierModal } from "./_components/edit-supplier,modal";
 import { PurchaseOrderModal } from "./_components/purchase-order.modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { ShoppingCart } from "lucide-react";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
@@ -143,9 +144,10 @@ const SuppliersPage = () => {
             </div>
             <button
               onClick={handlePurchaseOrder}
-              className="px-3 py-1 text-sm font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700"
+              className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
             >
-              Create Purchase Order
+              <ShoppingCart size={16} />
+              <label className="cursor-pointer">Create Purchase Order</label>
             </button>
           </div>
 
