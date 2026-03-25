@@ -1,3 +1,8 @@
+export type SupplierPurchasePrice = {
+  productName: string;
+  unitPrice: number;
+};
+
 export type UserClientModel = {
   id: string;
   username: string;
@@ -9,4 +14,5 @@ export type UserClientModel = {
   phoneNumber: string;
   role: string;
   address: string;
+  purchasePrices?: SupplierPurchasePrice[];
 };

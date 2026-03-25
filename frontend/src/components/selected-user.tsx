@@ -52,6 +52,23 @@ export const SelectedUser = ({
 
       <Separator />
 
+      {/* supplier PURCHASE PRICES SECTION (read-only) */}
+      {type === "supplier" && (
+        <div className="p-2 rounded-lg bg-wash-gray">
+          <div className="flex items-center gap-3">
+            <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+              <Box size={18} />
+            </div>
+            <div className="flex flex-col">
+              <p className="text-base font-semibold text-slate-700">
+                {user.purchasePrices?.length ?? 0} products
+              </p>
+              <p className="text-sm text-saltbox-gray">Supplier Purchase Prices</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* user FULLNAME SECTION */}
       <div className="p-2 rounded-lg bg-wash-gray">
         <div className=" flex items-center gap-3">
