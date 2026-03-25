@@ -8,8 +8,10 @@ import { SelectedUser } from "@/components/selected-user";
 import { Fragment, useState } from "react";
 import { AddSupplierModal } from "./_components/add-supplier.modal";
 import { EditSupplierModal } from "./_components/edit-supplier,modal";
+import { PurchaseOrderModal } from "./_components/purchase-order.modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { ShoppingCart } from "lucide-react";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
@@ -17,6 +19,7 @@ const SuppliersPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
   const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
+  const [isPurchaseOrderModalOpen, setIsPurchaseOrderModalOpen] = useState(false);
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
   const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
@@ -39,6 +42,10 @@ const SuppliersPage = () => {
   const handleDelete = (data: UserClientModel) => {
     setUserToDelete(data);
     setIsConfirmRemoveModalOpen(true);
+  };
+
+  const handlePurchaseOrder = () => {
+    setIsPurchaseOrderModalOpen(!isPurchaseOrderModalOpen);
   };
 
   const filteredSuppliers = suppliers?.filter((supplier) => {
@@ -77,6 +84,13 @@ const SuppliersPage = () => {
             notes: selectedSupplier.notes,
             roleID: 3,
           }}
+        />
+      )}
+
+      {/* PURCHASE ORDER MODAL */}
+      {isPurchaseOrderModalOpen && (
+        <PurchaseOrderModal
+          setIsPurchaseOrderModalOpen={setIsPurchaseOrderModalOpen}
         />
       )}
 
@@ -119,13 +133,22 @@ const SuppliersPage = () => {
       <div className="flex flex-1 gap-3 overflow-y-hidden">
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-sm">
-              suppiers
-            </label>
-            <span className="capitalize text-vesper-gray text-xs">
-              {filteredSuppliers?.length} records
-            </span>
+          <div className="bg-custom-gray p-3 rounded-lg gap-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <label className="capitalize text-saltbox-gray font-normal text-sm">
+                suppliers
+              </label>
+              <span className="capitalize text-vesper-gray text-xs">
+                {filteredSuppliers?.length} records
+              </span>
+            </div>
+            <button
+              onClick={handlePurchaseOrder}
+              className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+            >
+              <ShoppingCart size={16} />
+              <label className="cursor-pointer">Create Purchase Order</label>
+            </button>
           </div>
 
           <div className="w-full overflow-y-scroll">
