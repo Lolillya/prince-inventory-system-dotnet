@@ -1,8 +1,13 @@
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
-import { format } from "date-fns";
-import { ChevronDown, ChevronRight, CircleAlert, Save, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Save, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+
+type GlobalSellingPrice = {
+  level: number;
+  unitName: string;
+  price: number;
+};
 
 type ProductPresetGroup = {
   productId: number;
@@ -11,20 +16,13 @@ type ProductPresetGroup = {
   presetName: string;
   primaryUnitName: string;
   referenceSellingPrice: number;
+  globalSellingPrices: GlobalSellingPrice[];
 };
 
 type ProductGroup = {
   productId: number;
   productName: string;
   presets: ProductPresetGroup[];
-};
-
-type PriceHistoryEntry = {
-  changedAt: string;
-  changedBy: string;
-  previousPrice: number;
-  nextPrice: number;
-  primaryUnitName: string;
 };
 
 interface PurchasePriceModalProps {
@@ -37,13 +35,13 @@ export const PurchasePriceModal = ({
   selectedSupplier,
 }: PurchasePriceModalProps) => {
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [expandedGlobalPrices, setExpandedGlobalPrices] = useState<Set<string>>(
+    new Set(),
+  );
   const [selectedPresetByProduct, setSelectedPresetByProduct] = useState<
     Record<number, string>
   >({});
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
-  const [expandedHistory, setExpandedHistory] = useState<Set<string>>(
-    new Set(),
-  );
 
   const groupedRows = useMemo<ProductPresetGroup[]>(() => {
     if (!selectedSupplier) return [];
@@ -62,6 +60,27 @@ export const PurchasePriceModal = ({
           lineItem.preset_Pricing.find((p) => p.uoM_ID === primaryUomId)
             ?.price_Per_Unit ?? 0;
 
+        const sortedLevels = [
+          ...(lineItem.unit_Preset.preset_Levels ?? []),
+        ].sort((a, b) => a.level - b.level);
+
+        const globalSellingPrices: GlobalSellingPrice[] = sortedLevels.map(
+          (level) => {
+            const levelPricing = lineItem.preset_Pricing.find(
+              (pricing) => pricing.uoM_ID === level.uoM_ID,
+            );
+
+            return {
+              level: level.level,
+              unitName:
+                level.unit?.uom_Name ??
+                levelPricing?.unit?.uom_Name ??
+                `Level ${level.level}`,
+              price: Number(levelPricing?.price_Per_Unit ?? 0),
+            };
+          },
+        );
+
         grouped.set(key, {
           productId: lineItem.product.product_ID,
           productName: lineItem.product.product_Name,
@@ -69,6 +88,7 @@ export const PurchasePriceModal = ({
           presetName: lineItem.unit_Preset.preset_Name,
           primaryUnitName: lineItem.unit_Preset.main_Unit?.uom_Name ?? "Unit",
           referenceSellingPrice: Number(primaryPresetPrice),
+          globalSellingPrices,
         });
       });
     });
@@ -91,12 +111,6 @@ export const PurchasePriceModal = ({
   >({});
   const [draftPurchasePrices, setDraftPurchasePrices] = useState<
     Record<string, string>
-  >({});
-  const [lastUpdatedMeta, setLastUpdatedMeta] = useState<
-    Record<string, { updatedAt: string; updatedBy: string }>
-  >({});
-  const [priceHistory, setPriceHistory] = useState<
-    Record<string, PriceHistoryEntry[]>
   >({});
 
   const groupedProducts = useMemo<ProductGroup[]>(() => {
@@ -218,13 +232,20 @@ export const PurchasePriceModal = ({
     });
   };
 
-  const toggleHistory = (key: string) => {
-    setExpandedHistory((prev) => {
+  const toggleGlobalPrices = (key: string) => {
+    setExpandedGlobalPrices((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
+  };
+
+  const formatPhp = (value: number) => {
+    return new Intl.NumberFormat("en-PH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
   };
 
   const handleSavePrice = () => {
@@ -246,31 +267,7 @@ export const PurchasePriceModal = ({
       return;
     }
 
-    const previousPrice = getSavedPrice(
-      activeKey,
-      activeRow.referenceSellingPrice,
-    );
-    const now = new Date().toISOString();
-
     setSavedPurchasePrices((prev) => ({ ...prev, [activeKey]: nextPrice }));
-    setLastUpdatedMeta((prev) => ({
-      ...prev,
-      [activeKey]: { updatedAt: now, updatedBy: "Admin" },
-    }));
-
-    setPriceHistory((prev) => ({
-      ...prev,
-      [activeKey]: [
-        {
-          changedAt: now,
-          changedBy: "Admin",
-          previousPrice,
-          nextPrice,
-          primaryUnitName: activeRow.primaryUnitName,
-        },
-        ...(prev[activeKey] ?? []),
-      ],
-    }));
 
     toast.success("Purchase price saved");
   };
@@ -278,13 +275,13 @@ export const PurchasePriceModal = ({
   return (
     <section className="absolute left-0 top-0 z-50 flex h-full w-full items-center justify-center bg-black/40 p-4">
       <div className="relative flex h-[760px] w-[1200px] gap-0 overflow-hidden rounded-xl border bg-white shadow-lg">
-        <button
-          className="absolute right-3 top-3 z-10 rounded-md p-1 text-vesper-gray hover:bg-bellflower-gray"
+        <div
+          className="absolute right-3 top-3 z-10 rounded-md  text-vesper-gray hover:bg-bellflower-gray p-3 cursor-pointer transition"
           onClick={handlePurchasePrice}
           aria-label="Close purchase price modal"
         >
           <X size={18} />
-        </button>
+        </div>
 
         <div className="flex w-7/12 min-w-0 flex-col border-r border-slate-200">
           <div className="border-b border-slate-200 px-5 py-4">
@@ -442,7 +439,41 @@ export const PurchasePriceModal = ({
                     {activeRow.referenceSellingPrice.toFixed(2)}
                   </div>
 
-                  {(() => {
+                  <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-2">
+                    <div
+                      // type="button"
+                      className="flex w-full items-center gap-1 text-left text-xs font-semibold text-vesper-gray hover:bg-slate-100 rounded-md px-2 py-1 cursor-pointer transition"
+                      onClick={() => toggleGlobalPrices(activeKey)}
+                    >
+                      {expandedGlobalPrices.has(activeKey) ? (
+                        <ChevronDown size={14} />
+                      ) : (
+                        <ChevronRight size={14} />
+                      )}
+                      Selling Prices (Global)
+                    </div>
+
+                    {expandedGlobalPrices.has(activeKey) ? (
+                      <div className="mt-2 flex flex-col gap-1">
+                        {activeRow.globalSellingPrices.length === 0 ? (
+                          <p className="text-xs text-slate-400">
+                            No global selling prices found for this preset.
+                          </p>
+                        ) : (
+                          activeRow.globalSellingPrices.map((price) => (
+                            <div
+                              key={`${activeKey}:${price.level}`}
+                              className="text-xs text-slate-600"
+                            >
+                              {price.unitName} P{formatPhp(price.price)}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* {(() => {
                     const draft = Number(
                       getDraftPrice(activeKey, activeRow.referenceSellingPrice),
                     );
@@ -459,7 +490,7 @@ export const PurchasePriceModal = ({
                         {isProfit ? "Profit awareness" : "Loss awareness"}
                       </div>
                     );
-                  })()}
+                  })()} */}
                 </div>
 
                 {/* <div className="rounded-lg border border-slate-200 p-3">
