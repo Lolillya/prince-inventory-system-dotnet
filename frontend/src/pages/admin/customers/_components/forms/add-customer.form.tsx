@@ -57,58 +57,80 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
       className="h-full flex flex-col justify-between"
       onSubmit={handleSubmit(onSubmit)}
     >
-      <div className="flex flex-col space-y-4 mb-auto">
-        {/* LOGIN DETAILS */}
-
-        <div className="flex w-full justify-between gap-4">
-          {/* USERNAME*/}
-          <div className="flex flex-col w-full">
-            <label htmlFor="firstName" className="block text-sm font-medium">
-              Username
-            </label>
-            <input
-              id="firstName"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="AUTO GENERATED"
-              disabled
-              {...register("username")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.username?.message}
-            </span>
-          </div>
-
-          {/* PASSWORD */}
-          <div className="flex flex-col w-full">
-            <label htmlFor="password" className="block text-sm font-medium">
-              Password
-            </label>
-            <input
-              id="password"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="AUTO GENERATED"
-              disabled
-              {...register("password")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.password?.message}
-            </span>
+      <div className="flex flex-col space-y-5 mb-auto">
+        {/* LOGIN DETAILS - Hidden */}
+        <div className="hidden">
+          <div className="flex w-full justify-between gap-4">
+            <div className="flex flex-col w-full">
+              <input
+                id="firstName"
+                type="text"
+                className="w-full drop-shadow-none bg-custom-gray p-2"
+                placeholder="AUTO GENERATED"
+                disabled
+                {...register("username")}
+              />
+            </div>
+            <div className="flex flex-col w-full">
+              <input
+                id="password"
+                type="text"
+                className="w-full drop-shadow-none bg-custom-gray p-2"
+                placeholder="AUTO GENERATED"
+                disabled
+                {...register("password")}
+              />
+            </div>
           </div>
         </div>
 
-        {/* SUPPLIER NAME */}
-        <div className="flex w-full justify-between gap-4">
-          {/* FIRST NAME */}
-          <div className="flex flex-col w-full">
-            <label htmlFor="firstName" className="block text-sm font-medium">
-              First Name
+        {/* COMPANY NAME AND TERM */}
+        <div className="flex w-full justify-between gap-6">
+          {/* COMPANY NAME */}
+          <div className="flex flex-col flex-1">
+            <label htmlFor="companyName" className="block text-sm font-medium">
+              Customer Company Name<span className="text-red-500">*</span>
             </label>
+            <input
+              id="companyName"
+              type="text"
+              className="w-full drop-shadow-none bg-custom-gray p-2"
+              {...register("companyName")}
+            />
+            <span className="text-red-500 text-xs normal-case">
+              {errors.companyName?.message}
+            </span>
+          </div>
+
+          {/* TERM */}
+          <div className="flex flex-col w-32">
+            <label htmlFor="term" className="block text-sm font-medium">
+              Term
+            </label>
+            <input
+              id="term"
+              type="text"
+              className="w-full drop-shadow-none bg-custom-gray p-2"
+              placeholder=""
+            />
+          </div>
+        </div>
+
+        {/* REPRESENTATIVE SECTION HEADER */}
+        <div className="pt-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Representative
+          </label>
+        </div>
+
+        {/* FIRST NAME AND LAST NAME */}
+        <div className="flex w-full justify-between gap-4">
+          <div className="flex flex-col w-full">
             <input
               id="firstName"
               type="text"
               className="w-full drop-shadow-none bg-custom-gray p-2"
+              placeholder="First Name"
               {...register("firstName")}
             />
             <span className="text-red-500 text-xs normal-case">
@@ -116,15 +138,12 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
             </span>
           </div>
 
-          {/* LAST NAME */}
           <div className="flex flex-col w-full">
-            <label htmlFor="lastName" className="block text-sm font-medium">
-              Last Name
-            </label>
             <input
               id="lastName"
               type="text"
               className="w-full drop-shadow-none bg-custom-gray p-2"
+              placeholder="Last Name"
               {...register("lastName")}
             />
             <span className="text-red-500 text-xs normal-case">
@@ -133,22 +152,8 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
           </div>
         </div>
 
+        {/* CONTACT NUMBER AND EMAIL */}
         <div className="flex w-full justify-between gap-4">
-          <div className="flex flex-col w-full">
-            <label htmlFor="emailAddress" className="block text-sm font-medium">
-              Email Address
-            </label>
-            <input
-              id="emailAddress"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              {...register("email")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.email?.message}
-            </span>
-          </div>
-
           <div className="flex flex-col w-full">
             <label
               htmlFor="contactNumber"
@@ -166,22 +171,21 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
               {errors.phoneNumber?.message}
             </span>
           </div>
-        </div>
 
-        {/* COMPANY NAME */}
-        <div className="flex flex-col w-full">
-          <label htmlFor="companyName" className="block text-sm font-medium">
-            Company Name
-          </label>
-          <input
-            id="companyName"
-            type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
-            {...register("companyName")}
-          />
-          <span className="text-red-500 text-xs normal-case">
-            {errors.companyName?.message}
-          </span>
+          <div className="flex flex-col w-full">
+            <label htmlFor="emailAddress" className="block text-sm font-medium">
+              Email
+            </label>
+            <input
+              id="emailAddress"
+              type="text"
+              className="w-full drop-shadow-none bg-custom-gray p-2"
+              {...register("email")}
+            />
+            <span className="text-red-500 text-xs normal-case">
+              {errors.email?.message}
+            </span>
+          </div>
         </div>
 
         {/* ADDRESS */}
@@ -200,28 +204,15 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
           </span>
         </div>
 
-        {/* ROLE */}
+        {/* CUSTOMER NOTES */}
         <div className="flex flex-col w-full">
-          <label htmlFor="role" className="block text-sm font-medium">
-            Role
-          </label>
-          <input
-            id="role"
-            type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
-            disabled
-            placeholder="CUSTOMER"
-          // {...register("role")}
-          />
-        </div>
-        {/* DESCRIPTION */}
-        <div>
           <label htmlFor="customerNotes" className="block text-sm font-medium">
             Customer Notes
           </label>
           <textarea
             id="customerNotes"
-            className="w-full p-2 rounded-lg "
+            className="w-full p-2 rounded-lg bg-custom-gray"
+            rows={4}
             {...register("notes")}
           />
           <span className="text-red-500 text-xs normal-case">
@@ -230,7 +221,9 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
         </div>
       </div>
 
-      <button type="submit">Add Customer</button>
+      <button type="submit" className="mt-4">
+        Add Customer
+      </button>
     </form>
   );
 };
