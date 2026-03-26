@@ -94,8 +94,8 @@ export const SelectedUser = ({
         onClick={handlePurchasePrice}
       >
         <div className=" flex items-center gap-3">
-          <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-            <NotebookPen />
+          <div className="bg-blue-200 h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+            <NotebookPen className="text-blue-400" />
           </div>
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 ">
             <div className="flex items-center gap-2">
@@ -105,6 +105,28 @@ export const SelectedUser = ({
             </div>
             <div className="flex items-center gap-3">
               <p className="info-id text-sm">Supplier Purchase Price</p>
+              <CornerRightUp size={18} className="text-vesper-gray" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="p-2 rounded-lg bg-wash-gray hover:cursor-pointer hover:shadow-md transition-shadow"
+        // onClick={handlePurchasePrice}
+      >
+        <div className=" flex items-center gap-3">
+          <div className="bg-orange-200 h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+            <NotebookPen className="text-orange-400" />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 ">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold info-name flex gap-2">
+                2 Pending
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <p className="info-id text-sm">Purchase Order History</p>
               <CornerRightUp size={18} className="text-vesper-gray" />
             </div>
           </div>

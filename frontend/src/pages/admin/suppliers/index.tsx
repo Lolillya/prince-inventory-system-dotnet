@@ -11,7 +11,7 @@ import { InfoCard } from "./_components/info-card";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 import { SelectedUser } from "./_components/selected-user";
 import { toast } from "sonner";
-import { PackageOpen } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { PurchasePriceModal } from "./_components/purchase-price.modal";
 import { PurchaseOrderModal } from "./_components/purchase-order.modal";
 
@@ -58,6 +58,10 @@ const SuppliersPage = () => {
     setIsPurchasePriceModalOpen(!isPurchasePriceModalOpen);
   };
 
+  const handlePurchaseOrder = () => {
+    setIsPurchaseOrderModalOpen(!isPurchaseOrderModalOpen);
+  };
+
   const filteredSuppliers = suppliers?.filter((supplier) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -68,8 +72,6 @@ const SuppliersPage = () => {
       supplier.phone_Number.toLowerCase().includes(query)
     );
   });
-
-  console.log(suppliers);
 
   return (
     <section>
@@ -107,11 +109,14 @@ const SuppliersPage = () => {
       )}
 
       {/* PURCHASE ORDER MODAL */}
-      {isPurchaseOrderModalOpen && (
+      <Activity mode={isPurchaseOrderModalOpen ? "visible" : "hidden"}>
         <PurchaseOrderModal
           setIsPurchaseOrderModalOpen={setIsPurchaseOrderModalOpen}
         />
-      )}
+      </Activity>
+      {/* {isPurchaseOrderModalOpen && (
+        
+      )} */}
 
       {/* CONFIRM DELETE MODAL */}
       {isConfirmRemoveModalOpen && userToDelete && (
@@ -155,15 +160,18 @@ const SuppliersPage = () => {
           <div className="bg-custom-gray p-1 rounded-lg flex justify-between shadow-sm border items-center">
             <div className="gap-10 flex items-center pl-2">
               <label className="capitalize text-saltbox-gray font-normal text-sm">
-                suppiers
+                suppliers
               </label>
               <span className="capitalize text-vesper-gray text-xs">
                 {filteredSuppliers?.length} records
               </span>
             </div>
-            <div className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none">
-              <PackageOpen />
-              <label className="cursor-pointer">Generate PO</label>
+            <div
+              className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+              onClick={handlePurchaseOrder}
+            >
+              <ShoppingCart size={18} />
+              <label className="cursor-pointer">Generate Purchase Order</label>
             </div>
           </div>
 
