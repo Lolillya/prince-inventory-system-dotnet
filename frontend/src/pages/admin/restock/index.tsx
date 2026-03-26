@@ -20,10 +20,10 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/separator";
 import { useSetSupplierSelected } from "@/features/suppliers/supplier-selected.query";
-import { UserClientModel } from "@/models/user-client.model";
 import { GetAllSuppliers } from "@/features/suppliers/get-all-suppliers.service";
 import { useVoidRestockMutation } from "@/features/restock/void-restock.query";
 import { VoidRestockModal } from "./_components/void-restock.modal";
+import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 
 const RestockPage = () => {
   const navigate = useNavigate();
@@ -48,23 +48,26 @@ const RestockPage = () => {
 
   const handleViewSupplier = async (restock: RestockAllModel) => {
     const supplier = restock.supplier;
-    const fallbackSupplier: UserClientModel = {
-      id: supplier.id ?? "",
+    const fallbackSupplier: SupplierDataModel = {
+      supplier_Id: supplier.id ?? "",
       username: "",
       email: supplier.email ?? "",
-      firstName: supplier.firstName ?? "",
-      lastName: supplier.lastName ?? "",
-      companyName: supplier.companyName ?? "",
+      first_Name: supplier.firstName ?? "",
+      last_Name: supplier.lastName ?? "",
+      company_Name: supplier.companyName ?? "",
       notes: "",
-      phoneNumber: "",
-      role: "supplier",
+      phone_Number: "",
       address: "",
+      restocks: [],
+      total_Restock_Value: 0,
     };
 
     try {
       const response = await GetAllSuppliers();
       const suppliers = response?.data ?? [];
-      const fullSupplier = suppliers.find((item) => item.id === supplier.id);
+      const fullSupplier = suppliers.find(
+        (item) => item.supplier_Id === supplier.id,
+      );
 
       setSupplierSelected(fullSupplier ?? fallbackSupplier);
     } catch {
@@ -163,7 +166,7 @@ const RestockPage = () => {
           </div>
         </div>
       </div>
-      <div className="columns-1 lg:columns-2 gap-5 overflow-y-scroll flex-1 space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 overflow-y-auto overflow-x-hidden flex-1 pr-1">
         {restockItems?.length === 0 ? (
           <div className="flex-1 flex justify-center items-center">
             <NoRestockState />

@@ -24,7 +24,6 @@ builder.Services.AddCors(options =>
 });
 
 // Add services to the container
-builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
@@ -36,6 +35,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+    options.SerializerSettings.Formatting = Formatting.Indented;
     // options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
 });
 builder.Services.AddIdentity<PersonalDetails, IdentityRole>(options =>

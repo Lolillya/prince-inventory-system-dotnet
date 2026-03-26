@@ -17,7 +17,7 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
           <span>{product.product.brand.brandName}</span>
           <span>{product.product.variant.variant_Name}</span>
         </div>
-        <span>{product.batches.length} batches</span>
+        <span>{product.batches.length} Preset(s)</span>
       </div>
     </div>
   );

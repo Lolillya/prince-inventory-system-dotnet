@@ -1,11 +1,13 @@
 import axios from "axios";
 import { api } from "../api/API.service";
 import { handleError } from "../../helpers/error-handler.helper";
-import { UserClientModel } from "../../models/user-client.model";
+import { SupplierDataModel } from "./get-all-suppliers.model";
 
 export const GetAllSuppliers = async () => {
   try {
-    const data = await axios.get<UserClientModel[]>(api + "users/?id=3");
+    const data = await axios.get<SupplierDataModel[]>(
+      api + "suppliers/restocks",
+    );
     return data;
   } catch (err) {
     handleError(err);

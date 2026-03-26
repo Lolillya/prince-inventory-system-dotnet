@@ -1,13 +1,13 @@
-import { UserClientModel } from "@/models/user-client.model";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { SupplierDataModel } from "../suppliers/get-all-suppliers.model";
 
 const RestockSupplierKey = ["restock-supplier"];
 
 export const useSelectedRestockSupplier = () => {
-  return useQuery<UserClientModel>({
+  return useQuery<SupplierDataModel>({
     queryKey: RestockSupplierKey,
     queryFn: async () => {
-      return null as unknown as UserClientModel;
+      return null as unknown as SupplierDataModel;
     },
     enabled: false,
   });
@@ -16,7 +16,7 @@ export const useSelectedRestockSupplier = () => {
 export const updateSelectedSupplier = () => {
   const queryClient = useQueryClient();
 
-  const UPDATE_SELECTED_SUPPLIER = (supplier: UserClientModel) => {
+  const UPDATE_SELECTED_SUPPLIER = (supplier: SupplierDataModel) => {
     queryClient.setQueryData(RestockSupplierKey, supplier);
   };
 

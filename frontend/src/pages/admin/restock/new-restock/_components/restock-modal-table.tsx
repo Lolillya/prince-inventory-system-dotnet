@@ -29,19 +29,26 @@ export const RestockTable = () => {
       return;
     }
 
+    const supplierId =
+      (supplier as { supplier_Id?: string; id?: string }).supplier_Id ??
+      (supplier as { supplier_Id?: string; id?: string }).id;
+
+    if (!supplierId) {
+      alert("Selected supplier is invalid. Please reselect a supplier.");
+      return;
+    }
+
     const payload = getPayload();
 
     const restockPayload = {
       lineItems: payload.lineItems,
-      supplier_ID: supplier.id,
+      supplier_ID: supplierId,
       restock_Clerk: user.user_ID,
       notes: "",
     };
 
     createRestock(restockPayload);
   };
-
-  const handleCreateRestock_2 = async () => {};
 
   const calculateTotalQuantity = () => {
     // Sum all subtotals for items with selected presets

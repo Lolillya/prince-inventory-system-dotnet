@@ -1,4 +1,4 @@
-import { InfoCard } from "@/components/info-card";
+import { InfoCard } from "@/pages/admin/suppliers/_components/info-card";
 import { FilterIcon, PlusIcon, SearchIcon } from "@/icons";
 import { SelectedUser } from "@/components/selected-user";
 import { NoSelectedState } from "@/components/no-selected-state";
@@ -28,7 +28,7 @@ const SuppliersPage = () => {
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
   const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
-    null
+    null,
   );
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;

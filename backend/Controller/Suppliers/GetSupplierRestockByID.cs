@@ -1,0 +1,183 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using backend.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace backend.Controller.Suppliers
+{
+    [ApiController]
+    [Route("api/suppliers")]
+    public class GetSupplierRestockByID : ControllerBase
+    {
+        private readonly ApplicationDBContext _db;
+
+        public GetSupplierRestockByID(ApplicationDBContext db)
+        {
+            _db = db;
+        }
+
+        [HttpGet("{supplierId}/restocks")]
+        public async Task<IActionResult> GetSupplierRestocksById(string supplierId)
+        {
+            try
+            {
+                // Check if supplier exists
+                var supplierExists = await _db.Users.AnyAsync(u => u.Id == supplierId);
+                if (!supplierExists)
+                {
+                    return NotFound($"Supplier with ID {supplierId} not found");
+                }
+
+                // Get supplier with their restock batches and line items
+                var supplier = await _db.Users
+                    .Where(u => u.Id == supplierId)
+                    .Select(s => new
+                    {
+                        supplier_Id = s.Id,
+                        first_Name = s.FirstName,
+                        last_Name = s.LastName,
+                        company_Name = s.CompanyName,
+                        email = s.Email,
+                        phone_Number = s.PhoneNumber,
+                        address = s.Address,
+                        notes = s.Notes,
+
+                        restocks = _db.RestockBatches
+                            .Where(rb => rb.Supplier_ID == s.Id)
+                            .Select(rb => new
+                            {
+                                batch_Id = rb.Batch_ID,
+                                batch_Number = rb.Batch_Number,
+                                restock_Id = rb.Restock_ID,
+                                created_At = rb.CreatedAt,
+                                updated_At = rb.UpdatedAt,
+
+                                restock_Info = new
+                                {
+                                    rb.Restock.Restock_ID,
+                                    rb.Restock.Restock_Number,
+                                    rb.Restock.Restock_Notes,
+                                    rb.Restock.Status,
+                                    rb.Restock.CreatedAt,
+                                    rb.Restock.UpdatedAt,
+                                    clerk = rb.Restock.Clerk != null ? new
+                                    {
+                                        rb.Restock.Clerk.Id,
+                                        rb.Restock.Clerk.FirstName,
+                                        rb.Restock.Clerk.LastName,
+                                        rb.Restock.Clerk.Email
+                                    } : null
+                                },
+
+                                line_Items = rb.RestockLineItems.Select(rli => new
+                                {
+                                    line_Item_ID = rli.LineItem_ID,
+                                    product_ID = rli.Product_ID,
+                                    base_UOM_ID = rli.Base_UOM_ID,
+                                    preset_ID = rli.Preset_ID,
+                                    base_Unit_Price = rli.Base_Unit_Price,
+                                    base_Unit_Quantity = rli.Base_Unit_Quantity,
+                                    line_Item_Total = rli.Base_Unit_Price * rli.Base_Unit_Quantity,
+
+                                    product = rli.Product != null ? new
+                                    {
+                                        rli.Product.Product_ID,
+                                        rli.Product.Product_Code,
+                                        rli.Product.Product_Name,
+                                        rli.Product.Description,
+                                        brand = rli.Product.Brand != null ? new
+                                        {
+                                            rli.Product.Brand.Brand_ID,
+                                            rli.Product.Brand.BrandName
+                                        } : null,
+                                        category = rli.Product.Category != null ? new
+                                        {
+                                            rli.Product.Category.Category_ID,
+                                            rli.Product.Category.Category_Name
+                                        } : null,
+                                        variant = rli.Product.Variant != null ? new
+                                        {
+                                            rli.Product.Variant.Variant_ID,
+                                            rli.Product.Variant.Variant_Name
+                                        } : null
+                                    } : null,
+
+                                    base_Unit = rli.BaseUnitOfMeasure != null ? new
+                                    {
+                                        rli.BaseUnitOfMeasure.uom_ID,
+                                        rli.BaseUnitOfMeasure.uom_Name
+                                    } : null,
+
+                                    unit_Preset = rli.UnitPreset != null ? new
+                                    {
+                                        rli.UnitPreset.Preset_ID,
+                                        rli.UnitPreset.Preset_Name,
+                                        rli.UnitPreset.Main_Unit_ID,
+                                        main_Unit = rli.UnitPreset.MainUnit != null ? new
+                                        {
+                                            rli.UnitPreset.MainUnit.uom_ID,
+                                            rli.UnitPreset.MainUnit.uom_Name
+                                        } : null,
+                                        preset_Levels = rli.UnitPreset.PresetLevels
+                                            .OrderBy(pl => pl.Level)
+                                            .Select(pl => new
+                                            {
+                                                pl.Level_ID,
+                                                pl.Level,
+                                                pl.UOM_ID,
+                                                pl.Conversion_Factor,
+                                                unit = pl.UnitOfMeasure != null ? new
+                                                {
+                                                    pl.UnitOfMeasure.uom_ID,
+                                                    pl.UnitOfMeasure.uom_Name
+                                                } : null
+                                            })
+                                            .ToList()
+                                    } : null,
+
+                                    preset_Pricing = rli.PresetPricing.Select(pp => new
+                                    {
+                                        pp.Pricing_ID,
+                                        pp.UOM_ID,
+                                        Price_Per_Unit = pp.Price_Per_Unit > 0
+                                            ? pp.Price_Per_Unit
+                                            : (_db.Product_Unit_Preset_Pricing
+                                                .Where(pupPricing =>
+                                                    pupPricing.UOM_ID == pp.UOM_ID
+                                                    && pupPricing.Level == pp.Level
+                                                    && pupPricing.ProductUnitPreset.Product_ID == rli.Product_ID
+                                                    && pupPricing.ProductUnitPreset.Preset_ID == rli.Preset_ID)
+                                                .Select(pupPricing => (decimal?)pupPricing.Price_Per_Unit)
+                                                .FirstOrDefault() ?? 0),
+                                        unit = pp.UnitOfMeasure != null ? new
+                                        {
+                                            pp.UnitOfMeasure.uom_ID,
+                                            pp.UnitOfMeasure.uom_Name
+                                        } : null
+                                    }).ToList()
+                                }).ToList(),
+
+                                batch_Total = rb.RestockLineItems
+                                    .Sum(rli => rli.Base_Unit_Price * rli.Base_Unit_Quantity)
+                            })
+                            .ToList(),
+
+                        total_Restock_Value = _db.RestockBatches
+                            .Where(rb => rb.Supplier_ID == s.Id)
+                            .SelectMany(rb => rb.RestockLineItems)
+                            .Sum(rli => rli.Base_Unit_Price * rli.Base_Unit_Quantity)
+                    })
+                    .FirstOrDefaultAsync();
+
+                return Ok(supplier);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, $"Internal server error: {e.Message}");
+            }
+        }
+    }
+}

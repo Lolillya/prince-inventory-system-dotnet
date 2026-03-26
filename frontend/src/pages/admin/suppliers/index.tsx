@@ -1,17 +1,19 @@
-import { InfoCard } from "@/components/info-card";
 import { FilterIcon, PlusIcon, SearchIcon } from "@/icons";
 import { useSuppliersQuery } from "@/features/suppliers/supplier-get-all.query";
 import { useSelectedSupplierQuery } from "@/features/suppliers/supplier-selected.query";
 import { Separator } from "@/components/separator";
 import { NoSelectedState } from "@/components/no-selected-state";
-import { SelectedUser } from "@/components/selected-user";
-import { Fragment, useState } from "react";
+import { Activity, Fragment, useState } from "react";
 import { AddSupplierModal } from "./_components/add-supplier.modal";
-import { EditSupplierModal } from "./_components/edit-supplier,modal";
-import { PurchaseOrderModal } from "./_components/purchase-order.modal";
-import { UserClientModel } from "@/models/user-client.model";
+import { EditSupplierModal } from "./_components/edit-supplier.modal";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
-import { ShoppingCart } from "lucide-react";
+import { InfoCard } from "./_components/info-card";
+import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
+import { SelectedUser } from "./_components/selected-user";
+import { toast } from "sonner";
+import { PackageOpen } from "lucide-react";
+import { PurchasePriceModal } from "./_components/purchase-price.modal";
+import { PurchaseOrderModal } from "./_components/purchase-order.modal";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
@@ -19,10 +21,13 @@ const SuppliersPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
   const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
-  const [isPurchaseOrderModalOpen, setIsPurchaseOrderModalOpen] = useState(false);
+  const [isPurchaseOrderModalOpen, setIsPurchaseOrderModalOpen] =
+    useState(false);
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
+  const [isPurchasePriceModalOpen, setIsPurchasePriceModalOpen] =
+    useState(false);
+  const [userToDelete, setUserToDelete] = useState<SupplierDataModel | null>(
     null,
   );
 
@@ -39,25 +44,32 @@ const SuppliersPage = () => {
     setIsEditSupplierModalOpen(!isEditSupplierModalOpen);
   };
 
-  const handleDelete = (data: UserClientModel) => {
+  const handleDelete = (data: SupplierDataModel) => {
+    if (data.restocks.length > 0) {
+      toast.error("Cannot delete supplier with existing restocks");
+      return;
+    }
+
     setUserToDelete(data);
     setIsConfirmRemoveModalOpen(true);
   };
 
-  const handlePurchaseOrder = () => {
-    setIsPurchaseOrderModalOpen(!isPurchaseOrderModalOpen);
+  const handlePurchasePrice = () => {
+    setIsPurchasePriceModalOpen(!isPurchasePriceModalOpen);
   };
 
   const filteredSuppliers = suppliers?.filter((supplier) => {
     const query = searchQuery.toLowerCase();
     return (
-      supplier.firstName.toLowerCase().includes(query) ||
-      supplier.lastName.toLowerCase().includes(query) ||
+      supplier.first_Name.toLowerCase().includes(query) ||
+      supplier.last_Name.toLowerCase().includes(query) ||
       supplier.email.toLowerCase().includes(query) ||
-      supplier.companyName.toLowerCase().includes(query) ||
-      supplier.phoneNumber.toLowerCase().includes(query)
+      supplier.company_Name.toLowerCase().includes(query) ||
+      supplier.phone_Number.toLowerCase().includes(query)
     );
   });
+
+  console.log(suppliers);
 
   return (
     <section>
@@ -68,19 +80,26 @@ const SuppliersPage = () => {
         />
       )}
 
+      <Activity mode={isPurchasePriceModalOpen ? "visible" : "hidden"}>
+        <PurchasePriceModal
+          handlePurchasePrice={handlePurchasePrice}
+          selectedSupplier={selectedSupplier ?? null}
+        />
+      </Activity>
+
       {/* EDIT SUPPLIER MODAL */}
       {isEditSupplierModalOpen && selectedSupplier && (
         <EditSupplierModal
           setIsEditSupplierModalOpen={setIsEditSupplierModalOpen}
           selectedSupplier={{
-            id: selectedSupplier.id,
+            id: selectedSupplier.supplier_Id,
             username: selectedSupplier.username,
             email: selectedSupplier.email,
-            firstName: selectedSupplier.firstName,
-            lastName: selectedSupplier.lastName,
-            companyName: selectedSupplier.companyName,
+            firstName: selectedSupplier.first_Name,
+            lastName: selectedSupplier.last_Name,
+            companyName: selectedSupplier.company_Name,
             address: selectedSupplier.address,
-            phoneNumber: selectedSupplier.phoneNumber,
+            phoneNumber: selectedSupplier.phone_Number,
             notes: selectedSupplier.notes,
             roleID: 3,
           }}
@@ -98,7 +117,7 @@ const SuppliersPage = () => {
       {isConfirmRemoveModalOpen && userToDelete && (
         <ConfirmRemoveModal
           setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
-          userId={userToDelete.id}
+          userId={userToDelete.supplier_Id}
         />
       )}
       <div className="w-full mb-8">
@@ -130,30 +149,27 @@ const SuppliersPage = () => {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-3 overflow-y-hidden">
+      <div className="flex min-h-0 flex-1 gap-3 overflow-y-hidden">
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="bg-custom-gray p-1 rounded-lg flex justify-between shadow-sm border items-center">
+            <div className="gap-10 flex items-center pl-2">
               <label className="capitalize text-saltbox-gray font-normal text-sm">
-                suppliers
+                suppiers
               </label>
               <span className="capitalize text-vesper-gray text-xs">
                 {filteredSuppliers?.length} records
               </span>
             </div>
-            <button
-              onClick={handlePurchaseOrder}
-              className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
-            >
-              <ShoppingCart size={16} />
-              <label className="cursor-pointer">Create Purchase Order</label>
-            </button>
+            <div className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none">
+              <PackageOpen />
+              <label className="cursor-pointer">Generate PO</label>
+            </div>
           </div>
 
           <div className="w-full overflow-y-scroll">
             {filteredSuppliers?.map((data, index) => (
-              <Fragment key={data.id}>
+              <Fragment key={index}>
                 <InfoCard
                   type="supplier"
                   key={index}
@@ -168,21 +184,21 @@ const SuppliersPage = () => {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="w-[50%] flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
+        <div className="flex min-h-0 w-[50%] flex-col gap-3">
+          <div className="bg-custom-gray px-3 py-4 rounded-lg gap-10 flex items-center">
             <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
             </label>
           </div>
 
-          <div className="h-full bg-custom-gray rounded-lg flex">
+          <div className="flex h-full min-h-0 rounded-lg bg-custom-gray">
             {!selectedSupplier ? (
               <NoSelectedState />
             ) : (
               <SelectedUser
-                type="supplier"
-                {...selectedSupplier}
+                selectedSupplier={selectedSupplier}
                 handleEdit={handleEdit}
+                handlePurchasePrice={handlePurchasePrice}
               />
             )}
           </div>

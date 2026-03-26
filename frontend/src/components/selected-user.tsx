@@ -11,10 +11,11 @@ import { UserClientModel } from "../models/user-client.model";
 import { useState } from "react";
 import { Box, Calendar } from "lucide-react";
 import { RestocksModal } from "./restocks-modal";
+import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 
 type UserType = "customer" | "supplier" | "employee";
 
-interface SelectedUserProps extends UserClientModel {
+interface SelectedUserProps extends SupplierDataModel {
   handleEdit: () => void;
   type: UserType;
 }
@@ -33,13 +34,13 @@ export const SelectedUser = ({
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <p className="text-base text-slate-700">{user.companyName}</p>
-
+              <p className="text-base text-slate-700">{user.company_Name}</p>
+              {/* 
               <span className="rounded-full bg-cyan-200 px-2 py-[3px] text-sm tracking-wide text-cyan-700 capitalize">
-                {user.role}
-              </span>
+                {user.supplier_Type}
+              </span> */}
             </div>
-            <p className="text-sm text-slate-400">{user.id}</p>
+            <p className="text-sm text-slate-400">{user.supplier_Id}</p>
           </div>
         </div>
         <div
@@ -62,7 +63,7 @@ export const SelectedUser = ({
             <p className="info-id text-sm">Representative</p>
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold info-name ">
-                {user.firstName} {user.lastName}
+                {user.first_Name} {user.last_Name}
               </p>
             </div>
           </div>
@@ -78,7 +79,7 @@ export const SelectedUser = ({
           <div className="flex flex-col justify-center">
             <p className="text-sm info-id">Contact</p>
             <div className="flex items-center gap-2">
-              <p className="text-sm info-name">{user.phoneNumber}</p>
+              <p className="text-sm info-name">{user.phone_Number}</p>
             </div>
           </div>
         </div>

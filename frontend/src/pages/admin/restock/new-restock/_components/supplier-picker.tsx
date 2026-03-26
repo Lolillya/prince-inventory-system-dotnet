@@ -2,12 +2,13 @@ import {
   updateSelectedSupplier,
   useSelectedRestockSupplier,
 } from "@/features/restock/selected-supplier";
+import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 import { useState, useRef, useEffect } from "react";
 
 export const SupplierPicker = ({
   suppliersData,
 }: {
-  suppliersData?: any[];
+  suppliersData?: SupplierDataModel[];
 }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -27,7 +28,7 @@ export const SupplierPicker = ({
   }, []);
 
   const filtered = suppliersData?.filter((s) =>
-    String(s.companyName).toLowerCase().includes(query.toLowerCase())
+    String(s.company_Name).toLowerCase().includes(query.toLowerCase()),
   );
 
   return (
@@ -37,7 +38,7 @@ export const SupplierPicker = ({
         <input
           className="w-full"
           placeholder="Supplier Name"
-          value={selectedSupplier?.companyName}
+          value={selectedSupplier?.company_Name}
           onFocus={() => setOpen(true)}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -59,7 +60,7 @@ export const SupplierPicker = ({
                   UPDATE_SELECTED_SUPPLIER(supplier);
                 }}
               >
-                <div className="font-semibold">{supplier.companyName}</div>
+                <div className="font-semibold">{supplier.company_Name}</div>
                 <div className="text-xs text-vesper-gray">{supplier.email}</div>
               </div>
             ))
