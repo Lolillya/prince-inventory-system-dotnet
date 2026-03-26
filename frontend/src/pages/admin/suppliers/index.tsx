@@ -11,7 +11,7 @@ import { InfoCard } from "./_components/info-card";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 import { SelectedUser } from "./_components/selected-user";
 import { toast } from "sonner";
-import { PackageOpen } from "lucide-react";
+import { PackageOpen, ShoppingCart } from "lucide-react";
 import { PurchasePriceModal } from "./_components/purchase-price.modal";
 import { PurchaseOrderModal } from "./_components/purchase-order.modal";
 
@@ -68,8 +68,6 @@ const SuppliersPage = () => {
       supplier.phone_Number.toLowerCase().includes(query)
     );
   });
-
-  console.log(suppliers);
 
   return (
     <section>
@@ -161,9 +159,9 @@ const SuppliersPage = () => {
                 {filteredSuppliers?.length} records
               </span>
             </div>
-            <div className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none">
-              <PackageOpen />
-              <label className="cursor-pointer">Generate PO</label>
+            <div className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none">
+              <ShoppingCart size={18} />
+              <label className="cursor-pointer">Generate Purchase Order</label>
             </div>
           </div>
 
