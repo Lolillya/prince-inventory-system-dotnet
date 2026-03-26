@@ -1,5 +1,4 @@
 import { Fragment, useState } from "react";
-import { InfoCard } from "@/pages/admin/suppliers/_components/info-card";
 import { NoSelectedState } from "@/components/no-selected-state";
 import { SelectedUser } from "@/components/selected-user";
 import { Separator } from "@/components/separator";
@@ -10,6 +9,7 @@ import { AddEmployeeModal } from "./_components/add-employee.modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { EditEmployeeModal } from "./_components/edit-employee.modal";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { InfoCard } from "@/components/info-card";
 
 const EmployeesPage = () => {
   const { data: employees, isLoading, error } = userEmployeesQuery();
