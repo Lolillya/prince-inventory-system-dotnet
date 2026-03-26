@@ -1,15 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { XIcon, SearchIcon } from "@/icons";
-import { setDate, format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { useState } from "react";
-import { date } from "yup";
+import { ItemPicker } from "@/components/item-picker";
+import { SupplierPicker } from "@/components/supplier-picker";
+import { useSuppliersQuery } from "@/features/suppliers/supplier-get-all.query";
+import { XIcon } from "@/icons";
 
 interface PurchaseOrderModalProps {
   setIsPurchaseOrderModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -21,9 +13,9 @@ export const PurchaseOrderModal = ({
   const handleCloseModal = () => {
     setIsPurchaseOrderModalOpen(false);
   };
+  const { data: suppliersData } = useSuppliersQuery();
 
-  const [date, setDate] = useState<Date>();
-
+  console.log("Suppliers data in modal:", suppliersData); // Debug log to check suppliers data
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
       <div className="w-[800px] max-h-[90vh] overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg relative flex flex-col gap-4">
@@ -43,13 +35,15 @@ export const PurchaseOrderModal = ({
         </div>
 
         <div className="flex flex-col gap-4">
-          <label className="text-sm font-medium">Supplier</label>
+          <SupplierPicker suppliersData={suppliersData} />
+
+          {/* <label className="text-sm font-medium">Supplier</label>
           <input
             className="input-style-2"
             value=""
             placeholder="Supplier Name"
             readOnly
-          />
+          /> */}
 
           <label className="text-sm font-medium">Preferred delivery</label>
           <input
@@ -75,18 +69,23 @@ export const PurchaseOrderModal = ({
             </PopoverContent>
           </Popover> */}
 
-          <label className="text-sm font-medium">Search items</label>
-          <div className="relative">
-            <input
-              className="input-style-2 pl-10"
-              value=""
-              placeholder="Search product..."
-              readOnly
-            />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <SearchIcon />
-            </span>
-          </div>
+          {/* <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-vesper-gray">
+              Search items
+            </label>
+            <div className="relative">
+              <input
+                className="input-style-2 pl-10"
+                value=""
+                placeholder="Search product..."
+                readOnly
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <SearchIcon />
+              </span>
+            </div>
+          </div> */}
+          <ItemPicker />
 
           <div className="border rounded-lg p-3 bg-custom-gray">
             <p className="text-sm text-gray-500">
