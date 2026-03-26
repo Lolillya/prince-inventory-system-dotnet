@@ -1,4 +1,3 @@
-import { InfoCard } from "@/pages/admin/suppliers/_components/info-card";
 import { FilterIcon, PlusIcon, SearchIcon } from "@/icons";
 import { SelectedUser } from "@/components/selected-user";
 import { NoSelectedState } from "@/components/no-selected-state";
@@ -15,6 +14,7 @@ import { UserClientModel } from "@/models/user-client.model";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserModel } from "@/features/auth-login/models/user.model";
+import { InfoCard } from "@/components/info-card";
 
 const SuppliersPage = () => {
   const queryClient = useQueryClient();
