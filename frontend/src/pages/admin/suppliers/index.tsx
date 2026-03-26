@@ -66,7 +66,7 @@ const SuppliersPage = () => {
     );
   });
 
-  // console.log(suppliers);
+  console.log(suppliers);
 
   return (
     <section>

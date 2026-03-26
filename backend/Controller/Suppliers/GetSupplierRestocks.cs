@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using backend.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -134,7 +130,16 @@ namespace backend.Controller.Suppliers
                                     {
                                         pp.Pricing_ID,
                                         pp.UOM_ID,
-                                        pp.Price_Per_Unit,
+                                        Price_Per_Unit = pp.Price_Per_Unit > 0
+                                            ? pp.Price_Per_Unit
+                                            : (_db.Product_Unit_Preset_Pricing
+                                                .Where(pupPricing =>
+                                                    pupPricing.UOM_ID == pp.UOM_ID
+                                                    && pupPricing.Level == pp.Level
+                                                    && pupPricing.ProductUnitPreset.Product_ID == rli.Product_ID
+                                                    && pupPricing.ProductUnitPreset.Preset_ID == rli.Preset_ID)
+                                                .Select(pupPricing => (decimal?)pupPricing.Price_Per_Unit)
+                                                .FirstOrDefault() ?? 0),
                                         unit = pp.UnitOfMeasure != null ? new
                                         {
                                             pp.UnitOfMeasure.uom_ID,
