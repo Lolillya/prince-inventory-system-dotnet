@@ -552,13 +552,14 @@ export const PurchasePriceModal = ({
                   draft !== saved;
 
                 return (
-                  <div className="border-t border-slate-200 px-5 py-3 w-fit self-end">
+                  <div className="border-t border-slate-200 px-5 py-3 w-full justify-end flex">
                     <button
-                      className="w-full text-nowrap"
+                      className="w-full max-w-fit flex items-center justify-center gap-2"
                       disabled={!canSave}
                       onClick={handleSavePrice}
                     >
-                      <Save size={18} /> Save Purchase Price
+                      <Save size={18} />
+                      Save Purchase Price
                     </button>
                   </div>
                 );
