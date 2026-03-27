@@ -2,10 +2,13 @@ import {
   usePurchaseOrdersBySupplierQuery,
   useUpdatePurchaseOrderStatusMutation,
 } from "@/features/purchase-order/purchase-order.query";
+import { PurchaseOrderRecord } from "@/features/purchase-order/purchase-order.model";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 import { XIcon } from "@/icons";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useMemo, useState } from "react";
+import { PurchaseOrderDetailsModal } from "./purchase-order-details.modal";
 
 interface PurchaseOrderHistoryModalProps {
   selectedSupplier: SupplierDataModel;
@@ -18,10 +21,34 @@ export const PurchaseOrderHistoryModal = ({
   selectedSupplier,
   setIsPurchaseOrderHistoryModalOpen,
 }: PurchaseOrderHistoryModalProps) => {
+  const [selectedPurchaseOrder, setSelectedPurchaseOrder] =
+    useState<PurchaseOrderRecord | null>(null);
+
   const { data: purchaseOrders = [], isLoading } =
     usePurchaseOrdersBySupplierQuery(selectedSupplier.supplier_Id);
   const { mutateAsync: updateStatus, isPending } =
     useUpdatePurchaseOrderStatusMutation(selectedSupplier.supplier_Id);
+
+  const stats = useMemo(() => {
+    const pending = purchaseOrders.filter(
+      (po) => po.status?.toUpperCase() === "PENDING",
+    ).length;
+    const completed = purchaseOrders.filter(
+      (po) => po.status?.toUpperCase() === "COMPLETED",
+    ).length;
+
+    const totalAmount = purchaseOrders.reduce(
+      (acc, po) => acc + Number(po.grand_Total || 0),
+      0,
+    );
+
+    return {
+      total: purchaseOrders.length,
+      pending,
+      completed,
+      totalAmount,
+    };
+  }, [purchaseOrders]);
 
   const formatMoney = (value: number) => {
     return new Intl.NumberFormat("en-PH", {
@@ -53,6 +80,13 @@ export const PurchaseOrderHistoryModal = ({
 
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
+      {selectedPurchaseOrder && (
+        <PurchaseOrderDetailsModal
+          purchaseOrder={selectedPurchaseOrder}
+          onClose={() => setSelectedPurchaseOrder(null)}
+        />
+      )}
+
       <div className="w-[980px] max-h-[90vh] overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg relative flex flex-col gap-4">
         <div className="flex justify-between items-start">
           <div>
@@ -70,17 +104,40 @@ export const PurchaseOrderHistoryModal = ({
           </button>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="rounded-lg border bg-custom-gray p-3">
+            <p className="text-xs uppercase text-vesper-gray">Total records</p>
+            <p className="text-lg font-bold">{stats.total}</p>
+          </div>
+          <div className="rounded-lg border bg-custom-gray p-3">
+            <p className="text-xs uppercase text-vesper-gray">Pending</p>
+            <p className="text-lg font-bold text-amber-700">{stats.pending}</p>
+          </div>
+          <div className="rounded-lg border bg-custom-gray p-3">
+            <p className="text-xs uppercase text-vesper-gray">Completed</p>
+            <p className="text-lg font-bold text-green-700">
+              {stats.completed}
+            </p>
+          </div>
+          <div className="rounded-lg border bg-custom-gray p-3">
+            <p className="text-xs uppercase text-vesper-gray">Total amount</p>
+            <p className="text-lg font-bold">
+              {formatMoney(stats.totalAmount)}
+            </p>
+          </div>
+        </div>
+
         <div className="rounded-lg border overflow-hidden">
-          <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-custom-gray text-xs font-semibold uppercase">
-            <div className="col-span-2">PO Number</div>
+          <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-custom-gray text-xs font-semibold uppercase tracking-wide">
+            <div className="col-span-3">PO Number</div>
             <div className="col-span-2">Status</div>
             <div className="col-span-2">Preferred Delivery</div>
             <div className="col-span-2 text-right">Grand Total</div>
-            <div className="col-span-2 text-right">Products</div>
-            <div className="col-span-2 text-right">Action</div>
+            <div className="col-span-1 text-right">Items</div>
+            <div className="col-span-2 text-right">Actions</div>
           </div>
 
-          <div className="max-h-[55vh] overflow-y-auto">
+          <div className="max-h-[56vh] overflow-y-auto">
             {isLoading ? (
               <div className="px-3 py-8 text-sm text-gray-500 text-center">
                 Loading purchase orders...
@@ -96,11 +153,14 @@ export const PurchaseOrderHistoryModal = ({
                 return (
                   <div
                     key={po.purchase_Order_ID}
-                    className="border-b last:border-b-0"
+                    className="border-b last:border-b-0 px-3 py-3"
                   >
-                    <div className="grid grid-cols-12 gap-2 px-3 py-2 text-sm items-center">
-                      <div className="col-span-2 font-semibold">
+                    <div className="grid grid-cols-12 gap-2 text-sm items-center">
+                      <div className="col-span-3 font-semibold">
                         {po.purchase_Order_Number}
+                        <div className="text-xs text-vesper-gray mt-1">
+                          {formatDate(po.created_At)}
+                        </div>
                       </div>
                       <div className="col-span-2">
                         <span
@@ -119,10 +179,17 @@ export const PurchaseOrderHistoryModal = ({
                       <div className="col-span-2 text-right font-medium">
                         {formatMoney(Number(po.grand_Total || 0))}
                       </div>
-                      <div className="col-span-2 text-right">
+                      <div className="col-span-1 text-right">
                         {po.line_Items.length}
                       </div>
-                      <div className="col-span-2 text-right">
+                      <div className="col-span-2 flex gap-2 justify-end">
+                        <button
+                          className="px-3 py-1 text-xs rounded border hover:bg-gray-50"
+                          onClick={() => setSelectedPurchaseOrder(po)}
+                        >
+                          View details
+                        </button>
+
                         {isPendingStatus ? (
                           <button
                             className="px-3 py-1 text-xs rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-60"
@@ -132,45 +199,13 @@ export const PurchaseOrderHistoryModal = ({
                             Set COMPLETE
                           </button>
                         ) : (
-                          <span className="text-xs text-green-700 font-semibold">
-                            Completed
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="px-3 pb-3">
-                      <div className="rounded border overflow-hidden">
-                        <div className="grid grid-cols-12 gap-2 px-2 py-1 bg-gray-50 text-xs font-semibold uppercase">
-                          <div className="col-span-4">Product</div>
-                          <div className="col-span-2 text-right">Qty</div>
-                          <div className="col-span-2">Unit</div>
-                          <div className="col-span-2 text-right">Price</div>
-                          <div className="col-span-2 text-right">Sub-total</div>
-                        </div>
-                        {po.line_Items.map((line) => (
-                          <div
-                            key={line.purchase_Order_LineItem_ID}
-                            className="grid grid-cols-12 gap-2 px-2 py-1 text-xs border-t first:border-t-0"
+                          <button
+                            className="px-3 py-1 text-xs rounded bg-green-100 text-green-700 cursor-default"
+                            disabled
                           >
-                            <div className="col-span-4">
-                              {line.product?.product_Name} -{" "}
-                              {line.product?.brand} - {line.product?.variant}
-                            </div>
-                            <div className="col-span-2 text-right">
-                              {line.quantity}
-                            </div>
-                            <div className="col-span-2">
-                              {line.unit?.uom_Name || "-"}
-                            </div>
-                            <div className="col-span-2 text-right">
-                              {formatMoney(Number(line.unit_Price || 0))}
-                            </div>
-                            <div className="col-span-2 text-right font-medium">
-                              {formatMoney(Number(line.sub_Total || 0))}
-                            </div>
-                          </div>
-                        ))}
+                            Completed
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
