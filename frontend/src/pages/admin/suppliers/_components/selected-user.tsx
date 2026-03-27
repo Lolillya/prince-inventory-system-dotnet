@@ -214,6 +214,7 @@ export const SelectedUser = ({
             <textarea
               rows={3}
               value={selectedSupplier.notes}
+              readOnly
               className="w-full resize-none text-sm"
             />
           </div>

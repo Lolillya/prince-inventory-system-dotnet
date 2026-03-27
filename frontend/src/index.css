@@ -235,7 +235,11 @@
   }
 
   th {
-    @apply text-custom-black bg-custom-gray px-6 py-3;
+    @apply text-custom-black bg-custom-gray px-4 py-3;
+  }
+
+  td {
+    @apply px-4 py-3;
   }
 
   thead {
