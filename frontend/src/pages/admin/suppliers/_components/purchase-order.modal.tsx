@@ -9,6 +9,9 @@ import { useSuppliersQuery } from "@/features/suppliers/supplier-get-all.query";
 import { XIcon } from "@/icons";
 import { useState } from "react";
 import { PurchaseOrderConfirmModal } from "./purchase-order-confirm.modal";
+import { useCreatePurchaseOrderMutation } from "@/features/purchase-order/purchase-order.query";
+import { useAuth } from "@/context/use-auth";
+import { toast } from "sonner";
 
 interface PurchaseOrderModalProps {
   setIsPurchaseOrderModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -18,6 +21,9 @@ export const PurchaseOrderModal = ({
   setIsPurchaseOrderModalOpen,
 }: PurchaseOrderModalProps) => {
   const { updateMainQuantity, updateLevelPricing } = useUnitPresetRestock();
+  const { user } = useAuth();
+  const { mutateAsync: createPurchaseOrder, isPending: isGenerating } =
+    useCreatePurchaseOrderMutation();
   const [preferredDelivery, setPreferredDelivery] = useState("");
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [purchaseOrderNote, setPurchaseOrderNote] = useState("");
@@ -99,6 +105,12 @@ export const PurchaseOrderModal = ({
       ?.companyName ??
     "";
 
+  const selectedSupplierId =
+    (selectedSupplier as { supplier_Id?: string; id?: string } | null)
+      ?.supplier_Id ??
+    (selectedSupplier as { supplier_Id?: string; id?: string } | null)?.id ??
+    "";
+
   const handleConfirm = () => {
     if (!selectedSupplierName) {
       alert("Please select a supplier first.");
@@ -122,10 +134,76 @@ export const PurchaseOrderModal = ({
     setIsConfirmModalOpen(false);
   };
 
-  const handleGenerate = () => {
-    // Final API integration for purchase order generation can be connected here.
-    setIsConfirmModalOpen(false);
-    setIsPurchaseOrderModalOpen(false);
+  const handleGenerate = async () => {
+    if (!user?.user_ID) {
+      alert("User not authenticated.");
+      return;
+    }
+
+    if (!selectedSupplierId) {
+      alert("Supplier is required.");
+      return;
+    }
+
+    const lineItemsPayload = selectedItems
+      .map((rawItem) => {
+        const item = rawItem as any;
+        const selectedPresetId = item.selectedPreset?.preset_ID;
+        const selectedPreset = item.unitPresets?.find(
+          (preset: any) => preset.preset_ID === selectedPresetId,
+        );
+
+        const presetLevels = [
+          ...(selectedPreset?.preset?.presetLevels || []),
+        ].sort((a: any, b: any) => a.level - b.level);
+
+        const mainLevel =
+          presetLevels.find((level: any) => level.level === 1) ||
+          presetLevels[0];
+        const mainLevelNumber = mainLevel?.level ?? 1;
+        const mainUomId = mainLevel?.uoM_ID || mainLevel?.unitOfMeasure?.uom_ID;
+
+        const quantity = Number(item.selectedPreset?.main_Unit_Quantity || 0);
+        const unitPrice = Number(
+          item.selectedPreset?.levelPricing?.find(
+            (lp: any) => lp.level === mainLevelNumber,
+          )?.price_Per_Unit || 0,
+        );
+
+        if (!quantity || !mainUomId) return null;
+
+        return {
+          product_ID: item.product.product_ID,
+          preset_ID: selectedPresetId,
+          uom_ID: Number(mainUomId),
+          quantity,
+          unit_Price: unitPrice,
+        };
+      })
+      .filter((lineItem): lineItem is NonNullable<typeof lineItem> =>
+        Boolean(lineItem),
+      );
+
+    if (lineItemsPayload.length === 0) {
+      alert("Please add at least one valid line item.");
+      return;
+    }
+
+    try {
+      await createPurchaseOrder({
+        supplier_ID: selectedSupplierId,
+        purchase_Order_Clerk: user.user_ID,
+        preferred_Delivery: preferredDelivery,
+        notes: purchaseOrderNote,
+        lineItems: lineItemsPayload,
+      });
+
+      toast.success("Purchase order generated successfully.");
+      setIsConfirmModalOpen(false);
+      setIsPurchaseOrderModalOpen(false);
+    } catch {
+      // Error handling is already centralized in the service layer.
+    }
   };
 
   if (isConfirmModalOpen) {
@@ -136,6 +214,7 @@ export const PurchaseOrderModal = ({
         items={confirmationItems}
         grandTotal={grandTotal}
         note={purchaseOrderNote}
+        isGenerating={isGenerating}
         onNoteChange={setPurchaseOrderNote}
         onCancel={handleCancelConfirm}
         onGenerate={handleGenerate}

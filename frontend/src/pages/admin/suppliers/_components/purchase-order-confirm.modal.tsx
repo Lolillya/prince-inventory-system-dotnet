@@ -13,6 +13,7 @@ interface PurchaseOrderConfirmModalProps {
   items: PurchaseOrderConfirmItem[];
   grandTotal: number;
   note: string;
+  isGenerating?: boolean;
   onNoteChange: (value: string) => void;
   onCancel: () => void;
   onGenerate: () => void;
@@ -24,6 +25,7 @@ export const PurchaseOrderConfirmModal = ({
   items,
   grandTotal,
   note,
+  isGenerating = false,
   onNoteChange,
   onCancel,
   onGenerate,
@@ -120,8 +122,9 @@ export const PurchaseOrderConfirmModal = ({
           <button
             className="px-4 py-2 text-sm rounded bg-blue-500 text-white hover:bg-blue-600"
             onClick={onGenerate}
+            disabled={isGenerating}
           >
-            Generate
+            {isGenerating ? "Generating..." : "Generate"}
           </button>
         </div>
       </div>
