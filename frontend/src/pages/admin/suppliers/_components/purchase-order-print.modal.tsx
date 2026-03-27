@@ -32,7 +32,11 @@ export const PurchaseOrderPreview = ({
 
   const handlePrintToPDF = () => {
     try {
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const left = 14;
@@ -159,7 +163,10 @@ export const PurchaseOrderPreview = ({
       doc.text("Note", left, y);
       y += 4;
       doc.setFont("helvetica", "normal");
-      const noteText = doc.splitTextToSize(purchaseOrder.notes || "-", right - left);
+      const noteText = doc.splitTextToSize(
+        purchaseOrder.notes || "-",
+        right - left,
+      );
       doc.text(noteText, left, y);
 
       doc.save(`${purchaseOrder.purchase_Order_Number}.pdf`);
