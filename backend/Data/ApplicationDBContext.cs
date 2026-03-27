@@ -5,6 +5,7 @@ using backend.Models.Inventory;
 using backend.Models.InvoiceModel;
 using backend.Models.RestockModel;
 using backend.Models.LineItems;
+using backend.Models.PurchaseOrderModel;
 using backend.Models.Unit;
 using backend.Models.Users;
 
@@ -38,6 +39,8 @@ namespace backend.Data
         public DbSet<Product_Unit_Preset_Quantity> Product_Unit_Preset_Quantities { get; set; }
         public DbSet<DeletedUsers> DeletedUsers { get; set; }
         public DbSet<UserInventoryFavorites> UserInventoryFavorites { get; set; }
+        public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+        public DbSet<PurchaseOrderLineItem> PurchaseOrderLineItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -335,6 +338,52 @@ namespace backend.Data
                 // Create a unique constraint to prevent duplicate favorites
                 entity.HasIndex(f => new { f.User_ID, f.Product_ID })
                     .IsUnique();
+            });
+
+            builder.Entity<PurchaseOrder>(entity =>
+            {
+                entity.ToTable("PurchaseOrders");
+
+                entity.HasOne(po => po.Supplier)
+                    .WithMany()
+                    .HasForeignKey(po => po.Supplier_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(po => po.Clerk)
+                    .WithMany()
+                    .HasForeignKey(po => po.Purchase_Order_Clerk)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasMany(po => po.LineItems)
+                    .WithOne(li => li.PurchaseOrder)
+                    .HasForeignKey(li => li.Purchase_Order_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<PurchaseOrderLineItem>(entity =>
+            {
+                entity.ToTable("PurchaseOrderLineItems");
+
+                entity.HasOne(li => li.PurchaseOrder)
+                    .WithMany(po => po.LineItems)
+                    .HasForeignKey(li => li.Purchase_Order_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(li => li.Product)
+                    .WithMany()
+                    .HasForeignKey(li => li.Product_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(li => li.UnitPreset)
+                    .WithMany()
+                    .HasForeignKey(li => li.Preset_ID)
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .IsRequired(false);
+
+                entity.HasOne(li => li.UnitOfMeasure)
+                    .WithMany()
+                    .HasForeignKey(li => li.UOM_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
         }
