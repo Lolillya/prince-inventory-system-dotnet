@@ -5,19 +5,21 @@ import {
   useSelectedProductInvoiceQuery,
   useSelectedInvoiceProduct,
 } from "@/features/invoice/selected-product";
-import { InvoiceCard } from "./_components/invoice-card";
+// import { InvoiceCard } from "./_components/invoice-card";
 import { useState } from "react";
 import { CreateInvoiceModal } from "./_components/invoice-modal";
 import { useInvoiceBatchQuery } from "@/features/invoice/invoice-get-all-batches";
-import { InvoiceRestockBatchModel } from "@/features/invoice/models/invoice-restock-batch.model";
+import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
+import { InvoiceCard } from "./_components/invoice-card-copy";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
-  const { ADD_PRODUCT, CLEAR_TO_INVOICE_LIST } = useSelectedInvoiceProduct();
+  const { ADD_PRODUCT, REMOVE_PRODUCT, CLEAR_TO_INVOICE_LIST } =
+    useSelectedInvoiceProduct();
   const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
-
-  console.log(restockBatches);
+  const { data: inventoryData } = UseInventoryQuery();
 
   // console.log(restockBatches);
 
@@ -29,7 +31,7 @@ const NewInvoicePage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const handleClick = (data: InvoiceRestockBatchModel) => {
+  const handleClick = (data: InventoryProductModel) => {
     // TODO: Create invoice add product model from restock batch model
     // pass the whole batch object array
     // map batches to show different unit structure from restock suppliers
@@ -41,6 +43,18 @@ const NewInvoicePage = () => {
 
   const createInvoice = () => {
     setIsModalOpen((prev) => !prev);
+  };
+
+  const handleRemoveProduct = (product: InventoryProductModel) => {
+    const updatedList = selectedInvoices.filter(
+      (p) =>
+        !(
+          p.product.product_ID === product.product.product_ID &&
+          p.variant.variant_Name === product.variant.variant_Name
+        ),
+    );
+    // This will need to be handled through your state management
+    // For now, you can use REMOVE_PRODUCT if the signature is fixed
   };
 
   return (
@@ -67,10 +81,10 @@ const NewInvoicePage = () => {
                 <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
                   {selectedInvoices.map((p, i) => (
                     <InvoiceCard
-                      key={`${p.product.product_ID}-${p.product.variant.variant_Name}-${i}`}
-                      product={p.product}
-                      batches={p.batches}
-                      // onRemove={() => removeProduct(p)}
+                      product={p}
+                      itemId={String(i)}
+                      onRemove={() => handleRemoveProduct(p)}
+                      key={i}
                     />
                   ))}
                 </div>
@@ -90,7 +104,7 @@ const NewInvoicePage = () => {
                 </div>
 
                 <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
-                  {restockBatches?.map((data, i) => (
+                  {inventoryData?.map((data, i) => (
                     <ProductCard
                       product={data}
                       onClick={() => handleClick(data)}

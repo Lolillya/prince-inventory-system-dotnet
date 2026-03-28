@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { InvoiceAddProductModel } from "./models/invoice-add-product.model";
 import { InvoiceAddPayloadModel } from "./models/invoice-add-payload.model";
-import { InvoiceRestockBatchModel } from "./models/invoice-restock-batch.model";
 import { useInvoicePayloadQuery } from "./invoice-create-payload";
+import { InventoryProductModel } from "../inventory/models/inventory.model";
 
 const InvoiceProductKey = ["invoice-product"];
 
 export const useSelectedProductInvoiceQuery = () => {
-  return useQuery<InvoiceRestockBatchModel[]>({
+  return useQuery<InventoryProductModel[]>({
     queryKey: InvoiceProductKey,
     queryFn: async () => {
       return [];
@@ -21,23 +21,26 @@ export const useSelectedInvoiceProduct = () => {
   const { ADD_INVOICE_PAYLOAD, REMOVE_INVOICE_PAYLOAD } =
     useInvoicePayloadQuery();
 
-  const ADD_PRODUCT = (data: InvoiceRestockBatchModel) => {
-    queryClient.setQueryData<InvoiceRestockBatchModel[]>(
+  const ADD_PRODUCT = (data: InventoryProductModel) => {
+    queryClient.setQueryData<InventoryProductModel[]>(
       InvoiceProductKey,
       (old = []) => {
         const exists = old.some(
           (p) =>
             p.product.product_ID === data.product.product_ID &&
-            p.product.variant.variant_Name === data.product.variant.variant_Name
+            p.variant.variant_Name === data.variant.variant_Name,
         );
         const next = exists ? old : [...old, data];
         return next;
-      }
+      },
     );
 
     const payload: InvoiceAddPayloadModel = {
       invoice: {
         product: data.product,
+        brand: data.brand,
+        variant: data.variant,
+        category: data.category,
         unit: "",
         unit_quantity: 0,
         unit_price: 0,
@@ -66,17 +69,17 @@ export const useSelectedInvoiceProduct = () => {
                 product.invoice.item.product.product_ID &&
               p.invoice.item.product.variant.variant_Name ===
                 product.invoice.item.product.variant.variant_Name
-            )
+            ),
         );
 
         return next;
-      }
+      },
     );
 
     // Also remove from payload
     REMOVE_INVOICE_PAYLOAD(
       product.invoice.item.product.product_ID,
-      product.invoice.item.product.variant.variant_Name
+      product.invoice.item.product.variant.variant_Name,
     );
   };
 

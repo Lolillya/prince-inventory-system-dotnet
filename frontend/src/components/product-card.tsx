@@ -1,8 +1,8 @@
-import { InvoiceRestockBatchModel } from "@/features/invoice/models/invoice-restock-batch.model";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 
 interface ProductCardProps {
   onClick?: () => void;
-  product: InvoiceRestockBatchModel;
+  product: InventoryProductModel;
 }
 
 export const ProductCard = ({ product, onClick }: ProductCardProps) => {
@@ -14,10 +14,10 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
       >
         <div className="grid gap-3 items-center">
           <span>{product.product.product_Name}</span>
-          <span>{product.product.brand.brandName}</span>
-          <span>{product.product.variant.variant_Name}</span>
+          <span>{product.brand.brandName}</span>
+          <span>{product.variant.variant_Name}</span>
         </div>
-        <span>{product.batches.length} Preset(s)</span>
+        <span>{product.unitPresets.length} Preset(s)</span>
       </div>
     </div>
   );

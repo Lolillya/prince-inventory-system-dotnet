@@ -1,6 +1,9 @@
 export type InvoiceAddPayloadModel = {
   invoice: {
     product: Product;
+    brand: Brand;
+    category: Category;
+    variant: Variant;
     unit: string;
     uom_ID: number;
     unit_quantity: number;
@@ -14,18 +17,13 @@ export type InvoiceAddPayloadModel = {
 };
 
 type Product = {
-  brand: Brand;
-  brand_ID: number;
-  category: Category;
-  category_ID: number;
-  createdAt: string;
-  description: string;
-  product_Code: string;
+  quantity: number;
   product_ID: number;
+  product_Code: string;
   product_Name: string;
+  description: string;
+  createdAt: string;
   updatedAt: string;
-  variant: Variant;
-  variant_ID: number;
 };
 
 type Brand = {
@@ -36,16 +34,15 @@ type Brand = {
 };
 
 type Category = {
-  categoryName: string;
   category_ID: number;
+  category_Name: string;
   createdAt: string;
   updatedAt: string;
 };
 
 type Variant = {
-  createdAt: string;
-  updatedAt: string;
-  productId: number;
   variant_ID: number;
   variant_Name: string;
+  createdAt: string;
+  updatedAt: string;
 };

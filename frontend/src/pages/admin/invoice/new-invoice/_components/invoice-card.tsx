@@ -126,13 +126,13 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       product.product_ID,
       product.variant.variant_Name,
       batch.baseUnit.uoM_Name,
-      batch.baseUnit.uoM_ID
+      batch.baseUnit.uoM_ID,
     );
 
     UPDATE_INVOICE_PAYLOAD_PRICE(
       product.product_ID,
       product.variant.variant_Name,
-      batch.baseUnit.unit_Price
+      batch.baseUnit.unit_Price,
     );
 
     updateTotal(batch.baseUnit.unit_Price, quantity, discountValue, discount);
@@ -150,7 +150,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
         product.product_ID,
         product.variant.variant_Name,
         selectedBatch.baseUnit.uoM_Name,
-        selectedBatch.baseUnit.uoM_ID
+        selectedBatch.baseUnit.uoM_ID,
         // INCLUDE UNIT ID???
       );
 
@@ -158,21 +158,21 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       UPDATE_INVOICE_PAYLOAD_PRICE(
         product.product_ID,
         product.variant.variant_Name,
-        selectedBatch.baseUnit.unit_Price
+        selectedBatch.baseUnit.unit_Price,
       );
 
       updateTotal(
         selectedBatch.baseUnit.unit_Price,
         quantity,
         discountValue,
-        discount
+        discount,
       );
       return;
     }
 
     // Otherwise, look in unit conversions
     const found = selectedBatch.unitConversions.find(
-      (u) => u.uoM_Name === unitName
+      (u) => u.uoM_Name === unitName,
     );
     if (found) {
       setSelectedUnit({
@@ -187,7 +187,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
         product.product_ID,
         product.variant.variant_Name,
         found.uoM_Name,
-        found.uoM_ID
+        found.uoM_ID,
         // INCLUDE UNIT ID???
       );
 
@@ -195,7 +195,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       UPDATE_INVOICE_PAYLOAD_PRICE(
         product.product_ID,
         product.variant.variant_Name,
-        found.unit_Price
+        found.unit_Price,
       );
 
       updateTotal(found.unit_Price, quantity, discountValue, discount);
@@ -204,7 +204,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
 
   const calculateAvailableStock = (
     batch: Batch,
-    selectedUomId: number
+    selectedUomId: number,
   ): number => {
     let total: number = batch.baseUnit.unit_Quantity;
     let currentUomId: number = batch.baseUnit.uoM_ID;
@@ -224,7 +224,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
       visited.add(currentUomId);
 
       const conversion = batch.unitConversions.find(
-        (c: UnitConversion) => c.parent_UOM_ID === currentUomId
+        (c: UnitConversion) => c.parent_UOM_ID === currentUomId,
       );
 
       if (!conversion) {
@@ -242,7 +242,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     currentPrice: number,
     currentQuantity: number,
     currentDiscount: number,
-    currentDiscountType: DiscountEnum
+    currentDiscountType: DiscountEnum,
   ) => {
     const subtotal = currentPrice * currentQuantity;
     let total = subtotal;
@@ -256,7 +256,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     UPDATE_INVOICE_PAYLOAD_TOTAL(
       product.product_ID,
       product.variant.variant_Name,
-      total
+      total,
     );
   };
 
@@ -281,7 +281,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     UPDATE_INVOICE_PAYLOAD_QUANTITY(
       product.product_ID,
       product.variant.variant_Name,
-      value
+      value,
     );
 
     const currentPrice =
@@ -295,7 +295,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
     UPDATE_INVOICE_PAYLOAD_DISCOUNT(
       product.product_ID,
       product.variant.variant_Name,
-      value
+      value,
     );
 
     const currentPrice =
@@ -375,7 +375,7 @@ export const InvoiceCard = ({ product, batches }: InvoiceCardProp) => {
                   {selectedBatch && selectedUnit?.uoM_ID !== undefined
                     ? calculateAvailableStock(
                         selectedBatch,
-                        selectedUnit.uoM_ID
+                        selectedUnit.uoM_ID,
                       )
                     : 0}
                 </label>
