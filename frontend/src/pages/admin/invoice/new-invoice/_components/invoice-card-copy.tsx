@@ -24,14 +24,13 @@ export const InvoiceCard = ({
   onRemove,
 }: InvoiceCardProp) => {
   const [discount, setDiscount] = useState<DiscountEnum>(DiscountEnum.MANUAL);
-  // const [selectedUnit, setSelectedUnit] = useState<BaseUnit>();
-  // const [selectedBatch, setSelectedBatch] = useState<Batches>();
   const [isSupplierPriceSelected, setIsSupplierPriceSelected] =
     useState<boolean>(true);
   const [price, setPrice] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(0);
   const [discountValue, setDiscountValue] = useState<number>(0);
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
+  const [selectedUnitLevel, setSelectedUnitLevel] = useState<number>(1);
 
   // Initialize state from product if it has selectedPreset
   useEffect(() => {
@@ -45,6 +44,26 @@ export const InvoiceCard = ({
   const selectedPreset = product.unitPresets?.find(
     (p) => p.preset_ID === selectedPresetId,
   );
+
+  // Helper function to get supplier price from presetPricing based on unit level
+  const getSupplierPrice = (): number => {
+    if (!selectedPreset) return 0;
+    const presetPricing = (selectedPreset as any).presetPricing;
+    if (!presetPricing) return 0;
+
+    const pricingForLevel = presetPricing.find(
+      (p: any) => p.level === selectedUnitLevel,
+    );
+    return pricingForLevel?.price_Per_Unit || 0;
+  };
+
+  // Update price when preset changes, unit level changes, or when switching to supplier price mode
+  useEffect(() => {
+    if (selectedPreset && isSupplierPriceSelected) {
+      const supplierPrice = getSupplierPrice();
+      setPrice(supplierPrice);
+    }
+  }, [selectedPreset, selectedUnitLevel, isSupplierPriceSelected]);
 
   const getStockIndicator = (preset: (typeof product.unitPresets)[0]) => {
     if (product.product.quantity === 0) {
@@ -69,7 +88,13 @@ export const InvoiceCard = ({
   const handlePresetChange = (presetId: number) => {
     setSelectedPresetId(presetId);
     setQuantity(0);
-    setPrice(0);
+    setSelectedUnitLevel(1); // Reset to first unit level
+    // Price will update via useEffect
+  };
+
+  const handleUnitLevelChange = (levelNumber: number) => {
+    setSelectedUnitLevel(levelNumber);
+    // Price will update via useEffect when supplier price is selected
   };
 
   console.log(product);
@@ -143,9 +168,17 @@ export const InvoiceCard = ({
                   }}
                   min="0"
                 />
-                <select className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6">
+                <select
+                  className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
+                  value={selectedUnitLevel}
+                  onChange={(e) =>
+                    handleUnitLevelChange(Number(e.target.value))
+                  }
+                >
                   {selectedPreset.preset.presetLevels.map((level) => (
-                    <option>{level.unitOfMeasure.uom_Name}</option>
+                    <option key={level.level_ID} value={level.level}>
+                      {level.unitOfMeasure.uom_Name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -160,7 +193,7 @@ export const InvoiceCard = ({
               <input
                 className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
                 disabled={isSupplierPriceSelected}
-                value={price}
+                value={price || ""}
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value === "" || /^\d*\.?\d*$/.test(value)) {
