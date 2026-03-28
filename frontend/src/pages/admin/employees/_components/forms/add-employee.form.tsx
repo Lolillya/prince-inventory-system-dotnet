@@ -42,6 +42,7 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
       roleID: 2,
       username: "",
       password: "",
+      companyName: "Prince Educational Supply",
     },
   });
 
@@ -63,52 +64,16 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col space-y-4 mb-auto">
-        {/* LOGIN DETAILS */}
+        <input
+          type="hidden"
+          value="Prince Educational Supply"
+          {...register("companyName")}
+        />
 
         <div className="flex w-full justify-between gap-4">
-          {/* USERNAME*/}
           <div className="flex flex-col w-full">
             <label htmlFor="firstName" className="block text-sm font-medium">
-              Username
-            </label>
-            <input
-              id="firstName"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="AUTO GENERATED"
-              disabled
-              {...register("username")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.username?.message}
-            </span>
-          </div>
-
-          {/* PASSWORD */}
-          <div className="flex flex-col w-full">
-            <label htmlFor="password" className="block text-sm font-medium">
-              Password
-            </label>
-            <input
-              id="password"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="AUTO GENERATED"
-              disabled
-              {...register("password")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.password?.message}
-            </span>
-          </div>
-        </div>
-
-        {/* SUPPLIER NAME */}
-        <div className="flex w-full justify-between gap-4">
-          {/* FIRST NAME */}
-          <div className="flex flex-col w-full">
-            <label htmlFor="firstName" className="block text-sm font-medium">
-              First Name
+              First Name <span className="text-red-500">*</span>
             </label>
             <input
               id="firstName"
@@ -120,11 +85,9 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
               {errors.firstName?.message}
             </span>
           </div>
-
-          {/* LAST NAME */}
           <div className="flex flex-col w-full">
             <label htmlFor="lastName" className="block text-sm font-medium">
-              Last Name
+              Last Name <span className="text-red-500">*</span>
             </label>
             <input
               id="lastName"
@@ -140,25 +103,7 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
 
         <div className="flex w-full justify-between gap-4">
           <div className="flex flex-col w-full">
-            <label htmlFor="emailAddress" className="block text-sm font-medium">
-              Email Address
-            </label>
-            <input
-              id="emailAddress"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              {...register("email")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.email?.message}
-            </span>
-          </div>
-
-          <div className="flex flex-col w-full">
-            <label
-              htmlFor="contactNumber"
-              className="block text-sm font-medium"
-            >
+            <label htmlFor="contactNumber" className="block text-sm font-medium">
               Contact Number
             </label>
             <input
@@ -171,25 +116,22 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
               {errors.phoneNumber?.message}
             </span>
           </div>
+          <div className="flex flex-col w-full">
+            <label htmlFor="emailAddress" className="block text-sm font-medium">
+              Email
+            </label>
+            <input
+              id="emailAddress"
+              type="text"
+              className="w-full drop-shadow-none bg-custom-gray p-2"
+              {...register("email")}
+            />
+            <span className="text-red-500 text-xs normal-case">
+              {errors.email?.message}
+            </span>
+          </div>
         </div>
 
-        {/* COMPANY NAME */}
-        <div className="flex flex-col w-full">
-          <label htmlFor="companyName" className="block text-sm font-medium">
-            Company Name
-          </label>
-          <input
-            id="companyName"
-            type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
-            {...register("companyName")}
-          />
-          <span className="text-red-500 text-xs normal-case">
-            {errors.companyName?.message}
-          </span>
-        </div>
-
-        {/* ADDRESS */}
         <div className="flex flex-col w-full">
           <label htmlFor="address" className="block text-sm font-medium">
             Address
@@ -205,28 +147,50 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
           </span>
         </div>
 
-        {/* ROLE */}
-        <div className="flex flex-col w-full">
-          <label htmlFor="role" className="block text-sm font-medium">
-            Role
-          </label>
-          <input
-            id="role"
-            type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
-            disabled
-            placeholder="EMPLOYEE"
-          // {...register("role")}
-          />
+        <div className="flex w-full justify-between gap-4">
+          <div className="flex flex-col w-full">
+            <label htmlFor="username" className="block text-sm font-medium">
+              Username <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="username"
+              type="text"
+              className="w-full drop-shadow-none bg-custom-gray p-2"
+              placeholder="AUTO GENERATED"
+              disabled
+              {...register("username")}
+            />
+            <span className="text-red-500 text-xs normal-case">
+              {errors.username?.message}
+            </span>
+          </div>
+
+          <div className="flex flex-col w-full">
+            <label htmlFor="password" className="block text-sm font-medium">
+              Password <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="password"
+              type="text"
+              className="w-full drop-shadow-none bg-custom-gray p-2"
+              placeholder="AUTO GENERATED"
+              disabled
+              {...register("password")}
+            />
+            <span className="text-red-500 text-xs normal-case">
+              {errors.password?.message}
+            </span>
+          </div>
         </div>
-        {/* DESCRIPTION */}
-        <div>
+
+        <div className="flex flex-col w-full">
           <label htmlFor="employeeNotes" className="block text-sm font-medium">
-            Employee Notes
+            Employee notes
           </label>
           <textarea
             id="employeeNotes"
-            className="w-full p-2 rounded-lg "
+            className="w-full p-2 rounded-lg"
+            placeholder="About the employee..."
             {...register("notes")}
           />
           <span className="text-red-500 text-xs normal-case">
