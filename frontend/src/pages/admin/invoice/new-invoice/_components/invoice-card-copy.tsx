@@ -97,6 +97,20 @@ export const InvoiceCard = ({
     // Price will update via useEffect when supplier price is selected
   };
 
+  // Calculate subtotal and apply discount
+  const calculateTotal = (): number => {
+    const subtotal = quantity * price;
+
+    if (discount === DiscountEnum.PERCENTAGE) {
+      // Apply percentage discount
+      const discountAmount = subtotal * (discountValue / 100);
+      return subtotal - discountAmount;
+    } else {
+      // Apply manual discount
+      return Math.max(0, subtotal - discountValue);
+    }
+  };
+
   console.log(product);
 
   return (
@@ -249,7 +263,8 @@ export const InvoiceCard = ({
           <span>total:</span>
           <input
             className="shadow-none drop-shadow-none bg-custom-gray w-full"
-            // value={handleTotal()}
+            disabled
+            value={calculateTotal().toFixed(2)}
           />
         </div>
       </div>
