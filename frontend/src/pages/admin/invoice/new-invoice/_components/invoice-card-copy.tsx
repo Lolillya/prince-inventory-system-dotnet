@@ -225,19 +225,24 @@ export const InvoiceCard = ({
             <div className="flex flex-col w-full gap-2">
               <label>quantity & unit</label>
               <div className="flex">
-                <input
-                  // type="number"
-                  className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
-                  value={quantity}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                      const newQuantity = Number(value);
-                      setQuantity(newQuantity);
-                    }
-                  }}
-                  min="0"
-                />
+                <div className="relative w-full flex items-center justify-center">
+                  <input
+                    // type="number"
+                    className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
+                    value={quantity}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                        const newQuantity = Number(value);
+                        setQuantity(newQuantity);
+                      }
+                    }}
+                    min="0"
+                  />
+                  <label className="absolute right-2 text-vesper-gray text-xs">
+                    Available: {product.product.quantity ?? 0}
+                  </label>
+                </div>
                 <select
                   className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
                   value={selectedUnitLevel}
