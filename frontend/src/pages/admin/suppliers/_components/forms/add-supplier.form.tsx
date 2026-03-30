@@ -90,9 +90,8 @@ export const AddSupplierForm = ({
           </span>
         </div>
 
-        {/* SUPPLIER NAME */}
-        <div className="flex flex-col w-full justify-between gap-2">
-          {/* FIRST NAME */}
+        {/* REPRESENTATIVE */}
+        <div className="flex flex-col w-full gap-2">
           <label htmlFor="firstName" className="block text-sm font-medium">
             Representative
           </label>
