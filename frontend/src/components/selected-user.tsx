@@ -11,6 +11,7 @@ import { UserClientModel } from "../models/user-client.model";
 import { useState } from "react";
 import { Box, Calendar } from "lucide-react";
 import { RestocksModal } from "./restocks-modal";
+import { InvoiceHistoryModal } from "./invoice-history-modal";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 
 type UserType = "customer" | "supplier" | "employee";
@@ -25,6 +26,9 @@ export const SelectedUser = ({
   handleEdit,
   ...user
 }: SelectedUserProps & { handleEdit: () => void }) => {
+  const [isInvoiceHistoryModalOpen, setIsInvoiceHistoryModalOpen] = useState(false);
+  const amountInReceivables = 5000; // scaffold placeholder
+
   return (
     <div className="flex flex-col p-5 w-full gap-2">
       <div className="flex items-center justify-between">
@@ -52,6 +56,29 @@ export const SelectedUser = ({
       </div>
 
       <Separator />
+
+      {/* amount in receivables SECTION */}
+      <div
+        className="p-2 rounded-lg bg-wash-gray hover:cursor-pointer hover:shadow-md transition-shadow"
+        onClick={() => setIsInvoiceHistoryModalOpen(true)}
+      >
+        <div className=" flex items-center gap-3">
+          <div className="bg-green-200 h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+            <span className="text-green-500 font-bold">₱</span>
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 ">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold info-name flex gap-2">
+                ₱{amountInReceivables.toLocaleString()}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <p className="info-id text-sm">Amount in Receivables</p>
+              <RightUpArrowIcon width={18} height={18} className="text-vesper-gray" />
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* user FULLNAME SECTION */}
       <div className="p-2 rounded-lg bg-wash-gray">
@@ -128,6 +155,10 @@ export const SelectedUser = ({
           </div>
         </div>
       </div>
+
+      {isInvoiceHistoryModalOpen && (
+        <InvoiceHistoryModal setIsInvoiceHistoryModalOpen={setIsInvoiceHistoryModalOpen} />
+      )}
 
       {/* USER ACTIONS SECTION */}
       {type === "supplier" && <SupplierActions />}

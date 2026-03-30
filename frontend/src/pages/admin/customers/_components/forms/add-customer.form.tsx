@@ -116,39 +116,37 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
           </div>
         </div>
 
-        {/* REPRESENTATIVE SECTION HEADER */}
-        <div className="pt-2">
+        {/* REPRESENTATIVE */}
+        <div className="flex flex-col w-full gap-2">
           <label className="block text-sm font-medium text-gray-700">
             Representative
           </label>
-        </div>
+          <div className="flex w-full justify-between gap-4">
+            <div className="flex flex-col w-full">
+              <input
+                id="firstName"
+                type="text"
+                className="w-full drop-shadow-none bg-custom-gray p-2"
+                placeholder="First Name"
+                {...register("firstName")}
+              />
+              <span className="text-red-500 text-xs normal-case">
+                {errors.firstName?.message}
+              </span>
+            </div>
 
-        {/* FIRST NAME AND LAST NAME */}
-        <div className="flex w-full justify-between gap-4">
-          <div className="flex flex-col w-full">
-            <input
-              id="firstName"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="First Name"
-              {...register("firstName")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.firstName?.message}
-            </span>
-          </div>
-
-          <div className="flex flex-col w-full">
-            <input
-              id="lastName"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="Last Name"
-              {...register("lastName")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.lastName?.message}
-            </span>
+            <div className="flex flex-col w-full">
+              <input
+                id="lastName"
+                type="text"
+                className="w-full drop-shadow-none bg-custom-gray p-2"
+                placeholder="Last Name"
+                {...register("lastName")}
+              />
+              <span className="text-red-500 text-xs normal-case">
+                {errors.lastName?.message}
+              </span>
+            </div>
           </div>
         </div>
 
