@@ -16,13 +16,12 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
+  const { data: inventoryData } = UseInventoryQuery();
   const { ADD_PRODUCT, REMOVE_PRODUCT, CLEAR_TO_INVOICE_LIST } =
     useSelectedInvoiceProduct();
   const { isLoading, error } = useInvoiceBatchQuery();
-  const { data: inventoryData } = UseInventoryQuery();
 
   // console.log(restockBatches);
-  console.log(selectedInvoices);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);

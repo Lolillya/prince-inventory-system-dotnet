@@ -4,6 +4,7 @@ import { useInvoicePayloadQuery } from "@/features/invoice/invoice-create-payloa
 import { useSelectedInvoiceCustomer } from "@/features/invoice/invoice-customer.state";
 import { useInvoiceTermQuery } from "@/features/invoice/invoice-term.state";
 import { XIcon } from "@/icons";
+import { CircleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface InvoiceCardProp {
@@ -41,10 +42,6 @@ export const InvoiceCard = ({
     UPDATE_INVOICE_PAYLOAD_TOTAL,
     UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
   } = useInvoicePayloadQuery();
-  const { data: invoiceTerm } = useInvoiceTermQuery();
-  const { data: invoiceCustomer } = useSelectedInvoiceCustomer();
-  console.log(invoiceTerm);
-  console.log(invoiceCustomer);
 
   // Initialize state from product if it has selectedPreset
   useEffect(() => {
@@ -114,6 +111,19 @@ export const InvoiceCard = ({
       // Apply manual discount
       return Math.max(0, subtotal - discountValue);
     }
+  };
+
+  const calculateDeficit = (): number => {
+    if (!selectedPreset) return 0;
+    const unitLevel = selectedPreset.preset.presetLevels.find(
+      (level) => level.level === selectedUnitLevel,
+    );
+    if (!unitLevel) return 0;
+
+    const availableStockInSelectedUnit =
+      (product.product.quantity ?? 0) / unitLevel.conversion_Factor;
+
+    return Math.max(0, quantity - availableStockInSelectedUnit);
   };
 
   useEffect(() => {
@@ -244,7 +254,7 @@ export const InvoiceCard = ({
                   </label>
                 </div>
                 <select
-                  className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
+                  className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6 outline:none"
                   value={selectedUnitLevel}
                   onChange={(e) =>
                     handleUnitLevelChange(Number(e.target.value))
@@ -257,6 +267,43 @@ export const InvoiceCard = ({
                   ))}
                 </select>
               </div>
+
+              {quantity > product.product.quantity && (
+                <div className="flex flex-col text-red-400">
+                  <div className="flex gap-2 items-center">
+                    <CircleAlert className="text-red-400" size={18} />
+                    <label className="text-red-400 font-semibold">
+                      Insufficient Stock
+                    </label>
+                  </div>
+
+                  <div className="flex gap-2 items-center">
+                    <input type="checkbox" />
+                    <label className="text-red-400">
+                      Supplement from compatible packaging preset (X available)
+                    </label>
+                  </div>
+
+                  <div className="flex gap-2 items-center">
+                    <input type="checkbox" />
+                    <label className="text-red-400">
+                      Automatically replenish deficit
+                    </label>
+                  </div>
+
+                  <div className="flex gap-2 items-center">
+                    <label className="text-red-400">Deficit: </label>
+                    <span className="text-red-400">
+                      {calculateDeficit()}{" "}
+                      {
+                        selectedPreset?.preset.presetLevels.find(
+                          (l) => l.level === selectedUnitLevel,
+                        )?.unitOfMeasure.uom_Name
+                      }
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}
