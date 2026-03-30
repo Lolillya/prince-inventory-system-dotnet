@@ -3,6 +3,7 @@ import { InvoiceTable } from "./invoice-modal-table";
 import { useCustomersQuery } from "@/features/customers/customer-get-all.query";
 import { CustomerPicker } from "./customer-picker";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface CreateInvoiceModalProps {
   createInvoice: () => void;
@@ -11,6 +12,7 @@ interface CreateInvoiceModalProps {
 export const CreateInvoiceModal = ({
   createInvoice,
 }: CreateInvoiceModalProps) => {
+  const navigate = useNavigate();
   const { data: customersData } = useCustomersQuery();
   const [invoiceCreated, setInvoiceCreated] = useState(false);
 
@@ -21,7 +23,10 @@ export const CreateInvoiceModal = ({
 
   const handleInvoiceSuccess = () => {
     setInvoiceCreated(true);
-    setTimeout(handleClose, 1500);
+    setTimeout(() => {
+      handleClose();
+      navigate("/admin/restock");
+    }, 1500);
   };
 
   return (
