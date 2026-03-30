@@ -1,14 +1,14 @@
 import { Separator } from "@/components/separator";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { useInvoicePayloadQuery } from "@/features/invoice/invoice-create-payload";
-
+import { useSelectedInvoiceCustomer } from "@/features/invoice/invoice-customer.state";
+import { useInvoiceTermQuery } from "@/features/invoice/invoice-term.state";
 import { XIcon } from "@/icons";
 import { useEffect, useState } from "react";
 
 interface InvoiceCardProp {
   onClick?: () => void;
   product: InventoryProductModel;
-  itemId: string;
   excludePresetIds?: number[];
   onRemove?: () => void;
 }
@@ -23,6 +23,8 @@ export const InvoiceCard = ({
   excludePresetIds = [],
   onRemove,
 }: InvoiceCardProp) => {
+  const productId = product.product.product_ID;
+  const variantName = product.variant.variant_Name;
   const [discount, setDiscount] = useState<DiscountEnum>(DiscountEnum.MANUAL);
   const [isSupplierPriceSelected, setIsSupplierPriceSelected] =
     useState<boolean>(true);
@@ -31,6 +33,18 @@ export const InvoiceCard = ({
   const [discountValue, setDiscountValue] = useState<number>(0);
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
   const [selectedUnitLevel, setSelectedUnitLevel] = useState<number>(1);
+  const {
+    UPDATE_INVOICE_PAYLOAD_UNIT,
+    UPDATE_INVOICE_PAYLOAD_PRICE,
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT,
+    UPDATE_INVOICE_PAYLOAD_QUANTITY,
+    UPDATE_INVOICE_PAYLOAD_TOTAL,
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
+  } = useInvoicePayloadQuery();
+  const { data: invoiceTerm } = useInvoiceTermQuery();
+  const { data: invoiceCustomer } = useSelectedInvoiceCustomer();
+  console.log(invoiceTerm);
+  console.log(invoiceCustomer);
 
   // Initialize state from product if it has selectedPreset
   useEffect(() => {
@@ -76,14 +90,6 @@ export const InvoiceCard = ({
       return "🟢"; // Green indicator (adequate stock)
     }
   };
-  // const {
-  //   UPDATE_INVOICE_PAYLOAD_UNIT,
-  //   UPDATE_INVOICE_PAYLOAD_PRICE,
-  //   UPDATE_INVOICE_PAYLOAD_DISCOUNT,
-  //   UPDATE_INVOICE_PAYLOAD_QUANTITY,
-  //   UPDATE_INVOICE_PAYLOAD_TOTAL,
-  //   UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
-  // } = useInvoicePayloadQuery();
 
   const handlePresetChange = (presetId: number) => {
     setSelectedPresetId(presetId);
@@ -94,7 +100,6 @@ export const InvoiceCard = ({
 
   const handleUnitLevelChange = (levelNumber: number) => {
     setSelectedUnitLevel(levelNumber);
-    // Price will update via useEffect when supplier price is selected
   };
 
   // Calculate subtotal and apply discount
@@ -110,6 +115,57 @@ export const InvoiceCard = ({
       return Math.max(0, subtotal - discountValue);
     }
   };
+
+  useEffect(() => {
+    if (!selectedPreset) return;
+
+    const unitLevel = selectedPreset.preset.presetLevels.find(
+      (level) => level.level === selectedUnitLevel,
+    );
+
+    if (!unitLevel) return;
+
+    UPDATE_INVOICE_PAYLOAD_UNIT(
+      productId,
+      variantName,
+      unitLevel.unitOfMeasure.uom_Name,
+      unitLevel.uoM_ID,
+    );
+  }, [
+    productId,
+    variantName,
+    selectedPreset,
+    selectedUnitLevel,
+    UPDATE_INVOICE_PAYLOAD_UNIT,
+  ]);
+
+  useEffect(() => {
+    UPDATE_INVOICE_PAYLOAD_QUANTITY(productId, variantName, quantity);
+  }, [productId, variantName, quantity, UPDATE_INVOICE_PAYLOAD_QUANTITY]);
+
+  useEffect(() => {
+    UPDATE_INVOICE_PAYLOAD_PRICE(productId, variantName, price);
+  }, [productId, variantName, price, UPDATE_INVOICE_PAYLOAD_PRICE]);
+
+  useEffect(() => {
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE(discount === DiscountEnum.PERCENTAGE);
+  }, [discount, UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE]);
+
+  useEffect(() => {
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT(productId, variantName, discountValue);
+  }, [productId, variantName, discountValue, UPDATE_INVOICE_PAYLOAD_DISCOUNT]);
+
+  useEffect(() => {
+    UPDATE_INVOICE_PAYLOAD_TOTAL(productId, variantName, calculateTotal());
+  }, [
+    productId,
+    variantName,
+    quantity,
+    price,
+    discount,
+    discountValue,
+    UPDATE_INVOICE_PAYLOAD_TOTAL,
+  ]);
 
   console.log(product);
 

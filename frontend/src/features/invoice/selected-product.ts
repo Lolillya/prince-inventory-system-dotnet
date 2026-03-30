@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { InvoiceAddProductModel } from "./models/invoice-add-product.model";
 import { InvoiceAddPayloadModel } from "./models/invoice-add-payload.model";
 import { useInvoicePayloadQuery } from "./invoice-create-payload";
 import { InventoryProductModel } from "../inventory/models/inventory.model";
@@ -18,7 +17,7 @@ export const useSelectedProductInvoiceQuery = () => {
 
 export const useSelectedInvoiceProduct = () => {
   const queryClient = useQueryClient();
-  const { ADD_INVOICE_PAYLOAD, REMOVE_INVOICE_PAYLOAD } =
+  const { ADD_INVOICE_PAYLOAD, REMOVE_INVOICE_PAYLOAD, CLEAR_INVOICE_PAYLOAD } =
     useInvoicePayloadQuery();
 
   const ADD_PRODUCT = (data: InventoryProductModel) => {
@@ -56,19 +55,15 @@ export const useSelectedInvoiceProduct = () => {
     ADD_INVOICE_PAYLOAD(payload);
   };
 
-  const REMOVE_PRODUCT = (product: InvoiceAddProductModel) => {
-    // Remove from display state
-    // TO BE UPDATED:
-    queryClient.setQueryData<InvoiceAddProductModel[]>(
+  const REMOVE_PRODUCT = (product: InventoryProductModel) => {
+    queryClient.setQueryData<InventoryProductModel[]>(
       InvoiceProductKey,
       (old = []) => {
         const next = old.filter(
           (p) =>
             !(
-              p.invoice.item.product.product_ID ===
-                product.invoice.item.product.product_ID &&
-              p.invoice.item.product.variant.variant_Name ===
-                product.invoice.item.product.variant.variant_Name
+              p.product.product_ID === product.product.product_ID &&
+              p.variant.variant_Name === product.variant.variant_Name
             ),
         );
 
@@ -76,15 +71,15 @@ export const useSelectedInvoiceProduct = () => {
       },
     );
 
-    // Also remove from payload
     REMOVE_INVOICE_PAYLOAD(
-      product.invoice.item.product.product_ID,
-      product.invoice.item.product.variant.variant_Name,
+      product.product.product_ID,
+      product.variant.variant_Name,
     );
   };
 
   const CLEAR_TO_INVOICE_LIST = () => {
-    queryClient.setQueryData<InvoiceAddProductModel[]>(InvoiceProductKey, []);
+    queryClient.setQueryData<InventoryProductModel[]>(InvoiceProductKey, []);
+    CLEAR_INVOICE_PAYLOAD();
   };
 
   return {

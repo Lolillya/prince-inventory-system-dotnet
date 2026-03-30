@@ -6,7 +6,7 @@ import {
   useSelectedInvoiceProduct,
 } from "@/features/invoice/selected-product";
 // import { InvoiceCard } from "./_components/invoice-card";
-import { useState } from "react";
+import { Activity, useState } from "react";
 import { CreateInvoiceModal } from "./_components/invoice-modal";
 import { useInvoiceBatchQuery } from "@/features/invoice/invoice-get-all-batches";
 import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
@@ -18,10 +18,11 @@ const NewInvoicePage = () => {
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
   const { ADD_PRODUCT, REMOVE_PRODUCT, CLEAR_TO_INVOICE_LIST } =
     useSelectedInvoiceProduct();
-  const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
+  const { isLoading, error } = useInvoiceBatchQuery();
   const { data: inventoryData } = UseInventoryQuery();
 
   // console.log(restockBatches);
+  console.log(selectedInvoices);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,12 +33,6 @@ const NewInvoicePage = () => {
   if (error) return <div>Error...</div>;
 
   const handleClick = (data: InventoryProductModel) => {
-    // TODO: Create invoice add product model from restock batch model
-    // pass the whole batch object array
-    // map batches to show different unit structure from restock suppliers
-    // show different unit price options from restock suppliers
-    // then add to selected invoice products
-
     ADD_PRODUCT(data);
   };
 
@@ -46,20 +41,15 @@ const NewInvoicePage = () => {
   };
 
   const handleRemoveProduct = (product: InventoryProductModel) => {
-    const updatedList = selectedInvoices.filter(
-      (p) =>
-        !(
-          p.product.product_ID === product.product.product_ID &&
-          p.variant.variant_Name === product.variant.variant_Name
-        ),
-    );
-    // This will need to be handled through your state management
-    // For now, you can use REMOVE_PRODUCT if the signature is fixed
+    REMOVE_PRODUCT(product);
   };
 
   return (
     <section>
-      {isModalOpen && <CreateInvoiceModal createInvoice={createInvoice} />}
+      <Activity mode={isModalOpen ? "visible" : "hidden"}>
+        <CreateInvoiceModal createInvoice={createInvoice} />
+      </Activity>
+
       <div className="flex flex-col min-h-0 flex-1 gap-5">
         <div className="flex flex-col gap-10">
           <div className="flex gap-3 border-b pb-5 items-center">
@@ -82,7 +72,6 @@ const NewInvoicePage = () => {
                   {selectedInvoices.map((p, i) => (
                     <InvoiceCard
                       product={p}
-                      itemId={String(i)}
                       onRemove={() => handleRemoveProduct(p)}
                       key={i}
                     />

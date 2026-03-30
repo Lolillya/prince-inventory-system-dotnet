@@ -19,7 +19,12 @@ export const setInvoiceTermQuery = () => {
     queryClient.setQueryData<number>(InvoiceTermKey, term);
   };
 
+  const CLEAR_INVOICE_TERM = () => {
+    queryClient.setQueryData<number>(InvoiceTermKey, 0);
+  };
+
   return {
     UPDATE_INVOICE_TERM,
+    CLEAR_INVOICE_TERM,
   };
 };
