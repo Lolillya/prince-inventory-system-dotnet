@@ -20,11 +20,9 @@ export const PurchaseOrderPreview = ({
   const formatMoney = (value: number) => {
     const amount = Number.isFinite(value) ? value : 0;
     const sign = amount < 0 ? "-" : "";
-    const grouped = new Intl.NumberFormat("en-PH", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(Math.abs(amount));
-    return `${sign}\u20B1${grouped}`;
+    const parts = Math.abs(amount).toFixed(2).split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return `${sign}₱${parts.join(".")}`;
   };
 
   const formatDate = (value: string) => {
@@ -60,11 +58,9 @@ export const PurchaseOrderPreview = ({
       const formatMoneyForPdf = (value: number) => {
         const amount = Number.isFinite(value) ? value : 0;
         const sign = amount < 0 ? "-" : "";
-        const grouped = new Intl.NumberFormat("en-PH", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(Math.abs(amount));
-        return `${sign}\u20B1${grouped}`;
+        const parts = Math.abs(amount).toFixed(2).split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return `${sign}PHP ${parts.join(".")}`;
       };
 
       const fitFontSizeToWidth = (
@@ -329,15 +325,15 @@ export const PurchaseOrderPreview = ({
 
           // Fit price text to available width, accounting for currency symbol
           fitFontSizeToWidth(priceStr, priceTextWidth, 8.5, 6);
-          doc.text(priceStr, colEdges.priceEnd - cellPadding, rowY, {
-            align: "right",
+          doc.text(priceStr, colCenters.price, rowY, {
+            align: "center",
           });
           doc.setFontSize(baseFontSize);
 
           // Fit subtotal text to available width, accounting for currency symbol
           fitFontSizeToWidth(subtotalStr, subtotalTextWidth, 8.5, 6);
-          doc.text(subtotalStr, colEdges.subtotalEnd - cellPadding, rowY, {
-            align: "right",
+          doc.text(subtotalStr, colCenters.subtotal, rowY, {
+            align: "center",
           });
           doc.setFontSize(baseFontSize);
         }
