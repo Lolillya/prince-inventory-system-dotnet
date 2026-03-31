@@ -22,6 +22,8 @@ namespace backend.Controller.InvoiceControllers
         public async Task<IActionResult> Create([FromBody] InvoiceDTO payload)
         {
             if (payload == null) return BadRequest("Payload Required!");
+            if (payload.LineItem == null || payload.LineItem.Count == 0)
+                return BadRequest("At least one line item is required.");
 
             Console.WriteLine("Create payload: {0}", JsonSerializer.Serialize(payload));
 
@@ -40,6 +42,13 @@ namespace backend.Controller.InvoiceControllers
             var invoiceId = await CreateInvoice(payload);
 
             var createdLineItems = await CreateInvoiceLineItems(payload, invoiceId);
+
+            var inventoryError = await DeductInventoryQuantities(payload);
+            if (inventoryError != null)
+            {
+                await transaction.RollbackAsync();
+                return inventoryError;
+            }
 
             await transaction.CommitAsync();
 
@@ -115,6 +124,49 @@ namespace backend.Controller.InvoiceControllers
             }
 
             return createdLineItems;
+        }
+
+        // DEDUCT INVENTORY QUANTITY BY PRODUCT (NO UNIT PRESET QUANTITY DEDUCTION YET)
+        private async Task<IActionResult?> DeductInventoryQuantities(InvoiceDTO payload)
+        {
+            var now = DateTime.UtcNow;
+
+            var inventoryDeductions = payload.LineItem
+                .GroupBy(li => li.Product_ID)
+                .Select(g => new
+                {
+                    Product_ID = g.Key,
+                    Quantity = g.Sum(x => x.Unit_Quantity)
+                })
+                .ToList();
+
+            var productIds = inventoryDeductions
+                .Select(x => x.Product_ID)
+                .Distinct()
+                .ToList();
+
+            var inventoryByProduct = await _db.Inventory
+                .Where(i => productIds.Contains(i.Product_ID))
+                .ToDictionaryAsync(i => i.Product_ID);
+
+            foreach (var deduction in inventoryDeductions)
+            {
+                if (!inventoryByProduct.TryGetValue(deduction.Product_ID, out var inventory))
+                {
+                    return BadRequest($"Inventory row for product '{deduction.Product_ID}' was not found.");
+                }
+
+                if (inventory.Total_Quantity < deduction.Quantity)
+                {
+                    return Conflict(
+                        $"Insufficient inventory for product '{deduction.Product_ID}'. Available: {inventory.Total_Quantity}, requested: {deduction.Quantity}.");
+                }
+
+                inventory.Total_Quantity -= deduction.Quantity;
+                inventory.Updated_At = now;
+            }
+
+            return null;
         }
 
         private async Task<int> GetLatestInvoiceNumber()
