@@ -1,8 +1,6 @@
 import { Separator } from "@/components/separator";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { useInvoicePayloadQuery } from "@/features/invoice/invoice-create-payload";
-import { useSelectedInvoiceCustomer } from "@/features/invoice/invoice-customer.state";
-import { useInvoiceTermQuery } from "@/features/invoice/invoice-term.state";
 import { XIcon } from "@/icons";
 import { CircleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -42,6 +40,8 @@ export const InvoiceCard = ({
     UPDATE_INVOICE_PAYLOAD_TOTAL,
     UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
   } = useInvoicePayloadQuery();
+
+  console.log(product);
 
   // Initialize state from product if it has selectedPreset
   useEffect(() => {
@@ -114,16 +114,51 @@ export const InvoiceCard = ({
   };
 
   const calculateDeficit = (): number => {
-    if (!selectedPreset) return 0;
-    const unitLevel = selectedPreset.preset.presetLevels.find(
-      (level) => level.level === selectedUnitLevel,
-    );
-    if (!unitLevel) return 0;
-
-    const availableStockInSelectedUnit =
-      (product.product.quantity ?? 0) / unitLevel.conversion_Factor;
-
+    const availableStockInSelectedUnit = calculateAvailableStock();
     return Math.max(0, quantity - availableStockInSelectedUnit);
+  };
+
+  const calculateAvailableStock = () => {
+    if (!selectedPreset) return 0;
+
+    const presetQuantities = (selectedPreset as any).presetQuantities as
+      | Array<{ level: number; remaining_Quantity?: number }>
+      | undefined;
+
+    if (presetQuantities?.length) {
+      const levelOneQuantity =
+        presetQuantities.find((q) => q.level === 1)?.remaining_Quantity ?? 0;
+
+      const presetLevels = [...selectedPreset.preset.presetLevels].sort(
+        (a, b) => a.level - b.level,
+      );
+
+      let availableStock = levelOneQuantity;
+
+      for (const level of presetLevels) {
+        if (level.level === 1) continue;
+        if (level.level > selectedUnitLevel) break;
+
+        availableStock *= level.conversion_Factor;
+      }
+
+      return Math.floor(availableStock);
+    }
+
+    const presetLevels = [...selectedPreset.preset.presetLevels].sort(
+      (a, b) => a.level - b.level,
+    );
+
+    let availableStock = product.product.quantity ?? 0;
+
+    for (const level of presetLevels) {
+      if (level.level === 1) continue;
+      if (level.level > selectedUnitLevel) break;
+
+      availableStock *= level.conversion_Factor;
+    }
+
+    return Math.floor(availableStock);
   };
 
   useEffect(() => {
@@ -176,8 +211,6 @@ export const InvoiceCard = ({
     discountValue,
     UPDATE_INVOICE_PAYLOAD_TOTAL,
   ]);
-
-  console.log(product);
 
   return (
     <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
@@ -250,7 +283,7 @@ export const InvoiceCard = ({
                     min="0"
                   />
                   <label className="absolute right-2 text-vesper-gray text-xs">
-                    Available: {product.product.quantity ?? 0}
+                    Available: {calculateAvailableStock()}{" "}
                   </label>
                 </div>
                 <select
@@ -268,7 +301,7 @@ export const InvoiceCard = ({
                 </select>
               </div>
 
-              {quantity > product.product.quantity && (
+              {quantity > calculateAvailableStock() && (
                 <div className="flex flex-col text-red-400">
                   <div className="flex gap-2 items-center">
                     <CircleAlert className="text-red-400" size={18} />
@@ -305,76 +338,79 @@ export const InvoiceCard = ({
                 </div>
               )}
             </div>
+            <div className="flex flex-col">
+              <span>pricing</span>
+              <div className="flex flex-col gap-2">
+                <div className="flex">
+                  <input
+                    className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
+                    disabled={isSupplierPriceSelected}
+                    value={price || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                        const newPrice = Number(value);
+                        setPrice(newPrice);
+                      }
+                    }}
+                  />
+                  <select
+                    className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
+                    value={isSupplierPriceSelected ? "supplier" : "manual"}
+                    onChange={(e) => {
+                      const isSupplier = e.target.value === "supplier";
+                      setIsSupplierPriceSelected(isSupplier);
+                    }}
+                  >
+                    <option value="supplier">Supplier Price</option>
+                    <option value="manual">Manual</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col">
+              <span>discount</span>
+              <div className="flex flex-col gap-2">
+                <div className="flex">
+                  <input
+                    className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
+                    value={discountValue || 0}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                        setDiscountValue(Number(value));
+                      }
+                    }}
+                  />
+                  <select
+                    className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
+                    value={discount}
+                    onChange={(e) =>
+                      setDiscount(e.target.value as DiscountEnum)
+                    }
+                  >
+                    <option value={DiscountEnum.PERCENTAGE}>
+                      Percentage (%)
+                    </option>
+                    <option value={DiscountEnum.MANUAL}>Manual</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <Separator orientation="horizontal" />
+
+            <div className="flex gap-2 items-center">
+              <span>total:</span>
+              <input
+                className="shadow-none drop-shadow-none bg-custom-gray w-full"
+                disabled
+                value={calculateTotal().toFixed(2)}
+              />
+            </div>
           </>
         )}
-
-        <div className="flex flex-col">
-          <span>pricing</span>
-          <div className="flex flex-col gap-2">
-            <div className="flex">
-              <input
-                className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
-                disabled={isSupplierPriceSelected}
-                value={price || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                    const newPrice = Number(value);
-                    setPrice(newPrice);
-                  }
-                }}
-              />
-              <select
-                className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
-                value={isSupplierPriceSelected ? "supplier" : "manual"}
-                onChange={(e) => {
-                  const isSupplier = e.target.value === "supplier";
-                  setIsSupplierPriceSelected(isSupplier);
-                }}
-              >
-                <option value="supplier">Supplier Price</option>
-                <option value="manual">Manual</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col">
-          <span>discount</span>
-          <div className="flex flex-col gap-2">
-            <div className="flex">
-              <input
-                className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
-                value={discountValue || 0}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                    setDiscountValue(Number(value));
-                  }
-                }}
-              />
-              <select
-                className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
-                value={discount}
-                onChange={(e) => setDiscount(e.target.value as DiscountEnum)}
-              >
-                <option value={DiscountEnum.PERCENTAGE}>Percentage (%)</option>
-                <option value={DiscountEnum.MANUAL}>Manual</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <Separator orientation="horizontal" />
-
-        <div className="flex gap-2 items-center">
-          <span>total:</span>
-          <input
-            className="shadow-none drop-shadow-none bg-custom-gray w-full"
-            disabled
-            value={calculateTotal().toFixed(2)}
-          />
-        </div>
       </div>
     </div>
   );
