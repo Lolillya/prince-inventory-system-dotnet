@@ -5,6 +5,7 @@ export type InvoiceAddPayloadModel = {
     category: Category;
     variant: Variant;
     unit: string;
+    preset_ID: number | null;
     uom_ID: number;
     unit_quantity: number;
     unit_price: number;

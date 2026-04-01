@@ -64,6 +64,33 @@ export const useInvoicePayloadQuery = () => {
     );
   };
 
+  const UPDATE_INVOICE_PAYLOAD_PRESET = (
+    productId: number,
+    variantName: string,
+    preset_ID: number | null,
+  ) => {
+    queryClient.setQueryData<InvoiceAddPayloadModel[]>(
+      InvoicePayloadKey,
+      (old = []) => {
+        return old.map((item) => {
+          if (
+            item.invoice.product.product_ID === productId &&
+            item.invoice.variant.variant_Name === variantName
+          ) {
+            return {
+              ...item,
+              invoice: {
+                ...item.invoice,
+                preset_ID,
+              },
+            };
+          }
+          return item;
+        });
+      },
+    );
+  };
+
   const UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE = (isPercentage: boolean) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
@@ -244,6 +271,7 @@ export const useInvoicePayloadQuery = () => {
 
   return {
     ADD_INVOICE_PAYLOAD,
+    UPDATE_INVOICE_PAYLOAD_PRESET,
     UPDATE_INVOICE_PAYLOAD_UNIT,
     UPDATE_INVOICE_PAYLOAD_PRICE,
     UPDATE_INVOICE_PAYLOAD_QUANTITY,

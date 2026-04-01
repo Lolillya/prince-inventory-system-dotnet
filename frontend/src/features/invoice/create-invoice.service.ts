@@ -8,7 +8,7 @@ export const createInvoice = async (
   payload: InvoiceAddPayloadModel[],
   customerId?: string | number,
   userId?: string | number,
-  invoiceTerm?: number
+  invoiceTerm?: number,
 ) => {
   console.log("payload: ", payload);
   console.log("customerId: ", customerId);
@@ -28,6 +28,7 @@ export const createInvoice = async (
       createdAt: Date.now().toString(),
       updatedAt: Date.now().toString(),
       product_ID: p.invoice.product.product_ID,
+      preset_ID: p.invoice.preset_ID,
       unit: p.invoice.unit,
       uom_ID: p.invoice.uom_ID,
       unit_Price: p.invoice.unit_price,

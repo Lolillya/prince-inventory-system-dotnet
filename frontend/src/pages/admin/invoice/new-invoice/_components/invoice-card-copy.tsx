@@ -30,9 +30,12 @@ export const InvoiceCard = ({
   const [price, setPrice] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(0);
   const [discountValue, setDiscountValue] = useState<number>(0);
+  const [isSupplementPresetChecked, setIsSupplementPresetChecked] =
+    useState<boolean>(false);
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
   const [selectedUnitLevel, setSelectedUnitLevel] = useState<number>(1);
   const {
+    UPDATE_INVOICE_PAYLOAD_PRESET,
     UPDATE_INVOICE_PAYLOAD_UNIT,
     UPDATE_INVOICE_PAYLOAD_PRICE,
     UPDATE_INVOICE_PAYLOAD_DISCOUNT,
@@ -42,15 +45,6 @@ export const InvoiceCard = ({
   } = useInvoicePayloadQuery();
 
   console.log(product);
-
-  // Initialize state from product if it has selectedPreset
-  useEffect(() => {
-    const typedProduct = product as any;
-    if (typedProduct.selectedPreset) {
-      setSelectedPresetId(typedProduct.selectedPreset.preset_ID);
-      setQuantity(typedProduct.selectedPreset.main_Unit_Quantity || 0);
-    }
-  }, [product]);
 
   const selectedPreset = product.unitPresets?.find(
     (p) => p.preset_ID === selectedPresetId,
@@ -68,14 +62,6 @@ export const InvoiceCard = ({
     return pricingForLevel?.price_Per_Unit || 0;
   };
 
-  // Update price when preset changes, unit level changes, or when switching to supplier price mode
-  useEffect(() => {
-    if (selectedPreset && isSupplierPriceSelected) {
-      const supplierPrice = getSupplierPrice();
-      setPrice(supplierPrice);
-    }
-  }, [selectedPreset, selectedUnitLevel, isSupplierPriceSelected]);
-
   const getStockIndicator = (preset: (typeof product.unitPresets)[0]) => {
     if (product.product.quantity === 0) {
       return "⚫"; // Gray indicator (no stock)
@@ -90,7 +76,9 @@ export const InvoiceCard = ({
 
   const handlePresetChange = (presetId: number) => {
     setSelectedPresetId(presetId);
+    UPDATE_INVOICE_PAYLOAD_PRESET(productId, variantName, presetId);
     setQuantity(0);
+    setIsSupplementPresetChecked(false);
     setSelectedUnitLevel(1); // Reset to first unit level
     // Price will update via useEffect
   };
@@ -160,6 +148,150 @@ export const InvoiceCard = ({
 
     return Math.floor(availableStock);
   };
+
+  const getCompatiblePresetsWithStock = () => {
+    if (!selectedPreset) return [];
+
+    const selectedLevelMeta = selectedPreset.preset.presetLevels.find(
+      (level) => level.level === selectedUnitLevel,
+    );
+
+    if (!selectedLevelMeta) return [];
+
+    const targetUomId = selectedLevelMeta.uoM_ID;
+
+    return (product.unitPresets ?? [])
+      .filter(
+        (otherPreset) => otherPreset.preset_ID !== selectedPreset.preset_ID,
+      )
+      .map((otherPreset) => {
+        const sortedLevels = [...otherPreset.preset.presetLevels].sort(
+          (a, b) => a.level - b.level,
+        );
+
+        const targetLevel = sortedLevels.find(
+          (level) => level.uoM_ID === targetUomId,
+        );
+
+        if (!targetLevel) return null;
+
+        const presetQuantities = (otherPreset as any).presetQuantities as
+          | Array<{ level: number; remaining_Quantity?: number }>
+          | undefined;
+
+        const levelOneQuantity =
+          presetQuantities?.find((q) => q.level === 1)?.remaining_Quantity ?? 0;
+
+        if (levelOneQuantity <= 0) return null;
+
+        let availableInTargetUnit = levelOneQuantity;
+
+        for (const level of sortedLevels) {
+          if (level.level === 1) continue;
+          if (level.level > targetLevel.level) break;
+
+          availableInTargetUnit *= level.conversion_Factor;
+        }
+
+        return {
+          presetId: otherPreset.preset_ID,
+          path: sortedLevels
+            .map((level) => level.unitOfMeasure.uom_Name)
+            .join(" > "),
+          unitName: targetLevel.unitOfMeasure.uom_Name,
+          availableStock: Math.floor(availableInTargetUnit),
+        };
+      })
+      .filter(
+        (
+          preset,
+        ): preset is {
+          presetId: number;
+          path: string;
+          unitName: string;
+          availableStock: number;
+        } => preset !== null,
+      );
+  };
+
+  const compatiblePresetsWithStock = getCompatiblePresetsWithStock();
+
+  // const findAvailablePresetQuantity = () => {
+  //   if (!selectedPreset) return 0;
+
+  //   const selectedLevelMeta = selectedPreset.preset.presetLevels.find(
+  //     (level) => level.level === selectedUnitLevel,
+  //   );
+
+  //   if (!selectedLevelMeta) return 0;
+
+  //   const targetUomId = selectedLevelMeta.uoM_ID;
+  //   let totalAvailable = 0;
+
+  //   for (const otherPreset of product.unitPresets ?? []) {
+  //     if (otherPreset.preset_ID === selectedPreset.preset_ID) continue;
+
+  //     const sortedLevels = [...otherPreset.preset.presetLevels].sort(
+  //       (a, b) => a.level - b.level,
+  //     );
+
+  //     const targetLevel = sortedLevels.find(
+  //       (level) => level.uoM_ID === targetUomId,
+  //     );
+
+  //     if (!targetLevel) continue;
+
+  //     const presetQuantities = (otherPreset as any).presetQuantities as
+  //       | Array<{ level: number; remaining_Quantity?: number }>
+  //       | undefined;
+
+  //     if (!presetQuantities?.length) continue;
+
+  //     const levelOneQuantity =
+  //       presetQuantities.find((q) => q.level === 1)?.remaining_Quantity ?? 0;
+
+  //     if (levelOneQuantity <= 0) continue;
+
+  //     let availableInTargetUnit = levelOneQuantity;
+
+  //     for (const level of sortedLevels) {
+  //       if (level.level === 1) continue;
+  //       if (level.level > targetLevel.level) break;
+
+  //       availableInTargetUnit *= level.conversion_Factor;
+  //     }
+
+  //     totalAvailable += Math.floor(availableInTargetUnit);
+  //   }
+
+  //   return totalAvailable;
+  // };
+
+  const findAvailablePreset = () => {
+    return compatiblePresetsWithStock.length;
+  };
+
+  // Initialize state from product if it has selectedPreset
+  useEffect(() => {
+    const typedProduct = product as any;
+    if (typedProduct.selectedPreset) {
+      setSelectedPresetId(typedProduct.selectedPreset.preset_ID);
+      UPDATE_INVOICE_PAYLOAD_PRESET(
+        productId,
+        variantName,
+        typedProduct.selectedPreset.preset_ID,
+      );
+      setQuantity(typedProduct.selectedPreset.main_Unit_Quantity || 0);
+    }
+  }, [product, productId, variantName, UPDATE_INVOICE_PAYLOAD_PRESET]);
+
+  // Update price when preset changes, unit level changes, or when switching to supplier price mode
+  useEffect(() => {
+    if (selectedPreset && isSupplierPriceSelected) {
+      const supplierPrice = getSupplierPrice();
+      setPrice(supplierPrice);
+    }
+  }, [selectedPreset, selectedUnitLevel, isSupplierPriceSelected]);
 
   useEffect(() => {
     if (!selectedPreset) return;
@@ -310,11 +442,42 @@ export const InvoiceCard = ({
                     </label>
                   </div>
 
-                  <div className="flex gap-2 items-center">
-                    <input type="checkbox" />
-                    <label className="text-red-400">
-                      Supplement from compatible packaging preset (X available)
-                    </label>
+                  <div className="flex flex-col">
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="checkbox"
+                        checked={isSupplementPresetChecked}
+                        onChange={(e) =>
+                          setIsSupplementPresetChecked(e.target.checked)
+                        }
+                        disabled={findAvailablePreset() === 0}
+                      />
+                      <label className="text-red-400">
+                        Supplement from compatible packaging preset (
+                        {findAvailablePreset()} available)
+                      </label>
+                    </div>
+
+                    {isSupplementPresetChecked && (
+                      <div className="pl-6 flex flex-col gap-1">
+                        {compatiblePresetsWithStock.map((preset) => (
+                          <div className="flex gap-2 items-center">
+                            <input type="checkbox" />
+                            <div
+                              key={preset.presetId}
+                              className="flex gap-2 items-center"
+                            >
+                              <span>{preset.path}</span>
+                              <span>-</span>
+                              <span>
+                                {preset.availableStock} {preset.unitName}{" "}
+                                available
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-2 items-center">

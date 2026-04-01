@@ -166,6 +166,150 @@ namespace backend.Controller.InvoiceControllers
                 inventory.Updated_At = now;
             }
 
+            var presetError = await DeductPresetQuantities(payload.LineItem, now);
+            if (presetError != null)
+            {
+                return presetError;
+            }
+
+            // Persist all tracked deduction updates (Inventory + PresetQuantities + Main_Unit_Quantity)
+            await _db.SaveChangesAsync();
+
+            return null;
+        }
+
+        private async Task<IActionResult?> DeductPresetQuantities(
+            List<InvoiceLineItemPayloadDto> lineItems,
+            DateTime now)
+        {
+            var deductions = lineItems
+                .GroupBy(li => new { li.Product_ID, li.Preset_ID, li.Uom_ID })
+                .Select(g => new
+                {
+                    g.Key.Product_ID,
+                    g.Key.Preset_ID,
+                    Uom_ID = g.Key.Uom_ID,
+                    Quantity = g.Sum(x => x.Unit_Quantity)
+                })
+                .ToList();
+
+            foreach (var deduction in deductions)
+            {
+                var productPresets = await _db.Product_Unit_Presets
+                    .Where(pp => pp.Product_ID == deduction.Product_ID)
+                    .Include(pp => pp.Preset)
+                        .ThenInclude(p => p.PresetLevels)
+                    .Include(pp => pp.PresetQuantities)
+                    .ToListAsync();
+
+                if (productPresets.Count == 0)
+                {
+                    continue;
+                }
+
+                backend.Models.Unit.Product_Unit_Preset? selectedProductPreset;
+
+                if (deduction.Preset_ID.HasValue)
+                {
+                    selectedProductPreset = productPresets
+                        .FirstOrDefault(pp => pp.Preset_ID == deduction.Preset_ID.Value);
+
+                    if (selectedProductPreset == null)
+                    {
+                        return BadRequest(
+                            $"Product preset '{deduction.Preset_ID.Value}' was not found for product '{deduction.Product_ID}'.");
+                    }
+                }
+                else
+                {
+                    var matchingPresets = productPresets
+                        .Where(pp => pp.Preset.PresetLevels.Any(pl => pl.UOM_ID == deduction.Uom_ID))
+                        .ToList();
+
+                    if (matchingPresets.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    if (matchingPresets.Count > 1)
+                    {
+                        return BadRequest(
+                            $"Multiple presets match product '{deduction.Product_ID}' and unit '{deduction.Uom_ID}'. Include preset_ID in invoice line item.");
+                    }
+
+                    selectedProductPreset = matchingPresets[0];
+                }
+
+                var presetLevels = selectedProductPreset.Preset.PresetLevels
+                    .OrderBy(pl => pl.Level)
+                    .ToList();
+
+                if (presetLevels.Count == 0)
+                {
+                    return BadRequest(
+                        $"Preset '{selectedProductPreset.Preset_ID}' for product '{deduction.Product_ID}' has no levels configured.");
+                }
+
+                var selectedLevel = presetLevels
+                    .FirstOrDefault(pl => pl.UOM_ID == deduction.Uom_ID);
+
+                if (selectedLevel == null)
+                {
+                    return BadRequest(
+                        $"Selected unit '{deduction.Uom_ID}' is not part of preset '{selectedProductPreset.Preset_ID}'.");
+                }
+
+                var deductionLevelNumber = selectedLevel.Level;
+                var deductionQuantity = deduction.Quantity;
+
+                if (selectedLevel.Level > 1)
+                {
+                    if (selectedLevel.Conversion_Factor <= 0)
+                    {
+                        return BadRequest(
+                            $"Invalid conversion factor for preset '{selectedProductPreset.Preset_ID}' level '{selectedLevel.Level}'.");
+                    }
+
+                    deductionLevelNumber = selectedLevel.Level - 1;
+                    deductionQuantity = (int)Math.Ceiling(
+                        deduction.Quantity / (decimal)selectedLevel.Conversion_Factor);
+                }
+
+                var deductionLevel = presetLevels
+                    .FirstOrDefault(pl => pl.Level == deductionLevelNumber);
+
+                if (deductionLevel == null)
+                {
+                    return BadRequest(
+                        $"Cannot resolve deduction level '{deductionLevelNumber}' for preset '{selectedProductPreset.Preset_ID}'.");
+                }
+
+                var quantityRecord = selectedProductPreset.PresetQuantities
+                    .FirstOrDefault(q => q.Level == deductionLevelNumber);
+
+                if (quantityRecord == null)
+                {
+                    return BadRequest(
+                        $"Preset quantity record for level '{deductionLevelNumber}' was not found on preset '{selectedProductPreset.Preset_ID}'.");
+                }
+
+                if (quantityRecord.Remaining_Quantity < deductionQuantity)
+                {
+                    return Conflict(
+                        $"Insufficient preset quantity for product '{deduction.Product_ID}', preset '{selectedProductPreset.Preset_ID}', level '{deductionLevelNumber}'. Available: {quantityRecord.Remaining_Quantity}, requested: {deductionQuantity}.");
+                }
+
+                quantityRecord.Remaining_Quantity -= deductionQuantity;
+                quantityRecord.Updated_At = now;
+
+                if (deductionLevelNumber == 1)
+                {
+                    selectedProductPreset.Main_Unit_Quantity = Math.Max(
+                        0,
+                        selectedProductPreset.Main_Unit_Quantity - deductionQuantity);
+                }
+            }
+
             return null;
         }
 

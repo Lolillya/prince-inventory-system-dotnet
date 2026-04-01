@@ -16,6 +16,8 @@ namespace backend.Dtos.InvoiceDTO
         [Required]
         public int Product_ID { get; set; }
 
+        public int? Preset_ID { get; set; }
+
 
         [Required]
         public string Unit { get; set; } = "";
