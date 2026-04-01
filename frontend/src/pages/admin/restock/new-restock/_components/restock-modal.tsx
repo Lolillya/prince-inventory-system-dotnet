@@ -32,7 +32,7 @@ export const CreateRestockModal = ({
           <SupplierPicker suppliersData={suppliersData} />
 
           {/* TABLE CONTAINER */}
-          <RestockTable />
+          <RestockTable close={createRestock} />
         </div>
       </div>
     </div>
