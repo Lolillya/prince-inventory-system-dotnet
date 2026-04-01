@@ -42,6 +42,7 @@ export const useSelectedInvoiceProduct = () => {
         category: data.category,
         unit: "",
         preset_ID: null,
+        supplement_Preset_IDs: [],
         unit_quantity: 0,
         unit_price: 0,
         discount: 0,

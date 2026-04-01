@@ -91,6 +91,33 @@ export const useInvoicePayloadQuery = () => {
     );
   };
 
+  const UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS = (
+    productId: number,
+    variantName: string,
+    supplement_Preset_IDs: number[],
+  ) => {
+    queryClient.setQueryData<InvoiceAddPayloadModel[]>(
+      InvoicePayloadKey,
+      (old = []) => {
+        return old.map((item) => {
+          if (
+            item.invoice.product.product_ID === productId &&
+            item.invoice.variant.variant_Name === variantName
+          ) {
+            return {
+              ...item,
+              invoice: {
+                ...item.invoice,
+                supplement_Preset_IDs,
+              },
+            };
+          }
+          return item;
+        });
+      },
+    );
+  };
+
   const UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE = (isPercentage: boolean) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
@@ -272,6 +299,7 @@ export const useInvoicePayloadQuery = () => {
   return {
     ADD_INVOICE_PAYLOAD,
     UPDATE_INVOICE_PAYLOAD_PRESET,
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS,
     UPDATE_INVOICE_PAYLOAD_UNIT,
     UPDATE_INVOICE_PAYLOAD_PRICE,
     UPDATE_INVOICE_PAYLOAD_QUANTITY,

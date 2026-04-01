@@ -32,10 +32,13 @@ export const InvoiceCard = ({
   const [discountValue, setDiscountValue] = useState<number>(0);
   const [isSupplementPresetChecked, setIsSupplementPresetChecked] =
     useState<boolean>(false);
+  const [selectedSupplementPresetIds, setSelectedSupplementPresetIds] =
+    useState<number[]>([]);
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
   const [selectedUnitLevel, setSelectedUnitLevel] = useState<number>(1);
   const {
     UPDATE_INVOICE_PAYLOAD_PRESET,
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS,
     UPDATE_INVOICE_PAYLOAD_UNIT,
     UPDATE_INVOICE_PAYLOAD_PRICE,
     UPDATE_INVOICE_PAYLOAD_DISCOUNT,
@@ -77,14 +80,19 @@ export const InvoiceCard = ({
   const handlePresetChange = (presetId: number) => {
     setSelectedPresetId(presetId);
     UPDATE_INVOICE_PAYLOAD_PRESET(productId, variantName, presetId);
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(productId, variantName, []);
     setQuantity(0);
     setIsSupplementPresetChecked(false);
+    setSelectedSupplementPresetIds([]);
     setSelectedUnitLevel(1); // Reset to first unit level
     // Price will update via useEffect
   };
 
   const handleUnitLevelChange = (levelNumber: number) => {
     setSelectedUnitLevel(levelNumber);
+    setIsSupplementPresetChecked(false);
+    setSelectedSupplementPresetIds([]);
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(productId, variantName, []);
   };
 
   // Calculate subtotal and apply discount
@@ -281,9 +289,29 @@ export const InvoiceCard = ({
         variantName,
         typedProduct.selectedPreset.preset_ID,
       );
+      UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(productId, variantName, []);
       setQuantity(typedProduct.selectedPreset.main_Unit_Quantity || 0);
     }
-  }, [product, productId, variantName, UPDATE_INVOICE_PAYLOAD_PRESET]);
+  }, [
+    product,
+    productId,
+    variantName,
+    UPDATE_INVOICE_PAYLOAD_PRESET,
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS,
+  ]);
+
+  useEffect(() => {
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(
+      productId,
+      variantName,
+      selectedSupplementPresetIds,
+    );
+  }, [
+    productId,
+    variantName,
+    selectedSupplementPresetIds,
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS,
+  ]);
 
   // Update price when preset changes, unit level changes, or when switching to supplier price mode
   useEffect(() => {
@@ -447,9 +475,13 @@ export const InvoiceCard = ({
                       <input
                         type="checkbox"
                         checked={isSupplementPresetChecked}
-                        onChange={(e) =>
-                          setIsSupplementPresetChecked(e.target.checked)
-                        }
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          setIsSupplementPresetChecked(isChecked);
+                          if (!isChecked) {
+                            setSelectedSupplementPresetIds([]);
+                          }
+                        }}
                         disabled={findAvailablePreset() === 0}
                       />
                       <label className="text-red-400">
@@ -461,12 +493,31 @@ export const InvoiceCard = ({
                     {isSupplementPresetChecked && (
                       <div className="pl-6 flex flex-col gap-1">
                         {compatiblePresetsWithStock.map((preset) => (
-                          <div className="flex gap-2 items-center">
-                            <input type="checkbox" />
-                            <div
-                              key={preset.presetId}
-                              className="flex gap-2 items-center"
-                            >
+                          <div
+                            key={preset.presetId}
+                            className="flex gap-2 items-center"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedSupplementPresetIds.includes(
+                                preset.presetId,
+                              )}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                setSelectedSupplementPresetIds((prev) => {
+                                  if (isChecked) {
+                                    return prev.includes(preset.presetId)
+                                      ? prev
+                                      : [...prev, preset.presetId];
+                                  }
+
+                                  return prev.filter(
+                                    (id) => id !== preset.presetId,
+                                  );
+                                });
+                              }}
+                            />
+                            <div className="flex gap-2 items-center">
                               <span>{preset.path}</span>
                               <span>-</span>
                               <span>

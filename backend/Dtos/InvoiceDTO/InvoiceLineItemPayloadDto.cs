@@ -18,6 +18,8 @@ namespace backend.Dtos.InvoiceDTO
 
         public int? Preset_ID { get; set; }
 
+        public List<int>? Supplement_Preset_IDs { get; set; }
+
 
         [Required]
         public string Unit { get; set; } = "";

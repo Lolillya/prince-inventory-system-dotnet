@@ -10,6 +10,7 @@ type LineItems = {
   updatedAt: string;
   product_ID: number;
   preset_ID?: number | null;
+  supplement_Preset_IDs?: number[];
   unit: string;
   uom_ID: number;
   unit_Price: number;

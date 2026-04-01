@@ -29,6 +29,7 @@ export const createInvoice = async (
       updatedAt: Date.now().toString(),
       product_ID: p.invoice.product.product_ID,
       preset_ID: p.invoice.preset_ID,
+      supplement_Preset_IDs: p.invoice.supplement_Preset_IDs || [],
       unit: p.invoice.unit,
       uom_ID: p.invoice.uom_ID,
       unit_Price: p.invoice.unit_price,

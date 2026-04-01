@@ -203,203 +203,243 @@ namespace backend.Controller.InvoiceControllers
         {
             var baseUnitDeductionsByProduct = new Dictionary<int, int>();
 
-            var deductions = lineItems
+            var deductionLines = lineItems
                 .Where(li => li.Preset_ID.HasValue)
-                .GroupBy(li => new { li.Product_ID, li.Preset_ID, li.Uom_ID })
-                .Select(g => new
-                {
-                    g.Key.Product_ID,
-                    g.Key.Preset_ID,
-                    Uom_ID = g.Key.Uom_ID,
-                    Quantity = g.Sum(x => x.Unit_Quantity)
-                })
                 .ToList();
 
-            foreach (var deduction in deductions)
+            var productPresetsCache = new Dictionary<int, List<backend.Models.Unit.Product_Unit_Preset>>();
+
+            foreach (var line in deductionLines)
             {
-                var productPresets = await _db.Product_Unit_Presets
-                    .Where(pp => pp.Product_ID == deduction.Product_ID)
-                    .Include(pp => pp.Preset)
-                        .ThenInclude(p => p.PresetLevels)
-                    .Include(pp => pp.PresetQuantities)
-                    .ToListAsync();
+                if (!productPresetsCache.TryGetValue(line.Product_ID, out var productPresets))
+                {
+                    productPresets = await _db.Product_Unit_Presets
+                        .Where(pp => pp.Product_ID == line.Product_ID)
+                        .Include(pp => pp.Preset)
+                            .ThenInclude(p => p.PresetLevels)
+                        .Include(pp => pp.PresetQuantities)
+                        .ToListAsync();
+
+                    productPresetsCache[line.Product_ID] = productPresets;
+                }
 
                 if (productPresets.Count == 0)
                 {
                     continue;
                 }
 
-                backend.Models.Unit.Product_Unit_Preset? selectedProductPreset;
+                var candidatePresetIds = new List<int> { line.Preset_ID!.Value };
 
-                if (deduction.Preset_ID.HasValue)
+                if (line.Supplement_Preset_IDs != null && line.Supplement_Preset_IDs.Count > 0)
                 {
-                    selectedProductPreset = productPresets
-                        .FirstOrDefault(pp => pp.Preset_ID == deduction.Preset_ID.Value);
+                    candidatePresetIds.AddRange(line.Supplement_Preset_IDs);
+                }
+
+                var orderedPresetIds = candidatePresetIds
+                    .Distinct()
+                    .ToList();
+
+                var remainingToDeduct = line.Unit_Quantity;
+                var consumedBaseUnitsForLine = 0;
+
+                foreach (var candidatePresetId in orderedPresetIds)
+                {
+                    if (remainingToDeduct <= 0)
+                    {
+                        break;
+                    }
+
+                    var selectedProductPreset = productPresets
+                        .FirstOrDefault(pp => pp.Preset_ID == candidatePresetId);
 
                     if (selectedProductPreset == null)
                     {
                         return (
-                            BadRequest($"Product preset '{deduction.Preset_ID.Value}' was not found for product '{deduction.Product_ID}'."),
+                            BadRequest($"Product preset '{candidatePresetId}' was not found for product '{line.Product_ID}'."),
                             baseUnitDeductionsByProduct
                         );
                     }
-                }
-                else
-                {
-                    var matchingPresets = productPresets
-                        .Where(pp => pp.Preset.PresetLevels.Any(pl => pl.UOM_ID == deduction.Uom_ID))
+
+                    var presetLevels = selectedProductPreset.Preset.PresetLevels
+                        .OrderBy(pl => pl.Level)
                         .ToList();
 
-                    if (matchingPresets.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    if (matchingPresets.Count > 1)
+                    if (presetLevels.Count == 0)
                     {
                         return (
-                            BadRequest($"Multiple presets match product '{deduction.Product_ID}' and unit '{deduction.Uom_ID}'. Include preset_ID in invoice line item."),
+                            BadRequest($"Preset '{selectedProductPreset.Preset_ID}' for product '{line.Product_ID}' has no levels configured."),
                             baseUnitDeductionsByProduct
                         );
                     }
 
-                    selectedProductPreset = matchingPresets[0];
-                }
+                    var selectedLevel = presetLevels
+                        .FirstOrDefault(pl => pl.UOM_ID == line.Uom_ID);
 
-                var presetLevels = selectedProductPreset.Preset.PresetLevels
-                    .OrderBy(pl => pl.Level)
-                    .ToList();
+                    if (selectedLevel == null)
+                    {
+                        // This preset is not compatible for the selected invoice unit.
+                        continue;
+                    }
 
-                if (presetLevels.Count == 0)
-                {
-                    return (
-                        BadRequest($"Preset '{selectedProductPreset.Preset_ID}' for product '{deduction.Product_ID}' has no levels configured."),
-                        baseUnitDeductionsByProduct
-                    );
-                }
+                    var levelByNumber = presetLevels.ToDictionary(pl => pl.Level, pl => pl);
+                    var quantityByLevel = selectedProductPreset.PresetQuantities
+                        .ToDictionary(q => q.Level, q => q);
 
-                var selectedLevel = presetLevels
-                    .FirstOrDefault(pl => pl.UOM_ID == deduction.Uom_ID);
+                    // Ensure every configured level has a quantity row to support borrow/carry operations.
+                    foreach (var level in presetLevels)
+                    {
+                        if (quantityByLevel.ContainsKey(level.Level))
+                        {
+                            continue;
+                        }
 
-                if (selectedLevel == null)
-                {
-                    return (
-                        BadRequest($"Selected unit '{deduction.Uom_ID}' is not part of preset '{selectedProductPreset.Preset_ID}'."),
-                        baseUnitDeductionsByProduct
-                    );
-                }
+                        var newQuantityRow = new backend.Models.Unit.Product_Unit_Preset_Quantity
+                        {
+                            Product_Preset_ID = selectedProductPreset.Product_Preset_ID,
+                            Level = level.Level,
+                            UOM_ID = level.UOM_ID,
+                            Original_Quantity = 0,
+                            Remaining_Quantity = 0,
+                            Created_At = now,
+                            Updated_At = now,
+                        };
 
-                var levelByNumber = presetLevels.ToDictionary(pl => pl.Level, pl => pl);
-                var quantityByLevel = selectedProductPreset.PresetQuantities
-                    .ToDictionary(q => q.Level, q => q);
+                        _db.Product_Unit_Preset_Quantities.Add(newQuantityRow);
+                        selectedProductPreset.PresetQuantities.Add(newQuantityRow);
+                        quantityByLevel[level.Level] = newQuantityRow;
+                    }
 
-                // Ensure every configured level has a quantity row to support borrow/carry operations.
-                foreach (var level in presetLevels)
-                {
-                    if (quantityByLevel.ContainsKey(level.Level))
+                    var requestedLevel = selectedLevel.Level;
+                    var baseUnitsConsumed = 0;
+
+                    int GetMaxDeductableAtRequestedLevel()
+                    {
+                        var total = 0;
+                        var multiplier = 1;
+
+                        for (var levelNumber = requestedLevel; levelNumber >= 1; levelNumber--)
+                        {
+                            if (!quantityByLevel.TryGetValue(levelNumber, out var levelRecord))
+                            {
+                                continue;
+                            }
+
+                            total += levelRecord.Remaining_Quantity * multiplier;
+
+                            if (levelNumber > 1)
+                            {
+                                var currentLevelConfig = levelByNumber[levelNumber];
+                                if (currentLevelConfig.Conversion_Factor <= 0)
+                                {
+                                    return 0;
+                                }
+                                multiplier *= currentLevelConfig.Conversion_Factor;
+                            }
+                        }
+
+                        return Math.Max(0, total);
+                    }
+
+                    var maxDeductable = GetMaxDeductableAtRequestedLevel();
+                    if (maxDeductable <= 0)
                     {
                         continue;
                     }
 
-                    var newQuantityRow = new backend.Models.Unit.Product_Unit_Preset_Quantity
+                    var quantityToDeductFromPreset = Math.Min(remainingToDeduct, maxDeductable);
+
+                    IActionResult? EnsureAvailableAtLevel(int levelNumber, int needed)
                     {
-                        Product_Preset_ID = selectedProductPreset.Product_Preset_ID,
-                        Level = level.Level,
-                        UOM_ID = level.UOM_ID,
-                        Original_Quantity = 0,
-                        Remaining_Quantity = 0,
-                        Created_At = now,
-                        Updated_At = now,
-                    };
+                        var currentRecord = quantityByLevel[levelNumber];
 
-                    _db.Product_Unit_Preset_Quantities.Add(newQuantityRow);
-                    selectedProductPreset.PresetQuantities.Add(newQuantityRow);
-                    quantityByLevel[level.Level] = newQuantityRow;
-                }
+                        if (currentRecord.Remaining_Quantity >= needed)
+                        {
+                            return null;
+                        }
 
-                var requestedLevel = selectedLevel.Level;
-                var requestedQuantity = deduction.Quantity;
-                var baseUnitsConsumed = 0;
+                        if (levelNumber == 1)
+                        {
+                            return Conflict(
+                                $"Insufficient preset quantity for product '{line.Product_ID}', preset '{selectedProductPreset.Preset_ID}', level '1'. Available: {currentRecord.Remaining_Quantity}, requested: {needed}.");
+                        }
 
-                IActionResult? EnsureAvailableAtLevel(int levelNumber, int needed)
-                {
-                    var currentRecord = quantityByLevel[levelNumber];
+                        var deficit = needed - currentRecord.Remaining_Quantity;
+                        var currentLevelConfig = levelByNumber[levelNumber];
 
-                    if (currentRecord.Remaining_Quantity >= needed)
-                    {
+                        if (currentLevelConfig.Conversion_Factor <= 0)
+                        {
+                            return BadRequest(
+                                $"Invalid conversion factor for preset '{selectedProductPreset.Preset_ID}' level '{levelNumber}'.");
+                        }
+
+                        var previousLevelNumber = levelNumber - 1;
+                        var unitsToBorrowFromPrevious = (int)Math.Ceiling(
+                            deficit / (decimal)currentLevelConfig.Conversion_Factor);
+
+                        var upstreamError = EnsureAvailableAtLevel(previousLevelNumber, unitsToBorrowFromPrevious);
+                        if (upstreamError != null)
+                        {
+                            return upstreamError;
+                        }
+
+                        var previousRecord = quantityByLevel[previousLevelNumber];
+                        previousRecord.Remaining_Quantity -= unitsToBorrowFromPrevious;
+                        previousRecord.Updated_At = now;
+
+                        if (previousLevelNumber == 1)
+                        {
+                            baseUnitsConsumed += unitsToBorrowFromPrevious;
+                        }
+
+                        currentRecord.Remaining_Quantity +=
+                            unitsToBorrowFromPrevious * currentLevelConfig.Conversion_Factor;
+                        currentRecord.Updated_At = now;
+
                         return null;
                     }
 
-                    if (levelNumber == 1)
+                    var ensureError = EnsureAvailableAtLevel(requestedLevel, quantityToDeductFromPreset);
+                    if (ensureError != null)
                     {
-                        return Conflict(
-                            $"Insufficient preset quantity for product '{deduction.Product_ID}', preset '{selectedProductPreset.Preset_ID}', level '1'. Available: {currentRecord.Remaining_Quantity}, requested: {needed}.");
+                        return (ensureError, baseUnitDeductionsByProduct);
                     }
 
-                    var deficit = needed - currentRecord.Remaining_Quantity;
-                    var currentLevelConfig = levelByNumber[levelNumber];
+                    var requestedLevelRecord = quantityByLevel[requestedLevel];
+                    requestedLevelRecord.Remaining_Quantity -= quantityToDeductFromPreset;
+                    requestedLevelRecord.Updated_At = now;
 
-                    if (currentLevelConfig.Conversion_Factor <= 0)
+                    if (requestedLevel == 1)
                     {
-                        return BadRequest(
-                            $"Invalid conversion factor for preset '{selectedProductPreset.Preset_ID}' level '{levelNumber}'.");
+                        baseUnitsConsumed += quantityToDeductFromPreset;
                     }
 
-                    var previousLevelNumber = levelNumber - 1;
-                    var unitsToBorrowFromPrevious = (int)Math.Ceiling(
-                        deficit / (decimal)currentLevelConfig.Conversion_Factor);
-
-                    var upstreamError = EnsureAvailableAtLevel(previousLevelNumber, unitsToBorrowFromPrevious);
-                    if (upstreamError != null)
+                    if (quantityByLevel.TryGetValue(1, out var levelOneRecord))
                     {
-                        return upstreamError;
+                        selectedProductPreset.Main_Unit_Quantity = Math.Max(0, levelOneRecord.Remaining_Quantity);
                     }
 
-                    var previousRecord = quantityByLevel[previousLevelNumber];
-                    previousRecord.Remaining_Quantity -= unitsToBorrowFromPrevious;
-                    previousRecord.Updated_At = now;
+                    consumedBaseUnitsForLine += baseUnitsConsumed;
+                    remainingToDeduct -= quantityToDeductFromPreset;
+                }
 
-                    if (previousLevelNumber == 1)
+                if (remainingToDeduct > 0)
+                {
+                    return (
+                        Conflict(
+                            $"Insufficient quantity across selected presets for product '{line.Product_ID}'. Remaining required: {remainingToDeduct} {line.Unit}."),
+                        baseUnitDeductionsByProduct
+                    );
+                }
+
+                if (consumedBaseUnitsForLine > 0)
+                {
+                    if (baseUnitDeductionsByProduct.ContainsKey(line.Product_ID))
                     {
-                        baseUnitsConsumed += unitsToBorrowFromPrevious;
-                    }
-
-                    currentRecord.Remaining_Quantity +=
-                        unitsToBorrowFromPrevious * currentLevelConfig.Conversion_Factor;
-                    currentRecord.Updated_At = now;
-
-                    return null;
-                }
-
-                var ensureError = EnsureAvailableAtLevel(requestedLevel, requestedQuantity);
-                if (ensureError != null)
-                {
-                    return (ensureError, baseUnitDeductionsByProduct);
-                }
-
-                var requestedLevelRecord = quantityByLevel[requestedLevel];
-                requestedLevelRecord.Remaining_Quantity -= requestedQuantity;
-                requestedLevelRecord.Updated_At = now;
-
-                if (requestedLevel == 1)
-                {
-                    baseUnitsConsumed += requestedQuantity;
-                }
-
-                if (quantityByLevel.TryGetValue(1, out var levelOneRecord))
-                {
-                    selectedProductPreset.Main_Unit_Quantity = Math.Max(0, levelOneRecord.Remaining_Quantity);
-                }
-
-                if (baseUnitsConsumed > 0)
-                {
-                    if (baseUnitDeductionsByProduct.ContainsKey(deduction.Product_ID))
-                    {
-                        baseUnitDeductionsByProduct[deduction.Product_ID] += baseUnitsConsumed;
+                        baseUnitDeductionsByProduct[line.Product_ID] += consumedBaseUnitsForLine;
                     }
                     else
                     {
-                        baseUnitDeductionsByProduct[deduction.Product_ID] = baseUnitsConsumed;
+                        baseUnitDeductionsByProduct[line.Product_ID] = consumedBaseUnitsForLine;
                     }
                 }
             }
