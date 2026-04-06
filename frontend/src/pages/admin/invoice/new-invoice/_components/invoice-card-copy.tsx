@@ -478,7 +478,8 @@ export const InvoiceCard = ({
                 </select>
               </div>
 
-              {quantity > calculateAvailableStock() && (
+              {(calculateAvailableStock() === 0 ||
+                quantity > calculateAvailableStock()) && (
                 <div className="flex flex-col text-red-400">
                   <div className="flex gap-2 items-center">
                     <CircleAlert className="text-red-400" size={18} />
@@ -487,70 +488,70 @@ export const InvoiceCard = ({
                     </label>
                   </div>
 
-                  <div className="flex flex-col">
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="checkbox"
-                        checked={isSupplementPresetChecked}
-                        onChange={(e) => {
-                          const isChecked = e.target.checked;
-                          setIsSupplementPresetChecked(isChecked);
-                          if (isChecked) {
-                            setIsAutoReplenish(false);
-                          } else {
-                            setSelectedSupplementPresetIds([]);
-                          }
-                        }}
-                        disabled={
-                          findAvailablePreset() === 0 || isAutoReplenish
-                        }
-                      />
-                      <label className="text-red-400">
-                        Supplement from compatible packaging preset (
-                        {findAvailablePreset()} available)
-                      </label>
-                    </div>
-
-                    {isSupplementPresetChecked && (
-                      <div className="pl-6 flex flex-col gap-1">
-                        {compatiblePresetsWithStock.map((preset) => (
-                          <div
-                            key={preset.presetId}
-                            className="flex gap-2 items-center"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedSupplementPresetIds.includes(
-                                preset.presetId,
-                              )}
-                              onChange={(e) => {
-                                const isChecked = e.target.checked;
-                                setSelectedSupplementPresetIds((prev) => {
-                                  if (isChecked) {
-                                    return prev.includes(preset.presetId)
-                                      ? prev
-                                      : [...prev, preset.presetId];
-                                  }
-
-                                  return prev.filter(
-                                    (id) => id !== preset.presetId,
-                                  );
-                                });
-                              }}
-                            />
-                            <div className="flex gap-2 items-center">
-                              <span>{preset.path}</span>
-                              <span>-</span>
-                              <span>
-                                {preset.availableStock} {preset.unitName}{" "}
-                                available
-                              </span>
-                            </div>
-                          </div>
-                        ))}
+                  {findAvailablePreset() > 0 && (
+                    <div className="flex flex-col">
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="checkbox"
+                          checked={isSupplementPresetChecked}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            setIsSupplementPresetChecked(isChecked);
+                            if (isChecked) {
+                              setIsAutoReplenish(false);
+                            } else {
+                              setSelectedSupplementPresetIds([]);
+                            }
+                          }}
+                          disabled={isAutoReplenish}
+                        />
+                        <label className="text-red-400">
+                          Supplement from compatible packaging preset (
+                          {findAvailablePreset()} available)
+                        </label>
                       </div>
-                    )}
-                  </div>
+
+                      {isSupplementPresetChecked && (
+                        <div className="pl-6 flex flex-col gap-1">
+                          {compatiblePresetsWithStock.map((preset) => (
+                            <div
+                              key={preset.presetId}
+                              className="flex gap-2 items-center"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedSupplementPresetIds.includes(
+                                  preset.presetId,
+                                )}
+                                onChange={(e) => {
+                                  const isChecked = e.target.checked;
+                                  setSelectedSupplementPresetIds((prev) => {
+                                    if (isChecked) {
+                                      return prev.includes(preset.presetId)
+                                        ? prev
+                                        : [...prev, preset.presetId];
+                                    }
+
+                                    return prev.filter(
+                                      (id) => id !== preset.presetId,
+                                    );
+                                  });
+                                }}
+                              />
+                              <div className="flex gap-2 items-center">
+                                <span>{preset.path}</span>
+                                <span>-</span>
+                                <span>
+                                  {preset.availableStock} {preset.unitName}{" "}
+                                  available
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex gap-2 items-center">
                     <input
