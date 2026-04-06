@@ -20,6 +20,7 @@ namespace backend.Dtos.InvoiceDTO
 
         public List<int>? Supplement_Preset_IDs { get; set; }
 
+        public bool Auto_Replenish { get; set; } = false;
 
         [Required]
         public string Unit { get; set; } = "";
