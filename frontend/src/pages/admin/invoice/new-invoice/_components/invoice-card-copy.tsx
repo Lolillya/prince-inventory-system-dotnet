@@ -66,11 +66,13 @@ export const InvoiceCard = ({
   };
 
   const getStockIndicator = (preset: (typeof product.unitPresets)[0]) => {
-    if (product.product.quantity === 0) {
+    const presetQuantity = preset.main_Unit_Quantity ?? 0;
+
+    if (presetQuantity === 0) {
       return "⚫"; // Gray indicator (no stock)
-    } else if (product.product.quantity <= preset.very_Low_Stock_Level!) {
+    } else if (presetQuantity <= preset.very_Low_Stock_Level!) {
       return "🔴"; // Red indicator (very low stock)
-    } else if (product.product.quantity <= preset.low_Stock_Level!) {
+    } else if (presetQuantity <= preset.low_Stock_Level!) {
       return "🟡"; // Yellow indicator (low stock)
     } else {
       return "🟢"; // Green indicator (adequate stock)
