@@ -43,6 +43,15 @@ const NewInvoicePage = () => {
     REMOVE_PRODUCT(itemKey);
   };
 
+  const allCardsComplete =
+    selectedInvoices.length > 0 &&
+    payloadData.every(
+      (p) =>
+        p.invoice.preset_ID !== null &&
+        p.invoice.unit_quantity > 0 &&
+        p.invoice.unit_price > 0,
+    );
+
   // For each invoice card, collect preset_IDs selected by OTHER cards of the same product+variant.
   const getExcludedPresetIds = (
     itemKey: string,
@@ -127,7 +136,15 @@ const NewInvoicePage = () => {
 
               <div className="flex gap-5 justify-between">
                 <button onClick={CLEAR_TO_INVOICE_LIST}>clear</button>
-                <button onClick={createInvoice}>create invoice</button>
+                <button
+                  onClick={createInvoice}
+                  disabled={!allCardsComplete}
+                  className={
+                    !allCardsComplete ? "opacity-50 cursor-not-allowed" : ""
+                  }
+                >
+                  create invoice
+                </button>
               </div>
             </div>
           </div>
