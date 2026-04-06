@@ -18,7 +18,9 @@ import { PurchasePriceBenchmarkModal } from "./_components/purchase-price-benchm
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
-  const { data: selectedSupplier } = useSelectedSupplierQuery();
+  const { data: selectedSupplierData } = useSelectedSupplierQuery();
+  const selectedSupplier = suppliers?.find(s => s.supplier_Id === selectedSupplierData?.supplier_Id) || selectedSupplierData;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
   const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
