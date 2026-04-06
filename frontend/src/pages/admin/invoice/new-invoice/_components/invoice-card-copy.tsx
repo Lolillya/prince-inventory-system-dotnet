@@ -32,6 +32,7 @@ export const InvoiceCard = ({
   const [discountValue, setDiscountValue] = useState<number>(0);
   const [isSupplementPresetChecked, setIsSupplementPresetChecked] =
     useState<boolean>(false);
+  const [isAutoReplenish, setIsAutoReplenish] = useState<boolean>(false);
   const [selectedSupplementPresetIds, setSelectedSupplementPresetIds] =
     useState<number[]>([]);
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
@@ -45,6 +46,7 @@ export const InvoiceCard = ({
     UPDATE_INVOICE_PAYLOAD_QUANTITY,
     UPDATE_INVOICE_PAYLOAD_TOTAL,
     UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
+    UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH,
   } = useInvoicePayloadQuery();
 
   console.log(product);
@@ -374,6 +376,19 @@ export const InvoiceCard = ({
     UPDATE_INVOICE_PAYLOAD_TOTAL,
   ]);
 
+  useEffect(() => {
+    UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH(
+      productId,
+      variantName,
+      isAutoReplenish,
+    );
+  }, [
+    productId,
+    variantName,
+    isAutoReplenish,
+    UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH,
+  ]);
+
   return (
     <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
       <div className="flex gap-2 items-center text-xs justify-between">
@@ -480,11 +495,15 @@ export const InvoiceCard = ({
                         onChange={(e) => {
                           const isChecked = e.target.checked;
                           setIsSupplementPresetChecked(isChecked);
-                          if (!isChecked) {
+                          if (isChecked) {
+                            setIsAutoReplenish(false);
+                          } else {
                             setSelectedSupplementPresetIds([]);
                           }
                         }}
-                        disabled={findAvailablePreset() === 0}
+                        disabled={
+                          findAvailablePreset() === 0 || isAutoReplenish
+                        }
                       />
                       <label className="text-red-400">
                         Supplement from compatible packaging preset (
@@ -534,7 +553,18 @@ export const InvoiceCard = ({
                   </div>
 
                   <div className="flex gap-2 items-center">
-                    <input type="checkbox" />
+                    <input
+                      type="checkbox"
+                      checked={isAutoReplenish}
+                      onChange={(e) => {
+                        const isChecked = e.target.checked;
+                        setIsAutoReplenish(isChecked);
+                        if (isChecked) {
+                          setIsSupplementPresetChecked(false);
+                          setSelectedSupplementPresetIds([]);
+                        }
+                      }}
+                    />
                     <label className="text-red-400">
                       Automatically replenish deficit
                     </label>

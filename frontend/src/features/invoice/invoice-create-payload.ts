@@ -292,6 +292,33 @@ export const useInvoicePayloadQuery = () => {
     );
   };
 
+  const UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH = (
+    productId: number,
+    variantName: string,
+    auto_Replenish: boolean,
+  ) => {
+    queryClient.setQueryData<InvoiceAddPayloadModel[]>(
+      InvoicePayloadKey,
+      (old = []) => {
+        return old.map((item) => {
+          if (
+            item.invoice.product.product_ID === productId &&
+            item.invoice.variant.variant_Name === variantName
+          ) {
+            return {
+              ...item,
+              invoice: {
+                ...item.invoice,
+                auto_Replenish,
+              },
+            };
+          }
+          return item;
+        });
+      },
+    );
+  };
+
   const CLEAR_INVOICE_PAYLOAD = () => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(InvoicePayloadKey, []);
   };
@@ -306,6 +333,7 @@ export const useInvoicePayloadQuery = () => {
     UPDATE_INVOICE_PAYLOAD_DISCOUNT,
     UPDATE_INVOICE_PAYLOAD_TOTAL,
     UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE,
+    UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH,
     UPDATE_INVOICE_TERM,
     UPDATE_INVOICE_CLERK,
     REMOVE_INVOICE_PAYLOAD,

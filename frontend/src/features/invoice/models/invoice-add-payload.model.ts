@@ -7,6 +7,7 @@ export type InvoiceAddPayloadModel = {
     unit: string;
     preset_ID: number | null;
     supplement_Preset_IDs?: number[];
+    auto_Replenish?: boolean;
     uom_ID: number;
     unit_quantity: number;
     unit_price: number;

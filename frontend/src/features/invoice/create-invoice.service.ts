@@ -30,6 +30,7 @@ export const createInvoice = async (
       product_ID: p.invoice.product.product_ID,
       preset_ID: p.invoice.preset_ID,
       supplement_Preset_IDs: p.invoice.supplement_Preset_IDs || [],
+      auto_Replenish: p.invoice.auto_Replenish ?? false,
       unit: p.invoice.unit,
       uom_ID: p.invoice.uom_ID,
       unit_Price: p.invoice.unit_price,
