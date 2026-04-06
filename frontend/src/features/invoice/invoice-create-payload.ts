@@ -20,101 +20,57 @@ export const useInvoicePayloadQuery = () => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
       (old = []) => {
-        // Check if product with same ID and variant already exists
         const exists = old.some(
-          (item) =>
-            item.invoice.product.product_ID ===
-              data.invoice.product.product_ID &&
-            item.invoice.variant.variant_Name ===
-              data.invoice.variant.variant_Name,
+          (item) => item.invoice.itemKey === data.invoice.itemKey,
         );
-        // Only add if it doesn't exist
-        const next = exists ? old : [...old, data];
-        return next;
+        return exists ? old : [...old, data];
       },
     );
   };
 
   const UPDATE_INVOICE_PAYLOAD_UNIT = (
-    productId: number,
-    variantName: string,
+    itemKey: string,
     unit: string,
     uom_ID: number,
   ) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
-      (old = []) => {
-        return old.map((item) => {
-          if (
-            item.invoice.product.product_ID === productId &&
-            item.invoice.variant.variant_Name === variantName
-          ) {
-            return {
-              ...item,
-              invoice: {
-                ...item.invoice,
-                unit: unit,
-                uom_ID: uom_ID,
-              },
-            };
-          }
-          return item;
-        });
-      },
+      (old = []) =>
+        old.map((item) =>
+          item.invoice.itemKey === itemKey
+            ? { ...item, invoice: { ...item.invoice, unit, uom_ID } }
+            : item,
+        ),
     );
   };
 
   const UPDATE_INVOICE_PAYLOAD_PRESET = (
-    productId: number,
-    variantName: string,
+    itemKey: string,
     preset_ID: number | null,
   ) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
-      (old = []) => {
-        return old.map((item) => {
-          if (
-            item.invoice.product.product_ID === productId &&
-            item.invoice.variant.variant_Name === variantName
-          ) {
-            return {
-              ...item,
-              invoice: {
-                ...item.invoice,
-                preset_ID,
-              },
-            };
-          }
-          return item;
-        });
-      },
+      (old = []) =>
+        old.map((item) =>
+          item.invoice.itemKey === itemKey
+            ? { ...item, invoice: { ...item.invoice, preset_ID } }
+            : item,
+        ),
     );
   };
 
   const UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS = (
-    productId: number,
-    variantName: string,
+    itemKey: string,
     supplement_Preset_IDs: number[],
   ) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
-      (old = []) => {
-        return old.map((item) => {
-          if (
-            item.invoice.product.product_ID === productId &&
-            item.invoice.variant.variant_Name === variantName
-          ) {
-            return {
-              ...item,
-              invoice: {
-                ...item.invoice,
-                supplement_Preset_IDs,
-              },
-            };
-          }
-          return item;
-        });
-      },
+      (old = []) =>
+        old.map((item) =>
+          item.invoice.itemKey === itemKey
+            ? { ...item, invoice: { ...item.invoice, supplement_Preset_IDs } }
+            : item,
+        ),
     );
   };
 
@@ -135,111 +91,57 @@ export const useInvoicePayloadQuery = () => {
     );
   };
 
-  const UPDATE_INVOICE_PAYLOAD_PRICE = (
-    productId: number,
-    variantName: string,
-    price: number,
-  ) => {
+  const UPDATE_INVOICE_PAYLOAD_PRICE = (itemKey: string, price: number) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
-      (old = []) => {
-        return old.map((item) => {
-          if (
-            item.invoice.product.product_ID === productId &&
-            item.invoice.variant.variant_Name === variantName
-          ) {
-            return {
-              ...item,
-              invoice: {
-                ...item.invoice,
-                unit_price: price,
-              },
-            };
-          }
-          return item;
-        });
-      },
+      (old = []) =>
+        old.map((item) =>
+          item.invoice.itemKey === itemKey
+            ? { ...item, invoice: { ...item.invoice, unit_price: price } }
+            : item,
+        ),
     );
   };
 
   const UPDATE_INVOICE_PAYLOAD_QUANTITY = (
-    productId: number,
-    variantName: string,
+    itemKey: string,
     quantity: number,
   ) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
-      (old = []) => {
-        return old.map((item) => {
-          if (
-            item.invoice.product.product_ID === productId &&
-            item.invoice.variant.variant_Name === variantName
-          ) {
-            return {
-              ...item,
-              invoice: {
-                ...item.invoice,
-                unit_quantity: quantity,
-              },
-            };
-          }
-          return item;
-        });
-      },
+      (old = []) =>
+        old.map((item) =>
+          item.invoice.itemKey === itemKey
+            ? { ...item, invoice: { ...item.invoice, unit_quantity: quantity } }
+            : item,
+        ),
     );
   };
 
   const UPDATE_INVOICE_PAYLOAD_DISCOUNT = (
-    productId: number,
-    variantName: string,
+    itemKey: string,
     discount: number,
   ) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
-      (old = []) => {
-        return old.map((item) => {
-          if (
-            item.invoice.product.product_ID === productId &&
-            item.invoice.variant.variant_Name === variantName
-          ) {
-            return {
-              ...item,
-              invoice: {
-                ...item.invoice,
-                discount: discount,
-              },
-            };
-          }
-          return item;
-        });
-      },
+      (old = []) =>
+        old.map((item) =>
+          item.invoice.itemKey === itemKey
+            ? { ...item, invoice: { ...item.invoice, discount } }
+            : item,
+        ),
     );
   };
 
-  const UPDATE_INVOICE_PAYLOAD_TOTAL = (
-    productId: number,
-    variantName: string,
-    total: number,
-  ) => {
+  const UPDATE_INVOICE_PAYLOAD_TOTAL = (itemKey: string, total: number) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
-      (old = []) => {
-        return old.map((item) => {
-          if (
-            item.invoice.product.product_ID === productId &&
-            item.invoice.variant.variant_Name === variantName
-          ) {
-            return {
-              ...item,
-              invoice: {
-                ...item.invoice,
-                total: total,
-              },
-            };
-          }
-          return item;
-        });
-      },
+      (old = []) =>
+        old.map((item) =>
+          item.invoice.itemKey === itemKey
+            ? { ...item, invoice: { ...item.invoice, total } }
+            : item,
+        ),
     );
   };
 
@@ -277,45 +179,25 @@ export const useInvoicePayloadQuery = () => {
     );
   };
 
-  const REMOVE_INVOICE_PAYLOAD = (productId: number, variantName: string) => {
+  const REMOVE_INVOICE_PAYLOAD = (itemKey: string) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
-      (old = []) => {
-        return old.filter(
-          (item) =>
-            !(
-              item.invoice.product.product_ID === productId &&
-              item.invoice.variant.variant_Name === variantName
-            ),
-        );
-      },
+      (old = []) => old.filter((item) => item.invoice.itemKey !== itemKey),
     );
   };
 
   const UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH = (
-    productId: number,
-    variantName: string,
+    itemKey: string,
     auto_Replenish: boolean,
   ) => {
     queryClient.setQueryData<InvoiceAddPayloadModel[]>(
       InvoicePayloadKey,
-      (old = []) => {
-        return old.map((item) => {
-          if (
-            item.invoice.product.product_ID === productId &&
-            item.invoice.variant.variant_Name === variantName
-          ) {
-            return {
-              ...item,
-              invoice: {
-                ...item.invoice,
-                auto_Replenish,
-              },
-            };
-          }
-          return item;
-        });
-      },
+      (old = []) =>
+        old.map((item) =>
+          item.invoice.itemKey === itemKey
+            ? { ...item, invoice: { ...item.invoice, auto_Replenish } }
+            : item,
+        ),
     );
   };
 

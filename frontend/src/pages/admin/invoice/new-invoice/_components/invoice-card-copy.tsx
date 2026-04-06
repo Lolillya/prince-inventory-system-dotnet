@@ -1,13 +1,17 @@
 import { Separator } from "@/components/separator";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
-import { useInvoicePayloadQuery } from "@/features/invoice/invoice-create-payload";
+import {
+  useInvoicePayloadQuery,
+  useSelectedPayloadInvoiceQuery,
+} from "@/features/invoice/invoice-create-payload";
 import { XIcon } from "@/icons";
 import { CircleAlert } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface InvoiceCardProp {
   onClick?: () => void;
   product: InventoryProductModel;
+  itemKey: string;
   excludePresetIds?: number[];
   onRemove?: () => void;
 }
@@ -19,24 +23,34 @@ enum DiscountEnum {
 
 export const InvoiceCard = ({
   product,
+  itemKey,
   excludePresetIds = [],
   onRemove,
 }: InvoiceCardProp) => {
-  const productId = product.product.product_ID;
-  const variantName = product.variant.variant_Name;
-  const [discount, setDiscount] = useState<DiscountEnum>(DiscountEnum.MANUAL);
+  // ─── Single source of truth: read this card's state from the global store ──
+  const { data: payloadData = [] } = useSelectedPayloadInvoiceQuery();
+  const myPayload = payloadData.find(
+    (p) => p.invoice.itemKey === itemKey,
+  )?.invoice;
+
+  // Derived values — no useState for anything tracked in the payload
+  const selectedPresetId = myPayload?.preset_ID ?? null;
+  const price = myPayload?.unit_price ?? 0;
+  const quantity = myPayload?.unit_quantity ?? 0;
+  const discountValue = myPayload?.discount ?? 0;
+  const discount =
+    (myPayload?.isDiscountPercentage ?? false)
+      ? DiscountEnum.PERCENTAGE
+      : DiscountEnum.MANUAL;
+  const selectedSupplementPresetIds = myPayload?.supplement_Preset_IDs ?? [];
+  const isAutoReplenish = myPayload?.auto_Replenish ?? false;
+
+  // Pure UI state — not tracked in the invoice payload, no useEffect needed
   const [isSupplierPriceSelected, setIsSupplierPriceSelected] =
     useState<boolean>(true);
-  const [price, setPrice] = useState<number>(0);
-  const [quantity, setQuantity] = useState<number>(0);
-  const [discountValue, setDiscountValue] = useState<number>(0);
   const [isSupplementPresetChecked, setIsSupplementPresetChecked] =
     useState<boolean>(false);
-  const [isAutoReplenish, setIsAutoReplenish] = useState<boolean>(false);
-  const [selectedSupplementPresetIds, setSelectedSupplementPresetIds] =
-    useState<number[]>([]);
-  const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
-  const [selectedUnitLevel, setSelectedUnitLevel] = useState<number>(1);
+
   const {
     UPDATE_INVOICE_PAYLOAD_PRESET,
     UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS,
@@ -49,117 +63,76 @@ export const InvoiceCard = ({
     UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH,
   } = useInvoicePayloadQuery();
 
-  console.log(product);
-
   const selectedPreset = product.unitPresets?.find(
     (p) => p.preset_ID === selectedPresetId,
   );
 
-  // Helper function to get supplier price from presetPricing based on unit level
-  const getSupplierPrice = (): number => {
-    if (!selectedPreset) return 0;
-    const presetPricing = (selectedPreset as any).presetPricing;
-    if (!presetPricing) return 0;
+  // Derive the active unit level from the stored uom_ID
+  const selectedUnitLevel =
+    (myPayload?.uom_ID
+      ? selectedPreset?.preset.presetLevels.find(
+          (l) => l.uoM_ID === myPayload.uom_ID,
+        )?.level
+      : undefined) ?? 1;
 
-    const pricingForLevel = presetPricing.find(
-      (p: any) => p.level === selectedUnitLevel,
+  // ─── Helpers ───────────────────────────────────────────────────────────────
+
+  const getSupplierPrice = (
+    preset = selectedPreset,
+    level = selectedUnitLevel,
+  ): number => {
+    if (!preset) return 0;
+    const presetPricing = (preset as any).presetPricing;
+    if (!presetPricing) return 0;
+    return (
+      presetPricing.find((p: any) => p.level === level)?.price_Per_Unit ?? 0
     );
-    return pricingForLevel?.price_Per_Unit || 0;
+  };
+
+  const calcTotal = (
+    qty: number,
+    p: number,
+    dv: number,
+    dt: DiscountEnum,
+  ): number => {
+    const subtotal = qty * p;
+    if (dt === DiscountEnum.PERCENTAGE) return subtotal - subtotal * (dv / 100);
+    return Math.max(0, subtotal - dv);
   };
 
   const getStockIndicator = (preset: (typeof product.unitPresets)[0]) => {
     const presetQuantity = preset.main_Unit_Quantity ?? 0;
-
-    if (presetQuantity === 0) {
-      return "⚫"; // Gray indicator (no stock)
-    } else if (presetQuantity <= preset.very_Low_Stock_Level!) {
-      return "🔴"; // Red indicator (very low stock)
-    } else if (presetQuantity <= preset.low_Stock_Level!) {
-      return "🟡"; // Yellow indicator (low stock)
-    } else {
-      return "🟢"; // Green indicator (adequate stock)
-    }
+    if (presetQuantity === 0) return "⚫";
+    if (presetQuantity <= preset.very_Low_Stock_Level!) return "🔴";
+    if (presetQuantity <= preset.low_Stock_Level!) return "🟡";
+    return "🟢";
   };
 
-  const handlePresetChange = (presetId: number) => {
-    setSelectedPresetId(presetId);
-    UPDATE_INVOICE_PAYLOAD_PRESET(productId, variantName, presetId);
-    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(productId, variantName, []);
-    setQuantity(0);
-    setIsSupplementPresetChecked(false);
-    setSelectedSupplementPresetIds([]);
-    setSelectedUnitLevel(1); // Reset to first unit level
-    // Price will update via useEffect
-  };
-
-  const handleUnitLevelChange = (levelNumber: number) => {
-    setSelectedUnitLevel(levelNumber);
-    setIsSupplementPresetChecked(false);
-    setSelectedSupplementPresetIds([]);
-    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(productId, variantName, []);
-  };
-
-  // Calculate subtotal and apply discount
-  const calculateTotal = (): number => {
-    const subtotal = quantity * price;
-
-    if (discount === DiscountEnum.PERCENTAGE) {
-      // Apply percentage discount
-      const discountAmount = subtotal * (discountValue / 100);
-      return subtotal - discountAmount;
-    } else {
-      // Apply manual discount
-      return Math.max(0, subtotal - discountValue);
-    }
-  };
-
-  const calculateDeficit = (): number => {
-    const availableStockInSelectedUnit = calculateAvailableStock();
-    return Math.max(0, quantity - availableStockInSelectedUnit);
-  };
-
-  const calculateAvailableStock = () => {
+  const calculateAvailableStock = (): number => {
     if (!selectedPreset) return 0;
 
     const presetQuantities = (selectedPreset as any).presetQuantities as
       | Array<{ level: number; remaining_Quantity?: number }>
       | undefined;
 
-    if (presetQuantities?.length) {
-      const levelOneQuantity =
-        presetQuantities.find((q) => q.level === 1)?.remaining_Quantity ?? 0;
-
-      const presetLevels = [...selectedPreset.preset.presetLevels].sort(
-        (a, b) => a.level - b.level,
-      );
-
-      let availableStock = levelOneQuantity;
-
-      for (const level of presetLevels) {
-        if (level.level === 1) continue;
-        if (level.level > selectedUnitLevel) break;
-
-        availableStock *= level.conversion_Factor;
-      }
-
-      return Math.floor(availableStock);
-    }
-
     const presetLevels = [...selectedPreset.preset.presetLevels].sort(
       (a, b) => a.level - b.level,
     );
 
-    let availableStock = product.product.quantity ?? 0;
+    let stock = presetQuantities?.length
+      ? (presetQuantities.find((q) => q.level === 1)?.remaining_Quantity ?? 0)
+      : (product.product.quantity ?? 0);
 
     for (const level of presetLevels) {
       if (level.level === 1) continue;
       if (level.level > selectedUnitLevel) break;
-
-      availableStock *= level.conversion_Factor;
+      stock *= level.conversion_Factor;
     }
-
-    return Math.floor(availableStock);
+    return Math.floor(stock);
   };
+
+  const calculateDeficit = (): number =>
+    Math.max(0, quantity - calculateAvailableStock());
 
   const getCompatiblePresetsWithStock = () => {
     if (!selectedPreset) return [];
@@ -167,7 +140,6 @@ export const InvoiceCard = ({
     const selectedLevelMeta = selectedPreset.preset.presetLevels.find(
       (level) => level.level === selectedUnitLevel,
     );
-
     if (!selectedLevelMeta) return [];
 
     const targetUomId = selectedLevelMeta.uoM_ID;
@@ -180,11 +152,9 @@ export const InvoiceCard = ({
         const sortedLevels = [...otherPreset.preset.presetLevels].sort(
           (a, b) => a.level - b.level,
         );
-
         const targetLevel = sortedLevels.find(
           (level) => level.uoM_ID === targetUomId,
         );
-
         if (!targetLevel) return null;
 
         const presetQuantities = (otherPreset as any).presetQuantities as
@@ -193,16 +163,13 @@ export const InvoiceCard = ({
 
         const levelOneQuantity =
           presetQuantities?.find((q) => q.level === 1)?.remaining_Quantity ?? 0;
-
         if (levelOneQuantity <= 0) return null;
 
-        let availableInTargetUnit = levelOneQuantity;
-
+        let available = levelOneQuantity;
         for (const level of sortedLevels) {
           if (level.level === 1) continue;
           if (level.level > targetLevel.level) break;
-
-          availableInTargetUnit *= level.conversion_Factor;
+          available *= level.conversion_Factor;
         }
 
         return {
@@ -211,7 +178,7 @@ export const InvoiceCard = ({
             .map((level) => level.unitOfMeasure.uom_Name)
             .join(" > "),
           unitName: targetLevel.unitOfMeasure.uom_Name,
-          availableStock: Math.floor(availableInTargetUnit),
+          availableStock: Math.floor(available),
         };
       })
       .filter(
@@ -227,167 +194,138 @@ export const InvoiceCard = ({
   };
 
   const compatiblePresetsWithStock = getCompatiblePresetsWithStock();
+  const findAvailablePreset = () => compatiblePresetsWithStock.length;
 
-  // const findAvailablePresetQuantity = () => {
-  //   if (!selectedPreset) return 0;
+  // ─── Event handlers — direct payload updates, no useEffect ────────────────
 
-  //   const selectedLevelMeta = selectedPreset.preset.presetLevels.find(
-  //     (level) => level.level === selectedUnitLevel,
-  //   );
+  const handlePresetChange = (presetId: number) => {
+    const newPreset = product.unitPresets?.find(
+      (p) => p.preset_ID === presetId,
+    );
+    const level1 = newPreset?.preset.presetLevels.find((l) => l.level === 1);
 
-  //   if (!selectedLevelMeta) return 0;
+    UPDATE_INVOICE_PAYLOAD_PRESET(itemKey, presetId);
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, []);
+    UPDATE_INVOICE_PAYLOAD_QUANTITY(itemKey, 0);
 
-  //   const targetUomId = selectedLevelMeta.uoM_ID;
-  //   let totalAvailable = 0;
+    if (level1) {
+      UPDATE_INVOICE_PAYLOAD_UNIT(
+        itemKey,
+        level1.unitOfMeasure.uom_Name,
+        level1.uoM_ID,
+      );
+    }
 
-  //   for (const otherPreset of product.unitPresets ?? []) {
-  //     if (otherPreset.preset_ID === selectedPreset.preset_ID) continue;
-
-  //     const sortedLevels = [...otherPreset.preset.presetLevels].sort(
-  //       (a, b) => a.level - b.level,
-  //     );
-
-  //     const targetLevel = sortedLevels.find(
-  //       (level) => level.uoM_ID === targetUomId,
-  //     );
-
-  //     if (!targetLevel) continue;
-
-  //     const presetQuantities = (otherPreset as any).presetQuantities as
-  //       | Array<{ level: number; remaining_Quantity?: number }>
-  //       | undefined;
-
-  //     if (!presetQuantities?.length) continue;
-
-  //     const levelOneQuantity =
-  //       presetQuantities.find((q) => q.level === 1)?.remaining_Quantity ?? 0;
-
-  //     if (levelOneQuantity <= 0) continue;
-
-  //     let availableInTargetUnit = levelOneQuantity;
-
-  //     for (const level of sortedLevels) {
-  //       if (level.level === 1) continue;
-  //       if (level.level > targetLevel.level) break;
-
-  //       availableInTargetUnit *= level.conversion_Factor;
-  //     }
-
-  //     totalAvailable += Math.floor(availableInTargetUnit);
-  //   }
-
-  //   return totalAvailable;
-  // };
-
-  const findAvailablePreset = () => {
-    return compatiblePresetsWithStock.length;
+    const newPrice = isSupplierPriceSelected
+      ? getSupplierPrice(newPreset, 1)
+      : price;
+    UPDATE_INVOICE_PAYLOAD_PRICE(itemKey, newPrice);
+    UPDATE_INVOICE_PAYLOAD_TOTAL(
+      itemKey,
+      calcTotal(0, newPrice, discountValue, discount),
+    );
+    setIsSupplementPresetChecked(false);
   };
 
-  // Initialize state from product if it has selectedPreset
-  useEffect(() => {
-    const typedProduct = product as any;
-    if (typedProduct.selectedPreset) {
-      setSelectedPresetId(typedProduct.selectedPreset.preset_ID);
-      UPDATE_INVOICE_PAYLOAD_PRESET(
-        productId,
-        variantName,
-        typedProduct.selectedPreset.preset_ID,
-      );
-      UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(productId, variantName, []);
-      setQuantity(typedProduct.selectedPreset.main_Unit_Quantity || 0);
-    }
-  }, [
-    product,
-    productId,
-    variantName,
-    UPDATE_INVOICE_PAYLOAD_PRESET,
-    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS,
-  ]);
-
-  useEffect(() => {
-    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(
-      productId,
-      variantName,
-      selectedSupplementPresetIds,
-    );
-  }, [
-    productId,
-    variantName,
-    selectedSupplementPresetIds,
-    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS,
-  ]);
-
-  // Update price when preset changes, unit level changes, or when switching to supplier price mode
-  useEffect(() => {
-    if (selectedPreset && isSupplierPriceSelected) {
-      const supplierPrice = getSupplierPrice();
-      setPrice(supplierPrice);
-    }
-  }, [selectedPreset, selectedUnitLevel, isSupplierPriceSelected]);
-
-  useEffect(() => {
+  const handleUnitLevelChange = (levelNumber: number) => {
     if (!selectedPreset) return;
-
-    const unitLevel = selectedPreset.preset.presetLevels.find(
-      (level) => level.level === selectedUnitLevel,
+    const levelMeta = selectedPreset.preset.presetLevels.find(
+      (l) => l.level === levelNumber,
     );
-
-    if (!unitLevel) return;
+    if (!levelMeta) return;
 
     UPDATE_INVOICE_PAYLOAD_UNIT(
-      productId,
-      variantName,
-      unitLevel.unitOfMeasure.uom_Name,
-      unitLevel.uoM_ID,
+      itemKey,
+      levelMeta.unitOfMeasure.uom_Name,
+      levelMeta.uoM_ID,
     );
-  }, [
-    productId,
-    variantName,
-    selectedPreset,
-    selectedUnitLevel,
-    UPDATE_INVOICE_PAYLOAD_UNIT,
-  ]);
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, []);
+    setIsSupplementPresetChecked(false);
 
-  useEffect(() => {
-    UPDATE_INVOICE_PAYLOAD_QUANTITY(productId, variantName, quantity);
-  }, [productId, variantName, quantity, UPDATE_INVOICE_PAYLOAD_QUANTITY]);
+    if (isSupplierPriceSelected) {
+      const newPrice = getSupplierPrice(selectedPreset, levelNumber);
+      UPDATE_INVOICE_PAYLOAD_PRICE(itemKey, newPrice);
+      UPDATE_INVOICE_PAYLOAD_TOTAL(
+        itemKey,
+        calcTotal(quantity, newPrice, discountValue, discount),
+      );
+    }
+  };
 
-  useEffect(() => {
-    UPDATE_INVOICE_PAYLOAD_PRICE(productId, variantName, price);
-  }, [productId, variantName, price, UPDATE_INVOICE_PAYLOAD_PRICE]);
-
-  useEffect(() => {
-    UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE(discount === DiscountEnum.PERCENTAGE);
-  }, [discount, UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE]);
-
-  useEffect(() => {
-    UPDATE_INVOICE_PAYLOAD_DISCOUNT(productId, variantName, discountValue);
-  }, [productId, variantName, discountValue, UPDATE_INVOICE_PAYLOAD_DISCOUNT]);
-
-  useEffect(() => {
-    UPDATE_INVOICE_PAYLOAD_TOTAL(productId, variantName, calculateTotal());
-  }, [
-    productId,
-    variantName,
-    quantity,
-    price,
-    discount,
-    discountValue,
-    UPDATE_INVOICE_PAYLOAD_TOTAL,
-  ]);
-
-  useEffect(() => {
-    UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH(
-      productId,
-      variantName,
-      isAutoReplenish,
+  const handleQuantityChange = (newQuantity: number) => {
+    UPDATE_INVOICE_PAYLOAD_QUANTITY(itemKey, newQuantity);
+    UPDATE_INVOICE_PAYLOAD_TOTAL(
+      itemKey,
+      calcTotal(newQuantity, price, discountValue, discount),
     );
-  }, [
-    productId,
-    variantName,
-    isAutoReplenish,
-    UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH,
-  ]);
+  };
+
+  const handlePriceChange = (newPrice: number) => {
+    UPDATE_INVOICE_PAYLOAD_PRICE(itemKey, newPrice);
+    UPDATE_INVOICE_PAYLOAD_TOTAL(
+      itemKey,
+      calcTotal(quantity, newPrice, discountValue, discount),
+    );
+  };
+
+  const handleDiscountValueChange = (newDiscount: number) => {
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT(itemKey, newDiscount);
+    UPDATE_INVOICE_PAYLOAD_TOTAL(
+      itemKey,
+      calcTotal(quantity, price, newDiscount, discount),
+    );
+  };
+
+  const handleDiscountTypeChange = (newType: DiscountEnum) => {
+    UPDATE_INVOICE_PAYLOAD_DISCOUNT_TYPE(newType === DiscountEnum.PERCENTAGE);
+    UPDATE_INVOICE_PAYLOAD_TOTAL(
+      itemKey,
+      calcTotal(quantity, price, discountValue, newType),
+    );
+  };
+
+  const handlePriceModeChange = (isSupplier: boolean) => {
+    setIsSupplierPriceSelected(isSupplier);
+    if (isSupplier) {
+      const newPrice = getSupplierPrice();
+      UPDATE_INVOICE_PAYLOAD_PRICE(itemKey, newPrice);
+      UPDATE_INVOICE_PAYLOAD_TOTAL(
+        itemKey,
+        calcTotal(quantity, newPrice, discountValue, discount),
+      );
+    }
+  };
+
+  const handleSupplementToggle = (isChecked: boolean) => {
+    setIsSupplementPresetChecked(isChecked);
+    if (isChecked) {
+      UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH(itemKey, false);
+    } else {
+      UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, []);
+    }
+  };
+
+  const handleSupplementPresetToggle = (
+    presetId: number,
+    isChecked: boolean,
+  ) => {
+    const newIds = isChecked
+      ? selectedSupplementPresetIds.includes(presetId)
+        ? selectedSupplementPresetIds
+        : [...selectedSupplementPresetIds, presetId]
+      : selectedSupplementPresetIds.filter((id) => id !== presetId);
+    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, newIds);
+  };
+
+  const handleAutoReplenishToggle = (isChecked: boolean) => {
+    UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH(itemKey, isChecked);
+    if (isChecked) {
+      setIsSupplementPresetChecked(false);
+      UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, []);
+    }
+  };
+
+  // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="p-5 border shadow-lg rounded-lg h-fit w-full max-w-120 text-xs">
@@ -447,14 +385,12 @@ export const InvoiceCard = ({
               <div className="flex">
                 <div className="relative w-full flex items-center justify-center">
                   <input
-                    // type="number"
                     className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
                     value={quantity}
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                        const newQuantity = Number(value);
-                        setQuantity(newQuantity);
+                        handleQuantityChange(Number(value));
                       }
                     }}
                     min="0"
@@ -494,15 +430,9 @@ export const InvoiceCard = ({
                         <input
                           type="checkbox"
                           checked={isSupplementPresetChecked}
-                          onChange={(e) => {
-                            const isChecked = e.target.checked;
-                            setIsSupplementPresetChecked(isChecked);
-                            if (isChecked) {
-                              setIsAutoReplenish(false);
-                            } else {
-                              setSelectedSupplementPresetIds([]);
-                            }
-                          }}
+                          onChange={(e) =>
+                            handleSupplementToggle(e.target.checked)
+                          }
                           disabled={isAutoReplenish}
                         />
                         <label className="text-red-400">
@@ -523,20 +453,12 @@ export const InvoiceCard = ({
                                 checked={selectedSupplementPresetIds.includes(
                                   preset.presetId,
                                 )}
-                                onChange={(e) => {
-                                  const isChecked = e.target.checked;
-                                  setSelectedSupplementPresetIds((prev) => {
-                                    if (isChecked) {
-                                      return prev.includes(preset.presetId)
-                                        ? prev
-                                        : [...prev, preset.presetId];
-                                    }
-
-                                    return prev.filter(
-                                      (id) => id !== preset.presetId,
-                                    );
-                                  });
-                                }}
+                                onChange={(e) =>
+                                  handleSupplementPresetToggle(
+                                    preset.presetId,
+                                    e.target.checked,
+                                  )
+                                }
                               />
                               <div className="flex gap-2 items-center">
                                 <span>{preset.path}</span>
@@ -557,14 +479,9 @@ export const InvoiceCard = ({
                     <input
                       type="checkbox"
                       checked={isAutoReplenish}
-                      onChange={(e) => {
-                        const isChecked = e.target.checked;
-                        setIsAutoReplenish(isChecked);
-                        if (isChecked) {
-                          setIsSupplementPresetChecked(false);
-                          setSelectedSupplementPresetIds([]);
-                        }
-                      }}
+                      onChange={(e) =>
+                        handleAutoReplenishToggle(e.target.checked)
+                      }
                     />
                     <label className="text-red-400">
                       Automatically replenish deficit
@@ -596,18 +513,16 @@ export const InvoiceCard = ({
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                        const newPrice = Number(value);
-                        setPrice(newPrice);
+                        handlePriceChange(Number(value));
                       }
                     }}
                   />
                   <select
                     className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
                     value={isSupplierPriceSelected ? "supplier" : "manual"}
-                    onChange={(e) => {
-                      const isSupplier = e.target.value === "supplier";
-                      setIsSupplierPriceSelected(isSupplier);
-                    }}
+                    onChange={(e) =>
+                      handlePriceModeChange(e.target.value === "supplier")
+                    }
                   >
                     <option value="supplier">Supplier Price</option>
                     <option value="manual">Manual</option>
@@ -626,7 +541,7 @@ export const InvoiceCard = ({
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                        setDiscountValue(Number(value));
+                        handleDiscountValueChange(Number(value));
                       }
                     }}
                   />
@@ -634,7 +549,7 @@ export const InvoiceCard = ({
                     className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
                     value={discount}
                     onChange={(e) =>
-                      setDiscount(e.target.value as DiscountEnum)
+                      handleDiscountTypeChange(e.target.value as DiscountEnum)
                     }
                   >
                     <option value={DiscountEnum.PERCENTAGE}>
@@ -653,7 +568,12 @@ export const InvoiceCard = ({
               <input
                 className="shadow-none drop-shadow-none bg-custom-gray w-full"
                 disabled
-                value={calculateTotal().toFixed(2)}
+                value={calcTotal(
+                  quantity,
+                  price,
+                  discountValue,
+                  discount,
+                ).toFixed(2)}
               />
             </div>
           </>

@@ -5,8 +5,13 @@ import { InventoryProductModel } from "../inventory/models/inventory.model";
 
 const InvoiceProductKey = ["invoice-product"];
 
+export type SelectedInvoiceItem = {
+  itemKey: string;
+  data: InventoryProductModel;
+};
+
 export const useSelectedProductInvoiceQuery = () => {
-  return useQuery<InventoryProductModel[]>({
+  return useQuery<SelectedInvoiceItem[]>({
     queryKey: InvoiceProductKey,
     queryFn: async () => {
       return [];
@@ -21,21 +26,28 @@ export const useSelectedInvoiceProduct = () => {
     useInvoicePayloadQuery();
 
   const ADD_PRODUCT = (data: InventoryProductModel) => {
-    queryClient.setQueryData<InventoryProductModel[]>(
+    const current =
+      queryClient.getQueryData<SelectedInvoiceItem[]>(InvoiceProductKey) ?? [];
+
+    // Guard: cannot add more cards than there are available presets for this product+variant.
+    const existingCount = current.filter(
+      (item) =>
+        item.data.product.product_ID === data.product.product_ID &&
+        item.data.variant.variant_Name === data.variant.variant_Name,
+    ).length;
+
+    if (existingCount >= (data.unitPresets?.length ?? 0)) return;
+
+    const itemKey = crypto.randomUUID();
+
+    queryClient.setQueryData<SelectedInvoiceItem[]>(
       InvoiceProductKey,
-      (old = []) => {
-        const exists = old.some(
-          (p) =>
-            p.product.product_ID === data.product.product_ID &&
-            p.variant.variant_Name === data.variant.variant_Name,
-        );
-        const next = exists ? old : [...old, data];
-        return next;
-      },
+      (old = []) => [...old, { itemKey, data }],
     );
 
     const payload: InvoiceAddPayloadModel = {
       invoice: {
+        itemKey,
         product: data.product,
         brand: data.brand,
         variant: data.variant,
@@ -57,30 +69,17 @@ export const useSelectedInvoiceProduct = () => {
     ADD_INVOICE_PAYLOAD(payload);
   };
 
-  const REMOVE_PRODUCT = (product: InventoryProductModel) => {
-    queryClient.setQueryData<InventoryProductModel[]>(
+  const REMOVE_PRODUCT = (itemKey: string) => {
+    queryClient.setQueryData<SelectedInvoiceItem[]>(
       InvoiceProductKey,
-      (old = []) => {
-        const next = old.filter(
-          (p) =>
-            !(
-              p.product.product_ID === product.product.product_ID &&
-              p.variant.variant_Name === product.variant.variant_Name
-            ),
-        );
-
-        return next;
-      },
+      (old = []) => old.filter((p) => p.itemKey !== itemKey),
     );
 
-    REMOVE_INVOICE_PAYLOAD(
-      product.product.product_ID,
-      product.variant.variant_Name,
-    );
+    REMOVE_INVOICE_PAYLOAD(itemKey);
   };
 
   const CLEAR_TO_INVOICE_LIST = () => {
-    queryClient.setQueryData<InventoryProductModel[]>(InvoiceProductKey, []);
+    queryClient.setQueryData<SelectedInvoiceItem[]>(InvoiceProductKey, []);
     CLEAR_INVOICE_PAYLOAD();
   };
 

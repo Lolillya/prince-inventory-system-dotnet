@@ -12,16 +12,16 @@ import { useInvoiceBatchQuery } from "@/features/invoice/invoice-get-all-batches
 import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { InvoiceCard } from "./_components/invoice-card-copy";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
+import { useSelectedPayloadInvoiceQuery } from "@/features/invoice/invoice-create-payload";
 
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
   const { data: inventoryData } = UseInventoryQuery();
+  const { data: payloadData = [] } = useSelectedPayloadInvoiceQuery();
   const { ADD_PRODUCT, REMOVE_PRODUCT, CLEAR_TO_INVOICE_LIST } =
     useSelectedInvoiceProduct();
   const { isLoading, error } = useInvoiceBatchQuery();
-
-  // console.log(restockBatches);
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,8 +39,25 @@ const NewInvoicePage = () => {
     setIsModalOpen((prev) => !prev);
   };
 
-  const handleRemoveProduct = (product: InventoryProductModel) => {
-    REMOVE_PRODUCT(product);
+  const handleRemoveProduct = (itemKey: string) => {
+    REMOVE_PRODUCT(itemKey);
+  };
+
+  // For each invoice card, collect preset_IDs selected by OTHER cards of the same product+variant.
+  const getExcludedPresetIds = (
+    itemKey: string,
+    productId: number,
+    variantName: string,
+  ): number[] => {
+    return payloadData
+      .filter(
+        (p) =>
+          p.invoice.itemKey !== itemKey &&
+          p.invoice.product.product_ID === productId &&
+          p.invoice.variant.variant_Name === variantName &&
+          p.invoice.preset_ID !== null,
+      )
+      .map((p) => p.invoice.preset_ID as number);
   };
 
   return (
@@ -68,11 +85,17 @@ const NewInvoicePage = () => {
                 <NoSelectedState />
               ) : (
                 <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
-                  {selectedInvoices.map((p, i) => (
+                  {selectedInvoices.map((item) => (
                     <InvoiceCard
-                      product={p}
-                      onRemove={() => handleRemoveProduct(p)}
-                      key={i}
+                      product={item.data}
+                      itemKey={item.itemKey}
+                      excludePresetIds={getExcludedPresetIds(
+                        item.itemKey,
+                        item.data.product.product_ID,
+                        item.data.variant.variant_Name,
+                      )}
+                      onRemove={() => handleRemoveProduct(item.itemKey)}
+                      key={item.itemKey}
                     />
                   ))}
                 </div>

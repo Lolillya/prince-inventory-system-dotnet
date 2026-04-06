@@ -1,5 +1,6 @@
 export type InvoiceAddPayloadModel = {
   invoice: {
+    itemKey: string;
     product: Product;
     brand: Brand;
     category: Category;
