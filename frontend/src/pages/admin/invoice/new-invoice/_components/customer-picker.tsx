@@ -1,91 +1,29 @@
-import { useCustomersQuery } from "@/features/customers/customer-get-all.query";
-import {
-  updateSelectedCustomer,
-  useSelectedInvoiceCustomer,
-} from "@/features/invoice/invoice-customer.state";
-import { setInvoiceTermQuery } from "@/features/invoice/invoice-term.state";
+import { useState } from "react";
 
-import { useState, useRef, useEffect } from "react";
-
-type CustomerPickerProps = {
-  customersData?: any[];
-  placeholder?: string;
-};
-
-export const CustomerPicker = ({
-  customersData,
-  placeholder,
-}: CustomerPickerProps) => {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  const { data: fetchedCustomers } = useCustomersQuery();
-  const { data: selectedCustomer } = useSelectedInvoiceCustomer();
-  const { UPDATE_SELECTED_CUSTOMER } = updateSelectedCustomer();
-  const { UPDATE_INVOICE_TERM } = setInvoiceTermQuery();
-  const list = customersData ?? fetchedCustomers ?? [];
-
-  console.log(selectedCustomer);
-
-  useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      if (!ref.current) return;
-      if (!ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    window.addEventListener("click", onClick);
-    return () => window.removeEventListener("click", onClick);
-  }, []);
-
-  const filtered = list?.filter((c) =>
-    String(c.companyName).toLowerCase().includes(query.toLowerCase())
-  );
+export const CustomerPicker = () => {
+  const [customer, setCustomer] = useState("Prince Educational Supplies Inc.");
+  const [term, setTerm] = useState("Net 30");
 
   return (
-    <div className="flex flex-col w-full gap-2 relative" ref={ref}>
-      <label className="text-vesper-gray">Customer</label>
-      <div className="flex w-full">
+    <div className="flex flex-col w-full gap-2">
+      <label className="text-sm font-medium text-gray-700">Customer &amp; Term</label>
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-2 w-full">
         <input
-          className="w-full rounded-r-none"
-          placeholder={placeholder ?? "Customer Name"}
-          value={selectedCustomer?.companyName ?? ""}
-          onFocus={() => setOpen(true)}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
+          className="w-full rounded-lg border border-gray-300 bg-white"
+          value={customer}
+          onChange={(e) => setCustomer(e.target.value)}
+          placeholder="Customer Name"
         />
-        <input
-          placeholder="Term by days"
-          type="number"
-          className="rounded-l-none"
-          onChange={(e) => UPDATE_INVOICE_TERM(Number(e.target.value))}
-        />
+        <select
+          className="w-full rounded-lg border border-gray-300 bg-gray-50"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+        >
+          <option value="Net 30">Net 30</option>
+          <option value="Net 15">Net 15</option>
+          <option value="Due on Receipt">Due on Receipt</option>
+        </select>
       </div>
-
-      {open && (
-        <div className="absolute w-full bg-white top-20 max-h-64 overflow-y-auto border shadow-lg rounded-lg p-3">
-          {filtered && filtered.length > 0 ? (
-            filtered.map((customer, index) => (
-              <div
-                key={index}
-                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer"
-                onClick={() => {
-                  setQuery("");
-                  setOpen(false);
-                  UPDATE_SELECTED_CUSTOMER(customer);
-                }}
-              >
-                <div className="font-semibold">{customer.companyName}</div>
-                <div className="text-xs text-vesper-gray">{customer.email}</div>
-              </div>
-            ))
-          ) : (
-            <div className="text-vesper-gray">No customers found</div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
