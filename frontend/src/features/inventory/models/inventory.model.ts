@@ -47,7 +47,20 @@ type UnitPresets = {
   low_Stock_Level?: number;
   very_Low_Stock_Level?: number;
   main_Unit_Quantity?: number;
+  restock_Number?: string;
   presetPricing: PresetPricing[];
+  presetQuantities: PresetQuantity[];
+};
+
+type PresetQuantity = {
+  quantity_ID: number;
+  level: number;
+  uoM_ID: number;
+  unitName: string;
+  original_Quantity: number;
+  remaining_Quantity: number;
+  created_At: string;
+  updated_At: string;
 };
 
 type Preset = {
