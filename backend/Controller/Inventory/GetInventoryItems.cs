@@ -108,6 +108,11 @@ namespace backend.Controller.Inventory
                                 pup.Low_Stock_Level,
                                 pup.Very_Low_Stock_Level,
                                 pup.Main_Unit_Quantity,
+                                Restock_Number = _db.RestockLineItems
+                                    .Where(rli => rli.Product_ID == i.Product_ID && rli.Preset_ID == pup.Preset_ID)
+                                    .OrderByDescending(rli => rli.LineItem_ID)
+                                    .Select(rli => rli.RestockBatch.Restock.Restock_Number)
+                                    .FirstOrDefault(),
                                 Preset = new
                                 {
                                     pup.Preset.Preset_ID,
