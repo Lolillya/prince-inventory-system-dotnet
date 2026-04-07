@@ -19,6 +19,7 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import { EditProductModal } from "./_components/edit-product.modal";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
 import { PresetSelectorModal } from "./_components/preset-selector.modal";
+import { ProductPackagingModal } from "./_components/product-packaging.modal";
 import {
   Archive,
   List,
@@ -50,6 +51,7 @@ const InventoryPage = () => {
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
   const [isPresetEditorOpen, setIsPresetEditorOpen] = useState(false);
   const [isPresetSelectorOpen, setIsPresetSelectorOpen] = useState(false);
+  const [isProductPackagingOpen, setIsProductPackagingOpen] = useState(false);
   const [isFromEditModal, setIsFromEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const setSelectedProduct = useSetSelectedProduct();
@@ -177,6 +179,12 @@ const InventoryPage = () => {
         <PresetSelectorModal handlePresetSelector={handlePresetSelector} />
       </Activity>
 
+      <Activity mode={isProductPackagingOpen ? "visible" : "hidden"}>
+        <ProductPackagingModal
+          onClose={() => setIsProductPackagingOpen(false)}
+        />
+      </Activity>
+
       {isEditProductModalOpen && selectedProduct && (
         <EditProductModal
           setIsEditProductModalOpen={setIsEditProductModalOpen}
@@ -264,7 +272,7 @@ const InventoryPage = () => {
             <div className="flex gap-2 items-center">
               <div
                 className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
-                // onClick={handlePresetEditor}
+                onClick={() => setIsProductPackagingOpen(true)}
               >
                 <Archive />
                 <label className="cursor-pointer">Product Packaging</label>
