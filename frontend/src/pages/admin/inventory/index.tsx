@@ -19,11 +19,24 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import { EditProductModal } from "./_components/edit-product.modal";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
 import { PresetSelectorModal } from "./_components/preset-selector.modal";
-import { PackageOpen, Star } from "lucide-react";
+import {
+  Archive,
+  List,
+  ListCollapse,
+  ListOrdered,
+  PackageOpen,
+  ReceiptText,
+  Star,
+} from "lucide-react";
 import {
   AddProductAsFavoriteService,
   RemoveProductFromFavoritesService,
 } from "@/features/inventory/favorites/add-product-as-favorite.service";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const InventoryPage = () => {
   const {
@@ -193,9 +206,34 @@ const InventoryPage = () => {
           </div>
 
           <div className="flex w-full justify-end gap-2">
-            <div className="bg-custom-gray p-3 rounded-lg inset-shadow-sm border">
-              <FileDownIcon />
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <div className="bg-custom-gray p-3 rounded-lg inset-shadow-sm border">
+                  <FileDownIcon />
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-fit">
+                <ul className="flex flex-col gap-2">
+                  <li className="text-sm cursor-pointer hover:underline rounded-sm border p-1 flex gap-1 items-center">
+                    <List size={16} />
+                    Export Masterlist
+                  </li>
+                  <li className="text-sm cursor-pointer hover:underline rounded-sm border p-1 flex gap-1 items-center">
+                    <ListOrdered size={16} />
+                    Export Pricelist
+                  </li>
+                  <li className="text-sm cursor-pointer hover:underline rounded-sm border p-1 flex gap-1 items-center">
+                    <ListCollapse size={16} />
+                    Export Stocklist
+                  </li>
+                  <li className="text-sm cursor-pointer hover:underline rounded-sm border p-1 flex gap-1 items-center">
+                    <ReceiptText size={16} />
+                    Generate Quotation
+                  </li>
+                </ul>
+              </PopoverContent>
+            </Popover>
+
             <button
               className="flex items-center justify-center gap-2"
               onClick={() => setIsModalOpen(!isModalOpen)}
@@ -223,12 +261,22 @@ const InventoryPage = () => {
               </span>
             </div>
 
-            <div
-              className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
-              onClick={handlePresetEditor}
-            >
-              <PackageOpen />
-              <label className="cursor-pointer">Packaging Presets</label>
+            <div className="flex gap-2 items-center">
+              <div
+                className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+                // onClick={handlePresetEditor}
+              >
+                <Archive />
+                <label className="cursor-pointer">Product Packaging</label>
+              </div>
+
+              <div
+                className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+                onClick={handlePresetEditor}
+              >
+                <PackageOpen />
+                <label className="cursor-pointer">Packaging Presets</label>
+              </div>
             </div>
           </div>
 
