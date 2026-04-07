@@ -29,15 +29,20 @@ import {
   ReceiptText,
   Star,
 } from "lucide-react";
+import jsPDF from "jspdf";
 import {
   AddProductAsFavoriteService,
   RemoveProductFromFavoritesService,
 } from "@/features/inventory/favorites/add-product-as-favorite.service";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const InventoryPage = () => {
   const {
@@ -159,6 +164,103 @@ const InventoryPage = () => {
     );
   };
 
+  const buildProductDescription = (item: InventoryProductModel) => {
+    return `${item.product.product_Name}-${item.brand.brandName}-${item.variant.variant_Name}`;
+  };
+
+  const exportMasterlistPdf = (
+    includePackagingHierarchy: boolean,
+    includeNoStock: boolean,
+  ) => {
+    if (!inventory || inventory.length === 0) return;
+
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const xCode = 15;
+    const xDescription = 65;
+    const xUom = 160;
+    const contentBottom = pageHeight - 12;
+
+    let y = 18;
+
+    const drawHeader = () => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("Inventory Masterlist", xCode, y);
+
+      y += 10;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("Product Code", xCode, y);
+      doc.text("Description", xDescription, y);
+      doc.text("UOM", xUom, y);
+
+      y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10.5);
+    };
+
+    const ensureSpace = (neededHeight: number) => {
+      if (y + neededHeight > contentBottom) {
+        doc.addPage();
+        y = 18;
+        drawHeader();
+      }
+    };
+
+    drawHeader();
+
+    const source = inventory.filter((item) => {
+      if (includeNoStock) return true;
+      return item.product.quantity > 0;
+    });
+
+    source.forEach((item) => {
+      const sortedLevels = [...(item.unitPresets[0]?.preset.presetLevels ?? [])].sort(
+        (a, b) => a.level - b.level,
+      );
+
+      const primaryUom = sortedLevels[0]?.unitOfMeasure.uom_Name ?? "-";
+
+      const codeLines = doc.splitTextToSize(item.product.product_Code, 45);
+      const descLines = doc.splitTextToSize(buildProductDescription(item), 85);
+      const maxLines = Math.max(codeLines.length, descLines.length);
+      const blockHeight = (maxLines * 5) + 2;
+
+      ensureSpace(blockHeight);
+      doc.text(codeLines, xCode, y);
+      doc.text(descLines, xDescription, y);
+      doc.text(primaryUom, xUom, y);
+      y += blockHeight;
+
+      if (includePackagingHierarchy && sortedLevels.length > 1) {
+        sortedLevels.slice(1).forEach((level) => {
+          ensureSpace(5);
+          doc.text(
+            `└─ ${level.unitOfMeasure.uom_Name} (x${level.conversion_Factor})`,
+            xUom,
+            y,
+          );
+          y += 5;
+        });
+      }
+
+      y += 2;
+    });
+
+    const hierarchySuffix = includePackagingHierarchy
+      ? "with-packaging-hierarchy"
+      : "without-packaging-hierarchy";
+    const stockSuffix = includeNoStock ? "include-no-stock" : "exclude-no-stock";
+
+    doc.save(`inventory-masterlist-${hierarchySuffix}-${stockSuffix}.pdf`);
+  };
+
   return (
     <section>
       {/* ADD PRODUCT MODAL */}
@@ -214,33 +316,42 @@ const InventoryPage = () => {
           </div>
 
           <div className="flex w-full justify-end gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <div className="bg-custom-gray p-3 rounded-lg inset-shadow-sm border">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="bg-custom-gray p-3 rounded-lg inset-shadow-sm border cursor-pointer">
                   <FileDownIcon />
                 </div>
-              </PopoverTrigger>
-              <PopoverContent className="w-fit">
-                <ul className="flex flex-col gap-2">
-                  <li className="text-sm cursor-pointer hover:underline rounded-sm border p-1 flex gap-1 items-center">
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="gap-2">
                     <List size={16} />
                     Export Masterlist
-                  </li>
-                  <li className="text-sm cursor-pointer hover:underline rounded-sm border p-1 flex gap-1 items-center">
-                    <ListOrdered size={16} />
-                    Export Pricelist
-                  </li>
-                  <li className="text-sm cursor-pointer hover:underline rounded-sm border p-1 flex gap-1 items-center">
-                    <ListCollapse size={16} />
-                    Export Stocklist
-                  </li>
-                  <li className="text-sm cursor-pointer hover:underline rounded-sm border p-1 flex gap-1 items-center">
-                    <ReceiptText size={16} />
-                    Generate Quotation
-                  </li>
-                </ul>
-              </PopoverContent>
-            </Popover>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-56">
+                    <DropdownMenuItem onClick={() => exportMasterlistPdf(true, true)}>
+                      Include no stock
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportMasterlistPdf(true, false)}>
+                      Exclude no stock
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+
+                <DropdownMenuItem className="gap-2">
+                  <ListOrdered size={16} />
+                  Export Pricelist
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2">
+                  <ListCollapse size={16} />
+                  Export Stocklist
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2">
+                  <ReceiptText size={16} />
+                  Generate Quotation
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <button
               className="flex items-center justify-center gap-2"
