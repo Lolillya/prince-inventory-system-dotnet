@@ -1,9 +1,6 @@
 import { XIcon } from "@/icons";
 import { InvoiceTable } from "./invoice-modal-table";
-import { useCustomersQuery } from "@/features/customers/customer-get-all.query";
 import { CustomerPicker } from "./customer-picker";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface CreateInvoiceModalProps {
   createInvoice: () => void;
@@ -12,21 +9,8 @@ interface CreateInvoiceModalProps {
 export const CreateInvoiceModal = ({
   createInvoice,
 }: CreateInvoiceModalProps) => {
-  const navigate = useNavigate();
-  const { data: customersData } = useCustomersQuery();
-  const [invoiceCreated, setInvoiceCreated] = useState(false);
-
   const handleClose = () => {
-    setInvoiceCreated(false);
     createInvoice();
-  };
-
-  const handleInvoiceSuccess = () => {
-    setInvoiceCreated(true);
-    setTimeout(() => {
-      handleClose();
-      navigate("/admin/restock");
-    }, 1500);
   };
 
   return (
@@ -36,15 +20,14 @@ export const CreateInvoiceModal = ({
         if (e.target === e.currentTarget) handleClose();
       }}
     >
-      <div className="w-3/6 h-4/5 bg-white px-20 py-10 rounded-lg border shadow-lg">
+      <div className="w-4/5 h-4/5 bg-white px-10 py-8 rounded-lg border shadow-lg">
         <div className="flex flex-col gap-5 flex-1 h-full">
           {/* HEADER */}
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">Order Confirmation</h2>
-              <span className="text-vesper-gray text-sm tracking-wider">
-                Invoice Details
-              </span>
+              <h2 className="text-2xl font-semibold tracking-wide">
+                Invoice Confirmation #XXXXX
+              </h2>
             </div>
             <div
               onClick={handleClose}
@@ -54,25 +37,11 @@ export const CreateInvoiceModal = ({
             </div>
           </div>
 
-          {invoiceCreated ? (
-            <div className="flex-1 flex items-center justify-center flex-col gap-4">
-              <div className="text-4xl">✅</div>
-              <h3 className="text-xl font-semibold text-green-600">
-                Invoice Created Successfully!
-              </h3>
-              <p className="text-vesper-gray text-sm">
-                Closing modal in a moment...
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* SEARCH CONTAINER */}
-              <CustomerPicker customersData={customersData} />
+          {/* SEARCH CONTAINER */}
+          <CustomerPicker />
 
-              {/* TABLE CONTAINER */}
-              <InvoiceTable onSuccess={handleInvoiceSuccess} />
-            </>
-          )}
+          {/* TABLE CONTAINER */}
+          <InvoiceTable />
         </div>
       </div>
     </div>
