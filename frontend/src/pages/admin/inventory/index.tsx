@@ -261,6 +261,137 @@ const InventoryPage = () => {
     doc.save(`inventory-masterlist-${hierarchySuffix}-${stockSuffix}.pdf`);
   };
 
+  const exportPricelistPdf = (includePackagingHierarchy: boolean) => {
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const priceRows = [
+      {
+        code: "1001",
+        description: "Bottle-Acme-500ml",
+        levels: [
+          { uom: "Case", price: "120.00" },
+          { uom: "Pack (x12)", price: "12.00" },
+          { uom: "Piece (x1)", price: "1.20" },
+        ],
+      },
+      {
+        code: "1002",
+        description: "Snack-Bravo-Salted",
+        levels: [
+          { uom: "Box", price: "80.00" },
+          { uom: "Pack (x8)", price: "10.00" },
+          { uom: "Piece (x20)", price: "0.50" },
+        ],
+      },
+      {
+        code: "1003",
+        description: "Cleaner-Zen-Lemon",
+        levels: [
+          { uom: "Drum", price: "300.00" },
+          { uom: "Bottle (x6)", price: "50.00" },
+          { uom: "Capful (x30)", price: "2.00" },
+        ],
+      },
+      {
+        code: "1004",
+        description: "Cable-Delta-2m",
+        levels: [{ uom: "Piece", price: "15.00" }],
+      },
+      {
+        code: "1005",
+        description: "Paper-Echo-A4",
+        levels: [
+          { uom: "Pallet", price: "500.00" },
+          { uom: "Carton (x40)", price: "12.50" },
+          { uom: "Ream (x5)", price: "2.50" },
+          { uom: "Sheet (x500)", price: "0.01" },
+        ],
+      },
+    ];
+
+    const flattenedRows = priceRows.flatMap((product) => {
+      return product.levels.map((level, index) => ({
+        code: index === 0 ? product.code : "",
+        description: index === 0 ? product.description : "",
+        uom: index === 0 ? level.uom : `└─ ${level.uom}`,
+        price: level.price,
+      }));
+    });
+
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const contentBottom = pageHeight - 12;
+
+    const xCode = 12;
+    const xDesc = 58;
+    const xUom = 135;
+    const xPrice = 196;
+
+    const codeWidth = 40;
+    const descWidth = 72;
+    const uomWidth = 48;
+
+    let y = 16;
+
+    const drawHeader = () => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Price List", xCode, y);
+
+      y += 8;
+      y += 6;
+      doc.setFontSize(10.5);
+      doc.text("Product Code", xCode, y);
+      doc.text("Description", xDesc, y);
+      doc.text("UOM", xUom, y);
+      doc.text("Price", xPrice, y, { align: "right" });
+
+      y += 9;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+    };
+
+    const ensureSpace = (neededHeight: number) => {
+      if (y + neededHeight > contentBottom) {
+        doc.addPage();
+        y = 16;
+        drawHeader();
+      }
+    };
+
+    drawHeader();
+
+    flattenedRows.forEach((row) => {
+      const codeLines = row.code ? doc.splitTextToSize(row.code, codeWidth) : [""];
+      const descLines = row.description
+        ? doc.splitTextToSize(row.description, descWidth)
+        : [""];
+      const uomLines = doc.splitTextToSize(row.uom, uomWidth);
+
+      const lineCount = Math.max(codeLines.length, descLines.length, uomLines.length, 1);
+      const rowHeight = lineCount * 5 + 2;
+
+      ensureSpace(rowHeight + 1);
+
+      doc.text(codeLines, xCode, y);
+      doc.text(descLines, xDesc, y);
+      doc.text(uomLines, xUom, y);
+      doc.text(row.price, xPrice, y, { align: "right" });
+
+      y += rowHeight;
+    });
+
+    const hierarchySuffix = includePackagingHierarchy
+      ? "include-packaging-hierarchy"
+      : "exclude-packaging-hierarchy";
+
+    doc.save(`inventory-pricelist-${hierarchySuffix}.pdf`);
+  };
+
   return (
     <section>
       {/* ADD PRODUCT MODAL */}
@@ -338,10 +469,20 @@ const InventoryPage = () => {
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
 
-                <DropdownMenuItem className="gap-2">
-                  <ListOrdered size={16} />
-                  Export Pricelist
-                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="gap-2">
+                    <ListOrdered size={16} />
+                    Export Pricelist
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-64">
+                    <DropdownMenuItem onClick={() => exportPricelistPdf(true)}>
+                      Include Packaging Hierarchy
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportPricelistPdf(false)}>
+                      Exclude Packaging Hierarchy
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 <DropdownMenuItem className="gap-2">
                   <ListCollapse size={16} />
                   Export Stocklist
