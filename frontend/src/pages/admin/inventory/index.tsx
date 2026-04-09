@@ -224,16 +224,16 @@ const InventoryPage = () => {
     });
 
     source.forEach((item) => {
-      const sortedLevels = [...(item.unitPresets[0]?.preset.presetLevels ?? [])].sort(
-        (a, b) => a.level - b.level,
-      );
+      const sortedLevels = [
+        ...(item.unitPresets[0]?.preset.presetLevels ?? []),
+      ].sort((a, b) => a.level - b.level);
 
       const primaryUom = sortedLevels[0]?.unitOfMeasure.uom_Name ?? "-";
 
       const codeLines = doc.splitTextToSize(item.product.product_Code, 45);
       const descLines = doc.splitTextToSize(buildProductDescription(item), 85);
       const maxLines = Math.max(codeLines.length, descLines.length);
-      const blockHeight = (maxLines * 5) + 2;
+      const blockHeight = maxLines * 5 + 2;
 
       ensureSpace(blockHeight);
       doc.text(codeLines, xCode, y);
@@ -259,7 +259,9 @@ const InventoryPage = () => {
     const hierarchySuffix = includePackagingHierarchy
       ? "with-packaging-hierarchy"
       : "without-packaging-hierarchy";
-    const stockSuffix = includeNoStock ? "include-no-stock" : "exclude-no-stock";
+    const stockSuffix = includeNoStock
+      ? "include-no-stock"
+      : "exclude-no-stock";
 
     doc.save(`inventory-masterlist-${hierarchySuffix}-${stockSuffix}.pdf`);
   };
@@ -369,13 +371,20 @@ const InventoryPage = () => {
     drawHeader();
 
     flattenedRows.forEach((row) => {
-      const codeLines = row.code ? doc.splitTextToSize(row.code, codeWidth) : [""];
+      const codeLines = row.code
+        ? doc.splitTextToSize(row.code, codeWidth)
+        : [""];
       const descLines = row.description
         ? doc.splitTextToSize(row.description, descWidth)
         : [""];
       const uomLines = doc.splitTextToSize(row.uom, uomWidth);
 
-      const lineCount = Math.max(codeLines.length, descLines.length, uomLines.length, 1);
+      const lineCount = Math.max(
+        codeLines.length,
+        descLines.length,
+        uomLines.length,
+        1,
+      );
       const rowHeight = lineCount * 5 + 2;
 
       ensureSpace(rowHeight + 1);
@@ -410,16 +419,36 @@ const InventoryPage = () => {
     });
 
     const rows = [
-      { code: "1001", description: "Bottle-Acme-500ml", uom: "Box", quantity: "50" },
+      {
+        code: "1001",
+        description: "Bottle-Acme-500ml",
+        uom: "Box",
+        quantity: "50",
+      },
       { code: "", description: "", uom: "-- Pack (x10)", quantity: "8" },
       { code: "", description: "", uom: "-- Piece (x20)", quantity: "15" },
-      { code: "1002", description: "Snack-Bravo-Salted", uom: "Box", quantity: "30" },
+      {
+        code: "1002",
+        description: "Snack-Bravo-Salted",
+        uom: "Box",
+        quantity: "30",
+      },
       { code: "", description: "", uom: "-- Pack (x8)", quantity: "0" },
       { code: "", description: "", uom: "-- Piece (x20)", quantity: "0" },
-      { code: "1003", description: "Cleaner-Zen-Lemon", uom: "Drum", quantity: "12" },
+      {
+        code: "1003",
+        description: "Cleaner-Zen-Lemon",
+        uom: "Drum",
+        quantity: "12",
+      },
       { code: "", description: "", uom: "-- Bottle (x6)", quantity: "2" },
       { code: "", description: "", uom: "-- Capful (x30)", quantity: "0" },
-      { code: "1004", description: "Cable-Delta-2m", uom: "Piece", quantity: "120" },
+      {
+        code: "1004",
+        description: "Cable-Delta-2m",
+        uom: "Piece",
+        quantity: "120",
+      },
     ];
 
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -466,14 +495,26 @@ const InventoryPage = () => {
 
       doc.line(startX, y, startX + tableWidth, y);
 
-      doc.text(doc.splitTextToSize(row.code, colWidths.code - 4), xCode + 2, y + 7);
+      doc.text(
+        doc.splitTextToSize(row.code, colWidths.code - 4),
+        xCode + 2,
+        y + 7,
+      );
       doc.text(
         doc.splitTextToSize(row.description, colWidths.description - 4),
         xDesc + 2,
         y + 7,
       );
-      doc.text(doc.splitTextToSize(row.uom, colWidths.uom - 4), xUom + 2, y + 7);
-      doc.text(doc.splitTextToSize(row.quantity, colWidths.qty - 4), xQty + 2, y + 7);
+      doc.text(
+        doc.splitTextToSize(row.uom, colWidths.uom - 4),
+        xUom + 2,
+        y + 7,
+      );
+      doc.text(
+        doc.splitTextToSize(row.quantity, colWidths.qty - 4),
+        xQty + 2,
+        y + 7,
+      );
     });
 
     const tableBottomY = startY + headerHeight + rows.length * rowHeight;
@@ -550,10 +591,14 @@ const InventoryPage = () => {
                     Export Masterlist
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-56">
-                    <DropdownMenuItem onClick={() => exportMasterlistPdf(true, true)}>
+                    <DropdownMenuItem
+                      onClick={() => exportMasterlistPdf(true, true)}
+                    >
                       Include no stock
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => exportMasterlistPdf(true, false)}>
+                    <DropdownMenuItem
+                      onClick={() => exportMasterlistPdf(true, false)}
+                    >
                       Exclude no stock
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
@@ -620,7 +665,10 @@ const InventoryPage = () => {
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem className="gap-2">
+                <DropdownMenuItem
+                  className="gap-2"
+                  onClick={() => setIsQuotationModalOpen(true)}
+                >
                   <ReceiptText size={16} />
                   Generate Quotation
                 </DropdownMenuItem>
