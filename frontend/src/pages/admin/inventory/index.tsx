@@ -23,6 +23,7 @@ import { ProductPackagingModal } from "./_components/product-packaging.modal";
 import { QuotationGeneratorModal } from "./_components/quotation-generator.modal";
 import {
   Archive,
+  Check,
   List,
   ListCollapse,
   ListOrdered,
@@ -244,7 +245,7 @@ const InventoryPage = () => {
         sortedLevels.slice(1).forEach((level) => {
           ensureSpace(5);
           doc.text(
-            `└─ ${level.unitOfMeasure.uom_Name} (x${level.conversion_Factor})`,
+            `-- ${level.unitOfMeasure.uom_Name} (x${level.conversion_Factor})`,
             xUom,
             y,
           );
@@ -319,7 +320,7 @@ const InventoryPage = () => {
       return product.levels.map((level, index) => ({
         code: index === 0 ? product.code : "",
         description: index === 0 ? product.description : "",
-        uom: index === 0 ? level.uom : `└─ ${level.uom}`,
+        uom: index === 0 ? level.uom : `-- ${level.uom}`,
         price: level.price,
       }));
     });
@@ -392,6 +393,93 @@ const InventoryPage = () => {
       : "exclude-packaging-hierarchy";
 
     doc.save(`inventory-pricelist-${hierarchySuffix}.pdf`);
+  };
+
+  const exportStocklistPdf = (
+    filterType:
+      | "sufficient-stock"
+      | "low-stock"
+      | "very-low-stock"
+      | "no-stock"
+      | "export-stocklist",
+  ) => {
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const rows = [
+      { code: "1001", description: "Bottle-Acme-500ml", uom: "Box", quantity: "50" },
+      { code: "", description: "", uom: "-- Pack (x10)", quantity: "8" },
+      { code: "", description: "", uom: "-- Piece (x20)", quantity: "15" },
+      { code: "1002", description: "Snack-Bravo-Salted", uom: "Box", quantity: "30" },
+      { code: "", description: "", uom: "-- Pack (x8)", quantity: "0" },
+      { code: "", description: "", uom: "-- Piece (x20)", quantity: "0" },
+      { code: "1003", description: "Cleaner-Zen-Lemon", uom: "Drum", quantity: "12" },
+      { code: "", description: "", uom: "-- Bottle (x6)", quantity: "2" },
+      { code: "", description: "", uom: "-- Capful (x30)", quantity: "0" },
+      { code: "1004", description: "Cable-Delta-2m", uom: "Piece", quantity: "120" },
+    ];
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const startX = 10;
+    const startY = 14;
+    const colWidths = {
+      code: 38,
+      description: 66,
+      uom: 54,
+      qty: 30,
+    };
+    const rowHeight = 11;
+    const headerHeight = 11;
+    const tableWidth =
+      colWidths.code + colWidths.description + colWidths.uom + colWidths.qty;
+
+    const xCode = startX;
+    const xDesc = xCode + colWidths.code;
+    const xUom = xDesc + colWidths.description;
+    const xQty = xUom + colWidths.uom;
+
+    doc.setFillColor(28, 29, 33);
+    doc.rect(0, 0, pageWidth, doc.internal.pageSize.getHeight(), "F");
+
+    doc.setFillColor(32, 33, 37);
+    doc.rect(startX, startY, tableWidth, headerHeight, "F");
+
+    doc.setDrawColor(58, 60, 65);
+    doc.setLineWidth(0.3);
+
+    doc.setTextColor(238, 238, 238);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.text("Product Code", xCode + 2, startY + 7);
+    doc.text("Description", xDesc + 2, startY + 7);
+    doc.text("UOM", xUom + 2, startY + 7);
+    doc.text("Quantity", xQty + 2, startY + 7);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10.5);
+
+    rows.forEach((row, index) => {
+      const y = startY + headerHeight + index * rowHeight;
+
+      doc.line(startX, y, startX + tableWidth, y);
+
+      doc.text(doc.splitTextToSize(row.code, colWidths.code - 4), xCode + 2, y + 7);
+      doc.text(
+        doc.splitTextToSize(row.description, colWidths.description - 4),
+        xDesc + 2,
+        y + 7,
+      );
+      doc.text(doc.splitTextToSize(row.uom, colWidths.uom - 4), xUom + 2, y + 7);
+      doc.text(doc.splitTextToSize(row.quantity, colWidths.qty - 4), xQty + 2, y + 7);
+    });
+
+    const tableBottomY = startY + headerHeight + rows.length * rowHeight;
+    doc.line(startX, tableBottomY, startX + tableWidth, tableBottomY);
+
+    doc.save(`inventory-stocklist-${filterType}.pdf`);
   };
 
   return (
@@ -485,11 +573,54 @@ const InventoryPage = () => {
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="gap-2">
+                    <ListCollapse size={16} />
+                    Export Stocklist
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-72 p-0">
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={() => exportStocklistPdf("sufficient-stock")}
+                    >
+                      <Check size={16} className="text-slate-700" />
+                      <span className="h-4 w-4 rounded-full bg-[#8fd19e]" />
+                      Sufficient stock
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={() => exportStocklistPdf("low-stock")}
+                    >
+                      <Check size={16} className="text-slate-700" />
+                      <span className="h-4 w-4 rounded-full bg-[#f0db96]" />
+                      Low stock
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={() => exportStocklistPdf("very-low-stock")}
+                    >
+                      <Check size={16} className="text-slate-700" />
+                      <span className="h-4 w-4 rounded-full bg-[#f28e8e]" />
+                      Very low stock
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={() => exportStocklistPdf("no-stock")}
+                    >
+                      <Check size={16} className="text-slate-700" />
+                      <span className="h-4 w-4 rounded-full bg-[#d5dae3]" />
+                      No stock
+                    </DropdownMenuItem>
+                    <Separator />
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={() => exportStocklistPdf("export-stocklist")}
+                    >
+                      Export Stocklist
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 <DropdownMenuItem className="gap-2">
-                  <ListCollapse size={16} />
-                  Export Stocklist
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2" onClick={() => setIsQuotationModalOpen(true)}>
                   <ReceiptText size={16} />
                   Generate Quotation
                 </DropdownMenuItem>
