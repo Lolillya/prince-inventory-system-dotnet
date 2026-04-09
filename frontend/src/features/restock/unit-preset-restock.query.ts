@@ -28,11 +28,36 @@ export const useUnitPresetRestockItems = () => {
 export const useUnitPresetRestock = () => {
   const queryClient = useQueryClient();
 
+  const buildSelectedPreset = (
+    product: InventoryProductModel,
+    presetId: number,
+  ) => {
+    const preset = product.unitPresets.find((p) => p.preset_ID === presetId);
+    if (!preset) return undefined;
+
+    return {
+      preset_ID: presetId,
+      main_Unit_Quantity: 0,
+      levelPricing: preset.preset.presetLevels.map((level) => {
+        const existingPrice =
+          preset.presetPricing?.find((pp) => pp.level === level.level)
+            ?.price_Per_Unit ?? 0;
+
+        return {
+          level: level.level,
+          uom_ID: level.uoM_ID || level.unitOfMeasure.uom_ID,
+          uom_Name: level.unitOfMeasure.uom_Name,
+          price_Per_Unit: existingPrice,
+        };
+      }),
+    };
+  };
+
   /**
    * Add product to restock list
    * Allows duplicate products as long as they have different presets
    */
-  const addProduct = (product: InventoryProductModel) => {
+  const addProduct = (product: InventoryProductModel, presetId?: number) => {
     queryClient.setQueryData<InventoryProductModel[]>(
       UNIT_PRESET_RESTOCK_KEY,
       (old = []) => {
@@ -40,6 +65,9 @@ export const useUnitPresetRestock = () => {
         const newItem = {
           ...product,
           itemId: `${product.product.product_ID}-${Date.now()}-${Math.random()}`,
+          ...(presetId
+            ? { selectedPreset: buildSelectedPreset(product, presetId) }
+            : {}),
         };
         return [...old, newItem as any];
       },

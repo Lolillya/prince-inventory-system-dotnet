@@ -1,23 +1,30 @@
 import { useNavigate } from "react-router-dom";
-import { Separator } from "../../../components/separator";
-import {
-  EllipsisIcon,
-  FileDownIcon,
-  FilterIcon,
-  PlusIcon,
-  SearchIcon,
-} from "../../../icons";
+import { FilterIcon, PlusIcon, SearchIcon } from "../../../icons";
 import { useInvoiceQuery } from "@/features/invoice/invoice-get-all";
 import { NoInvoiceState } from "./_components/no-invoice-state";
+import { InvoiceDetailModal } from "./_components/invoice-detail-modal";
+import { InvoiceAllModel } from "@/features/invoice/models/invoice-all.model";
+import { useState } from "react";
+import { Calendar, CornerRightUp, User } from "lucide-react";
 
 const InvoicePage = () => {
   const { data: invoiceData, isLoading: isLoadingInvoice } = useInvoiceQuery();
-
-  console.log(invoiceData);
-
   const navigate = useNavigate();
+
+  const [selectedInvoice, setSelectedInvoice] =
+    useState<InvoiceAllModel | null>(null);
+
+  if (isLoadingInvoice) return <div>Loading...</div>;
+
   return (
     <section>
+      {selectedInvoice && (
+        <InvoiceDetailModal
+          selectedInvoice={selectedInvoice}
+          onClose={() => setSelectedInvoice(null)}
+        />
+      )}
+
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3 max-w-lg w-full shrink-0">
@@ -45,55 +52,116 @@ const InvoicePage = () => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 overflow-y-scroll pb-5 pr-2 flex-1">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 overflow-y-auto overflow-x-hidden flex-1 pr-1">
         {invoiceData?.length === 0 ? (
           <div className="flex-1 flex justify-center items-center">
             <NoInvoiceState />
           </div>
         ) : (
-          invoiceData?.map((i, idx) => (
-            <div
-              key={idx}
-              className="flex flex-col justify-between gap-5 border shadow-lg rounded-lg p-5"
-            >
-              <div className="flex flex-1 p-3">
-                <div className="flex flex-col gap-3 w-full">
-                  <div className="flex gap-3">
-                    <span>{i.invoice_ID}</span>
-                    <span>-</span>
-                    <span>{i.createdAt}</span>
-                  </div>
+          invoiceData?.map((inv) => {
+            const customerLabel = inv.customer.companyName
+              ? inv.customer.companyName
+              : `${inv.customer.firstName} ${inv.customer.lastName}`;
+            const previewItems = inv.lineItems.slice(0, 2);
+            const extraCount = inv.lineItems.length - previewItems.length;
 
-                  <div className="flex gap-3">
-                    <span>{i.customer.companyName}</span>
-                    <span>|</span>
-                    <span>term:</span>
-                    <span>{i.term}</span>
+            return (
+              <div
+                key={inv.invoice_ID}
+                className="relative flex flex-col justify-between gap-5 border rounded-lg py-3 px-5 bg-custom-gray h-fit w-full break-inside-avoid"
+              >
+                {/* STATUS BADGE */}
+                <div className="absolute -top-1">
+                  {inv.status === "VOIDED" && (
+                    <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+                      Voided
+                    </div>
+                  )}
+                </div>
+
+                {/* CARD HEADER */}
+                <div className="flex flex-1 p-3">
+                  <div className="flex flex-col gap-3 w-full">
+                    <div className="flex flex-col gap-2">
+                      {/* Invoice number + total */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-semibold text-saltbox-gray tracking-wide">
+                          #{inv.invoice_Number}
+                        </span>
+                        <span className="text-xl font-semibold text-saltbox-gray">
+                          ₱{inv.total_Amount.toLocaleString()}
+                        </span>
+                      </div>
+
+                      {/* Date + Customer */}
+                      <div className="flex items-center flex-1 flex-wrap gap-2">
+                        <div className="flex gap-2 items-center">
+                          <Calendar className="text-saltbox-gray" size={16} />
+                          <span className="text-saltbox-gray text-sm">
+                            {new Intl.DateTimeFormat("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }).format(new Date(inv.createdAt))}
+                          </span>
+                        </div>
+
+                        <div className="flex gap-2 items-center ml-5 border-l-2 border-gray-300 pl-5">
+                          <User className="text-saltbox-gray" size={16} />
+                          <span className="text-saltbox-gray text-sm">
+                            {customerLabel}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <Separator orientation="vertical" />
-
-                <div className="flex flex-col gap-3 w-full">
-                  <div className="flex gap-3">
-                    <span>grand total</span>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <span>P {i.total_Amount}</span>
-                  </div>
+                {/* LINE ITEMS PREVIEW */}
+                <div className="flex flex-col gap-2">
+                  {previewItems.map((item) => (
+                    <div
+                      key={item.lineItem_ID}
+                      className="bg-background rounded-lg flex flex-col p-3 gap-1"
+                    >
+                      <div className="flex w-full justify-between">
+                        <span className="text-saltbox-gray text-sm font-semibold truncate">
+                          {item.product.product_Name}
+                        </span>
+                        <span className="text-saltbox-gray text-sm font-semibold ml-3 shrink-0">
+                          {item.unit_Quantity} {item.unit}
+                        </span>
+                      </div>
+                      <div className="flex w-full justify-between text-xs text-saltbox-gray">
+                        <span>
+                          ₱{item.unit_Price.toLocaleString()} / {item.unit}
+                        </span>
+                        <span className="font-medium">
+                          ₱{item.sub_Total.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="bg-gray-bg border flex items-center justify-center rounded-lg p-2 h-12 w-12 my-auto">
-                  <EllipsisIcon />
+                {/* FOOTER */}
+                <div className="bg-background rounded-lg flex items-center justify-between px-3 py-1">
+                  <label className="text-saltbox-gray text-sm font-semibold tracking-wide">
+                    {extraCount > 0
+                      ? `+${extraCount} more item${extraCount > 1 ? "s" : ""}...`
+                      : "No more items..."}
+                  </label>
+                  <button
+                    onClick={() => setSelectedInvoice(inv)}
+                    className="bg-background text-saltbox-gray w-fit cursor-pointer hover:underline hover:shadow-none hover:bg-gray-300 transition-colors"
+                  >
+                    view details
+                    <CornerRightUp size={18} />
+                  </button>
                 </div>
               </div>
-
-              <div className="flex justify-center">
-                <span>view all</span>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>

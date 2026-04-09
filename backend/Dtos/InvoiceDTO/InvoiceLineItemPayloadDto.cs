@@ -16,6 +16,11 @@ namespace backend.Dtos.InvoiceDTO
         [Required]
         public int Product_ID { get; set; }
 
+        public int? Preset_ID { get; set; }
+
+        public List<int>? Supplement_Preset_IDs { get; set; }
+
+        public bool Auto_Replenish { get; set; } = false;
 
         [Required]
         public string Unit { get; set; } = "";

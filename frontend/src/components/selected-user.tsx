@@ -150,6 +150,7 @@ export const SelectedUser = ({
             <textarea
               rows={3}
               value={user.notes}
+              readOnly
               className="w-full resize-none text-sm"
             />
           </div>

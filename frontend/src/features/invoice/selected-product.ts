@@ -1,13 +1,17 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { InvoiceAddProductModel } from "./models/invoice-add-product.model";
 import { InvoiceAddPayloadModel } from "./models/invoice-add-payload.model";
-import { InvoiceRestockBatchModel } from "./models/invoice-restock-batch.model";
 import { useInvoicePayloadQuery } from "./invoice-create-payload";
+import { InventoryProductModel } from "../inventory/models/inventory.model";
 
 const InvoiceProductKey = ["invoice-product"];
 
+export type SelectedInvoiceItem = {
+  itemKey: string;
+  data: InventoryProductModel;
+};
+
 export const useSelectedProductInvoiceQuery = () => {
-  return useQuery<InvoiceRestockBatchModel[]>({
+  return useQuery<SelectedInvoiceItem[]>({
     queryKey: InvoiceProductKey,
     queryFn: async () => {
       return [];
@@ -18,27 +22,39 @@ export const useSelectedProductInvoiceQuery = () => {
 
 export const useSelectedInvoiceProduct = () => {
   const queryClient = useQueryClient();
-  const { ADD_INVOICE_PAYLOAD, REMOVE_INVOICE_PAYLOAD } =
+  const { ADD_INVOICE_PAYLOAD, REMOVE_INVOICE_PAYLOAD, CLEAR_INVOICE_PAYLOAD } =
     useInvoicePayloadQuery();
 
-  const ADD_PRODUCT = (data: InvoiceRestockBatchModel) => {
-    queryClient.setQueryData<InvoiceRestockBatchModel[]>(
+  const ADD_PRODUCT = (data: InventoryProductModel) => {
+    const current =
+      queryClient.getQueryData<SelectedInvoiceItem[]>(InvoiceProductKey) ?? [];
+
+    // Guard: cannot add more cards than there are available presets for this product+variant.
+    const existingCount = current.filter(
+      (item) =>
+        item.data.product.product_ID === data.product.product_ID &&
+        item.data.variant.variant_Name === data.variant.variant_Name,
+    ).length;
+
+    if (existingCount >= (data.unitPresets?.length ?? 0)) return;
+
+    const itemKey = crypto.randomUUID();
+
+    queryClient.setQueryData<SelectedInvoiceItem[]>(
       InvoiceProductKey,
-      (old = []) => {
-        const exists = old.some(
-          (p) =>
-            p.product.product_ID === data.product.product_ID &&
-            p.product.variant.variant_Name === data.product.variant.variant_Name
-        );
-        const next = exists ? old : [...old, data];
-        return next;
-      }
+      (old = []) => [...old, { itemKey, data }],
     );
 
     const payload: InvoiceAddPayloadModel = {
       invoice: {
+        itemKey,
         product: data.product,
+        brand: data.brand,
+        variant: data.variant,
+        category: data.category,
         unit: "",
+        preset_ID: null,
+        supplement_Preset_IDs: [],
         unit_quantity: 0,
         unit_price: 0,
         discount: 0,
@@ -53,35 +69,18 @@ export const useSelectedInvoiceProduct = () => {
     ADD_INVOICE_PAYLOAD(payload);
   };
 
-  const REMOVE_PRODUCT = (product: InvoiceAddProductModel) => {
-    // Remove from display state
-    // TO BE UPDATED:
-    queryClient.setQueryData<InvoiceAddProductModel[]>(
+  const REMOVE_PRODUCT = (itemKey: string) => {
+    queryClient.setQueryData<SelectedInvoiceItem[]>(
       InvoiceProductKey,
-      (old = []) => {
-        const next = old.filter(
-          (p) =>
-            !(
-              p.invoice.item.product.product_ID ===
-                product.invoice.item.product.product_ID &&
-              p.invoice.item.product.variant.variant_Name ===
-                product.invoice.item.product.variant.variant_Name
-            )
-        );
-
-        return next;
-      }
+      (old = []) => old.filter((p) => p.itemKey !== itemKey),
     );
 
-    // Also remove from payload
-    REMOVE_INVOICE_PAYLOAD(
-      product.invoice.item.product.product_ID,
-      product.invoice.item.product.variant.variant_Name
-    );
+    REMOVE_INVOICE_PAYLOAD(itemKey);
   };
 
   const CLEAR_TO_INVOICE_LIST = () => {
-    queryClient.setQueryData<InvoiceAddProductModel[]>(InvoiceProductKey, []);
+    queryClient.setQueryData<SelectedInvoiceItem[]>(InvoiceProductKey, []);
+    CLEAR_INVOICE_PAYLOAD();
   };
 
   return {

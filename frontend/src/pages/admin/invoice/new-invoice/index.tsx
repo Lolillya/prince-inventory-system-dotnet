@@ -5,21 +5,23 @@ import {
   useSelectedProductInvoiceQuery,
   useSelectedInvoiceProduct,
 } from "@/features/invoice/selected-product";
-import { InvoiceCard } from "./_components/invoice-card";
-import { useState } from "react";
+// import { InvoiceCard } from "./_components/invoice-card";
+import { Activity, useState } from "react";
 import { CreateInvoiceModal } from "./_components/invoice-modal";
 import { useInvoiceBatchQuery } from "@/features/invoice/invoice-get-all-batches";
-import { InvoiceRestockBatchModel } from "@/features/invoice/models/invoice-restock-batch.model";
+import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
+import { InvoiceCard } from "./_components/invoice-card-copy";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
+import { useSelectedPayloadInvoiceQuery } from "@/features/invoice/invoice-create-payload";
 
 const NewInvoicePage = () => {
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
-  const { ADD_PRODUCT, CLEAR_TO_INVOICE_LIST } = useSelectedInvoiceProduct();
-  const { data: restockBatches, isLoading, error } = useInvoiceBatchQuery();
-
-  console.log(restockBatches);
-
-  // console.log(restockBatches);
+  const { data: inventoryData } = UseInventoryQuery();
+  const { data: payloadData = [] } = useSelectedPayloadInvoiceQuery();
+  const { ADD_PRODUCT, REMOVE_PRODUCT, CLEAR_TO_INVOICE_LIST } =
+    useSelectedInvoiceProduct();
+  const { isLoading, error } = useInvoiceBatchQuery();
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,13 +31,7 @@ const NewInvoicePage = () => {
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const handleClick = (data: InvoiceRestockBatchModel) => {
-    // TODO: Create invoice add product model from restock batch model
-    // pass the whole batch object array
-    // map batches to show different unit structure from restock suppliers
-    // show different unit price options from restock suppliers
-    // then add to selected invoice products
-
+  const handleClick = (data: InventoryProductModel) => {
     ADD_PRODUCT(data);
   };
 
@@ -43,9 +39,42 @@ const NewInvoicePage = () => {
     setIsModalOpen((prev) => !prev);
   };
 
+  const handleRemoveProduct = (itemKey: string) => {
+    REMOVE_PRODUCT(itemKey);
+  };
+
+  const allCardsComplete =
+    selectedInvoices.length > 0 &&
+    payloadData.every(
+      (p) =>
+        p.invoice.preset_ID !== null &&
+        p.invoice.unit_quantity > 0 &&
+        p.invoice.unit_price > 0,
+    );
+
+  // For each invoice card, collect preset_IDs selected by OTHER cards of the same product+variant.
+  const getExcludedPresetIds = (
+    itemKey: string,
+    productId: number,
+    variantName: string,
+  ): number[] => {
+    return payloadData
+      .filter(
+        (p) =>
+          p.invoice.itemKey !== itemKey &&
+          p.invoice.product.product_ID === productId &&
+          p.invoice.variant.variant_Name === variantName &&
+          p.invoice.preset_ID !== null,
+      )
+      .map((p) => p.invoice.preset_ID as number);
+  };
+
   return (
     <section>
-      {isModalOpen && <CreateInvoiceModal createInvoice={createInvoice} />}
+      <Activity mode={isModalOpen ? "visible" : "hidden"}>
+        <CreateInvoiceModal createInvoice={createInvoice} />
+      </Activity>
+
       <div className="flex flex-col min-h-0 flex-1 gap-5">
         <div className="flex flex-col gap-10">
           <div className="flex gap-3 border-b pb-5 items-center">
@@ -65,12 +94,17 @@ const NewInvoicePage = () => {
                 <NoSelectedState />
               ) : (
                 <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
-                  {selectedInvoices.map((p, i) => (
+                  {selectedInvoices.map((item) => (
                     <InvoiceCard
-                      key={`${p.product.product_ID}-${p.product.variant.variant_Name}-${i}`}
-                      product={p.product}
-                      batches={p.batches}
-                      // onRemove={() => removeProduct(p)}
+                      product={item.data}
+                      itemKey={item.itemKey}
+                      excludePresetIds={getExcludedPresetIds(
+                        item.itemKey,
+                        item.data.product.product_ID,
+                        item.data.variant.variant_Name,
+                      )}
+                      onRemove={() => handleRemoveProduct(item.itemKey)}
+                      key={item.itemKey}
                     />
                   ))}
                 </div>
@@ -90,7 +124,7 @@ const NewInvoicePage = () => {
                 </div>
 
                 <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
-                  {restockBatches?.map((data, i) => (
+                  {inventoryData?.map((data, i) => (
                     <ProductCard
                       product={data}
                       onClick={() => handleClick(data)}
@@ -102,7 +136,15 @@ const NewInvoicePage = () => {
 
               <div className="flex gap-5 justify-between">
                 <button onClick={CLEAR_TO_INVOICE_LIST}>clear</button>
-                <button onClick={createInvoice}>create invoice</button>
+                <button
+                  onClick={createInvoice}
+                  disabled={!allCardsComplete}
+                  className={
+                    !allCardsComplete ? "opacity-50 cursor-not-allowed" : ""
+                  }
+                >
+                  create invoice
+                </button>
               </div>
             </div>
           </div>

@@ -39,7 +39,7 @@ export const CustomerPicker = ({
   }, []);
 
   const filtered = list?.filter((c) =>
-    String(c.companyName).toLowerCase().includes(query.toLowerCase())
+    String(c.companyName).toLowerCase().includes(query.toLowerCase()),
   );
 
   return (

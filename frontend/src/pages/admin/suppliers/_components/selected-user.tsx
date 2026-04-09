@@ -16,6 +16,8 @@ import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model"
 import { Separator } from "@/components/separator";
 import { RightUpArrowIcon, UserIcon } from "@/icons";
 import { RestocksModal } from "@/components/restocks-modal";
+import { PurchaseOrderHistoryModal } from "./purchase-order-history.modal";
+import { usePurchaseOrdersBySupplierQuery } from "@/features/purchase-order/purchase-order.query";
 
 interface SelectedUserProps {
   handleEdit: () => void;
@@ -32,6 +34,11 @@ export const SelectedUser = ({
   handlePurchasePrice: () => void;
 }) => {
   const [isRestocksModalOpen, setIsRestocksModalOpen] = useState(false);
+  const [isPurchaseOrderHistoryModalOpen, setIsPurchaseOrderHistoryModalOpen] =
+    useState(false);
+  const { data: purchaseOrders = [] } = usePurchaseOrdersBySupplierQuery(
+    selectedSupplier.supplier_Id,
+  );
 
   const distinctLineItems = useMemo(() => {
     const allLineItems = selectedSupplier.restocks.flatMap((restock) =>
@@ -54,7 +61,9 @@ export const SelectedUser = ({
     return format(date, "yyyy MMMM dd");
   };
 
-  console.log(selectedSupplier);
+  const pendingPurchaseOrderCount = purchaseOrders.filter(
+    (po) => po.status?.toUpperCase() === "PENDING",
+  ).length;
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col gap-2 p-5">
@@ -113,7 +122,7 @@ export const SelectedUser = ({
 
       <div
         className="p-2 rounded-lg bg-wash-gray hover:cursor-pointer hover:shadow-md transition-shadow"
-        // onClick={handlePurchasePrice}
+        onClick={() => setIsPurchaseOrderHistoryModalOpen(true)}
       >
         <div className=" flex items-center gap-3">
           <div className="bg-orange-200 h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
@@ -122,7 +131,7 @@ export const SelectedUser = ({
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 ">
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold info-name flex gap-2">
-                2 Pending
+                {pendingPurchaseOrderCount} Pending
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -205,6 +214,7 @@ export const SelectedUser = ({
             <textarea
               rows={3}
               value={selectedSupplier.notes}
+              readOnly
               className="w-full resize-none text-sm"
             />
           </div>
@@ -213,6 +223,14 @@ export const SelectedUser = ({
 
       {/* USER ACTIONS SECTION */}
       <>
+        {isPurchaseOrderHistoryModalOpen && (
+          <PurchaseOrderHistoryModal
+            selectedSupplier={selectedSupplier}
+            setIsPurchaseOrderHistoryModalOpen={
+              setIsPurchaseOrderHistoryModalOpen
+            }
+          />
+        )}
         {isRestocksModalOpen && (
           <RestocksModal
             setIsRestocksModalOpen={setIsRestocksModalOpen}

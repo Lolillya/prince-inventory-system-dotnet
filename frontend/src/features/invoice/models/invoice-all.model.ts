@@ -9,10 +9,10 @@ export type InvoiceAllModel = {
   createdAt: string;
   customer: InvoiceCustomer;
   clerk: InvoiceClerk;
-  lineItems: LineItems;
+  lineItems: InvoiceLineItem[];
 };
 
-type InvoiceCustomer = {
+export type InvoiceCustomer = {
   id: string;
   firstName: string;
   lastName: string;
@@ -20,11 +20,22 @@ type InvoiceCustomer = {
   email: string;
 };
 
-type InvoiceClerk = {
+export type InvoiceClerk = {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
 };
 
-type LineItems = {};
+export type InvoiceLineItem = {
+  lineItem_ID: number;
+  product_ID: number;
+  product: {
+    product_ID: number;
+    product_Name: string;
+  };
+  unit: string;
+  unit_Price: number;
+  sub_Total: number;
+  unit_Quantity: number;
+};

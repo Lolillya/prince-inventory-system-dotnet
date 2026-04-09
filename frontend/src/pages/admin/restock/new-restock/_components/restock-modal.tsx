@@ -1,7 +1,7 @@
 import { XIcon } from "@/icons";
 import { RestockTable } from "./restock-modal-table";
 import { useSuppliersQuery } from "@/features/suppliers/supplier-get-all.query";
-import { SupplierPicker } from "./supplier-picker";
+import { SupplierPicker } from "@/components/supplier-picker";
 
 interface CreateRestockModalProps {
   createRestock: () => void;

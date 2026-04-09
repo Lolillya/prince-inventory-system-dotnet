@@ -1,15 +1,17 @@
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { ItemPicker } from "@/components/item-picker";
+import { SupplierPicker } from "@/components/supplier-picker";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { XIcon, SearchIcon } from "@/icons";
-import { setDate, format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+  useUnitPresetRestock,
+  useUnitPresetRestockItems,
+} from "@/features/restock/unit-preset-restock.query";
+import { useSelectedRestockSupplier } from "@/features/restock/selected-supplier";
+import { useSuppliersQuery } from "@/features/suppliers/supplier-get-all.query";
+import { XIcon } from "@/icons";
 import { useState } from "react";
-import { date } from "yup";
+import { PurchaseOrderConfirmModal } from "./purchase-order-confirm.modal";
+import { useCreatePurchaseOrderMutation } from "@/features/purchase-order/purchase-order.query";
+import { useAuth } from "@/context/use-auth";
+import { toast } from "sonner";
 
 interface PurchaseOrderModalProps {
   setIsPurchaseOrderModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -18,11 +20,207 @@ interface PurchaseOrderModalProps {
 export const PurchaseOrderModal = ({
   setIsPurchaseOrderModalOpen,
 }: PurchaseOrderModalProps) => {
+  const { updateMainQuantity, updateLevelPricing } = useUnitPresetRestock();
+  const { user } = useAuth();
+  const { mutateAsync: createPurchaseOrder, isPending: isGenerating } =
+    useCreatePurchaseOrderMutation();
+  const [preferredDelivery, setPreferredDelivery] = useState("");
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [purchaseOrderNote, setPurchaseOrderNote] = useState("");
+
   const handleCloseModal = () => {
     setIsPurchaseOrderModalOpen(false);
   };
+  const { data: suppliersData } = useSuppliersQuery();
+  const { data: selectedItems = [] } = useUnitPresetRestockItems();
+  const { data: selectedSupplier } = useSelectedRestockSupplier();
 
-  const [date, setDate] = useState<Date>();
+  const formatMoney = (value: number) => {
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const grandTotal = selectedItems.reduce((acc, rawItem) => {
+    const item = rawItem as any;
+    if (!item?.selectedPreset) return acc;
+
+    const quantity = Number(item.selectedPreset.main_Unit_Quantity || 0);
+    const selectedPreset = item.unitPresets?.find(
+      (preset: any) => preset.preset_ID === item.selectedPreset.preset_ID,
+    );
+    const mainLevel = selectedPreset?.preset?.presetLevels?.find(
+      (level: any) => level.level === 1,
+    );
+    const mainPrice = Number(
+      item.selectedPreset.levelPricing?.find(
+        (lp: any) => lp.level === (mainLevel?.level ?? 1),
+      )?.price_Per_Unit || 0,
+    );
+
+    return acc + quantity * mainPrice;
+  }, 0);
+
+  const confirmationItems = selectedItems
+    .map((rawItem, index) => {
+      const item = rawItem as any;
+      const selectedPresetId = item.selectedPreset?.preset_ID;
+      const selectedPreset = item.unitPresets?.find(
+        (preset: any) => preset.preset_ID === selectedPresetId,
+      );
+
+      const presetLevels = [
+        ...(selectedPreset?.preset?.presetLevels || []),
+      ].sort((a: any, b: any) => a.level - b.level);
+      const mainLevel =
+        presetLevels.find((level: any) => level.level === 1) || presetLevels[0];
+      const mainLevelNumber = mainLevel?.level ?? 1;
+      const mainUnitName = mainLevel?.unitOfMeasure?.uom_Name || "Main Unit";
+
+      const quantity = Number(item.selectedPreset?.main_Unit_Quantity || 0);
+      const price = Number(
+        item.selectedPreset?.levelPricing?.find(
+          (lp: any) => lp.level === mainLevelNumber,
+        )?.price_Per_Unit || 0,
+      );
+
+      return {
+        key: item.itemId || `${item.product.product_ID}-${index}`,
+        product: `${item.product.product_Name} - ${item.brand.brandName} - ${item.variant.variant_Name}`,
+        quantity,
+        unit: mainUnitName,
+        price,
+        subtotal: quantity * price,
+      };
+    })
+    .filter((row) => row.quantity > 0);
+
+  const selectedSupplierName =
+    (selectedSupplier as { company_Name?: string; companyName?: string } | null)
+      ?.company_Name ??
+    (selectedSupplier as { company_Name?: string; companyName?: string } | null)
+      ?.companyName ??
+    "";
+
+  const selectedSupplierId =
+    (selectedSupplier as { supplier_Id?: string; id?: string } | null)
+      ?.supplier_Id ??
+    (selectedSupplier as { supplier_Id?: string; id?: string } | null)?.id ??
+    "";
+
+  const handleConfirm = () => {
+    if (!selectedSupplierName) {
+      alert("Please select a supplier first.");
+      return;
+    }
+
+    if (!preferredDelivery) {
+      alert("Please set the preferred delivery date.");
+      return;
+    }
+
+    if (confirmationItems.length === 0) {
+      alert("Please add at least one item with quantity.");
+      return;
+    }
+
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleCancelConfirm = () => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handleGenerate = async () => {
+    if (!user?.user_ID) {
+      alert("User not authenticated.");
+      return;
+    }
+
+    if (!selectedSupplierId) {
+      alert("Supplier is required.");
+      return;
+    }
+
+    const lineItemsPayload = selectedItems
+      .map((rawItem) => {
+        const item = rawItem as any;
+        const selectedPresetId = item.selectedPreset?.preset_ID;
+        const selectedPreset = item.unitPresets?.find(
+          (preset: any) => preset.preset_ID === selectedPresetId,
+        );
+
+        const presetLevels = [
+          ...(selectedPreset?.preset?.presetLevels || []),
+        ].sort((a: any, b: any) => a.level - b.level);
+
+        const mainLevel =
+          presetLevels.find((level: any) => level.level === 1) ||
+          presetLevels[0];
+        const mainLevelNumber = mainLevel?.level ?? 1;
+        const mainUomId = mainLevel?.uoM_ID || mainLevel?.unitOfMeasure?.uom_ID;
+
+        const quantity = Number(item.selectedPreset?.main_Unit_Quantity || 0);
+        const unitPrice = Number(
+          item.selectedPreset?.levelPricing?.find(
+            (lp: any) => lp.level === mainLevelNumber,
+          )?.price_Per_Unit || 0,
+        );
+
+        if (!quantity || !mainUomId) return null;
+
+        return {
+          product_ID: item.product.product_ID,
+          preset_ID: selectedPresetId,
+          uom_ID: Number(mainUomId),
+          quantity,
+          unit_Price: unitPrice,
+        };
+      })
+      .filter((lineItem): lineItem is NonNullable<typeof lineItem> =>
+        Boolean(lineItem),
+      );
+
+    if (lineItemsPayload.length === 0) {
+      alert("Please add at least one valid line item.");
+      return;
+    }
+
+    try {
+      await createPurchaseOrder({
+        supplier_ID: selectedSupplierId,
+        purchase_Order_Clerk: user.user_ID,
+        preferred_Delivery: preferredDelivery,
+        notes: purchaseOrderNote,
+        lineItems: lineItemsPayload,
+      });
+
+      toast.success("Purchase order generated successfully.");
+      setIsConfirmModalOpen(false);
+      setIsPurchaseOrderModalOpen(false);
+    } catch {
+      // Error handling is already centralized in the service layer.
+    }
+  };
+
+  if (isConfirmModalOpen) {
+    return (
+      <PurchaseOrderConfirmModal
+        supplierName={selectedSupplierName}
+        preferredDelivery={preferredDelivery}
+        items={confirmationItems}
+        grandTotal={grandTotal}
+        note={purchaseOrderNote}
+        isGenerating={isGenerating}
+        onNoteChange={setPurchaseOrderNote}
+        onCancel={handleCancelConfirm}
+        onGenerate={handleGenerate}
+      />
+    );
+  }
 
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
@@ -43,58 +241,137 @@ export const PurchaseOrderModal = ({
         </div>
 
         <div className="flex flex-col gap-4">
-          <label className="text-sm font-medium">Supplier</label>
-          <input
-            className="input-style-2"
-            value=""
-            placeholder="Supplier Name"
-            readOnly
-          />
+          <SupplierPicker suppliersData={suppliersData} />
 
           <label className="text-sm font-medium">Preferred delivery</label>
           <input
             className="input-style-2"
             placeholder="Date / time / notes"
-            // readOnly
             type="date"
+            value={preferredDelivery}
+            onChange={(e) => setPreferredDelivery(e.target.value)}
           />
-
-          {/* <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                data-empty={!date}
-                className="w-[280px] justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
-              >
-                <CalendarIcon />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar mode="single" selected={date} onSelect={setDate} />
-            </PopoverContent>
-          </Popover> */}
-
-          <label className="text-sm font-medium">Search items</label>
-          <div className="relative">
-            <input
-              className="input-style-2 pl-10"
-              value=""
-              placeholder="Search product..."
-              readOnly
-            />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <SearchIcon />
-            </span>
-          </div>
+          <ItemPicker />
 
           <div className="border rounded-lg p-3 bg-custom-gray">
-            <p className="text-sm text-gray-500">
-              Product list will appear here (UI-only placeholder).
-            </p>
-            <div className="mt-3 h-36 bg-white rounded border flex items-center justify-center text-xs text-gray-400">
-              Product lines preview
-            </div>
+            <p className="text-sm text-gray-500">Selected item products</p>
+
+            {selectedItems.length === 0 ? (
+              <div className="mt-3 h-36 bg-white rounded border flex items-center justify-center text-xs text-gray-400">
+                No selected items yet
+              </div>
+            ) : (
+              <div className="mt-3 rounded border bg-white overflow-hidden">
+                <div className="max-h-72 overflow-y-auto">
+                  {selectedItems.map((rawItem, index) => {
+                    const item = rawItem as any;
+                    const itemId = item.itemId as string;
+                    const selectedPresetId = item.selectedPreset?.preset_ID;
+                    const selectedPreset = item.unitPresets?.find(
+                      (preset: any) => preset.preset_ID === selectedPresetId,
+                    );
+
+                    const presetLevels = [
+                      ...(selectedPreset?.preset?.presetLevels || []),
+                    ].sort((a: any, b: any) => a.level - b.level);
+
+                    const presetPath = presetLevels
+                      .map((level: any) => level.unitOfMeasure?.uom_Name)
+                      .filter(Boolean)
+                      .join(" > ");
+
+                    const mainLevel =
+                      presetLevels.find((level: any) => level.level === 1) ||
+                      presetLevels[0];
+                    const mainLevelNumber = mainLevel?.level ?? 1;
+                    const mainUnitName =
+                      mainLevel?.unitOfMeasure?.uom_Name || "Main Unit";
+
+                    const quantity = Number(
+                      item.selectedPreset?.main_Unit_Quantity || 0,
+                    );
+                    const mainPrice = Number(
+                      item.selectedPreset?.levelPricing?.find(
+                        (lp: any) => lp.level === mainLevelNumber,
+                      )?.price_Per_Unit || 0,
+                    );
+                    const total = quantity * mainPrice;
+
+                    return (
+                      <div
+                        key={itemId || `${item.product.product_ID}-${index}`}
+                        className={`p-3 flex flex-col gap-2 ${
+                          index !== selectedItems.length - 1
+                            ? "border-b"
+                            : "border-b-0"
+                        }`}
+                      >
+                        <div className="text-sm font-semibold">
+                          {item.product.product_Name} - {item.brand.brandName} -{" "}
+                          {item.variant.variant_Name}
+                        </div>
+
+                        <div className="text-xs text-vesper-gray">
+                          Unit preset: {presetPath || "No preset assigned"}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs text-vesper-gray">
+                              Quantity ({mainUnitName})
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              className="input-style-2"
+                              value={quantity}
+                              onChange={(e) =>
+                                updateMainQuantity(
+                                  itemId,
+                                  Number(e.target.value || 0),
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs text-vesper-gray">
+                              Price ({mainUnitName})
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              className="input-style-2"
+                              value={mainPrice}
+                              onChange={(e) =>
+                                updateLevelPricing(
+                                  itemId,
+                                  mainLevelNumber,
+                                  Number(e.target.value || 0),
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div className="text-sm md:col-span-2">
+                            <span className="text-vesper-gray">Total: </span>
+                            <span className="font-semibold">
+                              {formatMoney(total)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="px-3 py-2 bg-custom-gray border-t flex justify-end text-sm">
+                  <span className="text-vesper-gray mr-2">Grand total:</span>
+                  <span className="font-bold">{formatMoney(grandTotal)}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -104,6 +381,13 @@ export const PurchaseOrderModal = ({
             onClick={handleCloseModal}
           >
             Close
+          </button>
+
+          <button
+            className="px-4 py-2 text-sm rounded hover:bg-blue-600"
+            onClick={handleConfirm}
+          >
+            Confirm
           </button>
         </div>
       </div>

@@ -20,7 +20,12 @@ export const updateSelectedCustomer = () => {
     queryClient.setQueryData(InvoiceCustomerKey, customer);
   };
 
+  const CLEAR_SELECTED_CUSTOMER = () => {
+    queryClient.setQueryData(InvoiceCustomerKey, null);
+  };
+
   return {
     UPDATE_SELECTED_CUSTOMER,
+    CLEAR_SELECTED_CUSTOMER,
   };
 };
