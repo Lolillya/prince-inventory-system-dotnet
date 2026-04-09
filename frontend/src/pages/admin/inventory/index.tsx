@@ -20,6 +20,7 @@ import { EditProductModal } from "./_components/edit-product.modal";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
 import { PresetSelectorModal } from "./_components/preset-selector.modal";
 import { ProductPackagingModal } from "./_components/product-packaging.modal";
+import { QuotationGeneratorModal } from "./_components/quotation-generator.modal";
 import {
   Archive,
   Check,
@@ -58,6 +59,7 @@ const InventoryPage = () => {
   const [isPresetEditorOpen, setIsPresetEditorOpen] = useState(false);
   const [isPresetSelectorOpen, setIsPresetSelectorOpen] = useState(false);
   const [isProductPackagingOpen, setIsProductPackagingOpen] = useState(false);
+  const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
   const [isFromEditModal, setIsFromEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const setSelectedProduct = useSetSelectedProduct();
@@ -742,6 +744,11 @@ const InventoryPage = () => {
           </div>
         </div>
       </div>
+      <QuotationGeneratorModal
+        isOpen={isQuotationModalOpen}
+        onClose={() => setIsQuotationModalOpen(false)}
+        inventory={inventory ?? []}
+      />
     </section>
   );
 };
