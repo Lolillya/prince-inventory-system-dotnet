@@ -1,367 +1,500 @@
-import { XIcon, SearchIcon } from "@/icons";
-import { useState } from "react";
-import { Scale } from "lucide-react";
+import { useState, useMemo } from "react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Search,
+  TrendingDown,
+  TrendingUp,
+  X,
+} from "lucide-react";
+import { useBenchmarkOverviewQuery } from "@/features/suppliers/supplier-benchmark/get-benchmark-overview.query";
+import { useBenchmarkPresetSuppliersQuery } from "@/features/suppliers/supplier-benchmark/get-benchmark-preset-suppliers.query";
+import { BenchmarkPresetItem } from "@/features/suppliers/supplier-benchmark/supplier-benchmark.model";
 
 interface PurchasePriceBenchmarkModalProps {
-    onClose: () => void;
+  onClose: () => void;
 }
 
+const formatPhp = (value: number) =>
+  value.toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+const formatDate = (iso: string) => {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-PH", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "2-digit",
+  });
+};
+
 export const PurchasePriceBenchmarkModal = ({
-    onClose,
+  onClose,
 }: PurchasePriceBenchmarkModalProps) => {
-    // Phase 1: Toggle states for Product 1 and Product 2
-    const [isProduct1Open, setIsProduct1Open] = useState(false);
-    const [isProduct2Open, setIsProduct2Open] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  // key: "productId:mainUnitId" — which primary-unit accordions are open
+  const [expandedMainUnits, setExpandedMainUnits] = useState<
+    Record<string, boolean>
+  >({});
+  // key: "productId:presetId" — active selection that drives the right panel
+  const [activeKey, setActiveKey] = useState<string | null>(null);
+  // key: supplierId — which supplier detail rows are expanded
+  const [expandedSuppliers, setExpandedSuppliers] = useState<
+    Record<string, boolean>
+  >({});
 
-    // Phase 3: Selection state and toggles for detail panel
-    const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
-    const [expandedSuppliers, setExpandedSuppliers] = useState<Record<string, boolean>>({});
-    const [editingSupplier, setEditingSupplier] = useState<string | null>(null);
+  const { data: products, isLoading: overviewLoading } =
+    useBenchmarkOverviewQuery();
 
-    const toggleSupplier = (supplierId: string) => {
-        setExpandedSuppliers(prev => ({ ...prev, [supplierId]: !prev[supplierId] }));
-    };
+  const [activeProductId, activePresetId] = useMemo(() => {
+    if (!activeKey) return [null, null];
+    const parts = activeKey.split(":");
+    return [Number(parts[0]), Number(parts[1])];
+  }, [activeKey]);
 
-    return (
-        <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
-            <div className={`transition-all duration-300 ${selectedPreset ? 'w-[1200px]' : 'w-[800px]'} h-[90vh] overflow-hidden bg-white px-10 py-8 rounded-lg border shadow-lg relative flex flex-col gap-4`}>
-                <div>
-                    <div className="absolute top-4 right-4 cursor-pointer" onClick={onClose}>
-                        <XIcon />
-                    </div>
-                    <div className="w-full">
-                        <h1 className="text-2xl font-bold flex items-center gap-2">
-                            Purchase Price Benchmark
-                        </h1>
-                    </div>
-                </div>
+  const { data: presetDetail, isLoading: detailLoading } =
+    useBenchmarkPresetSuppliersQuery(activeProductId, activePresetId);
 
-                <div className="flex gap-6 h-full min-h-0 overflow-hidden">
-                    {/* Left Panel */}
-                    <div className={`flex flex-col gap-4 transition-all duration-300 ${selectedPreset ? 'w-1/2' : 'w-full'} h-full overflow-hidden`}>
-                        {/* Search Bar */}
-                        <div className="flex bg-white items-center gap-2 px-3 py-2 border-2 border-black flex-shrink-0">
-                            <SearchIcon />
-                            <input
-                                type="text"
-                                placeholder="Search"
-                                className="w-full outline-none text-sm bg-transparent font-medium"
-                            />
-                        </div>
+  const activeProduct = useMemo(
+    () => products?.find((p) => p.product_ID === activeProductId) ?? null,
+    [products, activeProductId],
+  );
 
-                        {/* Legend */}
-                        <div className="flex gap-6 items-center text-sm flex-shrink-0">
-                            <span className="text-red-500 font-medium">Legend :</span>
-                            <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                                <span className="text-red-500 font-medium">All Set Purchase Price are Profitable</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-red-600"></span>
-                                <span className="text-red-500 font-medium">Atleast 1 Purchase Price at a Loss</span>
-                            </div>
-                        </div>
+  const activePreset = useMemo(
+    () =>
+      activeProduct?.presets.find((p) => p.preset_ID === activePresetId) ??
+      null,
+    [activeProduct, activePresetId],
+  );
 
-                        {/* Product List Container */}
-                        <div className="flex flex-col gap-4 mt-2 overflow-y-auto pb-4 custom-scrollbar">
+  const filteredProducts = useMemo(() => {
+    if (!products) return [];
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter((p) => p.product_Name.toLowerCase().includes(q));
+  }, [products, searchQuery]);
 
-                            {/* Card 1 */}
-                            <div className="flex flex-col border-2 border-black p-3 bg-white">
-                                <h2 className="font-bold text-lg">Item - Brand - Variant</h2>
+  // Group presets by main_Unit_ID within a product
+  const groupPresetsByMainUnit = (presets: BenchmarkPresetItem[]) => {
+    const map = new Map<
+      number,
+      { uomName: string; presets: BenchmarkPresetItem[] }
+    >();
+    for (const p of presets) {
+      const id = p.main_Unit_ID;
+      if (!map.has(id)) {
+        map.set(id, {
+          uomName: p.main_Unit?.uom_Name ?? `UOM ${id}`,
+          presets: [],
+        });
+      }
+      map.get(id)!.presets.push(p);
+    }
+    return map;
+  };
 
-                                <div className="mt-2 text-sm flex flex-col gap-2">
-                                    {/* Toggle 1 */}
-                                    <div>
-                                        <div
-                                            className="flex items-center gap-2 cursor-pointer w-max"
-                                            onClick={() => setIsProduct1Open(!isProduct1Open)}
-                                        >
-                                            <span className="text-black text-xs transition-transform duration-200" style={{ transform: isProduct1Open ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-                                                ▶
-                                            </span>
-                                            <span className="text-base">Primary Unit : <span className="text-red-500">Box</span></span>
-                                        </div>
+  const formatPresetChain = (preset: BenchmarkPresetItem): string => {
+    const levels = [...preset.preset_Levels].sort((a, b) => a.level - b.level);
+    return levels
+      .map((lvl) => {
+        const name = (lvl.unit?.uom_Name ?? `UOM ${lvl.uoM_ID}`).toUpperCase();
+        return lvl.uoM_ID === preset.main_Unit_ID
+          ? name
+          : `${name} (${lvl.conversion_Factor}x)`;
+      })
+      .join(" > ");
+  };
 
-                                        {/* Presets - Phase 2 */}
-                                        {isProduct1Open && (
-                                            <div className="flex flex-col mt-2 pl-6 gap-2">
-                                                {/* Row 1 */}
-                                                <div
-                                                    className={`flex items-center gap-6 sm:gap-16 cursor-pointer hover:bg-gray-100 p-1 w-max rounded ${selectedPreset === 'Box > Pack (x10) > Piece (x20)' ? 'bg-gray-100' : ''}`}
-                                                    onClick={() => setSelectedPreset('Box > Pack (x10) > Piece (x20)')}
-                                                >
-                                                    <span className="font-bold text-black text-sm w-48">Box &gt; Pack (x10) &gt; Piece (x20)</span>
-                                                    <div className="flex items-center gap-8">
-                                                        <span className="font-medium text-sm">2 suppliers</span>
-                                                        <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                                                    </div>
-                                                </div>
-                                                {/* Row 2 */}
-                                                <div
-                                                    className={`flex items-center gap-6 sm:gap-16 cursor-pointer hover:bg-gray-100 p-1 w-max rounded ${selectedPreset === 'Box > Set (x15) > Piece (x25)' ? 'bg-gray-100' : ''}`}
-                                                    onClick={() => setSelectedPreset('Box > Set (x15) > Piece (x25)')}
-                                                >
-                                                    <span className="font-bold text-black text-sm w-48">Box &gt; Set (x15) &gt; Piece (x25)</span>
-                                                    <div className="flex items-center gap-8">
-                                                        <span className="font-medium text-sm">3 suppliers</span>
-                                                        <span className="w-3 h-3 rounded-full bg-red-600"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+  const toggleMainUnit = (key: string) =>
+    setExpandedMainUnits((prev) => ({ ...prev, [key]: !prev[key] }));
 
-                                    {/* Toggle 2 */}
-                                    <div className="mt-2">
-                                        <div
-                                            className="flex items-center gap-2 cursor-pointer w-max"
-                                            onClick={() => setIsProduct2Open(!isProduct2Open)}
-                                        >
-                                            <span className="text-black text-xs transition-transform duration-200" style={{ transform: isProduct2Open ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-                                                ▶
-                                            </span>
-                                            <span className="text-base">Primary Unit : <span className="text-red-500">Pack</span></span>
-                                        </div>
-                                        {/* Presets - Phase 2 */}
-                                        {isProduct2Open && (
-                                            <div className="flex flex-col mt-2 pl-6 gap-2">
-                                                <div
-                                                    className={`flex items-center gap-6 sm:gap-16 cursor-pointer hover:bg-gray-100 p-1 w-max rounded ${selectedPreset === 'Pack > Piece (x10)' ? 'bg-gray-100' : ''}`}
-                                                    onClick={() => setSelectedPreset('Pack > Piece (x10)')}
-                                                >
-                                                    <span className="font-bold text-black text-sm w-48">Pack &gt; Piece (x10)</span>
-                                                    <div className="flex items-center gap-8">
-                                                        <span className="font-medium text-sm">1 suppliers</span>
-                                                        <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
+  const toggleSupplier = (supplierId: string) =>
+    setExpandedSuppliers((prev) => ({
+      ...prev,
+      [supplierId]: !prev[supplierId],
+    }));
 
-                            {/* Card 2 */}
-                            <div className="flex flex-col border-2 border-black p-3 bg-white mt-1 flex-shrink-0">
-                                <h2 className="font-bold text-lg">Item1 - Brand1 - Variant1</h2>
-
-                                <div className="mt-2 text-sm flex flex-col gap-2">
-                                    <div className="flex items-center gap-2 cursor-pointer w-max">
-                                        <span className="text-black text-xs transition-transform duration-200">
-                                            ▶
-                                        </span>
-                                        <span className="text-base">Primary Unit : <span className="text-red-500">Pallet</span></span>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    {/* Right Panel - Phase 3 */}
-                    {selectedPreset && (
-                        <div className="w-1/2 flex flex-col h-full pl-6 border-l border-gray-300 overflow-y-auto custom-scrollbar pr-2">
-                            {/* Header Info */}
-                            <div className="flex flex-col border-2 border-black p-3 bg-white flex-shrink-0 mb-4">
-                                <h2 className="font-bold text-lg">Item - Brand - Variant</h2>
-                                <span className="text-sm mt-1">Primary Unit <span className="text-red-500">: Box</span></span>
-                                <span className="font-medium text-sm mt-1">{selectedPreset}</span>
-                            </div>
-
-                            {/* Data Table */}
-                            <div className="w-full text-left text-sm border-t-2 border-b-2 border-black">
-                                <div className="flex items-center font-bold border-b border-black py-2 pl-4">
-                                    <div className="w-1/4">Supplier</div>
-                                    <div className="w-1/4 text-center">Purchase Price (<span className="text-red-500">Box</span>)</div>
-                                    <div className="w-1/4 text-center">Last Update</div>
-                                    <div className="w-1/4 text-center">Profit/Loss</div>
-                                </div>
-
-                                {/* Supplier A */}
-                                <div className="flex flex-col border-b border-gray-200 last:border-0 hover:bg-gray-50/50">
-                                    <div className="flex items-center py-3 pl-4">
-                                        <div className="w-1/4 font-medium">Supplier A</div>
-                                        <div className="w-1/4 text-center font-medium">
-                                            {editingSupplier === 'supplier-a' ? (
-                                                <div className="flex items-center justify-center gap-1">
-                                                    <span className="text-gray-500 text-xs">PHP</span>
-                                                    <input type="text" defaultValue="90.00" className="w-16 border border-gray-400 rounded px-1 outline-none text-center" />
-                                                </div>
-                                            ) : (
-                                                "90.00"
-                                            )}
-                                        </div>
-                                        <div className="w-1/4 text-center text-gray-600">12/05/26</div>
-                                        <div className="w-1/4 flex items-center justify-center gap-3">
-                                            <span className="w-3 h-3 rounded-full bg-green-500" title="Profit"></span>
-                                            {editingSupplier === 'supplier-a' ? (
-                                                <div className="flex gap-2">
-                                                    <span className="text-xs text-green-600 cursor-pointer hover:underline font-bold" onClick={() => setEditingSupplier(null)}>Save</span>
-                                                    <span className="text-xs text-red-500 cursor-pointer hover:underline font-bold" onClick={() => setEditingSupplier(null)}>Cancel</span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-xs text-blue-600 cursor-pointer hover:underline" onClick={() => setEditingSupplier('supplier-a')}>Modify Price</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {/* Expandable Details */}
-                                    <div className="w-full pl-4 pb-2">
-                                        <div
-                                            className="flex items-center gap-2 cursor-pointer w-max mt-1"
-                                            onClick={() => toggleSupplier('supplier-a')}
-                                        >
-                                            <span className="text-black text-[10px] transition-transform duration-200" style={{ transform: expandedSuppliers['supplier-a'] ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-                                                ▶
-                                            </span>
-                                            <span className="font-bold text-sm">View Details</span>
-                                        </div>
-                                        {expandedSuppliers['supplier-a'] && (
-                                            <div className="pl-6 mt-3 text-xs flex gap-12">
-                                                <div className="flex flex-col gap-4">
-                                                    {/* Sub-unit Purchase Prices */}
-                                                    <div>
-                                                        <span className="font-bold text-black border-b border-gray-300 pb-1 pr-6">Sub-unit Purchase Prices</span>
-                                                        <div className="flex flex-col gap-1 mt-2 font-medium text-gray-700">
-                                                            <div className="flex items-center">
-                                                                <span className="w-32">└─ Pack (x10)</span>
-                                                                <span>PHP 9.00</span>
-                                                            </div>
-                                                            <div className="flex items-center">
-                                                                <span className="w-32 pl-4">└─ Piece (x20)</span>
-                                                                <span>PHP 0.45</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex flex-col gap-4">
-                                                    {/* Selling Prices */}
-                                                    <div>
-                                                        <span className="font-bold text-black border-b border-gray-300 pb-1 pr-6">Selling Prices (Global)</span>
-                                                        <div className="flex flex-col gap-1 mt-2 font-medium text-gray-700">
-                                                            <div className="flex items-center">
-                                                                <span className="w-24">Box</span>
-                                                                <span>PHP 120.00</span>
-                                                            </div>
-                                                            <div className="flex items-center">
-                                                                <span className="w-24">Pack</span>
-                                                                <span>PHP 15.00</span>
-                                                            </div>
-                                                            <div className="flex items-center">
-                                                                <span className="w-24">Piece</span>
-                                                                <span>PHP 1.00</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Price History */}
-                                                    <div>
-                                                        <span className="font-bold text-black border-b border-gray-300 pb-1 pr-6">Price History</span>
-                                                        <ul className="list-disc flex flex-col gap-1 mt-2 pl-4 text-gray-600">
-                                                            <li>Jan 12, 2026 – Box PHP 95.00 <span className="text-gray-400">→</span> PHP 90.00</li>
-                                                            <li>Dec 03, 2025 – Box PHP 100.00 <span className="text-gray-400">→</span> PHP 95.00</li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Supplier B */}
-                                <div className="flex flex-col border-b border-gray-200 last:border-0 hover:bg-gray-50/50">
-                                    <div className="flex items-center py-3 pl-4">
-                                        <div className="w-1/4 font-medium">Supplier B</div>
-                                        <div className="w-1/4 text-center font-medium">
-                                            {editingSupplier === 'supplier-b' ? (
-                                                <div className="flex items-center justify-center gap-1">
-                                                    <span className="text-gray-500 text-xs">PHP</span>
-                                                    <input type="text" defaultValue="120.00" className="w-16 border border-gray-400 rounded px-1 outline-none text-center" />
-                                                </div>
-                                            ) : (
-                                                "120.00"
-                                            )}
-                                        </div>
-                                        <div className="w-1/4 text-center text-gray-600">11/20/26</div>
-                                        <div className="w-1/4 flex items-center justify-center gap-3">
-                                            <span className="w-3 h-3 rounded-full bg-red-600" title="Loss"></span>
-                                            {editingSupplier === 'supplier-b' ? (
-                                                <div className="flex gap-2">
-                                                    <span className="text-xs text-green-600 cursor-pointer hover:underline font-bold" onClick={() => setEditingSupplier(null)}>Save</span>
-                                                    <span className="text-xs text-red-500 cursor-pointer hover:underline font-bold" onClick={() => setEditingSupplier(null)}>Cancel</span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-xs text-blue-600 cursor-pointer hover:underline" onClick={() => setEditingSupplier('supplier-b')}>Modify Price</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {/* Expandable Details */}
-                                    <div className="w-full pl-4 pb-2">
-                                        <div
-                                            className="flex items-center gap-2 cursor-pointer w-max mt-1"
-                                            onClick={() => toggleSupplier('supplier-b')}
-                                        >
-                                            <span className="text-black text-[10px] transition-transform duration-200" style={{ transform: expandedSuppliers['supplier-b'] ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-                                                ▶
-                                            </span>
-                                            <span className="font-bold text-sm">View Details</span>
-                                        </div>
-                                        {expandedSuppliers['supplier-b'] && (
-                                            <div className="pl-6 mt-3 text-xs flex gap-12">
-                                                <div className="flex flex-col gap-4">
-                                                    {/* Sub-unit Purchase Prices */}
-                                                    <div>
-                                                        <span className="font-bold text-black border-b border-gray-300 pb-1 pr-6">Sub-unit Purchase Prices</span>
-                                                        <div className="flex flex-col gap-1 mt-2 font-medium text-gray-700">
-                                                            <div className="flex items-center">
-                                                                <span className="w-32">└─ Pack (x10)</span>
-                                                                <span>PHP 12.00</span>
-                                                            </div>
-                                                            <div className="flex items-center">
-                                                                <span className="w-32 pl-4">└─ Piece (x20)</span>
-                                                                <span>PHP 0.60</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex flex-col gap-4">
-                                                    {/* Selling Prices */}
-                                                    <div>
-                                                        <span className="font-bold text-black border-b border-gray-300 pb-1 pr-6">Selling Prices (Global)</span>
-                                                        <div className="flex flex-col gap-1 mt-2 font-medium text-gray-700">
-                                                            <div className="flex items-center">
-                                                                <span className="w-24">Box</span>
-                                                                <span>PHP 120.00</span>
-                                                            </div>
-                                                            <div className="flex items-center">
-                                                                <span className="w-24">Pack</span>
-                                                                <span>PHP 15.00</span>
-                                                            </div>
-                                                            <div className="flex items-center">
-                                                                <span className="w-24">Piece</span>
-                                                                <span>PHP 1.00</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Price History */}
-                                                    <div>
-                                                        <span className="font-bold text-black border-b border-gray-300 pb-1 pr-6">Price History</span>
-                                                        <ul className="list-disc flex flex-col gap-1 mt-2 pl-4 text-gray-600">
-                                                            <li>Nov 20, 2026 – Box PHP 110.00 <span className="text-gray-400">→</span> PHP 120.00</li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+  return (
+    <section className="absolute left-0 top-0 z-50 flex h-full w-full items-center justify-center bg-black/40 p-4">
+      <div
+        className={`transition-all duration-300 relative flex h-[760px] overflow-hidden rounded-xl border bg-white shadow-lg ${activeKey ? "w-[1200px]" : "w-[860px]"}`}
+      >
+        {/* Close button */}
+        <div
+          className="absolute right-3 top-3 z-10 cursor-pointer rounded-md p-3 text-vesper-gray transition hover:bg-bellflower-gray"
+          onClick={onClose}
+          aria-label="Close benchmark modal"
+        >
+          <X size={18} />
         </div>
-    );
+
+        {/* Left panel */}
+        <div
+          className={`flex min-w-0 flex-col border-r border-slate-200 transition-all duration-300 ${activeKey ? "w-1/2" : "w-full"}`}
+        >
+          {/* Header */}
+          <div className="border-b border-slate-200 px-5 py-4 pr-12">
+            <h3 className="text-lg font-semibold text-vesper-gray">
+              Purchase Price Benchmark
+            </h3>
+            <p className="text-sm text-slate-500">
+              Compare purchase prices for the same product across all suppliers.
+            </p>
+          </div>
+
+          {/* Search + Legend */}
+          <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-3">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
+              <Search size={14} className="shrink-0 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent text-sm text-vesper-gray outline-none placeholder:text-slate-400"
+              />
+            </div>
+            <div className="flex items-center gap-5 text-xs text-slate-500">
+              <span className="font-medium">Legend:</span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                All prices profitable
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                At least 1 price at a loss
+              </span>
+            </div>
+          </div>
+
+          {/* Product list */}
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+            {overviewLoading && (
+              <div className="flex h-full items-center justify-center text-sm text-slate-500">
+                Loading products…
+              </div>
+            )}
+            {!overviewLoading &&
+              (!filteredProducts || filteredProducts.length === 0) && (
+                <div className="flex h-full items-center justify-center text-sm text-slate-500">
+                  No products with benchmark data found.
+                </div>
+              )}
+            <div className="flex flex-col gap-2 w-full">
+              {filteredProducts?.map((product) => {
+                const presetGroups = groupPresetsByMainUnit(product.presets);
+                return (
+                  <div
+                    key={product.product_ID}
+                    className="rounded-lg border border-slate-200 bg-white p-3"
+                  >
+                    <p className="truncate text-sm font-semibold text-vesper-gray">
+                      {product.product_Name}
+                    </p>
+                    <div className="mt-2 flex flex-col gap-1.5">
+                      {Array.from(presetGroups.entries()).map(
+                        ([mainUnitId, group]) => {
+                          const accordionKey = `${product.product_ID}:${mainUnitId}`;
+                          const isOpen = !!expandedMainUnits[accordionKey];
+                          return (
+                            <div key={mainUnitId}>
+                              <button
+                                className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs text-slate-600 transition hover:bg-slate-100 bg-white border"
+                                onClick={() => toggleMainUnit(accordionKey)}
+                              >
+                                {isOpen ? (
+                                  <ChevronDown size={13} />
+                                ) : (
+                                  <ChevronRight size={13} />
+                                )}
+                                <span className="w-full">
+                                  Primary Unit:{" "}
+                                  <span className="font-semibold text-vesper-gray">
+                                    {group.uomName}
+                                  </span>
+                                </span>
+                              </button>
+                              {isOpen && (
+                                <div className="ml-5 mt-1 flex flex-col gap-1 border-l border-slate-200 pl-3 min-w-0 overflow-hidden">
+                                  {group.presets.map((preset) => {
+                                    const key = `${product.product_ID}:${preset.preset_ID}`;
+                                    const isActive = activeKey === key;
+                                    return (
+                                      <button
+                                        key={preset.preset_ID}
+                                        className={`flex max-w-full w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs transition ${
+                                          isActive
+                                            ? "bg-blue-50 text-blue-700"
+                                            : "text-slate-600 hover:bg-slate-100"
+                                        }`}
+                                        onClick={() => {
+                                          setActiveKey(key);
+                                          setExpandedSuppliers({});
+                                        }}
+                                      >
+                                        <span
+                                          className="truncate font-medium"
+                                          title={formatPresetChain(preset)}
+                                        >
+                                          {formatPresetChain(preset)}
+                                        </span>
+                                        <span className="mr-3 flex shrink-0 items-center gap-2">
+                                          <span className="text-slate-400">
+                                            {preset.supplier_count} supplier
+                                            {preset.supplier_count !== 1
+                                              ? "s"
+                                              : ""}
+                                          </span>
+                                          <span
+                                            className={`h-2 w-2 rounded-full ${preset.has_loss ? "bg-red-500" : "bg-emerald-500"}`}
+                                            title={
+                                              preset.has_loss
+                                                ? "At least 1 price at a loss"
+                                                : "All prices profitable"
+                                            }
+                                          />
+                                        </span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        },
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Right panel */}
+        {activeKey && (
+          <div className="relative flex w-1/2 min-w-0 flex-col">
+            <div className="absolute left-0 top-0 h-full w-[3px] bg-blue-400" />
+
+            {/* Right panel header */}
+            {activeProduct && activePreset ? (
+              <div className="border-b border-slate-200 px-5 py-4">
+                <p className="text-xs text-slate-500">Benchmark Detail</p>
+                <h4 className="text-base font-semibold text-vesper-gray">
+                  {activeProduct.product_Name}
+                </h4>
+                <p className="text-sm text-slate-500">
+                  {activePreset.preset_Name} · Primary unit:{" "}
+                  {activePreset.main_Unit?.uom_Name ??
+                    `UOM ${activePreset.main_Unit_ID}`}
+                </p>
+              </div>
+            ) : (
+              <div className="border-b border-slate-200 px-5 py-4">
+                <p className="text-xs text-slate-500">Benchmark Detail</p>
+              </div>
+            )}
+
+            {/* Table */}
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+              {detailLoading && (
+                <div className="flex h-full items-center justify-center text-sm text-slate-500">
+                  Loading suppliers…
+                </div>
+              )}
+
+              {!detailLoading && presetDetail && (
+                <>
+                  {presetDetail.suppliers.length === 0 ? (
+                    <div className="flex h-full items-center justify-center text-sm text-slate-500">
+                      No supplier prices set for this preset.
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-slate-200 overflow-hidden">
+                      {/* Table header */}
+                      <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-500">
+                        <div>Supplier</div>
+                        <div className="text-center">
+                          Purchase Price
+                          <span className="ml-1 font-normal text-slate-400">
+                            ({presetDetail.main_Unit?.uom_Name ?? "Unit"})
+                          </span>
+                        </div>
+                        <div className="text-center">Last Update</div>
+                        <div className="text-center">Profit / Loss</div>
+                      </div>
+
+                      {/* Rows */}
+                      {presetDetail.suppliers.map((supplier) => {
+                        const isExpanded =
+                          !!expandedSuppliers[supplier.supplier_ID];
+                        const subLevels = presetDetail.preset_Levels.filter(
+                          (lvl) => lvl.uoM_ID !== presetDetail.main_Unit_ID,
+                        );
+                        const mainLevel = presetDetail.preset_Levels.find(
+                          (lvl) => lvl.uoM_ID === presetDetail.main_Unit_ID,
+                        );
+
+                        return (
+                          <div
+                            key={supplier.supplier_ID}
+                            className="border-b border-slate-200 last:border-0"
+                          >
+                            {/* Main row */}
+                            <div className="grid grid-cols-4 items-center px-4 py-3 text-sm hover:bg-slate-50/60 transition">
+                              <div
+                                className="truncate pr-2 font-medium text-vesper-gray"
+                                title={supplier.supplier_Name}
+                              >
+                                {supplier.supplier_Name}
+                              </div>
+                              <div className="text-center text-vesper-gray">
+                                Php {formatPhp(supplier.price_Per_Unit)}
+                              </div>
+                              <div className="text-center text-slate-500">
+                                {formatDate(supplier.updated_At)}
+                              </div>
+                              <div className="flex items-center justify-center gap-1.5">
+                                {supplier.is_loss ? (
+                                  <TrendingDown
+                                    size={13}
+                                    className="text-red-500"
+                                  />
+                                ) : (
+                                  <TrendingUp
+                                    size={13}
+                                    className="text-emerald-500"
+                                  />
+                                )}
+                                <span
+                                  className={`text-xs font-semibold ${supplier.is_loss ? "text-red-600" : "text-emerald-600"}`}
+                                >
+                                  {supplier.is_loss ? "Loss" : "Profit"}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Expandable details toggle */}
+                            <div className="px-4 pb-2">
+                              <button
+                                className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-slate-500 transition hover:bg-slate-100"
+                                onClick={() =>
+                                  toggleSupplier(supplier.supplier_ID)
+                                }
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown size={12} />
+                                ) : (
+                                  <ChevronRight size={12} />
+                                )}
+                                <span className="font-medium">
+                                  View unit breakdown
+                                </span>
+                              </button>
+
+                              {isExpanded && (
+                                <div className="mt-3 flex gap-10 pl-4 text-xs">
+                                  {/* Sub-unit Purchase Prices */}
+                                  {/* {subLevels.length > 0 && (
+                                    <div className="flex flex-col gap-2">
+                                      <p className="border-b border-slate-200 pb-1 font-semibold text-vesper-gray">
+                                        Sub-unit Purchase Prices
+                                      </p>
+                                      <div className="flex flex-col gap-1.5 text-slate-600">
+                                        {subLevels.map((lvl) => {
+                                          const derivedPrice =
+                                            lvl.conversion_Factor > 0
+                                              ? supplier.price_Per_Unit /
+                                                lvl.conversion_Factor
+                                              : 0;
+                                          const subIsLoss =
+                                            derivedPrice >= lvl.selling_Price;
+                                          return (
+                                            <div
+                                              key={lvl.level_ID}
+                                              className="flex items-center gap-2"
+                                            >
+                                              <span className="w-32 text-slate-500">
+                                                └─{" "}
+                                                {lvl.unit?.uom_Name ??
+                                                  `UOM ${lvl.uoM_ID}`}
+                                                <span className="ml-1 text-slate-400">
+                                                  (×{lvl.conversion_Factor})
+                                                </span>
+                                              </span>
+                                              <span className="font-medium">
+                                                Php {formatPhp(derivedPrice)}
+                                              </span>
+                                              <span
+                                                className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-semibold ${subIsLoss ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600"}`}
+                                              >
+                                                {subIsLoss ? (
+                                                  <TrendingDown size={9} />
+                                                ) : (
+                                                  <TrendingUp size={9} />
+                                                )}
+                                              </span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )} */}
+
+                                  {/* Selling Prices */}
+                                  <div className="flex flex-col gap-2">
+                                    <p className="border-b border-slate-200 pb-1 font-semibold text-vesper-gray">
+                                      Selling Prices (Global)
+                                    </p>
+                                    <div className="flex flex-col gap-1.5 text-slate-600">
+                                      {mainLevel && (
+                                        <div className="flex items-center gap-2">
+                                          <span className="w-28 font-medium text-vesper-gray">
+                                            {presetDetail.main_Unit?.uom_Name ??
+                                              `UOM ${presetDetail.main_Unit_ID}`}
+                                            <span className="ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600">
+                                              primary
+                                            </span>
+                                          </span>
+                                          <span className="font-medium">
+                                            Php{" "}
+                                            {formatPhp(mainLevel.selling_Price)}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {subLevels.map((lvl) => (
+                                        <div
+                                          key={lvl.level_ID}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <span className="w-28 text-slate-500">
+                                            └─{" "}
+                                            {lvl.unit?.uom_Name ??
+                                              `UOM ${lvl.uoM_ID}`}
+                                          </span>
+                                          <span className="font-medium">
+                                            Php {formatPhp(lvl.selling_Price)}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
 };
