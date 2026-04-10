@@ -73,8 +73,8 @@ export const SelectedProduct = ({
         </div>
         <Separator orientation="horizontal" />
 
-        <div className="rounded-lg border inset-shadow-sm p-1 h-full">
-          <div className="flex gap-2 bg-wash-gray p-2 rounded-lg shadow-sm flex-col overflow-y-scroll">
+        <div className="rounded-lg border inset-shadow-sm p-1 h-full min-h-0">
+          <div className="flex gap-2 bg-wash-gray p-2 rounded-lg shadow-sm flex-col overflow-y-auto max-h-112 min-h-0">
             {product.unitPresets.length === 0 ? (
               <span className="text-sm font-semibold">
                 No associated unit preset.
@@ -124,9 +124,9 @@ export const SelectedProduct = ({
                                 className="flex items-center gap-2 text-sm"
                                 key={pidx}
                               >
-                                {pp.uoM_ID === u.preset.main_Unit_ID && (
+                                {/* {pp.uoM_ID === u.preset.main_Unit_ID && (
                                   <label>{u.main_Unit_Quantity}</label>
-                                )}
+                                )} */}
                                 <span className="text-gray-600">
                                   {pp.unitName}
                                 </span>
@@ -170,18 +170,18 @@ export const SelectedProduct = ({
                               Restock No.
                             </label>
                             <span className="text-sm font-semibold">
-                              #00123
+                              {u.restock_Number ?? "N/A"}
                             </span>
                           </div>
 
-                          <div className="flex flex-col">
+                          {/* <div className="flex flex-col">
                             <label className="text-xs text-gray-500 font-semibold">
                               PO Ref.
                             </label>
                             <span className="text-sm font-semibold">
                               #PO-456
                             </span>
-                          </div>
+                          </div> */}
                         </div>
 
                         {/* Column 2: Original Quantities */}
@@ -190,19 +190,25 @@ export const SelectedProduct = ({
                             Original
                           </label>
                           <div className="flex flex-col gap-1">
-                            {u.preset.presetLevels.map((level, idx) => (
-                              <div
-                                className="flex items-center gap-2"
-                                key={idx}
-                              >
-                                <span className="text-sm font-semibold">
-                                  100
-                                </span>
-                                <span className="text-sm text-gray-600">
-                                  {level.unitOfMeasure.uom_Name}
-                                </span>
-                              </div>
-                            ))}
+                            {(() => {
+                              const mainLevel = u.preset.presetLevels.find(
+                                (l) => l.level === 1,
+                              );
+                              const mainQty = u.presetQuantities.find(
+                                (q) => q.level === 1,
+                              );
+                              if (!mainLevel) return null;
+                              return (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold">
+                                    {mainQty?.original_Quantity ?? 0}
+                                  </span>
+                                  <span className="text-sm text-gray-600">
+                                    {mainLevel.unitOfMeasure.uom_Name}
+                                  </span>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
 
@@ -212,16 +218,16 @@ export const SelectedProduct = ({
                             Remaining
                           </label>
                           <div className="flex flex-col gap-1">
-                            {u.preset.presetLevels.map((level, idx) => (
+                            {u.presetQuantities.map((qty, idx) => (
                               <div
                                 className="flex items-center gap-2"
                                 key={idx}
                               >
                                 <span className="text-sm font-semibold text-green-600">
-                                  85
+                                  {qty.remaining_Quantity}
                                 </span>
                                 <span className="text-sm text-gray-600">
-                                  {level.unitOfMeasure.uom_Name}
+                                  {qty.unitName}
                                 </span>
                               </div>
                             ))}
