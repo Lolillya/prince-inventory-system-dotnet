@@ -8,6 +8,7 @@ using backend.Models.LineItems;
 using backend.Models.PurchaseOrderModel;
 using backend.Models.Unit;
 using backend.Models.Users;
+using backend.Models.Suppliers;
 
 namespace backend.Data
 {
@@ -41,6 +42,7 @@ namespace backend.Data
         public DbSet<UserInventoryFavorites> UserInventoryFavorites { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<PurchaseOrderLineItem> PurchaseOrderLineItems { get; set; }
+        public DbSet<Supplier_Product_Preset_Price> SupplierProductPresetPrices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -384,6 +386,31 @@ namespace backend.Data
                     .WithMany()
                     .HasForeignKey(li => li.UOM_ID)
                     .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Supplier_Product_Preset_Price Configuration
+            builder.Entity<Supplier_Product_Preset_Price>(entity =>
+            {
+                entity.ToTable("Supplier_Product_Preset_Prices");
+
+                entity.HasOne(sp => sp.Supplier)
+                    .WithMany()
+                    .HasForeignKey(sp => sp.Supplier_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(sp => sp.Product)
+                    .WithMany()
+                    .HasForeignKey(sp => sp.Product_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(sp => sp.Preset)
+                    .WithMany()
+                    .HasForeignKey(sp => sp.Preset_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                // One price record per supplier+product+preset combination
+                entity.HasIndex(sp => new { sp.Supplier_ID, sp.Product_ID, sp.Preset_ID })
+                    .IsUnique();
             });
 
         }
