@@ -11,7 +11,7 @@ import { InfoCard } from "./_components/info-card";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 import { SelectedUser } from "./_components/selected-user";
 import { toast } from "sonner";
-import { ShoppingCart } from "lucide-react";
+import { Scale, ShoppingCart } from "lucide-react";
 import { PurchasePriceModal } from "./_components/purchase-price.modal";
 import { PurchaseOrderModal } from "./_components/purchase-order.modal";
 import { PurchasePriceBenchmarkModal } from "./_components/purchase-price-benchmark.modal";
@@ -19,15 +19,20 @@ import { PurchasePriceBenchmarkModal } from "./_components/purchase-price-benchm
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
   const { data: selectedSupplierData } = useSelectedSupplierQuery();
-  const selectedSupplier = suppliers?.find(s => s.supplier_Id === selectedSupplierData?.supplier_Id) || selectedSupplierData;
+  const selectedSupplier =
+    suppliers?.find(
+      (s) => s.supplier_Id === selectedSupplierData?.supplier_Id,
+    ) || selectedSupplierData;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
   const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
   const [isPurchaseOrderModalOpen, setIsPurchaseOrderModalOpen] =
     useState(false);
-  const [isPurchasePriceBenchmarkModalOpen, setIsPurchasePriceBenchmarkModalOpen] =
-    useState(false);
+  const [
+    isPurchasePriceBenchmarkModalOpen,
+    setIsPurchasePriceBenchmarkModalOpen,
+  ] = useState(false);
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
   const [isPurchasePriceModalOpen, setIsPurchasePriceModalOpen] =
@@ -125,7 +130,9 @@ const SuppliersPage = () => {
       </Activity>
 
       {isPurchasePriceBenchmarkModalOpen && (
-        <PurchasePriceBenchmarkModal onClose={() => setIsPurchasePriceBenchmarkModalOpen(false)} />
+        <PurchasePriceBenchmarkModal
+          onClose={() => setIsPurchasePriceBenchmarkModalOpen(false)}
+        />
       )}
 
       {/* {isPurchaseOrderModalOpen && (
@@ -182,19 +189,22 @@ const SuppliersPage = () => {
             </div>
             <div className="flex gap-2 items-center">
               <div
-                className="flex items-center justify-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 cursor-pointer duration-300 transition-all text-vesper-gray outline-none w-9 h-9"
+                className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
                 onClick={handlePurchasePriceBenchmark}
                 title="Purchase Price Benchmark"
               >
-                <img src="/purchase_price_benchmark_icon.png" alt="Benchmark" className="w-[18px] h-[18px] object-contain" />
-
+                {/* <img src="/purchase_price_benchmark_icon.png" alt="Benchmark" className="w-[18px] h-[18px] object-contain" /> */}
+                <Scale size={18} />
+                <label className="">Purchase Price Benchmark</label>
               </div>
               <div
                 className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
                 onClick={handlePurchaseOrder}
               >
                 <ShoppingCart size={18} />
-                <label className="cursor-pointer">Generate Purchase Order</label>
+                <label className="cursor-pointer">
+                  Generate Purchase Order
+                </label>
               </div>
             </div>
           </div>
