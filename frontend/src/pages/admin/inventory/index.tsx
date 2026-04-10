@@ -61,6 +61,21 @@ const InventoryPage = () => {
   const [isProductPackagingOpen, setIsProductPackagingOpen] = useState(false);
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
   const [isFromEditModal, setIsFromEditModal] = useState(false);
+  const [stocklistFilters, setStocklistFilters] = useState<Set<string>>(
+    new Set(["sufficient-stock", "low-stock", "very-low-stock", "no-stock"]),
+  );
+
+  const toggleStocklistFilter = (key: string) => {
+    setStocklistFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const setSelectedProduct = useSetSelectedProduct();
 
@@ -379,54 +394,77 @@ const InventoryPage = () => {
     doc.save(`inventory-pricelist-${hierarchySuffix}.pdf`);
   };
 
-  const exportStocklistPdf = (
-    filterType:
-      | "sufficient-stock"
-      | "low-stock"
-      | "very-low-stock"
-      | "no-stock"
-      | "export-stocklist",
-  ) => {
+  const exportStocklistPdf = (activeFilters: Set<string>) => {
+    if (!inventory || inventory.length === 0) return;
+    if (activeFilters.size === 0) return;
+
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
     });
 
-    const rows = [
-      {
-        code: "1001",
-        description: "Bottle-Acme-500ml",
-        uom: "Box",
-        quantity: "50",
-      },
-      { code: "", description: "", uom: "-- Pack (x10)", quantity: "8" },
-      { code: "", description: "", uom: "-- Piece (x20)", quantity: "15" },
-      {
-        code: "1002",
-        description: "Snack-Bravo-Salted",
-        uom: "Box",
-        quantity: "30",
-      },
-      { code: "", description: "", uom: "-- Pack (x8)", quantity: "0" },
-      { code: "", description: "", uom: "-- Piece (x20)", quantity: "0" },
-      {
-        code: "1003",
-        description: "Cleaner-Zen-Lemon",
-        uom: "Drum",
-        quantity: "12",
-      },
-      { code: "", description: "", uom: "-- Bottle (x6)", quantity: "2" },
-      { code: "", description: "", uom: "-- Capful (x30)", quantity: "0" },
-      {
-        code: "1004",
-        description: "Cable-Delta-2m",
-        uom: "Piece",
-        quantity: "120",
-      },
-    ];
+    const filteredItems = inventory.filter((item) => {
+      const qty = item.product.quantity;
+      const preset = item.unitPresets[0];
+      const lowLevel = preset?.low_Stock_Level ?? null;
+      const veryLowLevel = preset?.very_Low_Stock_Level ?? null;
+
+      const isSufficient = lowLevel == null || qty > lowLevel;
+      const isLow =
+        qty > 0 &&
+        lowLevel != null &&
+        qty <= lowLevel &&
+        (veryLowLevel == null || qty > veryLowLevel);
+      const isVeryLow = qty > 0 && veryLowLevel != null && qty <= veryLowLevel;
+      const isNoStock = qty === 0;
+
+      return (
+        (activeFilters.has("sufficient-stock") && isSufficient) ||
+        (activeFilters.has("low-stock") && isLow) ||
+        (activeFilters.has("very-low-stock") && isVeryLow) ||
+        (activeFilters.has("no-stock") && isNoStock)
+      );
+    });
+
+    const rows = filteredItems.flatMap((item) => {
+      const preset = item.unitPresets[0];
+      const sortedLevels = [...(preset?.preset?.presetLevels ?? [])].sort(
+        (a, b) => a.level - b.level,
+      );
+
+      const sortedQuantities = [...(preset?.presetQuantities ?? [])].sort(
+        (a, b) => a.level - b.level,
+      );
+
+      if (sortedLevels.length === 0) {
+        return [
+          {
+            code: item.product.product_Code,
+            description: buildProductDescription(item),
+            uom: "-",
+            quantity: String(item.product.quantity),
+          },
+        ];
+      }
+
+      return sortedLevels.map((lvl, index) => {
+        const qty = sortedQuantities.find((q) => q.level === lvl.level);
+        const quantityStr = qty != null ? String(qty.remaining_Quantity) : "-";
+        return {
+          code: index === 0 ? item.product.product_Code : "",
+          description: index === 0 ? buildProductDescription(item) : "",
+          uom:
+            index === 0
+              ? lvl.unitOfMeasure.uom_Name
+              : `-- ${lvl.unitOfMeasure.uom_Name}`,
+          quantity: quantityStr,
+        };
+      });
+    });
 
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const startX = 10;
     const startY = 14;
     const colWidths = {
@@ -446,56 +484,82 @@ const InventoryPage = () => {
     const xQty = xUom + colWidths.uom;
 
     doc.setFillColor(28, 29, 33);
-    doc.rect(0, 0, pageWidth, doc.internal.pageSize.getHeight(), "F");
+    doc.rect(0, 0, pageWidth, pageHeight, "F");
 
-    doc.setFillColor(32, 33, 37);
-    doc.rect(startX, startY, tableWidth, headerHeight, "F");
+    const drawTableHeader = (sy: number) => {
+      doc.setFillColor(32, 33, 37);
+      doc.rect(startX, sy, tableWidth, headerHeight, "F");
+      doc.setDrawColor(58, 60, 65);
+      doc.setLineWidth(0.3);
+      doc.setTextColor(238, 238, 238);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10.5);
+      doc.text("Product Code", xCode + 2, sy + 7);
+      doc.text("Description", xDesc + 2, sy + 7);
+      doc.text("UOM", xUom + 2, sy + 7);
+      doc.text("Quantity", xQty + 2, sy + 7);
+      doc.setFont("helvetica", "normal");
+    };
 
-    doc.setDrawColor(58, 60, 65);
-    doc.setLineWidth(0.3);
+    drawTableHeader(startY);
 
-    doc.setTextColor(238, 238, 238);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5);
-    doc.text("Product Code", xCode + 2, startY + 7);
-    doc.text("Description", xDesc + 2, startY + 7);
-    doc.text("UOM", xUom + 2, startY + 7);
-    doc.text("Quantity", xQty + 2, startY + 7);
+    let currentY = startY + headerHeight;
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10.5);
+    rows.forEach((row) => {
+      const contentBottom = pageHeight - 10;
+      if (currentY + rowHeight > contentBottom) {
+        doc.addPage();
+        doc.setFillColor(28, 29, 33);
+        doc.rect(0, 0, pageWidth, pageHeight, "F");
+        drawTableHeader(startY);
+        currentY = startY + headerHeight;
+      }
 
-    rows.forEach((row, index) => {
-      const y = startY + headerHeight + index * rowHeight;
+      doc.setDrawColor(58, 60, 65);
+      doc.setLineWidth(0.3);
+      doc.line(startX, currentY, startX + tableWidth, currentY);
 
-      doc.line(startX, y, startX + tableWidth, y);
+      doc.setTextColor(238, 238, 238);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10.5);
 
       doc.text(
         doc.splitTextToSize(row.code, colWidths.code - 4),
         xCode + 2,
-        y + 7,
+        currentY + 7,
       );
       doc.text(
         doc.splitTextToSize(row.description, colWidths.description - 4),
         xDesc + 2,
-        y + 7,
+        currentY + 7,
       );
       doc.text(
         doc.splitTextToSize(row.uom, colWidths.uom - 4),
         xUom + 2,
-        y + 7,
+        currentY + 7,
       );
       doc.text(
         doc.splitTextToSize(row.quantity, colWidths.qty - 4),
         xQty + 2,
-        y + 7,
+        currentY + 7,
       );
+
+      currentY += rowHeight;
     });
 
-    const tableBottomY = startY + headerHeight + rows.length * rowHeight;
-    doc.line(startX, tableBottomY, startX + tableWidth, tableBottomY);
+    doc.setDrawColor(58, 60, 65);
+    doc.line(startX, currentY, startX + tableWidth, currentY);
 
-    doc.save(`inventory-stocklist-${filterType}.pdf`);
+    const filterSuffix = [
+      activeFilters.has("sufficient-stock") ? "sufficient" : "",
+      activeFilters.has("low-stock") ? "low" : "",
+      activeFilters.has("very-low-stock") ? "very-low" : "",
+      activeFilters.has("no-stock") ? "no-stock" : "",
+    ]
+      .filter(Boolean)
+      .join("-");
+
+    doc.save(`inventory-stocklist-${filterSuffix || "all"}.pdf`);
   };
 
   return (
@@ -601,40 +665,81 @@ const InventoryPage = () => {
                   <DropdownMenuSubContent className="w-72 p-0">
                     <DropdownMenuItem
                       className="gap-2 py-2.5"
-                      onClick={() => exportStocklistPdf("sufficient-stock")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleStocklistFilter("sufficient-stock");
+                      }}
                     >
-                      <Check size={16} className="text-slate-700" />
+                      <Check
+                        size={16}
+                        className={
+                          stocklistFilters.has("sufficient-stock")
+                            ? "text-slate-700"
+                            : "text-transparent"
+                        }
+                      />
                       <span className="h-4 w-4 rounded-full bg-[#8fd19e]" />
                       Sufficient stock
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="gap-2 py-2.5"
-                      onClick={() => exportStocklistPdf("low-stock")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleStocklistFilter("low-stock");
+                      }}
                     >
-                      <Check size={16} className="text-slate-700" />
+                      <Check
+                        size={16}
+                        className={
+                          stocklistFilters.has("low-stock")
+                            ? "text-slate-700"
+                            : "text-transparent"
+                        }
+                      />
                       <span className="h-4 w-4 rounded-full bg-[#f0db96]" />
                       Low stock
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="gap-2 py-2.5"
-                      onClick={() => exportStocklistPdf("very-low-stock")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleStocklistFilter("very-low-stock");
+                      }}
                     >
-                      <Check size={16} className="text-slate-700" />
+                      <Check
+                        size={16}
+                        className={
+                          stocklistFilters.has("very-low-stock")
+                            ? "text-slate-700"
+                            : "text-transparent"
+                        }
+                      />
                       <span className="h-4 w-4 rounded-full bg-[#f28e8e]" />
                       Very low stock
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="gap-2 py-2.5"
-                      onClick={() => exportStocklistPdf("no-stock")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleStocklistFilter("no-stock");
+                      }}
                     >
-                      <Check size={16} className="text-slate-700" />
+                      <Check
+                        size={16}
+                        className={
+                          stocklistFilters.has("no-stock")
+                            ? "text-slate-700"
+                            : "text-transparent"
+                        }
+                      />
                       <span className="h-4 w-4 rounded-full bg-[#d5dae3]" />
                       No stock
                     </DropdownMenuItem>
                     <Separator />
                     <DropdownMenuItem
                       className="gap-2 py-2.5"
-                      onClick={() => exportStocklistPdf("export-stocklist")}
+                      onClick={() => exportStocklistPdf(stocklistFilters)}
+                      disabled={stocklistFilters.size === 0}
                     >
                       Export Stocklist
                     </DropdownMenuItem>
