@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260410090811_AddSupplierProductPresetPrices")]
+    partial class AddSupplierProductPresetPrices
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -181,11 +184,6 @@ namespace backend.Migrations
                         {
                             UserId = "4",
                             RoleId = "4"
-                        },
-                        new
-                        {
-                            UserId = "00000000-0000-0000-0000-000000000001",
-                            RoleId = "3"
                         });
                 });
 
@@ -1304,28 +1302,6 @@ namespace backend.Migrations
                             SecurityStamp = "3b4c5d6e-7f8a-9b0c-1d2e-3f4a5b6c7d8e",
                             TwoFactorEnabled = false,
                             UserName = "customer"
-                        },
-                        new
-                        {
-                            Id = "00000000-0000-0000-0000-000000000001",
-                            AccessFailedCount = 0,
-                            Address = "",
-                            CompanyName = "Prince Educational Supplies",
-                            ConcurrencyStamp = "00000000-0000-0000-0000-000000000001",
-                            Email = "internal@princeeducationalsupplies.com",
-                            EmailConfirmed = true,
-                            FirstName = "Prince",
-                            LastName = "Educational",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "INTERNAL@PRINCEEDUCATIONALSUPPLIES.COM",
-                            NormalizedUserName = "PRINCEEDUCATIONALSUPPLIES",
-                            Notes = "Internal company account used for auto-replenish restock records",
-                            PasswordHash = "$2a$12$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                            PhoneNumber = "0000000000",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "00000000-0000-0000-0000-000000000001",
-                            TwoFactorEnabled = false,
-                            UserName = "princeeducationalsupplies"
                         });
                 });
 

@@ -15,10 +15,11 @@ const NewRestockPage = () => {
   // GLOBAL STATES
   const { data: inventoryData, isLoading, error } = UseInventoryQuery();
   const { data: items = [] } = useUnitPresetRestockItems();
-  const { addProduct, removeProduct } = useUnitPresetRestock();
+  const { addProduct, removeProduct, clearAll } = useUnitPresetRestock();
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
@@ -124,7 +125,7 @@ const NewRestockPage = () => {
                         .filter(
                           (otherItem) =>
                             otherItem.product.product_ID ===
-                              item.product.product_ID &&
+                            item.product.product_ID &&
                             (otherItem as any).itemId !== (item as any).itemId,
                         )
                         .map(
@@ -157,6 +158,8 @@ const NewRestockPage = () => {
                       <input
                         placeholder="Search..."
                         className="input-style-2"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                       />
                       <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                         <SearchIcon />
@@ -165,7 +168,10 @@ const NewRestockPage = () => {
                   </div>
 
                   <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
-                    {inventoryData?.map((data, i) => (
+                    {inventoryData?.filter((data) =>
+                      data.product.product_Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      data.product.product_Code.toLowerCase().includes(searchTerm.toLowerCase())
+                    ).map((data, i) => (
                       <ProductCard
                         product={data}
                         onClick={() => handleClick(data)}
@@ -176,15 +182,14 @@ const NewRestockPage = () => {
                 </div>
 
                 <div className="flex gap-5 justify-between">
-                  <button>clear</button>
+                  <button onClick={clearAll}>clear</button>
                   <button
                     onClick={createRestock}
                     disabled={!allItemsReady}
-                    className={`px-4 py-2 rounded ${
-                      allItemsReady
+                    className={`px-4 py-2 rounded ${allItemsReady
                         ? "text-white cursor-pointer"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     confirm restock
                   </button>
