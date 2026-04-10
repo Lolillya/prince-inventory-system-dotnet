@@ -267,64 +267,39 @@ const InventoryPage = () => {
   };
 
   const exportPricelistPdf = (includePackagingHierarchy: boolean) => {
+    if (!inventory || inventory.length === 0) return;
+
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
     });
 
-    const priceRows = [
-      {
-        code: "1001",
-        description: "Bottle-Acme-500ml",
-        levels: [
-          { uom: "Case", price: "120.00" },
-          { uom: "Pack (x12)", price: "12.00" },
-          { uom: "Piece (x1)", price: "1.20" },
-        ],
-      },
-      {
-        code: "1002",
-        description: "Snack-Bravo-Salted",
-        levels: [
-          { uom: "Box", price: "80.00" },
-          { uom: "Pack (x8)", price: "10.00" },
-          { uom: "Piece (x20)", price: "0.50" },
-        ],
-      },
-      {
-        code: "1003",
-        description: "Cleaner-Zen-Lemon",
-        levels: [
-          { uom: "Drum", price: "300.00" },
-          { uom: "Bottle (x6)", price: "50.00" },
-          { uom: "Capful (x30)", price: "2.00" },
-        ],
-      },
-      {
-        code: "1004",
-        description: "Cable-Delta-2m",
-        levels: [{ uom: "Piece", price: "15.00" }],
-      },
-      {
-        code: "1005",
-        description: "Paper-Echo-A4",
-        levels: [
-          { uom: "Pallet", price: "500.00" },
-          { uom: "Carton (x40)", price: "12.50" },
-          { uom: "Ream (x5)", price: "2.50" },
-          { uom: "Sheet (x500)", price: "0.01" },
-        ],
-      },
-    ];
+    const flattenedRows = inventory.flatMap((item) => {
+      const preset = item.unitPresets[0];
+      const sortedLevels = [...(preset?.preset?.presetLevels ?? [])].sort(
+        (a, b) => a.level - b.level,
+      );
 
-    const flattenedRows = priceRows.flatMap((product) => {
-      return product.levels.map((level, index) => ({
-        code: index === 0 ? product.code : "",
-        description: index === 0 ? product.description : "",
-        uom: index === 0 ? level.uom : `-- ${level.uom}`,
-        price: level.price,
-      }));
+      const levelsToRender = includePackagingHierarchy
+        ? sortedLevels
+        : sortedLevels.slice(0, 1);
+
+      return levelsToRender.map((lvl, index) => {
+        const pricing = (preset?.presetPricing ?? []).find(
+          (p) => p.level === lvl.level,
+        );
+        const price = pricing != null ? pricing.price_Per_Unit.toFixed(2) : "-";
+        return {
+          code: index === 0 ? item.product.product_Code : "",
+          description: index === 0 ? buildProductDescription(item) : "",
+          uom:
+            index === 0
+              ? lvl.unitOfMeasure.uom_Name
+              : `-- ${lvl.unitOfMeasure.uom_Name}`,
+          price,
+        };
+      });
     });
 
     const pageHeight = doc.internal.pageSize.getHeight();
