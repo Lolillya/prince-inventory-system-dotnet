@@ -405,19 +405,21 @@ const InventoryPage = () => {
     });
 
     const filteredItems = inventory.filter((item) => {
+      // Exclude items with no packaging preset configured
+      if (item.unitPresets.length === 0) return false;
+
       const qty = item.product.quantity;
       const preset = item.unitPresets[0];
       const lowLevel = preset?.low_Stock_Level ?? null;
       const veryLowLevel = preset?.very_Low_Stock_Level ?? null;
 
-      const isSufficient = lowLevel == null || qty > lowLevel;
-      const isLow =
-        qty > 0 &&
-        lowLevel != null &&
-        qty <= lowLevel &&
-        (veryLowLevel == null || qty > veryLowLevel);
-      const isVeryLow = qty > 0 && veryLowLevel != null && qty <= veryLowLevel;
+      // Categorize into exactly one bucket
       const isNoStock = qty === 0;
+      const isVeryLow =
+        !isNoStock && veryLowLevel != null && qty <= veryLowLevel;
+      const isLow =
+        !isNoStock && !isVeryLow && lowLevel != null && qty <= lowLevel;
+      const isSufficient = !isNoStock && !isVeryLow && !isLow;
 
       return (
         (activeFilters.has("sufficient-stock") && isSufficient) ||
