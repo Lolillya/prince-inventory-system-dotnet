@@ -14,14 +14,19 @@ import { toast } from "sonner";
 import { ShoppingCart } from "lucide-react";
 import { PurchasePriceModal } from "./_components/purchase-price.modal";
 import { PurchaseOrderModal } from "./_components/purchase-order.modal";
+import { PurchasePriceBenchmarkModal } from "./_components/purchase-price-benchmark.modal";
 
 const SuppliersPage = () => {
   const { data: suppliers, isLoading, error } = useSuppliersQuery();
-  const { data: selectedSupplier } = useSelectedSupplierQuery();
+  const { data: selectedSupplierData } = useSelectedSupplierQuery();
+  const selectedSupplier = suppliers?.find(s => s.supplier_Id === selectedSupplierData?.supplier_Id) || selectedSupplierData;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
   const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
   const [isPurchaseOrderModalOpen, setIsPurchaseOrderModalOpen] =
+    useState(false);
+  const [isPurchasePriceBenchmarkModalOpen, setIsPurchasePriceBenchmarkModalOpen] =
     useState(false);
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
@@ -56,6 +61,10 @@ const SuppliersPage = () => {
 
   const handlePurchasePrice = () => {
     setIsPurchasePriceModalOpen(!isPurchasePriceModalOpen);
+  };
+
+  const handlePurchasePriceBenchmark = () => {
+    setIsPurchasePriceBenchmarkModalOpen(!isPurchasePriceBenchmarkModalOpen);
   };
 
   const handlePurchaseOrder = () => {
@@ -114,6 +123,11 @@ const SuppliersPage = () => {
           setIsPurchaseOrderModalOpen={setIsPurchaseOrderModalOpen}
         />
       </Activity>
+
+      {isPurchasePriceBenchmarkModalOpen && (
+        <PurchasePriceBenchmarkModal onClose={() => setIsPurchasePriceBenchmarkModalOpen(false)} />
+      )}
+
       {/* {isPurchaseOrderModalOpen && (
         
       )} */}
@@ -166,12 +180,22 @@ const SuppliersPage = () => {
                 {filteredSuppliers?.length} records
               </span>
             </div>
-            <div
-              className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
-              onClick={handlePurchaseOrder}
-            >
-              <ShoppingCart size={18} />
-              <label className="cursor-pointer">Generate Purchase Order</label>
+            <div className="flex gap-2 items-center">
+              <div
+                className="flex items-center justify-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 cursor-pointer duration-300 transition-all text-vesper-gray outline-none w-9 h-9"
+                onClick={handlePurchasePriceBenchmark}
+                title="Purchase Price Benchmark"
+              >
+                <img src="/purchase_price_benchmark_icon.png" alt="Benchmark" className="w-[18px] h-[18px] object-contain" />
+
+              </div>
+              <div
+                className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+                onClick={handlePurchaseOrder}
+              >
+                <ShoppingCart size={18} />
+                <label className="cursor-pointer">Generate Purchase Order</label>
+              </div>
             </div>
           </div>
 

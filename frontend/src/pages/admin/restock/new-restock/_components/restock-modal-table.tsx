@@ -6,7 +6,7 @@ import {
 } from "@/features/restock/unit-preset-restock.query";
 import { useSelectedRestockSupplier } from "@/features/restock/selected-supplier";
 
-export const RestockTable = () => {
+export const RestockTable = ({ close }: { close: () => void }) => {
   const { data: items = [] } = useUnitPresetRestockItems();
   const { getPayload } = useUnitPresetRestock();
   const { mutate: createRestock, isPending } = useCreateUnitPresetRestock();
@@ -47,7 +47,11 @@ export const RestockTable = () => {
       notes: "",
     };
 
-    createRestock(restockPayload);
+    createRestock(restockPayload, {
+      onSuccess: () => {
+        close();
+      },
+    });
   };
 
   const calculateTotalQuantity = () => {
