@@ -16,13 +16,14 @@ const schema = yup.object().shape({
     .required("Email address is required")
     .matches(
       /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-      "Invalid email format"
+      "Invalid email format",
     ),
   phoneNumber: yup.string().required("Contact number is required"),
   companyName: yup.string().required("Company name is required"),
   address: yup.string().required("Address is required"),
   notes: yup.string().optional(),
   roleID: yup.number().required(),
+  term: yup.number().optional(),
 });
 
 interface EditCustomerFormProps {
@@ -52,6 +53,7 @@ export const EditCustomerForm = ({
       address: selectedCustomer?.address || "",
       notes: selectedCustomer?.notes || "",
       id: selectedCustomer?.id,
+      term: selectedCustomer.term,
     },
   });
 
@@ -121,10 +123,14 @@ export const EditCustomerForm = ({
             </label>
             <input
               id="term"
-              type="text"
+              type="number"
               className="w-full drop-shadow-none bg-custom-gray p-2"
               placeholder=""
+              {...register("term", { valueAsNumber: true })}
             />
+            <span className="text-red-500 text-xs normal-case">
+              {errors.term?.message}
+            </span>
           </div>
         </div>
 

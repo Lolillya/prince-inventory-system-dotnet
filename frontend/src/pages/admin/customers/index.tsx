@@ -22,6 +22,8 @@ const SuppliersPage = () => {
   const { data: selectedCustomer } = useSelectedCustomer();
   const setCustomerSelected = useSetCustomerSelected();
 
+  console.log(customers);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [isEditCustomerModalOpen, setIsEditCustomerModalOpen] = useState(false);
@@ -119,7 +121,8 @@ const SuppliersPage = () => {
             address: selectedCustomer.address,
             phoneNumber: selectedCustomer.phoneNumber,
             notes: selectedCustomer.notes,
-            roleID: 3,
+            roleID: 4,
+            term: selectedCustomer.term,
           }}
           onSuccess={handleEditCustomerSuccess}
         />
