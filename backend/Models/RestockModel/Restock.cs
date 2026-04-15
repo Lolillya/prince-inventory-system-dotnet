@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using backend.Models.LineItems;
+using backend.Models.PurchaseOrderModel;
 
 namespace backend.Models.RestockModel
 {
@@ -19,6 +20,10 @@ namespace backend.Models.RestockModel
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // timestamp for creation
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; // timestamp for last update
         public string Status { get; set; } = null!; // restock status (e.g., "Pending", "Completed", "Voided")
+
+        // Optional FK to PurchaseOrder (set when restock is created from a PO)
+        public int? Purchase_Order_ID { get; set; }
+        public PurchaseOrder? PurchaseOrder { get; set; }
 
         // Navigation properties
         public ICollection<RestockBatch> RestockBatches { get; set; } = new List<RestockBatch>();

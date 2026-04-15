@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260415111949_AddPurchaseOrderIDToRestock")]
+    partial class AddPurchaseOrderIDToRestock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1401,9 +1404,6 @@ namespace backend.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("Purchase_Order_ID")
-                        .HasColumnType("int");
-
                     b.Property<string>("Restock_Clerk")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -1424,8 +1424,6 @@ namespace backend.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Restock_ID");
-
-                    b.HasIndex("Purchase_Order_ID");
 
                     b.HasIndex("Restock_Clerk");
 
@@ -2146,11 +2144,6 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Models.RestockModel.Restock", b =>
                 {
-                    b.HasOne("backend.Models.PurchaseOrderModel.PurchaseOrder", "PurchaseOrder")
-                        .WithMany()
-                        .HasForeignKey("Purchase_Order_ID")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("backend.Models.PersonalDetails", "Clerk")
                         .WithMany()
                         .HasForeignKey("Restock_Clerk")
@@ -2158,8 +2151,6 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Clerk");
-
-                    b.Navigation("PurchaseOrder");
                 });
 
             modelBuilder.Entity("backend.Models.RestockModel.RestockBatch", b =>

@@ -130,6 +130,12 @@ namespace backend.Data
                     .WithOne(rb => rb.Restock)
                     .HasForeignKey(rb => rb.Restock_ID)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(r => r.PurchaseOrder)
+                    .WithMany()
+                    .HasForeignKey(r => r.Purchase_Order_ID)
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .IsRequired(false);
             });
 
             // RestockBatch Configuration
