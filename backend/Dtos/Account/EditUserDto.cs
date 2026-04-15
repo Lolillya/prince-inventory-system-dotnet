@@ -26,6 +26,7 @@ namespace backend.Dtos.Account
         public int RoleID { get; set; }
         [Required]
         public string Username { get; set; }
+        public int? Term { get; set; }
 
     }
 }
