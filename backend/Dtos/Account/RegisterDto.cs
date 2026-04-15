@@ -30,5 +30,6 @@ namespace api.Dtos.Account
         public string RoleId { get; set; } = "";
         [Required]
         public string Address { get; set; } = "";
+        public int? Term { get; set; }
     }
 }

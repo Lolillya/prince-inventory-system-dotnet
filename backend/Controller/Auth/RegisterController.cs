@@ -1,9 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using api.Dtos.Account;
+using backend.Data;
 using backend.Dtos.Account;
 using backend.Interface;
 using backend.Models;
+using backend.Models.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +19,14 @@ namespace backend.Controllers.Auth
         private readonly UserManager<PersonalDetails> _userManager;
         private readonly ITokenService _tokenService;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ApplicationDBContext _db;
 
-        public RegisterController(UserManager<PersonalDetails> userManager, ITokenService tokenService, RoleManager<IdentityRole> roleManager)
+        public RegisterController(UserManager<PersonalDetails> userManager, ITokenService tokenService, RoleManager<IdentityRole> roleManager, ApplicationDBContext db)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _roleManager = roleManager;
+            _db = db;
         }
 
         [HttpPost("register")]
@@ -58,6 +62,19 @@ namespace backend.Controllers.Auth
 
                     var roleResult = await _userManager.AddToRoleAsync(appUser, role.Name);
                     if (roleResult.Succeeded)
+                    {
+                        if (role.Id == "4" && registerDto.Term.HasValue)
+                        {
+                            _db.CustomerTerms.Add(new CustomerTerm
+                            {
+                                User_ID = appUser.Id,
+                                Term = registerDto.Term.Value,
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            });
+                            await _db.SaveChangesAsync();
+                        }
+
                         return Ok(
                             new NewUserDto
                             {
@@ -73,6 +90,7 @@ namespace backend.Controllers.Auth
                                 User_ID = appUser.Id
                             }
                         );
+                    }
                     else
                         return StatusCode(500, roleResult.Errors);
                 }
