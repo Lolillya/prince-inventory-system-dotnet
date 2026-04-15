@@ -96,7 +96,7 @@ namespace backend.Controller.PurchaseOrderControllers
                 Purchase_Order_Clerk = dto.Purchase_Order_Clerk,
                 Preferred_Delivery = dto.Preferred_Delivery,
                 Notes = dto.Notes ?? string.Empty,
-                Status = "PENDING",
+                Status = "NOT_DELIVERED",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 LineItems = dto.LineItems.Select(li => new PurchaseOrderLineItem

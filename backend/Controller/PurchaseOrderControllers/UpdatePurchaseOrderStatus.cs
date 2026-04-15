@@ -27,9 +27,10 @@ namespace backend.Controller.PurchaseOrderControllers
             }
 
             var normalizedStatus = dto.Status?.Trim().ToUpperInvariant();
-            if (normalizedStatus != "PENDING" && normalizedStatus != "COMPLETED" && normalizedStatus != "CANCELLED")
+            if (normalizedStatus != "NOT_DELIVERED" && normalizedStatus != "PARTIAL" &&
+                normalizedStatus != "FULLY_DELIVERED" && normalizedStatus != "CANCELLED")
             {
-                return BadRequest("Status must be PENDING, COMPLETED, or CANCELLED.");
+                return BadRequest("Status must be NOT_DELIVERED, PARTIAL, FULLY_DELIVERED, or CANCELLED.");
             }
 
             var purchaseOrder = await _db.PurchaseOrders
@@ -41,15 +42,15 @@ namespace backend.Controller.PurchaseOrderControllers
                 return NotFound($"Purchase order '{purchaseOrderId}' not found.");
             }
 
-            if (purchaseOrder.Status == "COMPLETED")
+            if (purchaseOrder.Status == "FULLY_DELIVERED")
             {
-                return BadRequest("Purchase order is already COMPLETED.");
+                return BadRequest("Purchase order is already FULLY_DELIVERED.");
             }
 
             await using var transaction = await _db.Database.BeginTransactionAsync();
             try
             {
-                if (normalizedStatus == "COMPLETED" && purchaseOrder.Status != "COMPLETED")
+                if (normalizedStatus == "FULLY_DELIVERED" && purchaseOrder.Status != "FULLY_DELIVERED")
                 {
                     await ApplyInventoryAndPresetUpdates(purchaseOrder.LineItems);
                 }

@@ -10,6 +10,10 @@ interface RestockCardProp {
   itemId: string;
   excludePresetIds?: number[];
   onRemove?: () => void;
+  /** When true: preset selector is hidden and shown as read-only text */
+  isPresetLocked?: boolean;
+  /** External quantity change handler; when provided, bypasses the global store update */
+  onQuantityChange?: (qty: number) => void;
 }
 
 export const RestockCard2 = ({
@@ -17,6 +21,8 @@ export const RestockCard2 = ({
   itemId,
   excludePresetIds = [],
   onRemove,
+  isPresetLocked = false,
+  onQuantityChange,
 }: RestockCardProp) => {
   const { selectPreset, updateMainQuantity, updateLevelPricing } =
     useUnitPresetRestock();
@@ -63,7 +69,11 @@ export const RestockCard2 = ({
 
   const handleQuantityChange = (quantity: number) => {
     setMainQuantity(quantity);
-    updateMainQuantity(itemId, quantity);
+    if (onQuantityChange) {
+      onQuantityChange(quantity);
+    } else {
+      updateMainQuantity(itemId, quantity);
+    }
   };
 
   const handlePriceChange = (level: number, price: number) => {
@@ -83,7 +93,9 @@ export const RestockCard2 = ({
     }
   };
 
-  const isCardComplete = selectedPresetId !== null && mainQuantity > 0;
+  const isCardComplete =
+    (isPresetLocked ? selectedPresetId !== null : selectedPresetId !== null) &&
+    mainQuantity > 0;
 
   return (
     <div
@@ -125,18 +137,11 @@ export const RestockCard2 = ({
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
-          <label className="font-semibold">Packaging Presets</label>
-          <select
-            value={selectedPresetId || ""}
-            onChange={(e) => handlePresetChange(Number(e.target.value))}
-          >
-            <option value="">Select a preset</option>
-            {product.unitPresets
-              ?.filter((p) => !excludePresetIds.includes(p.preset_ID))
-              .map((p) => (
-                <option key={p.preset_ID} value={p.preset_ID}>
-                  {getStockIndicator(p)}{" "}
-                  {p.preset.presetLevels
+          <label className="font-semibold">Packaging Preset</label>
+          {isPresetLocked ? (
+            <div className="text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded px-2 py-1">
+              {selectedPreset
+                ? selectedPreset.preset.presetLevels
                     .map(
                       (l) =>
                         l.unitOfMeasure.uom_Name +
@@ -144,10 +149,33 @@ export const RestockCard2 = ({
                         l.conversion_Factor +
                         "x)",
                     )
-                    .join(" → ")}
-                </option>
-              ))}
-          </select>
+                    .join(" → ")
+                : "No preset"}
+            </div>
+          ) : (
+            <select
+              value={selectedPresetId || ""}
+              onChange={(e) => handlePresetChange(Number(e.target.value))}
+            >
+              <option value="">Select a preset</option>
+              {product.unitPresets
+                ?.filter((p) => !excludePresetIds.includes(p.preset_ID))
+                .map((p) => (
+                  <option key={p.preset_ID} value={p.preset_ID}>
+                    {getStockIndicator(p)}{" "}
+                    {p.preset.presetLevels
+                      .map(
+                        (l) =>
+                          l.unitOfMeasure.uom_Name +
+                          " (" +
+                          l.conversion_Factor +
+                          "x)",
+                      )
+                      .join(" → ")}
+                  </option>
+                ))}
+            </select>
+          )}
         </div>
 
         {selectedPreset && (

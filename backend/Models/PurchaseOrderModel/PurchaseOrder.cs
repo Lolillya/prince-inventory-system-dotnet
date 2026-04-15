@@ -13,7 +13,7 @@ namespace backend.Models.PurchaseOrderModel
         public string Purchase_Order_Clerk { get; set; } = null!;
         public DateTime Preferred_Delivery { get; set; }
         public string Notes { get; set; } = string.Empty;
-        public string Status { get; set; } = "PENDING";
+        public string Status { get; set; } = "NOT_DELIVERED";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

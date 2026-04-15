@@ -23,6 +23,7 @@ import { useSetSupplierSelected } from "@/features/suppliers/supplier-selected.q
 import { GetAllSuppliers } from "@/features/suppliers/get-all-suppliers.service";
 import { useVoidRestockMutation } from "@/features/restock/void-restock.query";
 import { VoidRestockModal } from "./_components/void-restock.modal";
+import { PO_RestockModal } from "./_components/po-restock.modal";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 
 const RestockPage = () => {
@@ -33,6 +34,8 @@ const RestockPage = () => {
   const { data: restockItems } = useRestockQuery();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isVoidModalOpen, setIsVoidModalOpen] = useState<boolean>(false);
+  const [isPORestockModalOpen, setIsPORestockModalOpen] =
+    useState<boolean>(false);
   const [selectedRestock, setSelectedRestock] =
     useState<RestockAllModel | null>(null);
 
@@ -103,6 +106,10 @@ const RestockPage = () => {
   console.log(restockItems);
   return (
     <section>
+      {isPORestockModalOpen && (
+        <PO_RestockModal onClose={() => setIsPORestockModalOpen(false)} />
+      )}
+
       {isModalOpen && selectedRestock && (
         <ShowAllModal
           selectedRestock={selectedRestock}
@@ -157,7 +164,10 @@ const RestockPage = () => {
                   >
                     Manual
                   </li>
-                  <li className="text-sm cursor-pointer hover:underline">
+                  <li
+                    className="text-sm cursor-pointer hover:underline"
+                    onClick={() => setIsPORestockModalOpen(true)}
+                  >
                     PO Restock
                   </li>
                 </ul>
