@@ -10,4 +10,5 @@ export type UserModel = {
   phoneNumber: string;
   roleID: number;
   id?: string;
+  term?: number;
 };

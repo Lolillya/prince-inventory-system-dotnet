@@ -3,7 +3,10 @@ import {
   updateSelectedCustomer,
   useSelectedInvoiceCustomer,
 } from "@/features/invoice/invoice-customer.state";
-import { setInvoiceTermQuery } from "@/features/invoice/invoice-term.state";
+import {
+  setInvoiceTermQuery,
+  useInvoiceTermQuery,
+} from "@/features/invoice/invoice-term.state";
 
 import { useState, useRef, useEffect } from "react";
 
@@ -23,6 +26,7 @@ export const CustomerPicker = ({
 
   const { data: fetchedCustomers } = useCustomersQuery();
   const { data: selectedCustomer } = useSelectedInvoiceCustomer();
+  const { data: invoiceTerm } = useInvoiceTermQuery();
   const { UPDATE_SELECTED_CUSTOMER } = updateSelectedCustomer();
   const { UPDATE_INVOICE_TERM } = setInvoiceTermQuery();
   const list = customersData ?? fetchedCustomers ?? [];
@@ -60,21 +64,23 @@ export const CustomerPicker = ({
           placeholder="Term by days"
           type="number"
           className="rounded-l-none"
+          value={invoiceTerm ?? 0}
           onChange={(e) => UPDATE_INVOICE_TERM(Number(e.target.value))}
         />
       </div>
 
       {open && (
-        <div className="absolute w-full bg-white top-20 max-h-64 overflow-y-auto border shadow-lg rounded-lg p-3">
+        <div className="absolute w-full bg-white top-20 max-h-64 overflow-y-auto border shadow-lg rounded-lg p-3 z-50">
           {filtered && filtered.length > 0 ? (
             filtered.map((customer, index) => (
               <div
                 key={index}
-                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer bg-white"
                 onClick={() => {
                   setQuery("");
                   setOpen(false);
                   UPDATE_SELECTED_CUSTOMER(customer);
+                  UPDATE_INVOICE_TERM(customer.term ?? 0);
                 }}
               >
                 <div className="font-semibold">{customer.companyName}</div>
