@@ -21,6 +21,30 @@ export const createPurchaseOrder = async (
   }
 };
 
+export const getAllPurchaseOrders = async () => {
+  try {
+    const response = await axios.get<PurchaseOrderRecord[]>(
+      api + "purchase-orders",
+    );
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+
+export const getPurchaseOrderById = async (id: number) => {
+  try {
+    const response = await axios.get<PurchaseOrderRecord>(
+      api + `purchase-orders/${id}`,
+    );
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+
 export const getPurchaseOrdersBySupplier = async (supplierId: string) => {
   try {
     const response = await axios.get<PurchaseOrderRecord[]>(
@@ -53,6 +77,8 @@ export const updatePurchaseOrderStatus = async (
 };
 
 export const purchaseOrderService = {
+  getAllPurchaseOrders,
+  getPurchaseOrderById,
   createPurchaseOrder,
   getPurchaseOrdersBySupplier,
   updatePurchaseOrderStatus,

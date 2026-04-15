@@ -8,8 +8,26 @@ import { purchaseOrderService } from "./purchase-order.service";
 
 const purchaseOrderKeys = {
   all: ["purchase-orders"] as const,
+  byId: (id: number) => [...purchaseOrderKeys.all, "id", id] as const,
   bySupplier: (supplierId: string) =>
     [...purchaseOrderKeys.all, "supplier", supplierId] as const,
+};
+
+export const useGetAllPurchaseOrdersQuery = () => {
+  return useQuery<PurchaseOrderRecord[]>({
+    queryKey: purchaseOrderKeys.all,
+    queryFn: () => purchaseOrderService.getAllPurchaseOrders(),
+    staleTime: 30 * 1000,
+  });
+};
+
+export const useGetPurchaseOrderByIdQuery = (id?: number) => {
+  return useQuery<PurchaseOrderRecord>({
+    queryKey: id ? purchaseOrderKeys.byId(id) : ["purchase-orders", "id", null],
+    queryFn: () => purchaseOrderService.getPurchaseOrderById(id!),
+    enabled: Boolean(id),
+    staleTime: 30 * 1000,
+  });
 };
 
 export const usePurchaseOrdersBySupplierQuery = (supplierId?: string) => {

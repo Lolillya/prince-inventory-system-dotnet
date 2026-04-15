@@ -1,4 +1,8 @@
-export type PurchaseOrderStatus = "PENDING" | "COMPLETED" | "CANCELLED";
+export type PurchaseOrderStatus =
+  | "NOT_DELIVERED"
+  | "PARTIAL"
+  | "FULLY_DELIVERED"
+  | "CANCELLED";
 
 export type PurchaseOrderCreateLineItem = {
   product_ID: number;
@@ -44,6 +48,8 @@ export type PurchaseOrderRecord = {
     quantity: number;
     unit_Price: number;
     sub_Total: number;
+    received_quantity: number;
+    remaining_quantity: number;
     product: {
       product_ID: number;
       product_Name: string;
