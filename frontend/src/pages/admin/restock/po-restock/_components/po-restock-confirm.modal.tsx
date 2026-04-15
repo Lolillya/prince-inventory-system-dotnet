@@ -15,13 +15,13 @@ interface PORestockConfirmModalProps {
   onClose: () => void;
 }
 
-const formatMoney = (value: number) =>
-  new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
+// const formatMoney = (value: number) =>
+//   new Intl.NumberFormat("en-PH", {
+//     style: "currency",
+//     currency: "PHP",
+//     minimumFractionDigits: 2,
+//     maximumFractionDigits: 2,
+//   }).format(value);
 
 export const PORestockConfirmModal = ({
   po,

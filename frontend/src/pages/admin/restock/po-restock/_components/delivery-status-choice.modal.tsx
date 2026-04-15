@@ -12,7 +12,7 @@ export const DeliveryStatusChoiceModal = ({
   onChoose,
 }: DeliveryStatusChoiceModalProps) => {
   return (
-    <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-[60]">
+    <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-60">
       <div className="w-[480px] bg-white px-8 py-7 rounded-lg border shadow-xl flex flex-col gap-6">
         <div>
           <h2 className="text-lg font-semibold">Mark Delivery Status</h2>
