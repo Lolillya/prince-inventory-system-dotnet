@@ -8,6 +8,7 @@ using backend.Models;
 using backend.Models.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controller.Users.DeleteUsersById
 {
@@ -34,6 +35,13 @@ namespace backend.Controller.Users.DeleteUsersById
                 var user = await _db.Users.FindAsync(payload.UserId);
                 if (user == null)
                     return NotFound($"User with id {payload.UserId} not found");
+
+                // Block deletion if the customer has any unpaid invoices
+                var hasUnpaidInvoices = await _db.Invoice
+                    .AnyAsync(i => i.Customer_ID == payload.UserId && i.Status != "PAID");
+
+                if (hasUnpaidInvoices)
+                    return BadRequest("Cannot delete this customer. They have one or more invoices that are not yet paid.");
 
                 var roles = await _userManager.GetRolesAsync(user);
                 var role = roles.FirstOrDefault() ?? "";
