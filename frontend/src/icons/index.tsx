@@ -1,6 +1,7 @@
 interface IconProps {
   width?: number | string;
   height?: number | string;
+  className?: string;
 }
 
 export const FilterIcon = ({ width = 24, height = 24 }: IconProps) => {
@@ -706,6 +707,80 @@ export const LeftArrowIcon = ({ width = 24, height = 24 }: IconProps) => {
     >
       <path d="m12 19-7-7 7-7" />
       <path d="M19 12H5" />
+    </svg>
+  );
+};
+
+export const ReceiptPeso = ({
+  width = 24,
+  height = 24,
+  className,
+}: IconProps) => {
+  return (
+    <svg
+      version="1.0"
+      id="Layer_1"
+      xmlns="http://www.w3.org/2000/svg"
+      width={width}
+      height={height}
+      viewBox="0 0 64 64"
+      enable-background="new 0 0 64 64"
+      className={className}
+    >
+      <g>
+        <polygon
+          fill="none"
+          stroke="#000000"
+          stroke-width="2"
+          stroke-miterlimit="10"
+          points="52,62.999 52,0.999 26,0.999 12,14.999 
+		12,63 16,61 20,63 24,61 28,63 32,61 36,63 40,61 44,63 48,61 	"
+        />
+        <polyline
+          fill="none"
+          stroke="#000000"
+          stroke-width="2"
+          stroke-miterlimit="10"
+          points="12,14.999 26,14.999 26,0.999 	"
+        />
+      </g>
+      <line
+        fill="none"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-miterlimit="10"
+        x1="24"
+        y1="48"
+        x2="24"
+        y2="20"
+      />
+      <path
+        fill="none"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-miterlimit="10"
+        d="M24,21h6c0,0,10.018-0.703,10.018,8S30,37,30,37h-6"
+      />
+      <line
+        fill="none"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-miterlimit="10"
+        x1="20"
+        y1="27"
+        x2="44"
+        y2="27"
+      />
+      <line
+        fill="none"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-miterlimit="10"
+        x1="20"
+        y1="31"
+        x2="44"
+        y2="31"
+      />
     </svg>
   );
 };
