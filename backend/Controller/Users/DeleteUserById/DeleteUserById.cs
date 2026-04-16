@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using backend.Data;
 using backend.Dtos.User;
+using backend.Models;
 using backend.Models.Users;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controller.Users.DeleteUsersById
@@ -14,10 +16,12 @@ namespace backend.Controller.Users.DeleteUsersById
     public class DeleteUserById : ControllerBase
     {
         private readonly ApplicationDBContext _db;
+        private readonly UserManager<PersonalDetails> _userManager;
 
-        public DeleteUserById(ApplicationDBContext db)
+        public DeleteUserById(ApplicationDBContext db, UserManager<PersonalDetails> userManager)
         {
             _db = db;
+            _userManager = userManager;
         }
 
         [HttpPut]
@@ -31,6 +35,9 @@ namespace backend.Controller.Users.DeleteUsersById
                 if (user == null)
                     return NotFound($"User with id {payload.UserId} not found");
 
+                var roles = await _userManager.GetRolesAsync(user);
+                var role = roles.FirstOrDefault() ?? "";
+
                 // Create a new DeletedUsers entry with the user's data
                 var deletedUser = new DeletedUsers
                 {
@@ -42,7 +49,8 @@ namespace backend.Controller.Users.DeleteUsersById
                     LastName = user.LastName,
                     CompanyName = user.CompanyName,
                     Notes = user.Notes,
-                    Address = user.Address
+                    Address = user.Address,
+                    Role = role
                 };
 
                 // Add to DeletedUsers table
