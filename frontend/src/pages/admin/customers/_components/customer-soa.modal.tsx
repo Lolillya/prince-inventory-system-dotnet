@@ -114,6 +114,9 @@ const InvoiceAccordion = ({
                   <th className="text-center px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
                     Status
                   </th>
+                  <th className="text-center px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -136,6 +139,10 @@ const InvoiceAccordion = ({
                     </td>
                     <td className="px-4 py-2 text-center">
                       {invoiceStatusBadge(computedStatuses[idx])}
+                    </td>
+                    <td className="px-4 py-2 text-center flex items-end justify-end">
+                      {/* Actions can be added here */}
+                      <button>Record Payment</button>
                     </td>
                   </tr>
                 ))}
