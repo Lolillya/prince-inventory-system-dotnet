@@ -4,6 +4,7 @@ export type InvoiceAllModel = {
   notes: string;
   total_Amount: number;
   discount: number;
+  balance: number;
   status: string;
   term: number;
   createdAt: string;

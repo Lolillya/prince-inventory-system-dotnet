@@ -12,6 +12,7 @@ import { AddCustomerModal } from "./_components/add-customer.modal";
 import { EditCustomerModal } from "./_components/edit-customer,modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { CustomerSOAModal } from "./_components/customer-soa.modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserModel } from "@/features/auth-login/models/user.model";
 import { InfoCard } from "@/components/info-card";
@@ -33,6 +34,7 @@ const SuppliersPage = () => {
   const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
     null,
   );
+  const [isSOAModalOpen, setIsSOAModalOpen] = useState(false);
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
@@ -129,6 +131,11 @@ const SuppliersPage = () => {
         />
       )}
 
+      {/* SOA MODAL */}
+      {isSOAModalOpen && (
+        <CustomerSOAModal setIsSOAModalOpen={setIsSOAModalOpen} />
+      )}
+
       {/* CONFIRM DELETE MODAL */}
       {isConfirmRemoveModalOpen && userToDelete && (
         <ConfirmRemoveModal
@@ -178,13 +185,16 @@ const SuppliersPage = () => {
               </span>
             </div>
 
-            <div className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none">
+            <div
+              className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+              onClick={() => setIsSOAModalOpen(true)}
+            >
               <ReceiptPeso
                 className="text-saltbox-gray"
                 width={18}
                 height={18}
               />
-              <label className="text-saltbox-gray font-normal text-xs">
+              <label className="text-saltbox-gray font-normal text-xs cursor-pointer">
                 General Receivables
               </label>
             </div>

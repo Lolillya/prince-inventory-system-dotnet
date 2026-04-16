@@ -9,10 +9,10 @@ import {
 } from "../icons";
 import { UserClientModel } from "../models/user-client.model";
 import { useState } from "react";
-import { Box, Calendar, CornerRightUp, CornerUpRight } from "lucide-react";
-import { RestocksModal } from "./restocks-modal";
+import { Box, Calendar, CornerRightUp } from "lucide-react";
+
 import { InvoiceHistoryModal } from "./invoice-history-modal";
-import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
+
 import { useCustomerInvoicesQuery } from "@/features/customers/customer-invoices.query";
 
 type UserType = "customer" | "supplier" | "employee";
