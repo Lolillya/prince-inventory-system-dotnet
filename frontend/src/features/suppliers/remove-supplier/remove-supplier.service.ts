@@ -9,5 +9,6 @@ export const DeleteUserService = async (userId: string) => {
     return data;
   } catch (err) {
     handleError(err);
+    throw err;
   }
 };
