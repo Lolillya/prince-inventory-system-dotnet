@@ -33,6 +33,7 @@ namespace backend.Controller.Customers
                         i.Notes,
                         i.Total_Amount,
                         i.Discount,
+                        i.Balance,
                         i.Status,
                         i.Term,
                         i.CreatedAt,

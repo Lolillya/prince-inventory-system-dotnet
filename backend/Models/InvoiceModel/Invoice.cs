@@ -29,6 +29,10 @@ namespace backend.Models.InvoiceModel
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal Discount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Balance { get; set; }
+
         public string? Status { get; set; }
         public int Term { get; set; }
 
