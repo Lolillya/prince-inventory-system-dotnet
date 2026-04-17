@@ -44,6 +44,7 @@ namespace backend.Data
         public DbSet<PurchaseOrderLineItem> PurchaseOrderLineItems { get; set; }
         public DbSet<Supplier_Product_Preset_Price> SupplierProductPresetPrices { get; set; }
         public DbSet<CustomerTerm> CustomerTerms { get; set; }
+        public DbSet<InvoicePayment> InvoicePayments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -116,6 +117,27 @@ namespace backend.Data
                     .WithMany()
                     .HasForeignKey(i => i.Invoice_Clerk)
                     .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasMany(i => i.Payments)
+                    .WithOne(p => p.Invoice)
+                    .HasForeignKey(p => p.Invoice_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<InvoicePayment>(entity =>
+            {
+                entity.ToTable("InvoicePayments");
+
+                entity.HasOne(p => p.Creator)
+                    .WithMany()
+                    .HasForeignKey(p => p.CreatedBy)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(p => p.Invalidator)
+                    .WithMany()
+                    .HasForeignKey(p => p.InvalidatedBy)
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .IsRequired(false);
             });
 
             // Restock Configuration

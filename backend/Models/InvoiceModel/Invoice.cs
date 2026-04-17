@@ -37,5 +37,6 @@ namespace backend.Models.InvoiceModel
         public int Term { get; set; }
 
         public ICollection<LineItems.InvoiceLineItems> LineItems { get; set; } = new List<LineItems.InvoiceLineItems>();
+        public ICollection<InvoicePayment> Payments { get; set; } = new List<InvoicePayment>();
     }
 }
