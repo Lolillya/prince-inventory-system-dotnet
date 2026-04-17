@@ -58,6 +58,7 @@ interface InvoiceAccordionProps {
   invoices: InvoiceAllModel[];
   computedStatuses: string[];
   defaultOpen?: boolean;
+  showRecordPayment?: boolean;
 }
 
 const InvoiceAccordion = ({
@@ -65,6 +66,7 @@ const InvoiceAccordion = ({
   invoices,
   computedStatuses,
   defaultOpen = true,
+  showRecordPayment = false,
 }: InvoiceAccordionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -114,9 +116,11 @@ const InvoiceAccordion = ({
                   <th className="text-center px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
                     Status
                   </th>
-                  <th className="text-center px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
-                    Actions
-                  </th>
+                  {showRecordPayment && (
+                    <th className="text-center px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -140,10 +144,11 @@ const InvoiceAccordion = ({
                     <td className="px-4 py-2 text-center">
                       {invoiceStatusBadge(computedStatuses[idx])}
                     </td>
-                    <td className="px-4 py-2 text-center flex items-end justify-end">
-                      {/* Actions can be added here */}
-                      <button>Record Payment</button>
-                    </td>
+                    {showRecordPayment && (
+                      <td className="px-4 py-2 text-center flex items-end justify-end">
+                        <button>Record Payment</button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -315,6 +320,7 @@ export const CustomerSOAModal = ({
                   invoices={pendingInvoices}
                   computedStatuses={pendingStatuses}
                   defaultOpen={true}
+                  showRecordPayment={true}
                 />
 
                 {/* Table 3 — Paid */}
