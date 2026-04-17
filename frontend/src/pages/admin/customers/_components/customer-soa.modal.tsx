@@ -1,4 +1,5 @@
 import { Search, X, ChevronDown, ChevronRight } from "lucide-react";
+import jsPDF from "jspdf";
 import { Dispatch, SetStateAction, useState } from "react";
 import { useCustomerReceivablesSummaryQuery } from "@/features/customers/customer-receivables-summary.query";
 import { useCustomerInvoicesQuery } from "@/features/customers/customer-invoices.query";
@@ -172,6 +173,109 @@ export const CustomerSOAModal = ({
   setIsSOAModalOpen,
 }: CustomerSOAModalProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handlePrint = () => {
+    const doc = new jsPDF();
+
+    // Add custom font if needed, but we'll stick to Arial/Helvetica for standard jspdf
+    doc.setFont("helvetica");
+
+    // Title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("STATEMENT OF ACCOUNT", 15, 20);
+
+    // Company
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Acme Corp", 15, 30);
+    doc.text("Address line goes here", 15, 36);
+    doc.text("City, Country", 15, 42);
+
+    // Statement Dates
+    doc.setFont("helvetica", "bold");
+    doc.text("Statement Date:", 15, 52);
+    doc.setFont("helvetica", "normal");
+    doc.text("Feb 17, 2026", 45, 52);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Statement Period:", 15, 58);
+    doc.setFont("helvetica", "normal");
+    doc.text("Jan 1, 2026 - Feb 15, 2026", 48, 58);
+
+    doc.setDrawColor(220, 220, 220);
+    doc.line(15, 65, 195, 65);
+
+    // Summary Section
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Account Summary", 15, 78);
+
+    doc.setFontSize(10);
+    doc.text("Invoice No.", 15, 88);
+    doc.text("Date", 60, 88);
+    doc.text("Invoice Amount", 110, 88);
+    doc.text("Balance Due", 160, 88);
+
+    doc.line(15, 92, 195, 92);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("#######", 15, 100);
+    doc.text("Jan 1, 2026", 60, 100);
+    doc.text("PHP 450,000.00", 110, 100);
+    doc.text("PHP 150,000.00", 160, 100);
+
+    doc.line(15, 104, 195, 104);
+
+    doc.text("#######", 15, 112);
+    doc.text("Jan 30, 2026", 60, 112);
+    doc.text("PHP 300,000.00", 110, 112);
+    doc.text("PHP 180,000.00", 160, 112);
+
+    doc.line(15, 116, 195, 116);
+
+    doc.text("#######", 15, 124);
+    doc.text("Feb 15, 2026", 60, 124);
+    doc.text("PHP 150,000.00", 110, 124);
+    doc.text("PHP 100,000.00", 160, 124);
+
+    doc.line(15, 128, 195, 128);
+
+    // Total section right aligned
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Total Outstanding Balance", 195, 142, { align: "right" });
+
+    doc.setFontSize(16);
+    doc.text("PHP 430,000.00", 195, 152, { align: "right" });
+
+    doc.line(15, 162, 195, 162);
+
+    // Payment History
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Payment History", 15, 175);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+
+    let y = 185;
+    const history = [
+      "####### \u00B7 PHP 300,000.00 \u00B7 Jan 5, 2026 \u00B7 Bank Transfer \u00B7 Ref: XXXXX",
+      "####### \u00B7 PHP 60,000.00 \u00B7 Jan 14, 2026 \u00B7 Cash",
+      "####### \u00B7 PHP 100,000.00 \u00B7 Jan 17, 2026 \u00B7 E-Wallet \u00B7 Ref: XXXXX",
+      "####### \u00B7 PHP 40,000.00 \u00B7 Feb 1, 2026 \u00B7 Check \u00B7 Ref: XXXXX",
+      "####### \u00B7 PHP 20,000.00 \u00B7 Feb 12, 2026 \u00B7 Cash"
+    ];
+
+    history.forEach((line) => {
+      doc.text(`\u2022 ${line}`, 15, y);
+      y += 8;
+    });
+
+    doc.save("Statement_of_Account.pdf");
+  };
   const [selectedCustomer, setSelectedCustomer] =
     useState<CustomerReceivablesSummary | null>(null);
   const [paymentInvoice, setPaymentInvoice] = useState<InvoiceAllModel | null>(
@@ -225,12 +329,20 @@ export const CustomerSOAModal = ({
           <h1 className="text-lg font-semibold text-saltbox-gray">
             General Receivables
           </h1>
-          <button
-            className="p-2 rounded-lg hover:bg-bellflower-gray transition-colors"
-            onClick={() => setIsSOAModalOpen(false)}
-          >
-            <X size={18} className="text-vesper-gray" />
-          </button>
+          <div className="flex items-center gap-2">
+            <div
+              className="px-4 py-1.5 border rounded-lg text-sm text-saltbox-gray cursor-pointer hover:bg-gray-50 flex items-center font-medium"
+              onClick={handlePrint}
+            >
+              Print
+            </div>
+            <div
+              className="p-2 rounded-lg hover:bg-bellflower-gray transition-colors cursor-pointer"
+              onClick={() => setIsSOAModalOpen(false)}
+            >
+              <X size={18} className="text-vesper-gray" />
+            </div>
+          </div>
         </div>
 
         {/* Search */}
@@ -288,11 +400,10 @@ export const CustomerSOAModal = ({
                   {filteredSummary?.map((customer) => (
                     <tr
                       key={customer.id}
-                      className={`border-b last:border-b-0 cursor-pointer transition-colors ${
-                        selectedCustomer?.id === customer.id
-                          ? "bg-bellflower-gray"
-                          : "hover:bg-wash-gray"
-                      }`}
+                      className={`border-b last:border-b-0 cursor-pointer transition-colors ${selectedCustomer?.id === customer.id
+                        ? "bg-bellflower-gray"
+                        : "hover:bg-wash-gray"
+                        }`}
                       onClick={() =>
                         setSelectedCustomer(
                           selectedCustomer?.id === customer.id
