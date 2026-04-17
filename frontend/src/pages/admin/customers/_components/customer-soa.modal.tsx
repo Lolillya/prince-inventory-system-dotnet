@@ -4,6 +4,7 @@ import { useCustomerReceivablesSummaryQuery } from "@/features/customers/custome
 import { useCustomerInvoicesQuery } from "@/features/customers/customer-invoices.query";
 import { InvoiceAllModel } from "@/features/invoice/models/invoice-all.model";
 import { CustomerReceivablesSummary } from "@/features/customers/models/customer-receivables-summary.model";
+import { RecordPaymentModal } from "./record-payment.modal";
 
 interface CustomerSOAModalProps {
   setIsSOAModalOpen: Dispatch<SetStateAction<boolean>>;
@@ -59,6 +60,7 @@ interface InvoiceAccordionProps {
   computedStatuses: string[];
   defaultOpen?: boolean;
   showRecordPayment?: boolean;
+  onRecordPayment?: (invoice: InvoiceAllModel) => void;
 }
 
 const InvoiceAccordion = ({
@@ -67,6 +69,7 @@ const InvoiceAccordion = ({
   computedStatuses,
   defaultOpen = true,
   showRecordPayment = false,
+  onRecordPayment,
 }: InvoiceAccordionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -146,7 +149,12 @@ const InvoiceAccordion = ({
                     </td>
                     {showRecordPayment && (
                       <td className="px-4 py-2 text-center flex items-end justify-end">
-                        <button>Record Payment</button>
+                        <button
+                          className="text-xs text-saltbox-gray font-semibold border rounded-md px-3 py-1 hover:bg-bellflower-gray transition-colors"
+                          onClick={() => onRecordPayment?.(inv)}
+                        >
+                          Record Payment
+                        </button>
                       </td>
                     )}
                   </tr>
@@ -166,6 +174,9 @@ export const CustomerSOAModal = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCustomer, setSelectedCustomer] =
     useState<CustomerReceivablesSummary | null>(null);
+  const [paymentInvoice, setPaymentInvoice] = useState<InvoiceAllModel | null>(
+    null,
+  );
 
   const { data: summary, isLoading: isSummaryLoading } =
     useCustomerReceivablesSummaryQuery();
@@ -191,6 +202,20 @@ export const CustomerSOAModal = ({
   const paidInvoices =
     invoices?.filter((_, idx) => computedStatuses[idx] === "PAID") ?? [];
   const paidStatuses = computedStatuses.filter((s) => s === "PAID");
+
+  if (paymentInvoice && selectedCustomer) {
+    return (
+      <RecordPaymentModal
+        invoice={paymentInvoice}
+        customerId={selectedCustomer.id}
+        onBack={() => setPaymentInvoice(null)}
+        onClose={() => {
+          setPaymentInvoice(null);
+          setIsSOAModalOpen(false);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-start z-50 py-10">
@@ -321,6 +346,7 @@ export const CustomerSOAModal = ({
                   computedStatuses={pendingStatuses}
                   defaultOpen={true}
                   showRecordPayment={true}
+                  onRecordPayment={setPaymentInvoice}
                 />
 
                 {/* Table 3 — Paid */}
