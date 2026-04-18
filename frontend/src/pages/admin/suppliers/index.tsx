@@ -227,7 +227,7 @@ const SuppliersPage = () => {
 
         {/* RIGHT PANEL */}
         <div className="flex min-h-0 w-[50%] flex-col gap-3">
-          <div className="bg-custom-gray px-3 py-4 rounded-lg gap-10 flex items-center">
+          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
             <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
             </label>

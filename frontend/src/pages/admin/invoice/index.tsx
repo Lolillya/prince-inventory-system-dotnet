@@ -77,6 +77,16 @@ const InvoicePage = () => {
                       Voided
                     </div>
                   )}
+                  {inv.status === "PAID" && (
+                    <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+                      Paid
+                    </div>
+                  )}
+                  {inv.status !== "VOIDED" && inv.status !== "PAID" && (
+                    <div className="bg-amber-400 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
+                      Pending
+                    </div>
+                  )}
                 </div>
 
                 {/* CARD HEADER */}

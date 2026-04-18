@@ -135,7 +135,7 @@ export const PurchasePriceBenchmarkModal = ({
           className={`flex min-w-0 flex-col border-r border-slate-200 transition-all duration-300 ${activeKey ? "w-1/2" : "w-full"}`}
         >
           {/* Header */}
-          <div className="border-b border-slate-200 px-5 py-4 pr-12">
+          <div className="border-b border-slate-200 px-5 py-6 pr-12">
             <h3 className="text-lg font-semibold text-vesper-gray">
               Purchase Price Benchmark
             </h3>
@@ -199,9 +199,9 @@ export const PurchasePriceBenchmarkModal = ({
                           const accordionKey = `${product.product_ID}:${mainUnitId}`;
                           const isOpen = !!expandedMainUnits[accordionKey];
                           return (
-                            <div key={mainUnitId}>
+                            <div key={mainUnitId} className="">
                               <button
-                                className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs text-slate-600 transition hover:bg-slate-100 bg-white border"
+                                className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs text-slate-600 transition hover:bg-slate-100 bg-white border border-slate-200 w-full text-left"
                                 onClick={() => toggleMainUnit(accordionKey)}
                               >
                                 {isOpen ? (
@@ -217,14 +217,14 @@ export const PurchasePriceBenchmarkModal = ({
                                 </span>
                               </button>
                               {isOpen && (
-                                <div className="ml-5 mt-1 flex flex-col gap-1 border-l border-slate-200 pl-3 min-w-0 overflow-hidden">
+                                <div className="ml-5 mt-1 flex flex-col gap-1 border-l border-slate-200 pl-3 py-1 min-w-0 overflow-hidden">
                                   {group.presets.map((preset) => {
                                     const key = `${product.product_ID}:${preset.preset_ID}`;
                                     const isActive = activeKey === key;
                                     return (
                                       <button
                                         key={preset.preset_ID}
-                                        className={`flex max-w-full w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs transition ${
+                                        className={`flex max-w-full w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs transition hover:bg-slate-100 hover:shadow-sm bg-white border${
                                           isActive
                                             ? "bg-blue-50 text-blue-700"
                                             : "text-slate-600 hover:bg-slate-100"
@@ -280,7 +280,7 @@ export const PurchasePriceBenchmarkModal = ({
 
             {/* Right panel header */}
             {activeProduct && activePreset ? (
-              <div className="border-b border-slate-200 px-5 py-4">
+              <div className="border-b border-slate-200 px-5 py-4.5">
                 <p className="text-xs text-slate-500">Benchmark Detail</p>
                 <h4 className="text-base font-semibold text-vesper-gray">
                   {activeProduct.product_Name}
@@ -379,7 +379,7 @@ export const PurchasePriceBenchmarkModal = ({
                             {/* Expandable details toggle */}
                             <div className="px-4 pb-2">
                               <button
-                                className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-slate-500 transition hover:bg-slate-100"
+                                className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-slate-500 transition hover:bg-slate-100 bg-white border border-slate-200"
                                 onClick={() =>
                                   toggleSupplier(supplier.supplier_ID)
                                 }

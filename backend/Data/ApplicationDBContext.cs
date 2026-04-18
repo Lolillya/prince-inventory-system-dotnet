@@ -43,6 +43,8 @@ namespace backend.Data
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<PurchaseOrderLineItem> PurchaseOrderLineItems { get; set; }
         public DbSet<Supplier_Product_Preset_Price> SupplierProductPresetPrices { get; set; }
+        public DbSet<CustomerTerm> CustomerTerms { get; set; }
+        public DbSet<InvoicePayment> InvoicePayments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -115,6 +117,27 @@ namespace backend.Data
                     .WithMany()
                     .HasForeignKey(i => i.Invoice_Clerk)
                     .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasMany(i => i.Payments)
+                    .WithOne(p => p.Invoice)
+                    .HasForeignKey(p => p.Invoice_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<InvoicePayment>(entity =>
+            {
+                entity.ToTable("InvoicePayments");
+
+                entity.HasOne(p => p.Creator)
+                    .WithMany()
+                    .HasForeignKey(p => p.CreatedBy)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(p => p.Invalidator)
+                    .WithMany()
+                    .HasForeignKey(p => p.InvalidatedBy)
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .IsRequired(false);
             });
 
             // Restock Configuration
@@ -417,6 +440,20 @@ namespace backend.Data
 
                 // One price record per supplier+product+preset combination
                 entity.HasIndex(sp => new { sp.Supplier_ID, sp.Product_ID, sp.Preset_ID })
+                    .IsUnique();
+            });
+
+            // CustomerTerm Configuration
+            builder.Entity<CustomerTerm>(entity =>
+            {
+                entity.ToTable("CustomerTerms");
+
+                entity.HasOne(ct => ct.User)
+                    .WithMany()
+                    .HasForeignKey(ct => ct.User_ID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(ct => ct.User_ID)
                     .IsUnique();
             });
 

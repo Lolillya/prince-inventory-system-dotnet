@@ -9,10 +9,11 @@ import {
 } from "../icons";
 import { UserClientModel } from "../models/user-client.model";
 import { useState } from "react";
-import { Box, Calendar } from "lucide-react";
-import { RestocksModal } from "./restocks-modal";
+import { Box, Calendar, CornerRightUp } from "lucide-react";
+
 import { InvoiceHistoryModal } from "./invoice-history-modal";
-import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
+
+import { useCustomerInvoicesQuery } from "@/features/customers/customer-invoices.query";
 
 type UserType = "customer" | "supplier" | "employee";
 
@@ -26,7 +27,8 @@ export const SelectedUser = ({
   handleEdit,
   ...user
 }: SelectedUserProps & { handleEdit: () => void }) => {
-  const [isInvoiceHistoryModalOpen, setIsInvoiceHistoryModalOpen] = useState(false);
+  const [isInvoiceHistoryModalOpen, setIsInvoiceHistoryModalOpen] =
+    useState(false);
   const amountInReceivables = 5000; // scaffold placeholder
 
   return (
@@ -74,7 +76,7 @@ export const SelectedUser = ({
             </div>
             <div className="flex items-center gap-3">
               <p className="info-id text-sm">Amount in Receivables</p>
-              <RightUpArrowIcon width={18} height={18} className="text-vesper-gray" />
+              <CornerRightUp size={18} className="text-vesper-gray" />
             </div>
           </div>
         </div>
@@ -158,12 +160,15 @@ export const SelectedUser = ({
       </div>
 
       {isInvoiceHistoryModalOpen && (
-        <InvoiceHistoryModal setIsInvoiceHistoryModalOpen={setIsInvoiceHistoryModalOpen} />
+        <InvoiceHistoryModal
+          customerId={user.id}
+          setIsInvoiceHistoryModalOpen={setIsInvoiceHistoryModalOpen}
+        />
       )}
 
       {/* USER ACTIONS SECTION */}
       {type === "supplier" && <SupplierActions />}
-      {type === "customer" && <CustomerActions />}
+      {type === "customer" && <CustomerActions customerId={user.id} />}
       {type === "employee" && <EmployeeActions />}
     </div>
   );
@@ -241,21 +246,97 @@ const SupplierActions = () => {
   );
 };
 
-const CustomerActions = () => {
+const invoiceStatusTag = (status: string | null) => {
+  if (!status) return null;
+  const map: Record<string, string> = {
+    PAID: "bg-green-100 text-green-700",
+    PENDING: "bg-amber-100 text-amber-700",
+    VOIDED: "bg-red-100 text-red-600",
+  };
+  const classes = map[status.toUpperCase()] ?? "bg-gray-100 text-gray-600";
   return (
-    <div className="p-2 rounded-lg bg-wash-gray flex shrink-0 flex-1 flex-col">
-      <div className="p-2 flex gap-3 flex-col">
-        <button className="bg-transparent text-vesper-gray font-semibold tracking-wide w-fit hover:bg-bellflower-gray">
-          Invoices
-          <RightUpArrowIcon width={16} height={16} />
-        </button>
-        <div className="flex w-full gap-2"></div>
-      </div>
+    <span
+      className={`text-xs px-2 py-0.5 rounded-full font-semibold capitalize ${classes}`}
+    >
+      {status}
+    </span>
+  );
+};
 
-      <div className="w-full h-full flex items-center justify-center">
-        <span className="font-semibold info-name">No invoice found</span>
+const CustomerActions = ({ customerId }: { customerId: string }) => {
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const { data: invoices, isLoading } = useCustomerInvoicesQuery(customerId);
+
+  return (
+    <>
+      {isInvoiceModalOpen && (
+        <InvoiceHistoryModal
+          customerId={customerId}
+          setIsInvoiceHistoryModalOpen={setIsInvoiceModalOpen}
+        />
+      )}
+      <div className="p-2 rounded-lg bg-wash-gray flex shrink-0 flex-1 flex-col">
+        <div className="flex gap-3 items-center justify-between">
+          <button
+            className="bg-transparent text-vesper-gray font-semibold tracking-wide w-fit hover:bg-bellflower-gray"
+            onClick={() => setIsInvoiceModalOpen(true)}
+          >
+            Invoices
+            <RightUpArrowIcon width={16} height={16} />
+          </button>
+          <label className="text-sm font-semibold text-vesper-gray">
+            {isLoading ? "..." : `${invoices?.length ?? 0} record/s`}
+          </label>
+        </div>
+
+        {!isLoading && (!invoices || invoices.length === 0) && (
+          <div className="w-full flex items-center justify-center py-4">
+            <span className="font-semibold info-name">No invoice found</span>
+          </div>
+        )}
+
+        {!isLoading && invoices && invoices.length > 0 && (
+          <div className="flex flex-col gap-3 mt-2">
+            {invoices.map((invoice) => (
+              <div
+                key={invoice.invoice_ID}
+                className="flex flex-col gap-1 px-2"
+              >
+                <div className="flex items-center justify-between">
+                  <label className="text-saltbox-gray font-semibold">
+                    #{invoice.invoice_Number}
+                  </label>
+                  {invoiceStatusTag(invoice.status)}
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="text-vesper-gray" size={14} />
+                    <label className="text-vesper-gray text-xs font-semibold">
+                      {new Intl.DateTimeFormat("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      }).format(new Date(invoice.createdAt))}
+                    </label>
+                  </div>
+                  <Separator orientation="vertical" className="flex-0!" />
+                  <div className="flex items-center gap-1">
+                    <Box className="text-vesper-gray" size={14} />
+                    <label className="text-vesper-gray text-xs font-semibold">
+                      {invoice.lineItems.length} item/s
+                    </label>
+                  </div>
+                  <Separator orientation="vertical" className="flex-0!" />
+                  <label className="text-vesper-gray text-xs font-semibold">
+                    ₱{invoice.total_Amount.toLocaleString()}
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 

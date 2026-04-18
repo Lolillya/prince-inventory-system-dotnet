@@ -9,4 +9,5 @@ export type UserClientModel = {
   phoneNumber: string;
   role: string;
   address: string;
+  term?: number;
 };

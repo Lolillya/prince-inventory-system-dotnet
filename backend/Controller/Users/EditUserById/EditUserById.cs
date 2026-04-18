@@ -59,6 +59,29 @@ namespace backend.Controller.Users.EditUserById
 
                 _db.Users.Update(user);
                 await _db.SaveChangesAsync();
+
+                // Upsert CustomerTerm for customers
+                if (payload.RoleID == 4)
+                {
+                    var existingTerm = await _db.CustomerTerms.FirstOrDefaultAsync(ct => ct.User_ID == userId);
+                    if (existingTerm != null)
+                    {
+                        existingTerm.Term = payload.Term ?? existingTerm.Term;
+                        existingTerm.UpdatedAt = DateTime.UtcNow;
+                    }
+                    else if (payload.Term.HasValue)
+                    {
+                        _db.CustomerTerms.Add(new backend.Models.Users.CustomerTerm
+                        {
+                            User_ID = userId,
+                            Term = payload.Term.Value,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        });
+                    }
+                    await _db.SaveChangesAsync();
+                }
+
                 await transaction.CommitAsync();
 
                 Console.WriteLine("User updated successfully!");
@@ -75,7 +98,8 @@ namespace backend.Controller.Users.EditUserById
                     Address = user.Address,
                     Notes = user.Notes,
                     RoleID = payload.RoleID,
-                    Username = user.UserName ?? string.Empty
+                    Username = user.UserName ?? string.Empty,
+                    Term = payload.Term
                 };
 
                 // For customers (RoleID = 4), include invoices

@@ -15,6 +15,7 @@ namespace backend.Dtos.User
         public string Notes { get; set; } = string.Empty;
         public int RoleID { get; set; }
         public string Username { get; set; } = string.Empty;
+        public int? Term { get; set; }
 
         // For customers (RoleID = 4)
         public List<InvoiceSummaryDto>? Invoices { get; set; }

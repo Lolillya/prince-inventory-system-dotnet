@@ -226,8 +226,8 @@ export const PurchasePriceModal = ({
                   const selectedPreset =
                     selectedPresetId !== null
                       ? (product.presets.find(
-                        (p) => p.preset_ID === selectedPresetId,
-                      ) ?? null)
+                          (p) => p.preset_ID === selectedPresetId,
+                        ) ?? null)
                       : null;
                   const key =
                     selectedPresetId !== null
@@ -241,10 +241,11 @@ export const PurchasePriceModal = ({
                   return (
                     <div
                       key={product.product_ID}
-                      className={`rounded-lg border p-3 transition ${isActive
+                      className={`rounded-lg border p-3 transition ${
+                        isActive
                           ? "border-blue-300 bg-blue-50/40"
                           : "border-slate-200 bg-white"
-                        }`}
+                      }`}
                     >
                       <div className="flex items-start gap-3">
                         <input
@@ -299,10 +300,11 @@ export const PurchasePriceModal = ({
 
                         {isSelected && key ? (
                           <button
-                            className={`rounded-md border px-2 py-1 text-xs font-semibold whitespace-nowrap ${isActive
+                            className={`rounded-md border px-2 py-1 text-xs font-semibold whitespace-nowrap bg-slate-300 ${
+                              isActive
                                 ? "border-blue-300 bg-blue-100 text-blue-700"
                                 : "border-slate-200 text-vesper-gray"
-                              }`}
+                            }`}
                             onClick={() =>
                               openPricingPanel(
                                 product.product_ID,
@@ -363,10 +365,11 @@ export const PurchasePriceModal = ({
                   {/* Profit / Loss indicator */}
                   {isDraftValid ? (
                     <div
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${isProfit
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        isProfit
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-red-100 text-red-700"
-                        }`}
+                      }`}
                     >
                       {isProfit ? (
                         <TrendingUp size={12} />

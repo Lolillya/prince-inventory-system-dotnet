@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260416081720_AddBalanceToInvoice")]
+    partial class AddBalanceToInvoice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1015,57 +1018,6 @@ namespace backend.Migrations
                     b.HasIndex("Invoice_Clerk");
 
                     b.ToTable("Invoice", (string)null);
-                });
-
-            modelBuilder.Entity("backend.Models.InvoiceModel.InvoicePayment", b =>
-                {
-                    b.Property<int>("Payment_ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Payment_ID"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("InvalidatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("InvalidatedBy")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("InvalidationReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Invoice_ID")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsInvalidated")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReferenceNo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Payment_ID");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("InvalidatedBy");
-
-                    b.HasIndex("Invoice_ID");
-
-                    b.ToTable("InvoicePayments", (string)null);
                 });
 
             modelBuilder.Entity("backend.Models.LineItems.InvoiceLineItems", b =>
@@ -2125,32 +2077,6 @@ namespace backend.Migrations
                     b.Navigation("Customer");
                 });
 
-            modelBuilder.Entity("backend.Models.InvoiceModel.InvoicePayment", b =>
-                {
-                    b.HasOne("backend.Models.PersonalDetails", "Creator")
-                        .WithMany()
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.PersonalDetails", "Invalidator")
-                        .WithMany()
-                        .HasForeignKey("InvalidatedBy")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("backend.Models.InvoiceModel.Invoice", "Invoice")
-                        .WithMany("Payments")
-                        .HasForeignKey("Invoice_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Creator");
-
-                    b.Navigation("Invalidator");
-
-                    b.Navigation("Invoice");
-                });
-
             modelBuilder.Entity("backend.Models.LineItems.InvoiceLineItems", b =>
                 {
                     b.HasOne("backend.Models.InvoiceModel.Invoice", "Invoices")
@@ -2505,8 +2431,6 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.InvoiceModel.Invoice", b =>
                 {
                     b.Navigation("LineItems");
-
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("backend.Models.LineItems.RestockLineItems", b =>

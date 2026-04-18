@@ -84,7 +84,8 @@ namespace backend.Controller.InvoiceControllers
                 Customer_ID = payload.Customer_ID,
                 Invoice_Clerk = payload.Invoice_Clerk,
                 Total_Amount = totalLineItems,
-                Status = "Invoice Status",
+                Balance = totalLineItems,
+                Status = "PENDING",
                 Term = payload.Term,
                 Discount = 0,
             };

@@ -22,9 +22,9 @@ export const InvoiceDetailModal = ({ selectedInvoice, onClose }: Props) => {
             <h3 className="text-lg font-semibold tracking-wide">
               Invoice #{selectedInvoice.invoice_Number}
             </h3>
-            {selectedInvoice.status === "VOIDED" && (
+            {selectedInvoice.status === "PAID" && (
               <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                Voided
+                PAID
               </span>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { FilterIcon, PlusIcon, SearchIcon } from "@/icons";
+import { FilterIcon, PlusIcon, ReceiptPeso, SearchIcon } from "@/icons";
 import { SelectedUser } from "@/components/selected-user";
 import { NoSelectedState } from "@/components/no-selected-state";
 import { Separator } from "@/components/separator";
@@ -12,6 +12,7 @@ import { AddCustomerModal } from "./_components/add-customer.modal";
 import { EditCustomerModal } from "./_components/edit-customer,modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { CustomerSOAModal } from "./_components/customer-soa.modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserModel } from "@/features/auth-login/models/user.model";
 import { InfoCard } from "@/components/info-card";
@@ -22,6 +23,8 @@ const SuppliersPage = () => {
   const { data: selectedCustomer } = useSelectedCustomer();
   const setCustomerSelected = useSetCustomerSelected();
 
+  console.log(customers);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [isEditCustomerModalOpen, setIsEditCustomerModalOpen] = useState(false);
@@ -30,6 +33,7 @@ const SuppliersPage = () => {
   const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
     null,
   );
+  const [isSOAModalOpen, setIsSOAModalOpen] = useState(false);
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
@@ -119,10 +123,16 @@ const SuppliersPage = () => {
             address: selectedCustomer.address,
             phoneNumber: selectedCustomer.phoneNumber,
             notes: selectedCustomer.notes,
-            roleID: 3,
+            roleID: 4,
+            term: selectedCustomer.term,
           }}
           onSuccess={handleEditCustomerSuccess}
         />
+      )}
+
+      {/* SOA MODAL */}
+      {isSOAModalOpen && (
+        <CustomerSOAModal setIsSOAModalOpen={setIsSOAModalOpen} />
       )}
 
       {/* CONFIRM DELETE MODAL */}
@@ -164,13 +174,29 @@ const SuppliersPage = () => {
       <div className="flex flex-1 gap-3 overflow-y-hidden">
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
-              customers
-            </label>
-            <span className="capitalize text-vesper-gray">
-              {filteredCustomers?.length} records
-            </span>
+          <div className="bg-custom-gray p-1 rounded-lg flex justify-between shadow-sm border items-center">
+            <div className="flex gap-10 items-center pl-2">
+              <label className="capitalize text-saltbox-gray font-normal text-sm">
+                customers
+              </label>
+              <span className="capitalize text-vesper-gray text-xs">
+                {filteredCustomers?.length} records
+              </span>
+            </div>
+
+            <div
+              className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+              onClick={() => setIsSOAModalOpen(true)}
+            >
+              <ReceiptPeso
+                className="text-saltbox-gray"
+                width={18}
+                height={18}
+              />
+              <label className="text-saltbox-gray font-normal text-xs cursor-pointer">
+                General Receivables
+              </label>
+            </div>
           </div>
 
           <div className="w-full overflow-y-scroll">
@@ -190,9 +216,9 @@ const SuppliersPage = () => {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="w-[70%] flex flex-col gap-3">
+        <div className="flex min-h-0 w-[50%] flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
+            <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
             </label>
           </div>

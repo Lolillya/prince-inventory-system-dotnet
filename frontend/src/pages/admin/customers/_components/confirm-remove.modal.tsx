@@ -1,4 +1,6 @@
 import { DeleteUserService } from "@/features/suppliers/remove-supplier/remove-supplier.service";
+import axios from "axios";
+import { useState } from "react";
 
 interface ConfirmRemoveModalProps {
   setIsConfirmRemoveModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -11,18 +13,29 @@ export const ConfirmRemoveModal = ({
   userId,
   onSuccess,
 }: ConfirmRemoveModalProps) => {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const handleCloseModal = () => {
     setIsConfirmRemoveModalOpen(false);
   };
 
   const handleRemove = async () => {
+    setErrorMessage(null);
     try {
       await DeleteUserService(userId);
       handleCloseModal();
       onSuccess?.(userId);
     } catch (error) {
-      console.error("Error deleting customer:", error);
-      handleCloseModal();
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        setErrorMessage(
+          typeof error.response.data === "string"
+            ? error.response.data
+            : "Cannot delete this customer due to pending invoices.",
+        );
+      } else {
+        console.error("Error deleting customer:", error);
+        setErrorMessage("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
@@ -34,6 +47,9 @@ export const ConfirmRemoveModal = ({
           Are you sure you want to remove this customer? This action cannot be
           undone.
         </p>
+        {errorMessage && (
+          <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+        )}
         <div className="flex gap-4">
           <button onClick={handleRemove}>Remove</button>
           <button onClick={handleCloseModal}>Cancel</button>

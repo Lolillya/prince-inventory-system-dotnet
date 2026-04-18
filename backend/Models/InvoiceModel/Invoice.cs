@@ -29,9 +29,14 @@ namespace backend.Models.InvoiceModel
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal Discount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Balance { get; set; }
+
         public string? Status { get; set; }
         public int Term { get; set; }
 
         public ICollection<LineItems.InvoiceLineItems> LineItems { get; set; } = new List<LineItems.InvoiceLineItems>();
+        public ICollection<InvoicePayment> Payments { get; set; } = new List<InvoicePayment>();
     }
 }
