@@ -11,11 +11,15 @@ interface CustomerSOAModalProps {
   setIsSOAModalOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const computeInvoiceStatus = (invoice: InvoiceAllModel): string => {
-  if (invoice.status?.toUpperCase() === "PAID") return "PAID";
+const computeDueDate = (invoice: InvoiceAllModel): Date => {
   const dueDate = new Date(invoice.createdAt);
   dueDate.setDate(dueDate.getDate() + invoice.term);
-  if (new Date() > dueDate) return "OVERDUE";
+  return dueDate;
+};
+
+const computeInvoiceStatus = (invoice: InvoiceAllModel): string => {
+  if (invoice.status?.toUpperCase() === "PAID") return "PAID";
+  if (new Date() > computeDueDate(invoice)) return "OVERDUE";
   return "PENDING";
 };
 
@@ -109,7 +113,7 @@ const InvoiceAccordion = ({
                     Invoice #
                   </th>
                   <th className="text-left px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
-                    Date
+                    Due Date
                   </th>
                   <th className="text-right px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
                     Total
@@ -137,7 +141,7 @@ const InvoiceAccordion = ({
                       #{inv.invoice_Number}
                     </td>
                     <td className="px-4 py-2 text-vesper-gray">
-                      {formatDate(inv.createdAt)}
+                      {formatDate(computeDueDate(inv).toISOString())}
                     </td>
                     <td className="px-4 py-2 text-right text-saltbox-gray">
                       {formatCurrency(inv.total_Amount)}
