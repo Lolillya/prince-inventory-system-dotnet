@@ -150,12 +150,12 @@ const InvoiceAccordion = ({
                     </td>
                     {showRecordPayment && (
                       <td className="px-4 py-2 text-center flex items-end justify-end">
-                        <button
-                          className="text-xs text-saltbox-gray font-semibold border rounded-md px-3 py-1 hover:bg-bellflower-gray transition-colors"
+                        <div
+                          className="text-xs text-saltbox-gray font-semibold border rounded-md px-3 py-1 hover:bg-bellflower-gray transition-colors cursor-pointer"
                           onClick={() => onRecordPayment?.(inv)}
                         >
                           Record Payment
-                        </button>
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -266,7 +266,7 @@ export const CustomerSOAModal = ({
       "####### \u00B7 PHP 60,000.00 \u00B7 Jan 14, 2026 \u00B7 Cash",
       "####### \u00B7 PHP 100,000.00 \u00B7 Jan 17, 2026 \u00B7 E-Wallet \u00B7 Ref: XXXXX",
       "####### \u00B7 PHP 40,000.00 \u00B7 Feb 1, 2026 \u00B7 Check \u00B7 Ref: XXXXX",
-      "####### \u00B7 PHP 20,000.00 \u00B7 Feb 12, 2026 \u00B7 Cash"
+      "####### \u00B7 PHP 20,000.00 \u00B7 Feb 12, 2026 \u00B7 Cash",
     ];
 
     history.forEach((line) => {
@@ -400,10 +400,11 @@ export const CustomerSOAModal = ({
                   {filteredSummary?.map((customer) => (
                     <tr
                       key={customer.id}
-                      className={`border-b last:border-b-0 cursor-pointer transition-colors ${selectedCustomer?.id === customer.id
-                        ? "bg-bellflower-gray"
-                        : "hover:bg-wash-gray"
-                        }`}
+                      className={`border-b last:border-b-0 cursor-pointer transition-colors ${
+                        selectedCustomer?.id === customer.id
+                          ? "bg-bellflower-gray"
+                          : "hover:bg-wash-gray"
+                      }`}
                       onClick={() =>
                         setSelectedCustomer(
                           selectedCustomer?.id === customer.id
