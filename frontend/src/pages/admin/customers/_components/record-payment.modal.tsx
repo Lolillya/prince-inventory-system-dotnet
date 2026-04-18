@@ -184,30 +184,29 @@ export const RecordPaymentModal = ({
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-start z-50 py-10">
       <div className="max-w-3xl max-h-320 h-full w-full bg-white px-10 py-8 rounded-lg border shadow-lg overflow-y-auto relative flex flex-col gap-6 mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
+        <div className="flex flex-col">
+          <div className="flex justify-between w-full items-center gap-3">
+            <div
               className="p-2 rounded-lg hover:bg-bellflower-gray transition-colors"
               onClick={onBack}
             >
               <ArrowLeft size={18} className="text-vesper-gray" />
-            </button>
-            <div>
-              <h1 className="text-lg font-semibold text-saltbox-gray">
-                Record Payment
-              </h1>
-              <p className="text-xs text-vesper-gray">
-                Invoice #{invoice.invoice_Number} —{" "}
-                {invoice.customer.companyName}
-              </p>
+            </div>
+            <div
+              className="p-2 rounded-lg hover:bg-bellflower-gray transition-colors"
+              onClick={onClose}
+            >
+              <X size={18} className="text-vesper-gray" />
             </div>
           </div>
-          <button
-            className="p-2 rounded-lg hover:bg-bellflower-gray transition-colors"
-            onClick={onClose}
-          >
-            <X size={18} className="text-vesper-gray" />
-          </button>
+          <div>
+            <h1 className="text-lg font-semibold text-saltbox-gray">
+              Record Payment
+            </h1>
+            <p className="text-xs text-vesper-gray">
+              Invoice #{invoice.invoice_Number} — {invoice.customer.companyName}
+            </p>
+          </div>
         </div>
 
         {/* Invoice Summary */}
@@ -235,7 +234,7 @@ export const RecordPaymentModal = ({
         {/* Record Payment Toggle */}
         <div className="border rounded-lg overflow-hidden">
           <button
-            className="w-full flex items-center gap-2 px-4 py-3 bg-custom-gray hover:bg-bellflower-gray transition-colors text-left"
+            className="w-full flex items-center gap-2 px-4 py-3 bg-custom-gray hover:bg-bellflower-gray transition-colors text-left max-w-full"
             onClick={() => setIsPaymentFormOpen((v) => !v)}
           >
             {isPaymentFormOpen ? (
@@ -334,7 +333,7 @@ export const RecordPaymentModal = ({
         {/* Payment History Toggle */}
         <div className="border rounded-lg overflow-hidden">
           <button
-            className="w-full flex items-center gap-2 px-4 py-3 bg-custom-gray hover:bg-bellflower-gray transition-colors text-left"
+            className="w-full flex items-center gap-2 px-4 py-3 bg-custom-gray hover:bg-bellflower-gray transition-colors text-left max-w-full"
             onClick={() => setIsHistoryOpen((v) => !v)}
           >
             {isHistoryOpen ? (
