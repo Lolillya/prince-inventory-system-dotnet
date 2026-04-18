@@ -16,7 +16,6 @@ import { CustomerSOAModal } from "./_components/customer-soa.modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserModel } from "@/features/auth-login/models/user.model";
 import { InfoCard } from "@/components/info-card";
-import { Receipt } from "lucide-react";
 
 const SuppliersPage = () => {
   const queryClient = useQueryClient();
