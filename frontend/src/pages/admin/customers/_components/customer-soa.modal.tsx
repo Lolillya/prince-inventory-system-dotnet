@@ -6,6 +6,8 @@ import { useCustomerInvoicesQuery } from "@/features/customers/customer-invoices
 import { InvoiceAllModel } from "@/features/invoice/models/invoice-all.model";
 import { CustomerReceivablesSummary } from "@/features/customers/models/customer-receivables-summary.model";
 import { RecordPaymentModal } from "./record-payment.modal";
+import { invoicePaymentService } from "@/features/invoice/invoice-payment.service";
+import { InvoicePaymentModel } from "@/features/invoice/models/invoice-payment.model";
 
 interface CustomerSOAModalProps {
   setIsSOAModalOpen: Dispatch<SetStateAction<boolean>>;
@@ -178,108 +180,6 @@ export const CustomerSOAModal = ({
 }: CustomerSOAModalProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handlePrint = () => {
-    const doc = new jsPDF();
-
-    // Add custom font if needed, but we'll stick to Arial/Helvetica for standard jspdf
-    doc.setFont("helvetica");
-
-    // Title
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text("STATEMENT OF ACCOUNT", 15, 20);
-
-    // Company
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("Acme Corp", 15, 30);
-    doc.text("Address line goes here", 15, 36);
-    doc.text("City, Country", 15, 42);
-
-    // Statement Dates
-    doc.setFont("helvetica", "bold");
-    doc.text("Statement Date:", 15, 52);
-    doc.setFont("helvetica", "normal");
-    doc.text("Feb 17, 2026", 45, 52);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Statement Period:", 15, 58);
-    doc.setFont("helvetica", "normal");
-    doc.text("Jan 1, 2026 - Feb 15, 2026", 48, 58);
-
-    doc.setDrawColor(220, 220, 220);
-    doc.line(15, 65, 195, 65);
-
-    // Summary Section
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Account Summary", 15, 78);
-
-    doc.setFontSize(10);
-    doc.text("Invoice No.", 15, 88);
-    doc.text("Date", 60, 88);
-    doc.text("Invoice Amount", 110, 88);
-    doc.text("Balance Due", 160, 88);
-
-    doc.line(15, 92, 195, 92);
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("#######", 15, 100);
-    doc.text("Jan 1, 2026", 60, 100);
-    doc.text("PHP 450,000.00", 110, 100);
-    doc.text("PHP 150,000.00", 160, 100);
-
-    doc.line(15, 104, 195, 104);
-
-    doc.text("#######", 15, 112);
-    doc.text("Jan 30, 2026", 60, 112);
-    doc.text("PHP 300,000.00", 110, 112);
-    doc.text("PHP 180,000.00", 160, 112);
-
-    doc.line(15, 116, 195, 116);
-
-    doc.text("#######", 15, 124);
-    doc.text("Feb 15, 2026", 60, 124);
-    doc.text("PHP 150,000.00", 110, 124);
-    doc.text("PHP 100,000.00", 160, 124);
-
-    doc.line(15, 128, 195, 128);
-
-    // Total section right aligned
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Total Outstanding Balance", 195, 142, { align: "right" });
-
-    doc.setFontSize(16);
-    doc.text("PHP 430,000.00", 195, 152, { align: "right" });
-
-    doc.line(15, 162, 195, 162);
-
-    // Payment History
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Payment History", 15, 175);
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-
-    let y = 185;
-    const history = [
-      "####### \u00B7 PHP 300,000.00 \u00B7 Jan 5, 2026 \u00B7 Bank Transfer \u00B7 Ref: XXXXX",
-      "####### \u00B7 PHP 60,000.00 \u00B7 Jan 14, 2026 \u00B7 Cash",
-      "####### \u00B7 PHP 100,000.00 \u00B7 Jan 17, 2026 \u00B7 E-Wallet \u00B7 Ref: XXXXX",
-      "####### \u00B7 PHP 40,000.00 \u00B7 Feb 1, 2026 \u00B7 Check \u00B7 Ref: XXXXX",
-      "####### \u00B7 PHP 20,000.00 \u00B7 Feb 12, 2026 \u00B7 Cash",
-    ];
-
-    history.forEach((line) => {
-      doc.text(`\u2022 ${line}`, 15, y);
-      y += 8;
-    });
-
-    doc.save("Statement_of_Account.pdf");
-  };
   const [selectedCustomer, setSelectedCustomer] =
     useState<CustomerReceivablesSummary | null>(null);
   const [paymentInvoice, setPaymentInvoice] = useState<InvoiceAllModel | null>(
@@ -302,6 +202,190 @@ export const CustomerSOAModal = ({
   });
 
   const computedStatuses = invoices?.map(computeInvoiceStatus) ?? [];
+
+  const handlePrint = async () => {
+    if (!selectedCustomer || !invoices) return;
+
+    // Fetch payments for all invoices in parallel, skip errors per invoice
+    const allPayments: (InvoicePaymentModel & { invoiceNumber: number })[] = [];
+    await Promise.all(
+      invoices.map(async (inv) => {
+        try {
+          const payments = await invoicePaymentService.getInvoicePayments(
+            inv.invoice_ID,
+          );
+          if (payments) {
+            payments
+              .filter((p) => !p.isInvalidated)
+              .forEach((p) =>
+                allPayments.push({ ...p, invoiceNumber: inv.invoice_Number }),
+              );
+          }
+        } catch {
+          // skip failed invoice payment fetch
+        }
+      }),
+    );
+
+    // Sort payments chronologically
+    allPayments.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+
+    const pdfCurrency = (amount: number) =>
+      `PHP ${amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    const checkPageBreak = (doc: jsPDF, y: number, needed = 14): number => {
+      if (y + needed > 275) {
+        doc.addPage();
+        return 20;
+      }
+      return y;
+    };
+
+    const doc = new jsPDF();
+    doc.setFont("helvetica");
+
+    // Title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("STATEMENT OF ACCOUNT", 15, 20);
+
+    // Customer info
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(selectedCustomer.companyName, 15, 30);
+    doc.text(
+      `${selectedCustomer.firstName} ${selectedCustomer.lastName}`,
+      15,
+      36,
+    );
+
+    // Statement Date
+    const todayStr = formatDate(new Date().toISOString());
+    doc.setFont("helvetica", "bold");
+    doc.text("Statement Date:", 15, 46);
+    doc.setFont("helvetica", "normal");
+    doc.text(todayStr, 48, 46);
+
+    // Statement Period (min–max of invoice createdAt)
+    let periodStr = "N/A";
+    if (invoices.length > 0) {
+      const timestamps = invoices.map((inv) =>
+        new Date(inv.createdAt).getTime(),
+      );
+      const minDate = formatDate(
+        new Date(Math.min(...timestamps)).toISOString(),
+      );
+      const maxDate = formatDate(
+        new Date(Math.max(...timestamps)).toISOString(),
+      );
+      periodStr = `${minDate} - ${maxDate}`;
+    }
+    doc.setFont("helvetica", "bold");
+    doc.text("Statement Period:", 15, 52);
+    doc.setFont("helvetica", "normal");
+    doc.text(periodStr, 50, 52);
+
+    doc.setDrawColor(220, 220, 220);
+    doc.line(15, 59, 195, 59);
+
+    // Account Summary header
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Account Summary", 15, 72);
+
+    doc.setFontSize(9);
+    doc.text("Invoice No.", 15, 82);
+    doc.text("Due Date", 60, 82);
+    doc.text("Invoice Amount", 110, 82);
+    doc.text("Balance Due", 160, 82);
+    doc.line(15, 86, 195, 86);
+
+    // Invoice rows
+    let y = 94;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+
+    invoices.forEach((inv) => {
+      y = checkPageBreak(doc, y);
+      const dueDate = computeDueDate(inv);
+      doc.text(`#${inv.invoice_Number}`, 15, y);
+      doc.text(formatDate(dueDate.toISOString()), 60, y);
+      doc.text(pdfCurrency(inv.total_Amount), 110, y);
+      doc.text(pdfCurrency(inv.balance), 160, y);
+      doc.line(15, y + 4, 195, y + 4);
+      y += 12;
+    });
+
+    y += 8;
+    y = checkPageBreak(doc, y, 20);
+
+    // Total Outstanding Balance
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Total Outstanding Balance", 195, y, { align: "right" });
+    doc.setFontSize(14);
+    doc.text(
+      pdfCurrency(selectedCustomer.totalOutstandingBalance),
+      195,
+      y + 10,
+      { align: "right" },
+    );
+
+    y += 24;
+
+    // Payment History section
+    y = checkPageBreak(doc, y, 30);
+    doc.setDrawColor(220, 220, 220);
+    doc.line(15, y, 195, y);
+    y += 10;
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Payment History", 15, y);
+    y += 10;
+
+    if (allPayments.length === 0) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("No payments recorded.", 15, y);
+    } else {
+      // Column headers
+      doc.setFontSize(9);
+      doc.text("Invoice No.", 15, y);
+      doc.text("Date", 50, y);
+      doc.text("Amount", 95, y);
+      doc.text("Method", 135, y);
+      doc.text("Reference", 170, y);
+      doc.line(15, y + 4, 195, y + 4);
+      y += 12;
+
+      doc.setFont("helvetica", "normal");
+      const methodLabel: Record<string, string> = {
+        Cash: "Cash",
+        Check: "Check",
+        BankTransfer: "Bank Transfer",
+        Ewallet: "E-Wallet",
+      };
+
+      allPayments.forEach((p) => {
+        y = checkPageBreak(doc, y);
+        doc.text(`#${p.invoiceNumber}`, 15, y);
+        doc.text(formatDate(p.createdAt), 50, y);
+        doc.text(pdfCurrency(p.amount), 95, y);
+        doc.text(methodLabel[p.paymentMethod] ?? p.paymentMethod, 135, y);
+        doc.text(p.referenceNo ?? "-", 170, y);
+        doc.line(15, y + 4, 195, y + 4);
+        y += 12;
+      });
+    }
+
+    doc.save(
+      `SOA_${selectedCustomer.companyName.replace(/\s+/g, "_")}_${todayStr.replace(/,?\s+/g, "_")}.pdf`,
+    );
+  };
 
   const pendingInvoices =
     invoices?.filter((_, idx) => computedStatuses[idx] !== "PAID") ?? [];
@@ -335,8 +419,12 @@ export const CustomerSOAModal = ({
           </h1>
           <div className="flex items-center gap-2">
             <div
-              className="px-4 py-1.5 border rounded-lg text-sm text-saltbox-gray cursor-pointer hover:bg-gray-50 flex items-center font-medium"
-              onClick={handlePrint}
+              className={`px-4 py-1.5 border rounded-lg text-sm font-medium flex items-center transition-colors ${
+                selectedCustomer
+                  ? "text-saltbox-gray cursor-pointer hover:bg-gray-50"
+                  : "text-gray-300 cursor-not-allowed border-gray-200"
+              }`}
+              onClick={selectedCustomer ? handlePrint : undefined}
             >
               Print
             </div>
