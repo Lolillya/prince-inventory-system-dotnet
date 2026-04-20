@@ -9,6 +9,7 @@ import { AddEmployeeModal } from "./_components/add-employee.modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { EditEmployeeModal } from "./_components/edit-employee.modal";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { RecoverAccountModal } from "./_components/recover-account.modal";
 import { InfoCard } from "@/components/info-card";
 import { useAuth } from "@/context/use-auth";
 
@@ -18,11 +19,12 @@ const EmployeesPage = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
 
-  console.log(user);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false);
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
+    useState(false);
+  const [isRecoverAccountModalOpen, setIsRecoverAccountModalOpen] =
     useState(false);
   const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
     null,
@@ -55,6 +57,10 @@ const EmployeesPage = () => {
 
   const handleEdit = () => {
     setIsEditEmployeeModalOpen(!isEditEmployeeModalOpen);
+  };
+
+  const handleRecover = () => {
+    setIsRecoverAccountModalOpen(true);
   };
 
   return (
@@ -90,6 +96,14 @@ const EmployeesPage = () => {
         <ConfirmRemoveModal
           setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
           userId={userToDelete.id}
+        />
+      )}
+
+      {/* RECOVER ACCOUNT MODAL */}
+      {isAdmin && isRecoverAccountModalOpen && selectedEmployee && (
+        <RecoverAccountModal
+          setIsRecoverAccountModalOpen={setIsRecoverAccountModalOpen}
+          userId={selectedEmployee.id}
         />
       )}
       <div className="w-full mb-8">
@@ -166,6 +180,7 @@ const EmployeesPage = () => {
                 type="employee"
                 {...selectedEmployee}
                 handleEdit={handleEdit}
+                handleRecover={isAdmin ? handleRecover : undefined}
               />
             )}
           </div>

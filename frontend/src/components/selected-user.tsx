@@ -9,7 +9,7 @@ import {
 } from "../icons";
 import { UserClientModel } from "../models/user-client.model";
 import { useState } from "react";
-import { Box, Calendar, CornerRightUp, Package } from "lucide-react";
+import { Box, Calendar, CornerRightUp, KeyRound, Package } from "lucide-react";
 
 import { InvoiceHistoryModal } from "./invoice-history-modal";
 
@@ -27,14 +27,16 @@ type UserType = "customer" | "supplier" | "employee";
 
 interface SelectedUserProps extends UserClientModel {
   handleEdit: () => void;
+  handleRecover?: () => void;
   type: UserType;
 }
 
 export const SelectedUser = ({
   type,
   handleEdit,
+  handleRecover,
   ...user
-}: SelectedUserProps & { handleEdit: () => void }) => {
+}: SelectedUserProps) => {
   const [isInvoiceHistoryModalOpen, setIsInvoiceHistoryModalOpen] =
     useState(false);
   const amountInReceivables = 5000; // scaffold placeholder
@@ -57,11 +59,22 @@ export const SelectedUser = ({
             <p className="text-sm text-slate-400">{user.id}</p>
           </div>
         </div>
-        <div
-          className="cursor-pointer hover:bg-bellflower-gray p-3 rounded-lg transition-colors duration-300 text-vesper-gray"
-          onClick={handleEdit}
-        >
-          <EditIcon />
+        <div className="flex items-center gap-1">
+          {type === "employee" && handleRecover && (
+            <div
+              className="cursor-pointer hover:bg-bellflower-gray p-3 rounded-lg transition-colors duration-300 text-vesper-gray"
+              onClick={handleRecover}
+              title="Recover Account"
+            >
+              <KeyRound size={18} />
+            </div>
+          )}
+          <div
+            className="cursor-pointer hover:bg-bellflower-gray p-3 rounded-lg transition-colors duration-300 text-vesper-gray"
+            onClick={handleEdit}
+          >
+            <EditIcon />
+          </div>
         </div>
       </div>
 
