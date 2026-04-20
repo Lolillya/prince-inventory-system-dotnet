@@ -4,22 +4,17 @@ import { handleError } from "@/helpers/error-handler.helper";
 import axios from "axios";
 
 export const AddNewEmployeeService = async (payload: UserModel) => {
-  const generatedUsername = `${payload.firstName.toLowerCase()}.${payload.lastName.toLowerCase()}.${Math.floor(Math.random() * 10000)}`;
-  const generatedPassword =
-    Math.random().toString(36).slice(-12) +
-    Math.random().toString(36).slice(-12).toUpperCase() +
-    Math.floor(Math.random() * 100);
+  // const generatedUsername = `${payload.firstName.toLowerCase()}.${payload.lastName.toLowerCase()}.${Math.floor(Math.random() * 10000)}`;
+  // const generatedPassword =
+  //   Math.random().toString(36).slice(-12) +
+  //   Math.random().toString(36).slice(-12).toUpperCase() +
+  //   Math.floor(Math.random() * 100);
 
   const finalPayload = {
     ...payload,
-    username: generatedUsername,
-    password: generatedPassword,
+    username: payload.username,
+    password: payload.password,
   };
-
-  console.log("Generated credentials:", {
-    username: generatedUsername,
-    password: generatedPassword,
-  });
 
   try {
     const data = await axios.post(api + "auth/register", finalPayload);

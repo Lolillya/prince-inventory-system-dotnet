@@ -10,11 +10,15 @@ import { UserClientModel } from "@/models/user-client.model";
 import { EditEmployeeModal } from "./_components/edit-employee.modal";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 import { InfoCard } from "@/components/info-card";
+import { useAuth } from "@/context/use-auth";
 
 const EmployeesPage = () => {
   const { data: employees, isLoading, error } = userEmployeesQuery();
   const { data: selectedEmployee } = useSelectedEmployeeQuery();
+  const { user } = useAuth();
+  const isAdmin = user?.roleId === "1";
 
+  console.log(user);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false);
@@ -56,7 +60,7 @@ const EmployeesPage = () => {
   return (
     <section>
       {/* ADD EMPLOYEE MODAL */}
-      {isAddEmployeeModalOpen && (
+      {isAdmin && isAddEmployeeModalOpen && (
         <AddEmployeeModal
           setIsAddEmployeeModalOpen={setIsAddEmployeeModalOpen}
         />
@@ -76,7 +80,7 @@ const EmployeesPage = () => {
             address: selectedEmployee.address,
             phoneNumber: selectedEmployee.phoneNumber,
             notes: selectedEmployee.notes,
-            roleID: 2,
+            roleID: selectedEmployee.role?.toLowerCase() === "admin" ? 1 : 2,
           }}
         />
       )}
@@ -106,13 +110,15 @@ const EmployeesPage = () => {
               <FilterIcon />
             </div>
           </div>
-          <button
-            className="flex items-center justify-center gap-2"
-            onClick={handleAddEmployee}
-          >
-            <PlusIcon />
-            new employee
-          </button>
+          {isAdmin && (
+            <button
+              className="flex items-center justify-center gap-2"
+              onClick={handleAddEmployee}
+            >
+              <PlusIcon />
+              new employee
+            </button>
+          )}
         </div>
       </div>
 
