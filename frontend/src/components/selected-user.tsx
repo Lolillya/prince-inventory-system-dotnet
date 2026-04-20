@@ -40,7 +40,7 @@ export const SelectedUser = ({
   const amountInReceivables = 5000; // scaffold placeholder
 
   return (
-    <div className="flex flex-col p-5 w-full gap-2">
+    <div className="flex h-full min-h-0 w-full flex-col gap-2 p-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-5">
           <div className="rounded-lg">
@@ -408,7 +408,7 @@ const EmployeeActions = ({ employeeId }: { employeeId: string }) => {
         />
       )}
 
-      <div className="p-2 rounded-lg bg-wash-gray flex shrink-0 flex-1 flex-col">
+      <div className="p-2 rounded-lg bg-wash-gray flex min-h-0 flex-1 flex-col">
         <div className="p-2 flex gap-3 flex-col">
           <div className="flex w-full items-center justify-between">
             <div className="flex gap-1">
@@ -422,12 +422,12 @@ const EmployeeActions = ({ employeeId }: { employeeId: string }) => {
               >
                 Restocks
               </button>
-              <button
+              <div
                 className="hover:bg-bellflower-gray p-1 rounded text-vesper-gray"
                 onClick={() => setIsAllRestocksModalOpen(true)}
               >
                 <RightUpArrowIcon width={14} height={14} />
-              </button>
+              </div>
 
               <button
                 className={`text-vesper-gray font-semibold tracking-wide text-sm px-2 py-1 rounded hover:bg-bellflower-gray ${
@@ -439,12 +439,12 @@ const EmployeeActions = ({ employeeId }: { employeeId: string }) => {
               >
                 Invoices
               </button>
-              <button
+              <div
                 className="hover:bg-bellflower-gray p-1 rounded text-vesper-gray"
                 onClick={() => setIsAllInvoicesModalOpen(true)}
               >
                 <RightUpArrowIcon width={14} height={14} />
-              </button>
+              </div>
             </div>
 
             <label className="text-sm font-semibold text-vesper-gray">
@@ -461,21 +461,21 @@ const EmployeeActions = ({ employeeId }: { employeeId: string }) => {
 
         {/* RESTOCKS TAB */}
         {activeTab === "restocks" && (
-          <>
+          <div className="flex min-h-0 flex-1 flex-col">
             {restocksLoading && (
               <div className="w-full flex items-center justify-center py-4">
                 <span className="text-sm text-gray-400">Loading...</span>
               </div>
             )}
             {!restocksLoading && (!restocks || restocks.length === 0) && (
-              <div className="w-full flex items-center justify-center py-4">
+              <div className="w-full flex items-center justify-center py-4 h-full">
                 <span className="font-semibold info-name">
                   No restock found
                 </span>
               </div>
             )}
             {!restocksLoading && restocks && restocks.length > 0 && (
-              <div className="flex flex-col gap-3 mt-1">
+              <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
                 {restocks.map((restock) => (
                   <div
                     key={restock.restock_Id}
@@ -514,26 +514,26 @@ const EmployeeActions = ({ employeeId }: { employeeId: string }) => {
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
 
         {/* INVOICES TAB */}
         {activeTab === "invoices" && (
-          <>
+          <div className="flex min-h-0 flex-1 flex-col">
             {invoicesLoading && (
               <div className="w-full flex items-center justify-center py-4">
                 <span className="text-sm text-gray-400">Loading...</span>
               </div>
             )}
             {!invoicesLoading && (!invoices || invoices.length === 0) && (
-              <div className="w-full flex items-center justify-center py-4">
+              <div className="w-full flex items-center justify-center py-4 h-full">
                 <span className="font-semibold info-name">
                   No invoice found
                 </span>
               </div>
             )}
             {!invoicesLoading && invoices && invoices.length > 0 && (
-              <div className="flex flex-col gap-3 mt-1">
+              <div className="mt-1 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
                 {invoices.map((invoice) => (
                   <div
                     key={invoice.invoice_ID}
@@ -573,7 +573,7 @@ const EmployeeActions = ({ employeeId }: { employeeId: string }) => {
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </>

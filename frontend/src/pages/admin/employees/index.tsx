@@ -126,10 +126,10 @@ const EmployeesPage = () => {
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
+            <label className="capitalize text-saltbox-gray font-normal text-sm">
               Employees
             </label>
-            <span className="capitalize text-vesper-gray">
+            <span className="capitalize text-vesper-gray text-sm">
               {filteredEmployees?.length} records
             </span>
           </div>
@@ -151,14 +151,14 @@ const EmployeesPage = () => {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="w-[70%] flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
+        <div className="w-[50%] min-h-0 flex flex-col gap-3">
+          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center shrink-0">
+            <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
             </label>
           </div>
 
-          <div className="h-full bg-custom-gray rounded-lg flex">
+          <div className="min-h-0 bg-custom-gray rounded-lg flex flex-1">
             {!selectedEmployee ? (
               <NoSelectedState />
             ) : (
