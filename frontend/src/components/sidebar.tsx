@@ -131,7 +131,7 @@ const Sidebar = () => {
 
         <div className="flex flex-col">
           <span className="font-bold uppercase">{user?.username}</span>
-          <label className="capitalize">{user?.roleId}</label>
+          <label className="capitalize">{user?.role}</label>
         </div>
       </div>
     </div>

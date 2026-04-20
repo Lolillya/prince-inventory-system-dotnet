@@ -39,7 +39,7 @@ export const UserProvider = ({ children }: Props) => {
   const registerUser = async (
     email: string,
     username: string,
-    password: string
+    password: string,
   ) => {
     await registerAPI(email, username, password).then((res) => {
       if (res) {
@@ -47,7 +47,7 @@ export const UserProvider = ({ children }: Props) => {
         const userObj = {
           username: res?.data.username,
           email: res?.data.email,
-          roleId: res.data.roleId,
+          role: res.data.role,
           user_ID: res.data.user_ID,
         };
         localStorage.setItem("user", JSON.stringify(userObj));
@@ -67,7 +67,7 @@ export const UserProvider = ({ children }: Props) => {
         const userObj = {
           username: res?.data.username,
           email: res?.data.email,
-          roleId: res.data.roleId,
+          role: res.data.role,
           user_ID: res.data.user_ID,
         };
         localStorage.setItem("user", JSON.stringify(userObj));

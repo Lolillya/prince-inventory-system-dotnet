@@ -16,7 +16,7 @@ const EmployeesPage = () => {
   const { data: employees, isLoading, error } = userEmployeesQuery();
   const { data: selectedEmployee } = useSelectedEmployeeQuery();
   const { user } = useAuth();
-  const isAdmin = user?.roleId === "1";
+  const isAdmin = user?.role === "ADMIN";
 
   console.log(user);
   const [searchQuery, setSearchQuery] = useState("");
