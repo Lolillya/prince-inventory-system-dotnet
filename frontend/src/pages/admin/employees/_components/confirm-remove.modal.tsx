@@ -1,5 +1,9 @@
 import { DeleteUserService } from "@/features/suppliers/remove-supplier/remove-supplier.service";
+import { GetEmployeeInvoices } from "@/features/employees/get-employee-invoices.service";
+import { GetEmployeeRestocks } from "@/features/employees/get-employee-restocks.service";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface ConfirmRemoveModalProps {
   setIsConfirmRemoveModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -11,18 +15,42 @@ export const ConfirmRemoveModal = ({
   userId,
 }: ConfirmRemoveModalProps) => {
   const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCloseModal = () => {
     setIsConfirmRemoveModalOpen(false);
   };
 
   const handleRemove = async () => {
-    const result = await DeleteUserService(userId);
-    if (result) {
-      // Close the modal
-      handleCloseModal();
-      // Refetch the employee list
+    setIsLoading(true);
+    try {
+      const [invoicesRes, restocksRes] = await Promise.all([
+        GetEmployeeInvoices(userId),
+        GetEmployeeRestocks(userId),
+      ]);
+
+      const invoices = invoicesRes?.data ?? [];
+      const restocks = restocksRes?.data ?? [];
+
+      if (invoices.length > 0 || restocks.length > 0) {
+        const parts: string[] = [];
+        if (invoices.length > 0) parts.push(`${invoices.length} invoice/s`);
+        if (restocks.length > 0) parts.push(`${restocks.length} restock/s`);
+        toast.error(
+          `Cannot delete employee with existing ${parts.join(" and ")}.`,
+        );
+        handleCloseModal();
+        return;
+      }
+
+      await DeleteUserService(userId);
       queryClient.invalidateQueries({ queryKey: ["employee"] });
+      toast.success("Employee removed successfully.");
+      handleCloseModal();
+    } catch {
+      toast.error("Failed to remove employee. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -35,8 +63,12 @@ export const ConfirmRemoveModal = ({
           undone.
         </p>
         <div className="flex gap-4">
-          <button onClick={handleRemove}>Remove</button>
-          <button onClick={handleCloseModal}>Cancel</button>
+          <button onClick={handleRemove} disabled={isLoading}>
+            {isLoading ? "Removing..." : "Remove"}
+          </button>
+          <button onClick={handleCloseModal} disabled={isLoading}>
+            Cancel
+          </button>
         </div>
       </div>
     </div>
