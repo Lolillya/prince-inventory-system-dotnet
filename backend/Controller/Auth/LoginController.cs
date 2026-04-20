@@ -51,7 +51,7 @@ namespace backend.Controllers.Auth
                 {
                     Username = user.UserName,
                     Email = user.Email,
-                    Token = _tokenService.CreateToken(user),
+                    Token = _tokenService.CreateToken(user, userRoles),
                     CompanyName = user.CompanyName,
                     Notes = user.Notes,
                     FirstName = user.FirstName,

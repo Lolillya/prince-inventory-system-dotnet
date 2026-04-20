@@ -77,12 +77,14 @@ namespace backend.Controllers.Auth
                     await _db.SaveChangesAsync();
                 }
 
+                var registeredUserRoles = await _userManager.GetRolesAsync(appUser);
+
                 return Ok(
                     new NewUserDto
                     {
                         Username = appUser.UserName,
                         Email = appUser.Email,
-                        Token = _tokenService.CreateToken(appUser),
+                        Token = _tokenService.CreateToken(appUser, registeredUserRoles),
                         CompanyName = appUser.CompanyName,
                         Notes = appUser.Notes,
                         FirstName = appUser.FirstName,

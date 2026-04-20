@@ -19,6 +19,15 @@ type Props = { children: React.ReactNode };
 
 const UserContext = createContext<UserContextType>({} as UserContextType);
 
+const getRoleFromToken = (token: string): string => {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload["role"] ?? "";
+  } catch {
+    return "";
+  }
+};
+
 export const UserProvider = ({ children }: Props) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -29,7 +38,7 @@ export const UserProvider = ({ children }: Props) => {
     const token = localStorage.getItem("token");
 
     if (user && token) {
-      setUser(JSON.parse(user));
+      setUser({ ...JSON.parse(user), role: getRoleFromToken(token) });
       setToken(token);
       axios.defaults.headers.common["Authorization"] = "Bearer " + token;
     }
@@ -47,12 +56,11 @@ export const UserProvider = ({ children }: Props) => {
         const userObj = {
           username: res?.data.username,
           email: res?.data.email,
-          role: res.data.role,
           user_ID: res.data.user_ID,
         };
         localStorage.setItem("user", JSON.stringify(userObj));
         setToken(res?.data.token!);
-        setUser(userObj!);
+        setUser({ ...userObj, role: getRoleFromToken(res.data.token) });
         // toast.success("Login Success!");
         window.location.href = "/admin/dashboard";
       }
@@ -67,12 +75,11 @@ export const UserProvider = ({ children }: Props) => {
         const userObj = {
           username: res?.data.username,
           email: res?.data.email,
-          role: res.data.role,
           user_ID: res.data.user_ID,
         };
         localStorage.setItem("user", JSON.stringify(userObj));
         setToken(res?.data.token!);
-        setUser(userObj!);
+        setUser({ ...userObj, role: getRoleFromToken(res.data.token) });
 
         window.location.href = "/admin/dashboard";
       }
