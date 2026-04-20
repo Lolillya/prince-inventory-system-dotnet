@@ -1,0 +1,161 @@
+using backend.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace backend.Controller.Employees
+{
+    [ApiController]
+    [Route("api/employees/{employeeId}/restocks")]
+    public class GetEmployeeRestocks : ControllerBase
+    {
+        private readonly ApplicationDBContext _db;
+
+        public GetEmployeeRestocks(ApplicationDBContext db)
+        {
+            _db = db;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetRestocksByEmployee(string employeeId)
+        {
+            try
+            {
+                var results = await _db.Restocks
+                    .Where(r => r.Restock_Clerk == employeeId)
+                    .Include(r => r.Clerk)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.Supplier)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.Product)
+                                .ThenInclude(p => p.Brand)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.Product)
+                                .ThenInclude(p => p.Category)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.Product)
+                                .ThenInclude(p => p.Variant)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.BaseUnitOfMeasure)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.ProductUOMs)
+                                .ThenInclude(puom => puom.UnitOfMeasure)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.UnitPreset)
+                                .ThenInclude(up => up!.MainUnit)
+                    .Include(r => r.RestockBatches)
+                        .ThenInclude(rb => rb.RestockLineItems)
+                            .ThenInclude(rli => rli.UnitPreset)
+                                .ThenInclude(up => up!.PresetLevels)
+                                    .ThenInclude(pl => pl.UnitOfMeasure)
+                    .Select(r => new
+                    {
+                        r.Status,
+                        restock_Id = r.Restock_ID,
+                        restock_Number = r.Restock_Number,
+                        restock_Notes = r.Restock_Notes,
+                        clerk = r.Clerk != null ? new
+                        {
+                            r.Clerk.Id,
+                            r.Clerk.FirstName,
+                            r.Clerk.LastName,
+                            r.Clerk.Email
+                        } : null,
+                        supplier = r.RestockBatches
+                            .Where(rb => rb.Supplier != null)
+                            .Select(rb => new
+                            {
+                                rb.Supplier.Id,
+                                rb.Supplier.FirstName,
+                                rb.Supplier.LastName,
+                                rb.Supplier.CompanyName,
+                                rb.Supplier.Email
+                            })
+                            .FirstOrDefault(),
+                        created_At = r.CreatedAt,
+                        updated_At = r.UpdatedAt,
+                        line_Items = r.RestockBatches
+                            .SelectMany(rb => rb.RestockLineItems.Select(rli => new
+                            {
+                                line_Item_ID = rli.LineItem_ID,
+                                batch_Id = rb.Batch_ID,
+                                batch_Number = rb.Batch_Number,
+                                product = rli.Product != null ? new
+                                {
+                                    rli.Product.Product_ID,
+                                    rli.Product.Product_Code,
+                                    rli.Product.Product_Name,
+                                    rli.Product.Description,
+                                    brand = rli.Product.Brand != null ? new
+                                    {
+                                        rli.Product.Brand.Brand_ID,
+                                        rli.Product.Brand.BrandName
+                                    } : null,
+                                    category = rli.Product.Category != null ? new
+                                    {
+                                        rli.Product.Category.Category_ID,
+                                        rli.Product.Category.Category_Name
+                                    } : null,
+                                    variant = rli.Product.Variant != null ? new
+                                    {
+                                        rli.Product.Variant.Variant_ID,
+                                        rli.Product.Variant.Variant_Name
+                                    } : null
+                                } : null,
+                                base_Unit = rli.BaseUnitOfMeasure != null ? new
+                                {
+                                    rli.BaseUnitOfMeasure.uom_ID,
+                                    rli.BaseUnitOfMeasure.uom_Name
+                                } : null,
+                                base_Unit_Price = rli.Base_Unit_Price,
+                                base_Unit_Quantity = rli.Base_Unit_Quantity,
+                                line_Item_Total = rli.Base_Unit_Price * rli.Base_Unit_Quantity,
+                                unit_Preset = rli.UnitPreset != null ? new
+                                {
+                                    rli.UnitPreset.Preset_ID,
+                                    rli.UnitPreset.Preset_Name,
+                                    rli.UnitPreset.Main_Unit_ID,
+                                    main_Unit = rli.UnitPreset.MainUnit != null ? new
+                                    {
+                                        rli.UnitPreset.MainUnit.uom_ID,
+                                        rli.UnitPreset.MainUnit.uom_Name
+                                    } : null,
+                                    preset_Levels = rli.UnitPreset.PresetLevels
+                                        .OrderBy(pl => pl.Level)
+                                        .Select(pl => new
+                                        {
+                                            pl.Level_ID,
+                                            pl.Level,
+                                            pl.UOM_ID,
+                                            pl.Conversion_Factor,
+                                            unit = pl.UnitOfMeasure != null ? new
+                                            {
+                                                pl.UnitOfMeasure.uom_ID,
+                                                pl.UnitOfMeasure.uom_Name
+                                            } : null
+                                        })
+                                        .ToList()
+                                } : null,
+                            }))
+                            .ToList(),
+                        grand_Total = r.RestockBatches
+                            .SelectMany(rb => rb.RestockLineItems)
+                            .Sum(rli => rli.Base_Unit_Price * rli.Base_Unit_Quantity)
+                    })
+                    .OrderByDescending(r => r.created_At)
+                    .ToListAsync();
+
+                return Ok(results);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, $"Internal server error: {e.Message}");
+            }
+        }
+    }
+}

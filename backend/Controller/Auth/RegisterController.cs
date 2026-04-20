@@ -55,47 +55,45 @@ namespace backend.Controllers.Auth
 
                 var createdUser = await _userManager.CreateAsync(appUser, registerDto.Password);
 
-                if (createdUser.Succeeded)
+                if (!createdUser.Succeeded)
+                    return BadRequest(createdUser.Errors);
+
+                if (string.IsNullOrEmpty(role.Name))
+                    return BadRequest("Invalid role name");
+
+                var roleResult = await _userManager.AddToRoleAsync(appUser, role.Name);
+                if (!roleResult.Succeeded)
+                    return StatusCode(500, roleResult.Errors);
+
+                if (role.Id == "4" && registerDto.Term.HasValue)
                 {
-                    if (string.IsNullOrEmpty(role.Name))
-                        return BadRequest("Invalid role name");
-
-                    var roleResult = await _userManager.AddToRoleAsync(appUser, role.Name);
-                    if (roleResult.Succeeded)
+                    _db.CustomerTerms.Add(new CustomerTerm
                     {
-                        if (role.Id == "4" && registerDto.Term.HasValue)
-                        {
-                            _db.CustomerTerms.Add(new CustomerTerm
-                            {
-                                User_ID = appUser.Id,
-                                Term = registerDto.Term.Value,
-                                CreatedAt = DateTime.UtcNow,
-                                UpdatedAt = DateTime.UtcNow
-                            });
-                            await _db.SaveChangesAsync();
-                        }
-
-                        return Ok(
-                            new NewUserDto
-                            {
-                                Username = appUser.UserName,
-                                Email = appUser.Email,
-                                Token = _tokenService.CreateToken(appUser),
-                                CompanyName = appUser.CompanyName,
-                                Notes = appUser.Notes,
-                                FirstName = appUser.FirstName,
-                                LastName = appUser.LastName,
-                                PhoneNumber = appUser.PhoneNumber,
-                                Role = role.NormalizedName,
-                                User_ID = appUser.Id
-                            }
-                        );
-                    }
-                    else
-                        return StatusCode(500, roleResult.Errors);
+                        User_ID = appUser.Id,
+                        Term = registerDto.Term.Value,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                    await _db.SaveChangesAsync();
                 }
-                else
-                    return StatusCode(500, createdUser.Errors);
+
+                var registeredUserRoles = await _userManager.GetRolesAsync(appUser);
+
+                return Ok(
+                    new NewUserDto
+                    {
+                        Username = appUser.UserName,
+                        Email = appUser.Email,
+                        Token = _tokenService.CreateToken(appUser, registeredUserRoles),
+                        CompanyName = appUser.CompanyName,
+                        Notes = appUser.Notes,
+                        FirstName = appUser.FirstName,
+                        LastName = appUser.LastName,
+                        PhoneNumber = appUser.PhoneNumber,
+                        Role = role.NormalizedName,
+                        User_ID = appUser.Id
+                    }
+                );
             }
             catch (Exception e)
             {

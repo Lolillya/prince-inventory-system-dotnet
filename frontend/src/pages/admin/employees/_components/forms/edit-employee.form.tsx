@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Dispatch, SetStateAction } from "react";
 import { UserClientModel } from "@/models/user-client.model";
 import * as yup from "yup";
+import { toast } from "sonner";
 
 const schema = yup.object().shape({
   id: yup.string(),
@@ -19,7 +20,7 @@ const schema = yup.object().shape({
     .required("Email address is required")
     .matches(
       /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-      "Invalid email format"
+      "Invalid email format",
     ),
   phoneNumber: yup.string().required("Contact number is required"),
   companyName: yup.string().required("Company name is required"),
@@ -45,9 +46,9 @@ export const EditEmployeeForm = ({
   } = useForm<UserModel>({
     resolver: yupResolver(schema),
     defaultValues: {
-      roleID: 2,
-      username: "N/A",
-      password: "N/A",
+      roleID: selectedEmployee?.roleID || 2,
+      username: selectedEmployee?.username || "",
+      password: "",
       email: selectedEmployee?.email || "",
       firstName: selectedEmployee?.firstName || "",
       lastName: selectedEmployee?.lastName || "",
@@ -63,7 +64,7 @@ export const EditEmployeeForm = ({
     const payload: UserModel = {
       ...data,
       id: selectedEmployee.id,
-      roleID: selectedEmployee.roleID || 2,
+      roleID: data.roleID,
       username: selectedEmployee.username || data.username || "N/A",
       notes: data.notes?.trim() ? data.notes : "N/A",
     };
@@ -71,6 +72,7 @@ export const EditEmployeeForm = ({
     const result = await EditEmployeeService(payload);
 
     if (result) {
+      toast.success("Employee updated successfully!");
       const currentSelected = queryClient.getQueryData<UserClientModel>([
         "employee-selected",
       ]);
@@ -94,7 +96,7 @@ export const EditEmployeeForm = ({
       // Keep details pane and list in sync immediately after a successful edit
       queryClient.setQueryData<UserClientModel>(
         ["employee-selected"],
-        updatedSelectedEmployee
+        updatedSelectedEmployee,
       );
 
       queryClient.setQueryData<UserClientModel[]>(["employee"], (previous) => {
@@ -103,7 +105,7 @@ export const EditEmployeeForm = ({
         return previous.map((employee) =>
           employee.id === updatedSelectedEmployee.id
             ? { ...employee, ...updatedSelectedEmployee }
-            : employee
+            : employee,
         );
       });
 
@@ -122,6 +124,13 @@ export const EditEmployeeForm = ({
           value="Prince Educational Supply"
           {...register("companyName")}
         />
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500 font-medium">Username:</span>
+          <span className="text-xs bg-custom-gray px-2 py-1 rounded font-mono">
+            {selectedEmployee.username}
+          </span>
+        </div>
 
         <div className="flex w-full justify-between gap-4">
           <div className="flex flex-col w-full">
@@ -156,7 +165,10 @@ export const EditEmployeeForm = ({
 
         <div className="flex w-full justify-between gap-4">
           <div className="flex flex-col w-full">
-            <label htmlFor="contactNumber" className="block text-sm font-medium">
+            <label
+              htmlFor="contactNumber"
+              className="block text-sm font-medium"
+            >
               Contact Number
             </label>
             <input
@@ -200,39 +212,18 @@ export const EditEmployeeForm = ({
           </span>
         </div>
 
-        <div className="flex w-full justify-between gap-4">
-          <div className="flex flex-col w-full">
-            <label htmlFor="username" className="block text-sm font-medium">
-              Username <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="username"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="AUTO GENERATED"
-              disabled
-              {...register("username")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.username?.message}
-            </span>
-          </div>
-          <div className="flex flex-col w-full">
-            <label htmlFor="password" className="block text-sm font-medium">
-              Password <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="password"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="AUTO GENERATED"
-              disabled
-              {...register("password")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.password?.message}
-            </span>
-          </div>
+        <div className="flex flex-col w-full">
+          <label htmlFor="editRoleID" className="block text-sm font-medium">
+            Role <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="editRoleID"
+            className="w-full drop-shadow-none bg-custom-gray p-2"
+            {...register("roleID", { valueAsNumber: true })}
+          >
+            <option value={2}>Employee</option>
+            <option value={1}>Admin</option>
+          </select>
         </div>
 
         <div className="flex flex-col w-full">

@@ -6,6 +6,7 @@ using backend.Data;
 using backend.Dtos.Account;
 using backend.Dtos.User;
 using backend.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,10 +18,14 @@ namespace backend.Controller.Users.EditUserById
     {
 
         private readonly ApplicationDBContext _db;
+        private readonly UserManager<PersonalDetails> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public EditUserById(ApplicationDBContext db)
+        public EditUserById(ApplicationDBContext db, UserManager<PersonalDetails> userManager, RoleManager<IdentityRole> roleManager)
         {
             _db = db;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         [HttpPut]
@@ -60,6 +65,20 @@ namespace backend.Controller.Users.EditUserById
                 _db.Users.Update(user);
                 await _db.SaveChangesAsync();
 
+                // Update role if changed (only Admin/Employee — IDs 1 and 2)
+                if (payload.RoleID == 1 || payload.RoleID == 2)
+                {
+                    var newRole = await _roleManager.FindByIdAsync(payload.RoleID.ToString());
+                    if (newRole?.Name != null)
+                    {
+                        var currentRoles = await _userManager.GetRolesAsync(user);
+                        if (!currentRoles.Contains(newRole.Name))
+                        {
+                            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                            await _userManager.AddToRoleAsync(user, newRole.Name);
+                        }
+                    }
+                }
                 // Upsert CustomerTerm for customers
                 if (payload.RoleID == 4)
                 {

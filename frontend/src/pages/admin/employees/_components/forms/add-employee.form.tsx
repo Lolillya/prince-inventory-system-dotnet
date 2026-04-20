@@ -5,10 +5,21 @@ import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dispatch, SetStateAction } from "react";
 import * as yup from "yup";
+import { toast } from "sonner";
 
 const schema = yup.object().shape({
-  username: yup.string(),
-  password: yup.string(),
+  username: yup.string().required("Username is required"),
+  password: yup
+    .string()
+    .required("Password is required")
+    .min(6, "Password must be at least 6 characters")
+    .matches(/[0-9]/, "Password must contain at least one digit")
+    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .matches(
+      /[^a-zA-Z0-9]/,
+      "Password must contain at least one special character",
+    ),
   firstName: yup.string().required("First name is required"),
   lastName: yup.string().required("Last name is required"),
   email: yup
@@ -17,7 +28,7 @@ const schema = yup.object().shape({
     .required("Email address is required")
     .matches(
       /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-      "Invalid email format"
+      "Invalid email format",
     ),
   phoneNumber: yup.string().required("Contact number is required"),
   companyName: yup.string().required("Company name is required"),
@@ -30,7 +41,9 @@ interface AddEmployeeFormProps {
   setIsAddEmployeeModalOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormProps) => {
+export const AddEmployeeForm = ({
+  setIsAddEmployeeModalOpen,
+}: AddEmployeeFormProps) => {
   const queryClient = useQueryClient();
   const {
     register,
@@ -47,13 +60,10 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
   });
 
   const onSubmit = async (data: UserModel) => {
-    // AddNewSupplierService(data);
-    // AddNewEmployeeService(data);
     const result = await AddNewEmployeeService(data);
     if (result) {
-      // Close the modal
+      toast.success("Employee added successfully!");
       setIsAddEmployeeModalOpen(false);
-      // Refetch the employee list
       queryClient.invalidateQueries({ queryKey: ["employee"] });
     }
   };
@@ -103,7 +113,10 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
 
         <div className="flex w-full justify-between gap-4">
           <div className="flex flex-col w-full">
-            <label htmlFor="contactNumber" className="block text-sm font-medium">
+            <label
+              htmlFor="contactNumber"
+              className="block text-sm font-medium"
+            >
               Contact Number
             </label>
             <input
@@ -156,8 +169,7 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
               id="username"
               type="text"
               className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="AUTO GENERATED"
-              disabled
+              placeholder="Username"
               {...register("username")}
             />
             <span className="text-red-500 text-xs normal-case">
@@ -171,10 +183,9 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
             </label>
             <input
               id="password"
-              type="text"
+              type="password"
               className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="AUTO GENERATED"
-              disabled
+              placeholder="***********"
               {...register("password")}
             />
             <span className="text-red-500 text-xs normal-case">
@@ -184,13 +195,28 @@ export const AddEmployeeForm = ({ setIsAddEmployeeModalOpen }: AddEmployeeFormPr
         </div>
 
         <div className="flex flex-col w-full">
+          <label htmlFor="roleID" className="block text-sm font-medium">
+            Role <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="roleID"
+            className="w-full drop-shadow-none bg-custom-gray p-2"
+            {...register("roleID", { valueAsNumber: true })}
+          >
+            <option value={2}>Employee</option>
+            <option value={1}>Admin</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col w-full">
           <label htmlFor="employeeNotes" className="block text-sm font-medium">
-            Employee notes
+            About the Employee
           </label>
           <textarea
             id="employeeNotes"
             className="w-full p-2 rounded-lg"
             placeholder="About the employee..."
+            rows={4}
             {...register("notes")}
           />
           <span className="text-red-500 text-xs normal-case">

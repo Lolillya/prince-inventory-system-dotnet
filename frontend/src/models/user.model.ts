@@ -2,13 +2,12 @@ export type UserProfileToken = {
   username: string;
   email: string;
   token: string;
-  roleId: string;
   user_ID: string;
 };
 
 export type UserProfile = {
   username: string;
   email: string;
-  roleId: string;
+  role: string;
   user_ID: string;
 };

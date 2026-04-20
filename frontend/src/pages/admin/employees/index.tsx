@@ -9,16 +9,22 @@ import { AddEmployeeModal } from "./_components/add-employee.modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { EditEmployeeModal } from "./_components/edit-employee.modal";
 import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { RecoverAccountModal } from "./_components/recover-account.modal";
 import { InfoCard } from "@/components/info-card";
+import { useAuth } from "@/context/use-auth";
 
 const EmployeesPage = () => {
   const { data: employees, isLoading, error } = userEmployeesQuery();
   const { data: selectedEmployee } = useSelectedEmployeeQuery();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false);
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
+    useState(false);
+  const [isRecoverAccountModalOpen, setIsRecoverAccountModalOpen] =
     useState(false);
   const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
     null,
@@ -53,10 +59,14 @@ const EmployeesPage = () => {
     setIsEditEmployeeModalOpen(!isEditEmployeeModalOpen);
   };
 
+  const handleRecover = () => {
+    setIsRecoverAccountModalOpen(true);
+  };
+
   return (
     <section>
       {/* ADD EMPLOYEE MODAL */}
-      {isAddEmployeeModalOpen && (
+      {isAdmin && isAddEmployeeModalOpen && (
         <AddEmployeeModal
           setIsAddEmployeeModalOpen={setIsAddEmployeeModalOpen}
         />
@@ -76,7 +86,7 @@ const EmployeesPage = () => {
             address: selectedEmployee.address,
             phoneNumber: selectedEmployee.phoneNumber,
             notes: selectedEmployee.notes,
-            roleID: 2,
+            roleID: selectedEmployee.role?.toLowerCase() === "admin" ? 1 : 2,
           }}
         />
       )}
@@ -86,6 +96,14 @@ const EmployeesPage = () => {
         <ConfirmRemoveModal
           setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
           userId={userToDelete.id}
+        />
+      )}
+
+      {/* RECOVER ACCOUNT MODAL */}
+      {isAdmin && isRecoverAccountModalOpen && selectedEmployee && (
+        <RecoverAccountModal
+          setIsRecoverAccountModalOpen={setIsRecoverAccountModalOpen}
+          userId={selectedEmployee.id}
         />
       )}
       <div className="w-full mb-8">
@@ -106,13 +124,15 @@ const EmployeesPage = () => {
               <FilterIcon />
             </div>
           </div>
-          <button
-            className="flex items-center justify-center gap-2"
-            onClick={handleAddEmployee}
-          >
-            <PlusIcon />
-            new employee
-          </button>
+          {isAdmin && (
+            <button
+              className="flex items-center justify-center gap-2"
+              onClick={handleAddEmployee}
+            >
+              <PlusIcon />
+              new employee
+            </button>
+          )}
         </div>
       </div>
 
@@ -120,10 +140,10 @@ const EmployeesPage = () => {
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
           <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
+            <label className="capitalize text-saltbox-gray font-normal text-sm">
               Employees
             </label>
-            <span className="capitalize text-vesper-gray">
+            <span className="capitalize text-vesper-gray text-sm">
               {filteredEmployees?.length} records
             </span>
           </div>
@@ -145,14 +165,14 @@ const EmployeesPage = () => {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="w-[70%] flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center">
-            <label className="capitalize text-saltbox-gray font-normal text-lg">
+        <div className="w-[50%] min-h-0 flex flex-col gap-3">
+          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center shrink-0">
+            <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
             </label>
           </div>
 
-          <div className="h-full bg-custom-gray rounded-lg flex">
+          <div className="min-h-0 bg-custom-gray rounded-lg flex flex-1">
             {!selectedEmployee ? (
               <NoSelectedState />
             ) : (
@@ -160,6 +180,7 @@ const EmployeesPage = () => {
                 type="employee"
                 {...selectedEmployee}
                 handleEdit={handleEdit}
+                handleRecover={isAdmin ? handleRecover : undefined}
               />
             )}
           </div>
