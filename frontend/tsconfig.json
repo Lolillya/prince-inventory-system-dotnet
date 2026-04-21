@@ -17,11 +17,10 @@
     "jsx": "react-jsx",
     "allowJs": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
+
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "*": ["./src/*"]
     }
   }
 }
