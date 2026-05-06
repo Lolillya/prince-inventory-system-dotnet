@@ -116,8 +116,6 @@ const InventoryPage = () => {
     setSelectedProduct(product);
   };
 
-  console.log(inventory);
-
   const handleEditProduct = () => {
     setIsEditProductModalOpen(!isEditProductModalOpen);
     setIsModalOpen(false);
@@ -773,31 +771,31 @@ const InventoryPage = () => {
       <div className="flex flex-1 gap-3 overflow-y-hidden">
         {/*  LEFT PANEL */}
         <div className="w-full flex flex-col gap-3">
-          <div className="bg-custom-gray p-1 rounded-lg flex justify-between shadow-sm border">
+          <div className="bg-custom-gray p-2 rounded-lg flex justify-between shadow-sm border items-center h-11">
             <div className=" gap-10 flex items-center pl-2">
-              <label className="capitalize text-saltbox-gray font-semibold text-sm">
+              <label className="capitalize text-saltbox-gray font-normal text-sm">
                 inventory
               </label>
 
-              <span className="text-xs text-vesper-gray font-semibold">
+              <span className="capitalize text-vesper-gray text-xs">
                 {filteredInventory?.length} records
               </span>
             </div>
 
             <div className="flex gap-2 items-center">
               <div
-                className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+                className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
                 onClick={() => setIsProductPackagingOpen(true)}
               >
-                <Archive />
+                <Archive size={18} />
                 <label className="cursor-pointer">Product Packaging</label>
               </div>
 
               <div
-                className="flex gap-1 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
+                className="flex gap-2 items-center rounded-lg bg-custom-gray hover:bg-background hover:shadow-md active:bg-background p-2 text-xs cursor-pointer duration-300 transition-all text-vesper-gray w-auto outline-none"
                 onClick={handlePresetEditor}
               >
-                <PackageOpen />
+                <PackageOpen size={18} />
                 <label className="cursor-pointer">Packaging Presets</label>
               </div>
             </div>
@@ -856,13 +854,13 @@ const InventoryPage = () => {
 
         {/* RIGHT PANEL */}
         <div className="w-[50%] flex flex-col gap-3">
-          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center shadow-sm border">
-            <label className="capitalize text-saltbox-gray font-semibold text-sm">
+          <div className="bg-custom-gray p-3 rounded-lg gap-10 flex items-center border shadow-sm h-11">
+            <label className="capitalize text-saltbox-gray font-normal text-sm">
               details
             </label>
           </div>
 
-          <div className="h-full bg-custom-gray rounded-lg flex p-5 shadow-lg border">
+          <div className="flex h-full min-h-0 rounded-lg border shadow-sm: bg-custom-gray">
             {!selectedProduct ? (
               <NoSelectedState />
             ) : (

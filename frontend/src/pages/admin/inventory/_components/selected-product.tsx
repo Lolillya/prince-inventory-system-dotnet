@@ -30,11 +30,20 @@ export const SelectedProduct = ({
 
   console.log(product);
   return (
-    <div className="w-full flex flex-col gap-3">
+    <div className="w-full flex flex-col gap-3 p-5">
       <div className="flex justify-between w-full">
         <div className="flex flex-col gap-1 ">
           <span className="text-sm">{product.variant.variant_Name}</span>
-          <span className="text-sm">{product.product.product_Code}</span>
+          <span className="text-sm">
+            {(() => {
+              const code =
+                product.product.core_Product_Code ??
+                product.product.product_Code;
+              return code?.length === 10
+                ? `${code.slice(0, 3)}-${code.slice(3, 6)}-${code.slice(6)}`
+                : code;
+            })()}
+          </span>
         </div>
 
         <span className="bg-teal-200 rounded-full py-1 px-2 items-center flex text-center justify-center text-xs text-nowrap h-fit">

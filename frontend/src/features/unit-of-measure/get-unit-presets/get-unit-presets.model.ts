@@ -8,6 +8,7 @@ export type UnitPresetLevel = {
   levels: PresetLevels[];
   product_Count: number;
   products: Products[];
+  preset_Code: string;
 };
 
 type Products = {

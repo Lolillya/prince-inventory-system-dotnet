@@ -4,6 +4,7 @@ export type InventoryProductModel = {
     product_ID: number;
     product_Code: string;
     product_Name: string;
+    core_Product_Code: string;
     description: string;
     createdAt: string;
     updatedAt: string;
