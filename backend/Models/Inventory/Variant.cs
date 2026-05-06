@@ -11,6 +11,7 @@ namespace backend.Models.Inventory
         [Key]
         public int Variant_ID { get; set; }
         public string Variant_Name { get; set; } = null!;
+        public string? Variant_Code { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

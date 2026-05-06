@@ -39,9 +39,12 @@ namespace backend.Controller.Inventory
 
             await _db.Brands.AddAsync(newBrand);
             await _db.SaveChangesAsync();
+
+            newBrand.Brand_Code = newBrand.Brand_ID.ToString("D3");
+            await _db.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            return Ok(new { message = "Brand added successfully" });
+            return Ok(new { message = "Brand added successfully", brand_Code = newBrand.Brand_Code });
         }
     }
 }

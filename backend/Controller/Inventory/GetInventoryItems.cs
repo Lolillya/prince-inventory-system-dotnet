@@ -72,6 +72,7 @@ namespace backend.Controller.Inventory
                             Quantity = i.Total_Quantity,
                             i.Product_ID,
                             i.Product.Product_Code,
+                            i.Product.Core_Product_Code,
                             i.Product.Product_Name,
                             i.Product.Description,
                             CreatedAt = i.Created_At,

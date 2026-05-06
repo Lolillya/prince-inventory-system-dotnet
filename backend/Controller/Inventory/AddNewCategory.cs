@@ -39,9 +39,12 @@ namespace backend.Controller.Inventory
 
             await _db.Categories.AddAsync(newCategory);
             await _db.SaveChangesAsync();
+
+            newCategory.Category_Code = newCategory.Category_ID.ToString("D3");
+            await _db.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            return Ok(new { message = "Category added successfully" });
+            return Ok(new { message = "Category added successfully", category_Code = newCategory.Category_Code });
         }
     }
 }

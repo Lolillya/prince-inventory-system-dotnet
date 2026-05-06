@@ -49,6 +49,9 @@ namespace backend.Controller.UnitPreset
                 await _db.Unit_Presets.AddAsync(preset);
                 await _db.SaveChangesAsync();
 
+                preset.Preset_Code = preset.Preset_ID.ToString("D4");
+                await _db.SaveChangesAsync();
+
                 // Add levels
                 foreach (var levelDto in dto.Levels)
                 {
@@ -70,7 +73,8 @@ namespace backend.Controller.UnitPreset
                 return Ok(new
                 {
                     message = "Unit preset created successfully",
-                    preset_ID = preset.Preset_ID
+                    preset_ID = preset.Preset_ID,
+                    preset_Code = preset.Preset_Code
                 });
             }
             catch (Exception e)

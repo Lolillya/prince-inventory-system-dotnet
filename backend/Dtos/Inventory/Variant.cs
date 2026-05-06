@@ -12,6 +12,7 @@ namespace backend.Dtos.Inventory
         public int ProductId { get; set; }
         [Required]
         public string VariantName { get; set; }
+        public string? Variant_Code { get; set; }
         [Required]
         public DateTime CreatedAt { get; set; }
         [Required]

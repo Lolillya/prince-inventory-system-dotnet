@@ -51,16 +51,19 @@ namespace backend.Controller.UnitPreset
 
                 foreach (var productId in newProductIds)
                 {
-                    var productExists = await _db.Products.AnyAsync(p => p.Product_ID == productId);
-                    if (!productExists)
+                    var product = await _db.Products.FindAsync(productId);
+                    if (product == null)
                     {
                         return NotFound($"Product with ID {productId} not found");
                     }
+
+                    var sku = (product.Core_Product_Code ?? "") + "-" + (preset.Preset_Code ?? preset.Preset_ID.ToString("D4"));
 
                     var assignment = new Product_Unit_Preset
                     {
                         Product_ID = productId,
                         Preset_ID = dto.Preset_ID,
+                        SKU = sku,
                         Assigned_At = DateTime.UtcNow
                     };
 

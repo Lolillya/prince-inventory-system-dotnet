@@ -4,6 +4,7 @@ namespace backend.Dtos.UnitPreset
     {
         public int Preset_ID { get; set; }
         public string Preset_Name { get; set; } = null!;
+        public string? Preset_Code { get; set; }
         public int Main_Unit_ID { get; set; }
         public string Main_Unit_Name { get; set; } = null!;
         public DateTime Created_At { get; set; }
@@ -28,6 +29,7 @@ namespace backend.Dtos.UnitPreset
         public string Product_Name { get; set; } = null!;
         public string? Brand_Name { get; set; }
         public string? Variant_Name { get; set; }
+        public string? SKU { get; set; }
         public int? Low_Stock_Level { get; set; }
         public int? Very_Low_Stock_Level { get; set; }
         public DateTime Assigned_At { get; set; }

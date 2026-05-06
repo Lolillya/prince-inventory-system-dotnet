@@ -31,6 +31,7 @@ namespace backend.Controller.UnitPreset
                     {
                         Preset_ID = p.Preset_ID,
                         Preset_Name = p.Preset_Name,
+                        Preset_Code = p.Preset_Code,
                         Main_Unit_ID = p.Main_Unit_ID,
                         Main_Unit_Name = p.MainUnit.uom_Name,
                         Created_At = p.Created_At,

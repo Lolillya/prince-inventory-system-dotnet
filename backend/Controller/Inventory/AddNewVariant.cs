@@ -39,9 +39,12 @@ namespace backend.Controller.Inventory
 
             await _db.Variants.AddAsync(newVariant);
             await _db.SaveChangesAsync();
+
+            newVariant.Variant_Code = newVariant.Variant_ID.ToString("D4");
+            await _db.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            return Ok(new { message = "Variant added successfully" });
+            return Ok(new { message = "Variant added successfully", variant_Code = newVariant.Variant_Code });
         }
     }
 }

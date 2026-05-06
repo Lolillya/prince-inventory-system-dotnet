@@ -19,6 +19,8 @@ namespace backend.Models.Unit
 
         public int Main_Unit_Quantity { get; set; } // Total quantity in main/base unit (e.g., 100 boxes total)
 
+        public string? SKU { get; set; }
+
         public DateTime Assigned_At { get; set; } = DateTime.UtcNow;
 
         // Navigation properties

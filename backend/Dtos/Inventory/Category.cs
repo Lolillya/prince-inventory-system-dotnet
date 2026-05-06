@@ -10,6 +10,7 @@ namespace backend.Dtos.Inventory
     {
         [Required]
         public string CategoryName { get; set; }
+        public string? Category_Code { get; set; }
         [Required]
         public DateTime CreatedAt { get; set; }
         [Required]

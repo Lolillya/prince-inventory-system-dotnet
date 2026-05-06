@@ -13,6 +13,7 @@ namespace backend.Models.Inventory
         [Key]
         public int Product_ID { get; set; }
         public string Product_Code { get; set; } = null!;
+        public string? Core_Product_Code { get; set; }
         public string Product_Name { get; set; } = null!;
         public string Description { get; set; } = null!;
         public int Brand_ID { get; set; }

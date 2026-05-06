@@ -35,6 +35,7 @@ namespace backend.Controller.UnitPreset
                     {
                         Preset_ID = p.Preset_ID,
                         Preset_Name = p.Preset_Name,
+                        Preset_Code = p.Preset_Code,
                         Main_Unit_ID = p.Main_Unit_ID,
                         Main_Unit_Name = p.MainUnit.uom_Name,
                         Created_At = p.Created_At,
@@ -58,6 +59,7 @@ namespace backend.Controller.UnitPreset
                                 Product_Name = pp.Product.Product_Name,
                                 Brand_Name = pp.Product.Brand != null ? pp.Product.Brand.BrandName : null,
                                 Variant_Name = pp.Product.Variant != null ? pp.Product.Variant.Variant_Name : null,
+                                SKU = pp.SKU,
                                 Low_Stock_Level = pp.Low_Stock_Level,
                                 Very_Low_Stock_Level = pp.Very_Low_Stock_Level,
                                 Assigned_At = pp.Assigned_At

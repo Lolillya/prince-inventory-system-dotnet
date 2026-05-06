@@ -12,6 +12,7 @@ namespace backend.Dtos.Inventory
         public int Product_ID { get; set; }
         [Required]
         public string ProductCode { get; set; }
+        public string? Core_Product_Code { get; set; }
         [Required]
         public string ProductName { get; set; }
         [Required]

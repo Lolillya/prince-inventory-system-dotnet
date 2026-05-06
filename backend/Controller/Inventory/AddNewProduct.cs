@@ -53,11 +53,23 @@ namespace backend.Controller.Inventory
 
         private async Task<(backend.Models.Inventory.Product, int)> AddToProduct(NewInventoryProductDto payload)
         {
+            var category = await _db.Categories.FindAsync(payload.Category_Id)
+                ?? throw new Exception($"Category with ID {payload.Category_Id} not found");
+            var brand = await _db.Brands.FindAsync(payload.Brand_Id)
+                ?? throw new Exception($"Brand with ID {payload.Brand_Id} not found");
+            var variant = await _db.Variants.FindAsync(payload.Variant_Id)
+                ?? throw new Exception($"Variant with ID {payload.Variant_Id} not found");
+
+            var coreProductCode = (category.Category_Code ?? category.Category_ID.ToString("D3"))
+                                + (brand.Brand_Code ?? brand.Brand_ID.ToString("D3"))
+                                + (variant.Variant_Code ?? variant.Variant_ID.ToString("D4"));
+
             var product = new backend.Models.Inventory.Product
             {
                 Product_Name = payload.ProductName,
                 Description = payload.Description,
                 Product_Code = payload.ProductCode,
+                Core_Product_Code = coreProductCode,
                 Brand_ID = payload.Brand_Id,
                 Category_ID = payload.Category_Id,
                 Variant_ID = payload.Variant_Id,
@@ -103,14 +115,16 @@ namespace backend.Controller.Inventory
 
         private async Task AssignPresetsToProduct(int productId, List<UnitPresetAssignment> unitPresets)
         {
+            var product = await _db.Products.FindAsync(productId)
+                ?? throw new Exception($"Product with ID {productId} not found");
+
             foreach (var preset in unitPresets)
             {
                 // Verify preset exists
-                var presetExists = await _db.Unit_Presets.AnyAsync(p => p.Preset_ID == preset.Preset_ID);
-                if (!presetExists)
-                {
-                    throw new Exception($"Preset with ID {preset.Preset_ID} not found");
-                }
+                var unitPreset = await _db.Unit_Presets.FindAsync(preset.Preset_ID)
+                    ?? throw new Exception($"Preset with ID {preset.Preset_ID} not found");
+
+                var sku = (product.Core_Product_Code ?? "") + "-" + (unitPreset.Preset_Code ?? unitPreset.Preset_ID.ToString("D4"));
 
                 // Create the assignment
                 var assignment = new Product_Unit_Preset
@@ -119,6 +133,7 @@ namespace backend.Controller.Inventory
                     Preset_ID = preset.Preset_ID,
                     Low_Stock_Level = preset.Low_Stock_Level,
                     Very_Low_Stock_Level = preset.Very_Low_Stock_Level,
+                    SKU = sku,
                     Assigned_At = DateTime.UtcNow
                 };
 

@@ -11,6 +11,7 @@ namespace backend.Models.Inventory
         [Key]
         public int Brand_ID { get; set; }
         public string BrandName { get; set; } = null!;
+        public string? Brand_Code { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

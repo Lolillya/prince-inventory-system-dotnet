@@ -10,6 +10,7 @@ namespace backend.Dtos.Inventory
     {
         [Required]
         public string BrandName { get; set; }
+        public string? Brand_Code { get; set; }
         [Required]
         public DateTime CreatedAt { get; set; }
         [Required]
