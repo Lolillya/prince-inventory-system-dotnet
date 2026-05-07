@@ -32,19 +32,19 @@ export const AddProductModal = ({
     }
   }, [isModalOpen]);
 
-  const addProductHeader = "Add New Product";
-  const addBrandHeader = "Add New Brand";
-  const addCategoryHeader = "Add New Category";
-  const addVariantHeader = "Add New Variant";
+  // const addProductHeader = "Add New Product";
+  // const addBrandHeader = "Add New Brand";
+  // const addCategoryHeader = "Add New Category";
+  // const addVariantHeader = "Add New Variant";
 
-  const addProductInstructions =
-    "Fill in the details to add a new product to the inventory.";
-  const addBrandInstructions =
-    "Fill in the details to add a new brand to the inventory.";
-  const addCategoryInstructions =
-    "Fill in the details to add a new category to the inventory.";
-  const addVariantInstructions =
-    "Fill in the details to add a new variant to the inventory.";
+  // const addProductInstructions =
+  //   "Fill in the details to add a new product to the inventory.";
+  // const addBrandInstructions =
+  //   "Fill in the details to add a new brand to the inventory.";
+  // const addCategoryInstructions =
+  //   "Fill in the details to add a new category to the inventory.";
+  // const addVariantInstructions =
+  //   "Fill in the details to add a new variant to the inventory.";
 
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
@@ -65,11 +65,16 @@ export const AddProductModal = ({
               {isItemModalOpen && "Add New Item"}
             </h1>
             <p className="text-gray-500">
-              {isAddProductModalOpen && "Fill in the details to add a new product to the inventory."}
-              {isBrandModalOpen && "Fill in the details to add a new brand to the inventory."}
-              {isCategoryModalOpen && "Fill in the details to add a new category to the inventory."}
-              {isVariantModalOpen && "Fill in the details to add a new variant to the inventory."}
-              {isItemModalOpen && "Fill in the details to add a new item to the inventory."}
+              {isAddProductModalOpen &&
+                "Fill in the details to add a new product to the inventory."}
+              {isBrandModalOpen &&
+                "Fill in the details to add a new brand to the inventory."}
+              {isCategoryModalOpen &&
+                "Fill in the details to add a new category to the inventory."}
+              {isVariantModalOpen &&
+                "Fill in the details to add a new variant to the inventory."}
+              {isItemModalOpen &&
+                "Fill in the details to add a new item to the inventory."}
             </p>
           </div>
         </div>

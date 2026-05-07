@@ -166,18 +166,11 @@ const InventoryPage = () => {
     })
     .sort((a, b) => Number(b.isFavorited) - Number(a.isFavorited));
 
-  // Check if product requires setup (incomplete or missing stock levels)
-  const requiresSetup = (product: InventoryProductModel) => {
-    if (!product.isComplete) return true;
-
-    // Check if any unitPreset has null stock levels
-    return product.unitPresets.some(
+  const getIncompletePresetCount = (product: InventoryProductModel) => {
+    return product.unitPresets.filter(
       (preset) =>
-        preset.low_Stock_Level === null ||
-        preset.low_Stock_Level === undefined ||
-        preset.very_Low_Stock_Level === null ||
-        preset.very_Low_Stock_Level === undefined,
-    );
+        preset.low_Stock_Level == null || preset.very_Low_Stock_Level == null,
+    ).length;
   };
 
   const buildProductDescription = (item: InventoryProductModel) => {
@@ -809,19 +802,36 @@ const InventoryPage = () => {
                   key={index}
                   onClick={() => handleClick(data)}
                 >
-                  <div className="flex gap-2 items-center">
-                    {requiresSetup(data) && (
+                  <div className="flex items-center w-full">
+                    {/* {data.unitPresets.length === 0 ? (
                       <span className="text-xs bg-saltbox-gray text-white px-2 py-0.5 rounded-full font-medium">
-                        Setup Required
+                        No Presets
                       </span>
-                    )}
-                    <span className="capitalize">
-                      {data.product.product_Code}
-                    </span>
-                    <span className="capitalize">{data.brand.brandName}</span>
-                    <span className="capitalize">
-                      {data.variant.variant_Name}
-                    </span>
+                    ) : getIncompletePresetCount(data) > 0 ? (
+                      <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-medium">
+                        {getIncompletePresetCount(data)} preset incomplete
+                      </span>
+                    ) : null} */}
+                    <div className="gap-2 flex items-center flex-nowrap text-nowrap">
+                      <span className="capitalize">
+                        {data.product.product_Code}
+                      </span>
+                      <span className="capitalize">{data.brand.brandName}</span>
+                      <span className="capitalize">
+                        {data.variant.variant_Name}
+                      </span>
+                    </div>
+                    <div className="w-full items-center justify-end flex">
+                      {data.unitPresets.length === 0 ? (
+                        <span className="text-xs bg-red-100 border border-red-500 text-red-500 px-2 py-0.5 rounded-full font-medium">
+                          No Presets
+                        </span>
+                      ) : getIncompletePresetCount(data) > 0 ? (
+                        <span className="text-xs bg-amber-100 border border-amber-500 text-amber-600 px-2 py-0.5 rounded-full font-medium">
+                          {getIncompletePresetCount(data)} preset incomplete
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 ">
                     <div
