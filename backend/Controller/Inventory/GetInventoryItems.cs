@@ -75,6 +75,7 @@ namespace backend.Controller.Inventory
                             i.Product.Core_Product_Code,
                             i.Product.Product_Name,
                             i.Product.Description,
+                            i.Product.Is_Active,
                             CreatedAt = i.Created_At,
                             UpdatedAt = i.Updated_At
                         },

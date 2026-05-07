@@ -20,6 +20,7 @@ namespace backend.Models.Inventory
         public int Brand_ID { get; set; }
         public int Category_ID { get; set; }
         public int Variant_ID { get; set; }
+        public bool Is_Active { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

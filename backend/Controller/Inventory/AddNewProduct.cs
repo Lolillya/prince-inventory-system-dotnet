@@ -25,6 +25,14 @@ namespace backend.Controller.Inventory
 
             Console.WriteLine("Received Payload: {0}" + JsonSerializer.Serialize(payload));
 
+            // Block recreation of any existing Item-Brand-Variant combo (active or deactivated)
+            var duplicateExists = await _db.Products.AnyAsync(p =>
+                p.Item_ID == payload.Item_Id &&
+                p.Brand_ID == payload.Brand_Id &&
+                p.Variant_ID == payload.Variant_Id);
+            if (duplicateExists)
+                return Conflict("A product with this Item–Brand–Variant combination already exists.");
+
             await using var transaction = await _db.Database.BeginTransactionAsync();
 
             try
