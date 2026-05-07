@@ -164,7 +164,11 @@ const InventoryPage = () => {
         item.category.category_Name.toLowerCase().includes(query)
       );
     })
-    .sort((a, b) => Number(b.isFavorited) - Number(a.isFavorited));
+    .sort((a, b) => {
+      const favDiff = Number(b.isFavorited) - Number(a.isFavorited);
+      if (favDiff !== 0) return favDiff;
+      return a.product.product_ID - b.product.product_ID;
+    });
 
   const getIncompletePresetCount = (product: InventoryProductModel) => {
     return product.unitPresets.filter(
