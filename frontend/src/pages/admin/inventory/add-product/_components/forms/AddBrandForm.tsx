@@ -2,6 +2,7 @@ import * as yup from "yup";
 import { addNewBrandService } from "@/features/inventory/add-new-brand/add-new-brand.service";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useQueryClient } from "@tanstack/react-query";
 
 const schema = yup.object().shape({
   brand_Name: yup.string().required("Brand name is required"),
@@ -20,6 +21,8 @@ export const AddBrandForm = ({
   setIsBrandModalOpen,
   setIsAddProductModalOpen,
 }: AddBrandFormProps) => {
+  const queryClient = useQueryClient();
+
   const handleCancel = () => {
     setIsBrandModalOpen(false);
     setIsAddProductModalOpen(true);
@@ -35,7 +38,8 @@ export const AddBrandForm = ({
   });
 
   const handleAddBrand = async (data: AddBrandFormValues) => {
-    addNewBrandService(data.brand_Name);
+    await addNewBrandService(data.brand_Name);
+    await queryClient.invalidateQueries({ queryKey: ["product-fields"] });
     setIsBrandModalOpen(false);
     setIsAddProductModalOpen(true);
     reset();

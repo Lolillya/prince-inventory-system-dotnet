@@ -1,7 +1,7 @@
 export type AddProductPayload = {
-  productName: string;
-  description: string;
+  description?: string;
   productCode: string;
+  item_Id: number;
   brand_ID: number;
   category_Id: number;
   variant_Id: number;

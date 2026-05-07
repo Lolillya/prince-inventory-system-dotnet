@@ -2,6 +2,7 @@ import * as yup from "yup";
 import { addNewVariantService } from "@/features/inventory/add-new-variant/add-new-variant.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 
 const schema = yup.object().shape({
   variant_Name: yup.string().required("Variant name is required"),
@@ -20,6 +21,8 @@ export const AddVariantForm = ({
   setIsVariantModalOpen,
   setIsAddProductModalOpen,
 }: AddVariantFormProps) => {
+  const queryClient = useQueryClient();
+
   const handleCancel = () => {
     setIsVariantModalOpen(false);
     setIsAddProductModalOpen(true);
@@ -35,7 +38,8 @@ export const AddVariantForm = ({
   });
 
   const handleAddVariant = async (data: AddVariantFormValues) => {
-    addNewVariantService(data.variant_Name);
+    await addNewVariantService(data.variant_Name);
+    await queryClient.invalidateQueries({ queryKey: ["product-fields"] });
     setIsVariantModalOpen(false);
     setIsAddProductModalOpen(true);
     reset();

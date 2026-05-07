@@ -2,6 +2,7 @@ import * as yup from "yup";
 import { addNewCategoryService } from "@/features/inventory/add-new-category/add-new-category.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 
 const schema = yup.object().shape({
   category_Name: yup.string().required("Category name is required"),
@@ -20,6 +21,8 @@ export const AddCategoryForm = ({
   setIsCategoryModalOpen,
   setIsAddProductModalOpen,
 }: AddCategoryFormProps) => {
+  const queryClient = useQueryClient();
+
   const handleCancel = () => {
     setIsCategoryModalOpen(false);
     setIsAddProductModalOpen(true);
@@ -35,7 +38,8 @@ export const AddCategoryForm = ({
   });
 
   const handleAddCategory = async (data: AddCategoryFormValues) => {
-    addNewCategoryService(data.category_Name);
+    await addNewCategoryService(data.category_Name);
+    await queryClient.invalidateQueries({ queryKey: ["product-fields"] });
     setIsCategoryModalOpen(false);
     setIsAddProductModalOpen(true);
     reset();
