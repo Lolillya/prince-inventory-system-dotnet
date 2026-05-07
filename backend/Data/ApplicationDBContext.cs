@@ -20,6 +20,7 @@ namespace backend.Data
 
         }
 
+        public DbSet<Item> Items { get; set; }
         public DbSet<Brand> Brands { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
@@ -59,6 +60,7 @@ namespace backend.Data
             Seeders.InternalUsers.SeedInternalUsers(builder);
 
             // Seed Inventory items
+            Seeders.InventoryItem.SeedItemData(builder);
             Seeders.BrandInventory.SeedBrandData(builder);
             Seeders.CategoryInventory.SeedCategoryData(builder);
             Seeders.InventoryProduct.SeedProductData(builder);
@@ -87,6 +89,11 @@ namespace backend.Data
             builder.Entity<Product>(entity =>
             {
                 entity.ToTable("Products");
+
+                entity.HasOne(p => p.Item)
+                    .WithMany(i => i.Products)
+                    .HasForeignKey(p => p.Item_ID)
+                    .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(p => p.Variant)
                     .WithMany()
