@@ -125,10 +125,10 @@ export const ProductActionConfirmModal = ({
           <button
             onClick={handleConfirm}
             disabled={isLoading || !password}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-full w-full ${
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-full w-full ${
               isDeactivate
-                ? "bg-red-500 hover:bg-red-600"
-                : "bg-green-600 hover:bg-green-700"
+                ? "bg-red-200 hover:bg-red-300 border-red-400 text-red-700 border transition-colors"
+                : "bg-green-200 hover:bg-green-300 border-green-400 text-green-700 border transition-colors"
             }`}
           >
             {isLoading

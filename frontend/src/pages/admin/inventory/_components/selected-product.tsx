@@ -317,7 +317,7 @@ export const SelectedProduct = ({
         ) : (
           <button
             onClick={() => openModal("reactivate")}
-            className="w-full py-2 rounded-lg text-sm font-semibold text-green-700 border border-green-400 hover:bg-green-50 transition-colors"
+            className="w-full py-2 rounded-lg text-sm font-semibold bg-green-200 text-green-700 border border-green-400 hover:bg-green-300 transition-colors"
           >
             Reactivate Product
           </button>
