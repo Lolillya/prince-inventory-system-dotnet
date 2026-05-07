@@ -7,15 +7,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useState, useEffect } from "react";
 import { addProductService } from "@/features/inventory/add-product.service";
 import { Info } from "lucide-react";
-import { PresetSelectorModal } from "../preset-selector.modal";
-import { AddProductUnitCard } from "./_components/add-product-unit-card";
-import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
-import { UnitPresetLevel } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.model";
 import { toast } from "sonner";
 
 const schema = yup.object().shape({
-  productName: yup.string().required("Product name is required"),
-  description: yup.string().required("Description is required"),
+  productName: yup.string().required("Item is required"),
+  description: yup.string(),
   productCode: yup.string(),
   brand_ID: yup
     .number()
@@ -35,37 +31,6 @@ const schema = yup.object().shape({
       String(originalValue).trim() === "" ? undefined : value,
     )
     .required("Variant is required"),
-  unitPresets: yup
-    .array()
-    .of(
-      yup.object().shape({
-        preset_ID: yup.number().required(),
-        low_Stock_Level: yup
-          .number()
-          .transform((value, originalValue) =>
-            String(originalValue).trim() === "" ? undefined : value,
-          )
-          .required("Low stock level is required")
-          .positive("Must be greater than 0"),
-        very_Low_Stock_Level: yup
-          .number()
-          .transform((value, originalValue) =>
-            String(originalValue).trim() === "" ? undefined : value,
-          )
-          .required("Very low stock level is required")
-          .positive("Must be greater than 0")
-          .test(
-            "less-than-low-stock",
-            "Very low stock must be less than low stock",
-            function (value) {
-              const { low_Stock_Level } = this.parent;
-              if (!value || !low_Stock_Level) return true;
-              return value < low_Stock_Level;
-            },
-          ),
-      }),
-    )
-    .min(1, "You must assign at least 1 packaging preset"),
 });
 
 type AddProductFormValues = {
@@ -75,22 +40,19 @@ type AddProductFormValues = {
   brand_ID: number;
   category_Id: number;
   variant_Id: number;
-  unitPresets?: Array<{
-    preset_ID: number;
-    low_Stock_Level: number;
-    very_Low_Stock_Level: number;
-  }>;
 };
 
 interface AddProductFormProps {
   isBrandModalOpen: boolean;
   isCategoryModalOpen: boolean;
   isVariantModalOpen: boolean;
+  isItemModalOpen: boolean;
   isAddProductModalOpen: boolean;
 
   setIsBrandModalOpen: (isOpen: boolean) => void;
   setIsCategoryModalOpen: (isOpen: boolean) => void;
   setIsVariantModalOpen: (isOpen: boolean) => void;
+  setIsItemModalOpen: (isOpen: boolean) => void;
   setIsAddProductModalOpen: (isOpen: boolean) => void;
 }
 
@@ -98,10 +60,12 @@ const AddProductForm = ({
   isBrandModalOpen,
   isCategoryModalOpen,
   isVariantModalOpen,
+  isItemModalOpen,
   isAddProductModalOpen,
   setIsBrandModalOpen,
   setIsCategoryModalOpen,
   setIsVariantModalOpen,
+  setIsItemModalOpen,
   setIsAddProductModalOpen,
 }: AddProductFormProps) => {
   const {
@@ -109,46 +73,34 @@ const AddProductForm = ({
     handleSubmit,
     reset,
     watch,
-    setValue,
     formState: { errors },
   } = useForm<AddProductFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: {
-      unitPresets: [],
-    },
   });
 
   const { user } = useAuth();
   const { data: productFields, isLoading: productFieldsLoading } =
     UseProductFieldsQuery();
-  const { data: unitPresets } = useUnitPresetQuery();
 
   const { UPDATE_ADD_PRODUCT_PAYLOAD } = updateAddProductPayload();
 
   const [generatedProductCode, setGeneratedProductCode] = useState<string>("");
-  const [isPresetSelectorOpen, setIsPresetSelectorOpen] = useState(false);
-  const [selectedPresetIds, setSelectedPresetIds] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Watch form fields for auto-generation
+  const watchedItem = watch("productName");
   const watchedBrandId = watch("brand_ID");
-  const watchedCategoryId = watch("category_Id");
   const watchedVariantId = watch("variant_Id");
-  const watchedProductName = watch("productName");
 
   // Function to generate product code
   const generateProductCode = () => {
-    if (!productFields || !watchedBrandId || !watchedVariantId) {
+    if (!productFields || !watchedBrandId || !watchedVariantId || !watchedItem) {
       setGeneratedProductCode("");
       return;
     }
 
-    // Find selected brand, category, and variant
     const brand = productFields.brands.find(
       (b) => b.brand_ID === Number(watchedBrandId),
-    );
-    const category = productFields.categories.find(
-      (c) => c.category_ID === Number(watchedCategoryId),
     );
     const variant = productFields.variants.find(
       (v) => v.variant_ID === Number(watchedVariantId),
@@ -159,74 +111,21 @@ const AddProductForm = ({
       return;
     }
 
-    // Extract codes from each field
-    const brandCode = brand.brandName.substring(0, 4).toUpperCase();
-    const variantCode = variant.variant_Name.substring(0, 3).toUpperCase();
-    const categoryCode = category
-      ? category.category_Name.substring(0, 2).toUpperCase()
-      : "XX";
+    const itemCode = watchedItem
+      .trim()
+      .substring(0, 3)
+      .toUpperCase();
+    const brandCode = brand.brandName.substring(0, 3).toUpperCase();
+    const variantCode = variant.variant_Name.substring(0, 4).toUpperCase();
 
-    // Extract abbreviation from product name (first 3 letters of each word)
-    let nameCode = "XXX";
-    if (watchedProductName && watchedProductName.trim()) {
-      const words = watchedProductName.trim().split(/\s+/);
-      nameCode = words
-        .slice(0, 2) // Take first 2 words
-        .map((word) => word.substring(0, 3).toUpperCase())
-        .join("");
-      // Pad or truncate to 3 characters
-      nameCode = (nameCode + "XXX").substring(0, 3);
-    }
-
-    // Combine into product code: BRAND-VARIANT-CATEGORY-NAME
-    const code = `${brandCode}-${variantCode}-${categoryCode}-${nameCode}`;
+    const code = `${itemCode}-${brandCode}-${variantCode}`;
     setGeneratedProductCode(code);
   };
 
   // Auto-generate code when dependencies change
   useEffect(() => {
     generateProductCode();
-  }, [
-    watchedBrandId,
-    watchedCategoryId,
-    watchedVariantId,
-    watchedProductName,
-    productFields,
-  ]);
-
-  // Handle preset selection
-  const handleSelectPresets = (presetIds: number[]) => {
-    setSelectedPresetIds(presetIds);
-
-    // Update form values with selected presets
-    const presetValues = presetIds.map((presetId) => ({
-      preset_ID: presetId,
-      low_Stock_Level: undefined as any,
-      very_Low_Stock_Level: undefined as any,
-    }));
-
-    setValue("unitPresets", presetValues);
-  };
-
-  // Remove a preset
-  const handleRemovePreset = (presetId: number) => {
-    const newSelectedIds = selectedPresetIds.filter((id) => id !== presetId);
-    setSelectedPresetIds(newSelectedIds);
-
-    const currentPresets = watch("unitPresets") || [];
-    const filteredPresets = currentPresets.filter(
-      (p) => p.preset_ID !== presetId,
-    );
-    setValue("unitPresets", filteredPresets);
-  };
-
-  // Get selected preset details
-  const getSelectedPresets = (): UnitPresetLevel[] => {
-    if (!unitPresets) return [];
-    return selectedPresetIds
-      .map((id) => unitPresets.find((p) => p.preset_ID === id))
-      .filter((p): p is UnitPresetLevel => p !== undefined);
-  };
+  }, [watchedItem, watchedBrandId, watchedVariantId, productFields]);
 
   const onSubmit = async (data: AddProductFormValues) => {
     setIsSubmitting(true);
@@ -242,13 +141,10 @@ const AddProductForm = ({
 
       await addProductService(payload);
 
-      toast.success(
-        `Product added successfully! ${selectedPresetIds.length} packaging preset(s) assigned.`,
-      );
+      toast.success("Product added successfully!");
 
       reset();
       setGeneratedProductCode("");
-      setSelectedPresetIds([]);
     } catch (error: any) {
       console.error("Error adding product:", error);
       toast.error(
@@ -274,6 +170,11 @@ const AddProductForm = ({
     setIsVariantModalOpen(!isVariantModalOpen);
   };
 
+  const handleOpenNewItemModal = () => {
+    setIsAddProductModalOpen(!isAddProductModalOpen);
+    setIsItemModalOpen(!isItemModalOpen);
+  };
+
   return (
     <form
       className=" flex flex-col gap-5 overflow-y-scroll flex-1"
@@ -283,35 +184,48 @@ const AddProductForm = ({
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <label className="text-nowrap text-sm font-semibold">
-              Product Code:{" "}
-              {generatedProductCode
-                ? generatedProductCode
-                : " (Auto-generated)"}
+              Product Code: (Auto-generated)
             </label>
-            {/* <input
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder="AUTO GENERATED"
-              value={generatedProductCode || ""}
-              disabled
-            /> */}
+            <span
+              className="text-gray-400"
+              title="Product Code = Item - Brand - Variant"
+            >
+              <Info className="w-4 h-4" />
+            </span>
           </div>
+          <span className="text-green-600 text-lg font-semibold">
+            {generatedProductCode || "XXX - XXX - XXX"}
+          </span>
           <span className="text-green-600 text-xs normal-case">
-            {generatedProductCode
-              ? "Auto-generated based on your selections"
-              : "Fill in the fields below to generate"}
+            Fill in the fields below to generate
           </span>
         </div>
-        {/* PRODUCT NAME */}
         <div>
           <label htmlFor="productName" className="block text-sm font-medium">
             Item
           </label>
-          <input
-            id="productName"
-            type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
-            {...register("productName")}
-          />
+          <div className="flex items-center gap-2">
+            <select
+              id="productName"
+              className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
+              disabled={productFieldsLoading}
+              {...register("productName")}
+            >
+              <option value="">Select an item...</option>
+              {productFields?.items?.map((item) => (
+                <option key={item.item_ID} value={item.itemName}>
+                  {item.itemName}
+                </option>
+              ))}
+            </select>
+            <button
+              className="input-style-3"
+              onClick={handleOpenNewItemModal}
+              type="button"
+            >
+              Add Item +
+            </button>
+          </div>
           <span className="text-red-500 text-xs normal-case">
             {errors.productName?.message}
           </span>
@@ -343,6 +257,7 @@ const AddProductForm = ({
               <button
                 className="input-style-3"
                 onClick={handleOpenNewBrandModal}
+                type="button"
               >
                 Add Brand +
               </button>
@@ -376,6 +291,7 @@ const AddProductForm = ({
             <button
               className="input-style-3"
               onClick={handleOpenNewVariantModal}
+              type="button"
             >
               Add Variant +
             </button>
@@ -408,6 +324,7 @@ const AddProductForm = ({
             <button
               className="input-style-3"
               onClick={handleOpenNewCategoryModal}
+              type="button"
             >
               Add Category +
             </button>
@@ -424,85 +341,33 @@ const AddProductForm = ({
           </label>
           <textarea
             id="description"
-            className="w-full p-2 rounded-lg "
+            className="w-full p-2 rounded-lg bg-custom-bg-white"
+            placeholder="Enter product description..."
             {...register("description")}
           />
           <span className="text-red-500 text-xs normal-case">
             {errors.description?.message}
           </span>
-        </div>
-
-        {/* PACKAGING PRESET */}
-        <div className="flex flex-col gap-2 h-full overflow-y-hidden">
-          <div className="flex gap-2 items-center justify-between">
-            <div className="flex gap-2 items-center">
-              <label className="font-semibold">Packaging Preset(s)</label>
-              <span className="text-sm text-gray-500">
-                - {selectedPresetIds.length} preset(s) selected
-              </span>
-            </div>
-            <button
-              type="button"
-              className="text-sm font-semibold"
-              onClick={() => setIsPresetSelectorOpen(true)}
-            >
-              Associate to a Packaging Preset
-            </button>
-          </div>
-
-          {selectedPresetIds.length === 0 ? (
-            <div className="p-4 rounded-lg border border-orange-200 bg-orange-50 flex items-start gap-2">
-              <Info className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-orange-700">
-                  No packaging presets assigned
-                </span>
-                <span className="text-xs text-orange-600">
-                  You need to assign at least 1 unit preset to continue. Click
-                  "Associate to a Packaging Preset" to select.
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full inset-shadow-sm border rounded-lg p-2 flex flex-col gap-2 overflow-y-scroll flex-1">
-              {getSelectedPresets().map((preset, i) => (
-                <AddProductUnitCard
-                  key={preset.preset_ID}
-                  preset={preset}
-                  register={register}
-                  index={i}
-                  errors={errors}
-                  onRemove={handleRemovePreset}
-                />
-              ))}
-            </div>
-          )}
-
-          {errors.unitPresets &&
-            typeof errors.unitPresets.message === "string" && (
-              <span className="text-red-500 text-sm">
-                {errors.unitPresets.message}
-              </span>
-            )}
+          <div className="border-t border-gray-300 mt-4"></div>
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting || selectedPresetIds.length === 0}
-        className="w-full"
-      >
-        {isSubmitting ? "Adding Product..." : "Add Product"}
-      </button>
-
-      {/* Preset Selector Modal */}
-      {isPresetSelectorOpen && (
-        <PresetSelectorModal
-          onClose={() => setIsPresetSelectorOpen(false)}
-          onSelectPresets={handleSelectPresets}
-          alreadySelectedPresetIds={selectedPresetIds}
-        />
-      )}
+      <div className="flex gap-2 justify-between items-center">
+        <button
+          type="button"
+          onClick={() => reset()}
+          className="px-6 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 font-medium hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="px-6 py-2 rounded-lg bg-teal-500 text-white font-medium hover:bg-teal-600 disabled:opacity-50"
+        >
+          {isSubmitting ? "Adding Product..." : "Add Product"}
+        </button>
+      </div>
     </form>
   );
 };

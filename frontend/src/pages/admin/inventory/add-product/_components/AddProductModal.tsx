@@ -1,10 +1,11 @@
 import AddProductForm from "./forms/AddProductForm";
 import { XIcon } from "@/icons";
 import { Separator } from "@/components/separator";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AddBrandForm } from "./forms/AddBrandForm";
 import { AddCategoryForm } from "./forms/AddCategoryForm";
 import { AddVariantForm } from "./forms/AddVariantForm";
+import { AddItemForm } from "./forms/AddItemForm";
 
 interface AddProductModalProps {
   isModalOpen: boolean;
@@ -18,7 +19,18 @@ export const AddProductModal = ({
   const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(true);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      setIsBrandModalOpen(false);
+      setIsCategoryModalOpen(false);
+      setIsVariantModalOpen(false);
+      setIsItemModalOpen(false);
+      setIsAddProductModalOpen(true);
+    }
+  }, [isModalOpen]);
 
   const addProductHeader = "Add New Product";
   const addBrandHeader = "Add New Brand";
@@ -46,16 +58,18 @@ export const AddProductModal = ({
           </div>
           <div className="w-full">
             <h1 className="text-2xl font-bold">
-              {isAddProductModalOpen && addProductHeader}
-              {isBrandModalOpen && addBrandHeader}
-              {isCategoryModalOpen && addCategoryHeader}
-              {isVariantModalOpen && addVariantHeader}
+              {isAddProductModalOpen && "Add New Product"}
+              {isBrandModalOpen && "Add New Brand"}
+              {isCategoryModalOpen && "Add New Category"}
+              {isVariantModalOpen && "Add New Variant"}
+              {isItemModalOpen && "Add New Item"}
             </h1>
             <p className="text-gray-500">
-              {isAddProductModalOpen && addProductInstructions}
-              {isBrandModalOpen && addBrandInstructions}
-              {isCategoryModalOpen && addCategoryInstructions}
-              {isVariantModalOpen && addVariantInstructions}
+              {isAddProductModalOpen && "Fill in the details to add a new product to the inventory."}
+              {isBrandModalOpen && "Fill in the details to add a new brand to the inventory."}
+              {isCategoryModalOpen && "Fill in the details to add a new category to the inventory."}
+              {isVariantModalOpen && "Fill in the details to add a new variant to the inventory."}
+              {isItemModalOpen && "Fill in the details to add a new item to the inventory."}
             </p>
           </div>
         </div>
@@ -63,15 +77,15 @@ export const AddProductModal = ({
         <Separator />
         {isAddProductModalOpen && (
           <AddProductForm
-            // BOOLEAN
             isBrandModalOpen={isBrandModalOpen}
             isCategoryModalOpen={isCategoryModalOpen}
             isVariantModalOpen={isVariantModalOpen}
+            isItemModalOpen={isItemModalOpen}
             isAddProductModalOpen={isAddProductModalOpen}
-            // SETTER FUNCTIONS
             setIsBrandModalOpen={setIsBrandModalOpen}
             setIsCategoryModalOpen={setIsCategoryModalOpen}
             setIsVariantModalOpen={setIsVariantModalOpen}
+            setIsItemModalOpen={setIsItemModalOpen}
             setIsAddProductModalOpen={setIsAddProductModalOpen}
           />
         )}
@@ -93,6 +107,13 @@ export const AddProductModal = ({
         {isVariantModalOpen && (
           <AddVariantForm
             setIsVariantModalOpen={setIsVariantModalOpen}
+            setIsAddProductModalOpen={setIsAddProductModalOpen}
+          />
+        )}
+
+        {isItemModalOpen && (
+          <AddItemForm
+            setIsItemModalOpen={setIsItemModalOpen}
             setIsAddProductModalOpen={setIsAddProductModalOpen}
           />
         )}
