@@ -10,9 +10,13 @@ import { Info } from "lucide-react";
 import { toast } from "sonner";
 
 const schema = yup.object().shape({
-  productName: yup.string().required("Item is required"),
+  item_Id: yup
+    .number()
+    .transform((value, originalValue) =>
+      String(originalValue).trim() === "" ? undefined : value,
+    )
+    .required("Item is required"),
   description: yup.string(),
-  productCode: yup.string(),
   brand_ID: yup
     .number()
     .transform((value, originalValue) =>
@@ -34,9 +38,8 @@ const schema = yup.object().shape({
 });
 
 type AddProductFormValues = {
-  productName: string;
-  description: string;
-  productCode?: string;
+  item_Id: number;
+  description?: string;
   brand_ID: number;
   category_Id: number;
   variant_Id: number;
@@ -88,44 +91,28 @@ const AddProductForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Watch form fields for auto-generation
-  const watchedItem = watch("productName");
+  const watchedItemId = watch("item_Id");
   const watchedBrandId = watch("brand_ID");
   const watchedVariantId = watch("variant_Id");
 
   // Function to generate product code
   const generateProductCode = () => {
-    if (!productFields || !watchedBrandId || !watchedVariantId || !watchedItem) {
+    if (!watchedItemId || !watchedBrandId || !watchedVariantId) {
       setGeneratedProductCode("");
       return;
     }
 
-    const brand = productFields.brands.find(
-      (b) => b.brand_ID === Number(watchedBrandId),
-    );
-    const variant = productFields.variants.find(
-      (v) => v.variant_ID === Number(watchedVariantId),
-    );
+    const itemCode = String(watchedItemId).padStart(3, "0");
+    const brandCode = String(watchedBrandId).padStart(3, "0");
+    const variantCode = String(watchedVariantId).padStart(4, "0");
 
-    if (!brand || !variant) {
-      setGeneratedProductCode("");
-      return;
-    }
-
-    const itemCode = watchedItem
-      .trim()
-      .substring(0, 3)
-      .toUpperCase();
-    const brandCode = brand.brandName.substring(0, 3).toUpperCase();
-    const variantCode = variant.variant_Name.substring(0, 4).toUpperCase();
-
-    const code = `${itemCode}-${brandCode}-${variantCode}`;
-    setGeneratedProductCode(code);
+    setGeneratedProductCode(`${itemCode}-${brandCode}-${variantCode}`);
   };
 
   // Auto-generate code when dependencies change
   useEffect(() => {
     generateProductCode();
-  }, [watchedItem, watchedBrandId, watchedVariantId, productFields]);
+  }, [watchedItemId, watchedBrandId, watchedVariantId]);
 
   const onSubmit = async (data: AddProductFormValues) => {
     setIsSubmitting(true);
@@ -194,26 +181,26 @@ const AddProductForm = ({
             </span>
           </div>
           <span className="text-green-600 text-lg font-semibold">
-            {generatedProductCode || "XXX - XXX - XXX"}
+            {generatedProductCode || "xxx-xxx-xxxx"}
           </span>
           <span className="text-green-600 text-xs normal-case">
             Fill in the fields below to generate
           </span>
         </div>
         <div>
-          <label htmlFor="productName" className="block text-sm font-medium">
+          <label htmlFor="item_Id" className="block text-sm font-medium">
             Item
           </label>
           <div className="flex items-center gap-2">
             <select
-              id="productName"
+              id="item_Id"
               className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
               disabled={productFieldsLoading}
-              {...register("productName")}
+              {...register("item_Id")}
             >
               <option value="">Select an item...</option>
               {productFields?.items?.map((item) => (
-                <option key={item.item_ID} value={item.itemName}>
+                <option key={item.item_ID} value={item.item_ID}>
                   {item.itemName}
                 </option>
               ))}
@@ -227,7 +214,7 @@ const AddProductForm = ({
             </button>
           </div>
           <span className="text-red-500 text-xs normal-case">
-            {errors.productName?.message}
+            {errors.item_Id?.message}
           </span>
         </div>
 

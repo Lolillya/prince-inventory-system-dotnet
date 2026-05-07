@@ -44,7 +44,13 @@ namespace backend.Controller.Inventory
                         Variant_Name = v.Variant_Name,
                         Variant_ID = v.Variant_ID
                     }).ToListAsync();
-                return Ok(new { brands, categories, variants });
+                var items = await _db.Items
+                    .Select(i => new
+                    {
+                        ItemName = i.ItemName,
+                        Item_ID = i.Item_ID
+                    }).ToListAsync();
+                return Ok(new { brands, categories, variants, items });
             }
 
             catch (Exception e)

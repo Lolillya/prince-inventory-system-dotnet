@@ -16,12 +16,14 @@ namespace backend.Models.Inventory
         public string? Core_Product_Code { get; set; }
         public string Product_Name { get; set; } = null!;
         public string Description { get; set; } = null!;
+        public int Item_ID { get; set; }
         public int Brand_ID { get; set; }
         public int Category_ID { get; set; }
         public int Variant_ID { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+        public Item Item { get; set; } = null!;
         public Brand Brand { get; set; } = null!;
         public Category Category { get; set; } = null!;
         public Variant Variant { get; set; } = null!;

@@ -8,9 +8,9 @@ export const AddProductPayloadQuery = () => {
     queryKey: ADD_PRODUCT_PAYLOAD_QUERY_KEY,
     queryFn: async () => {
       return {
-        productName: "",
         description: "",
         productCode: "",
+        item_Id: 0,
         brand_ID: 0,
         category_Id: 0,
         variant_Id: 0,

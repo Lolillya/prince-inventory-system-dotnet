@@ -53,23 +53,28 @@ namespace backend.Controller.Inventory
 
         private async Task<(backend.Models.Inventory.Product, int)> AddToProduct(NewInventoryProductDto payload)
         {
-            var category = await _db.Categories.FindAsync(payload.Category_Id)
-                ?? throw new Exception($"Category with ID {payload.Category_Id} not found");
+            var item = await _db.Items.FindAsync(payload.Item_Id)
+                ?? throw new Exception($"Item with ID {payload.Item_Id} not found");
             var brand = await _db.Brands.FindAsync(payload.Brand_Id)
                 ?? throw new Exception($"Brand with ID {payload.Brand_Id} not found");
             var variant = await _db.Variants.FindAsync(payload.Variant_Id)
                 ?? throw new Exception($"Variant with ID {payload.Variant_Id} not found");
 
-            var coreProductCode = (category.Category_Code ?? category.Category_ID.ToString("D3"))
-                                + (brand.Brand_Code ?? brand.Brand_ID.ToString("D3"))
-                                + (variant.Variant_Code ?? variant.Variant_ID.ToString("D4"));
+            var itemCode = item.Item_Code ?? item.Item_ID.ToString("D3");
+            var brandCode = brand.Brand_Code ?? brand.Brand_ID.ToString("D3");
+            var variantCode = variant.Variant_Code ?? variant.Variant_ID.ToString("D4");
+
+            var coreProductCode = itemCode + brandCode + variantCode;
+            var productCode = $"{itemCode}-{brandCode}-{variantCode}";
+            var productName = $"{item.ItemName} - {brand.BrandName} - {variant.Variant_Name}";
 
             var product = new backend.Models.Inventory.Product
             {
-                Product_Name = payload.ProductName,
+                Product_Name = productName,
                 Description = payload.Description,
-                Product_Code = payload.ProductCode,
+                Product_Code = productCode,
                 Core_Product_Code = coreProductCode,
+                Item_ID = payload.Item_Id,
                 Brand_ID = payload.Brand_Id,
                 Category_ID = payload.Category_Id,
                 Variant_ID = payload.Variant_Id,

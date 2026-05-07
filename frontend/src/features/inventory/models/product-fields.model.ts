@@ -17,7 +17,7 @@ export type ProductFieldsModel = {
       variant_ID: number;
     },
   ];
-  items?: [
+  items: [
     {
       itemName: string;
       item_ID: number;
