@@ -1,7 +1,12 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { Separator } from "@/components/separator";
 import { ChevronDown, PhilippinePeso } from "lucide-react";
+import { deactivateProductService } from "@/features/inventory/deactivate-product/deactivate-product.service";
+import { reactivateProductService } from "@/features/inventory/deactivate-product/reactivate-product.service";
+import { ProductActionConfirmModal } from "./product-action-confirm.modal";
 
 interface SelectedProductProps {
   product: InventoryProductModel;
@@ -12,9 +17,44 @@ export const SelectedProduct = ({
   product,
   handlePresetSelector,
 }: SelectedProductProps) => {
+  const queryClient = useQueryClient();
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState<"deactivate" | "reactivate">(
+    "deactivate",
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [expandedBreakdowns, setExpandedBreakdowns] = useState<Set<number>>(
     new Set(),
   );
+
+  const openModal = (action: "deactivate" | "reactivate") => {
+    setModalAction(action);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmAction = async (password: string) => {
+    setIsSubmitting(true);
+    try {
+      if (modalAction === "deactivate") {
+        await deactivateProductService(product.product.product_ID, password);
+        toast.success("Product deactivated.");
+      } else {
+        await reactivateProductService(product.product.product_ID, password);
+        toast.success("Product reactivated.");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      setIsConfirmModalOpen(false);
+    } catch {
+      toast.error(
+        modalAction === "deactivate"
+          ? "Failed to deactivate product."
+          : "Failed to reactivate product.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const toggleBreakdown = (index: number) => {
     setExpandedBreakdowns((prev) => {
@@ -28,7 +68,6 @@ export const SelectedProduct = ({
     });
   };
 
-  console.log(product);
   return (
     <div className="w-full flex flex-col gap-3 p-5">
       <div className="flex justify-between w-full">
@@ -46,9 +85,16 @@ export const SelectedProduct = ({
           </span>
         </div>
 
-        <span className="bg-teal-200 rounded-full py-1 px-2 items-center flex text-center justify-center text-xs text-nowrap h-fit">
-          {product.category.category_Name}
-        </span>
+        <div className="flex gap-2 items-center flex-wrap justify-end">
+          {!product.product.is_Active && (
+            <span className="bg-gray-200 text-gray-600 rounded-full py-1 px-2 text-xs font-semibold text-nowrap">
+              Deactivated
+            </span>
+          )}
+          <span className="bg-teal-200 rounded-full py-1 px-2 items-center flex text-center justify-center text-xs text-nowrap h-fit">
+            {product.category.category_Name}
+          </span>
+        </div>
       </div>
 
       <Separator />
@@ -251,6 +297,40 @@ export const SelectedProduct = ({
           </div>
         </div>
       </div>
+
+      <Separator />
+
+      <div className="w-full flex justify-end">
+        {product.product.is_Active ? (
+          <button
+            onClick={() => openModal("deactivate")}
+            disabled={product.unitPresets.length > 0}
+            title={
+              product.unitPresets.length > 0
+                ? "Remove all packaging presets first"
+                : undefined
+            }
+            className="w-full py-2 rounded-lg text-sm font-semibold bg-red-100 text-red-600 border border-red-300 hover:bg-red-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            Deactivate Product
+          </button>
+        ) : (
+          <button
+            onClick={() => openModal("reactivate")}
+            className="w-full py-2 rounded-lg text-sm font-semibold text-green-700 border border-green-400 hover:bg-green-50 transition-colors"
+          >
+            Reactivate Product
+          </button>
+        )}
+      </div>
+
+      <ProductActionConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmAction}
+        action={modalAction}
+        isLoading={isSubmitting}
+      />
     </div>
   );
 };

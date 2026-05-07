@@ -165,6 +165,11 @@ const InventoryPage = () => {
       );
     })
     .sort((a, b) => {
+      // Deactivated products always sink to the bottom
+      const activeDiff =
+        Number(b.product.is_Active) - Number(a.product.is_Active);
+      if (activeDiff !== 0) return activeDiff;
+      // Within active group: favorites first
       const favDiff = Number(b.isFavorited) - Number(a.isFavorited);
       if (favDiff !== 0) return favDiff;
       return a.product.product_ID - b.product.product_ID;
@@ -602,6 +607,7 @@ const InventoryPage = () => {
                 className="input-style-2"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                autoComplete="new-password"
               />
               <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                 <SearchIcon />
@@ -802,7 +808,13 @@ const InventoryPage = () => {
             {filteredInventory?.map((data, index) => (
               <>
                 <div
-                  className={`flex justify-between ${data.isFavorited ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30" : "hover:bg-accent"} p-2 rounded-lg transition-all duration-300`}
+                  className={`flex justify-between ${
+                    !data.product.is_Active
+                      ? "opacity-60 bg-gray-100 dark:bg-gray-900/30"
+                      : data.isFavorited
+                        ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
+                        : "hover:bg-accent"
+                  } p-2 rounded-lg transition-all duration-300`}
                   key={index}
                   onClick={() => handleClick(data)}
                 >
@@ -826,7 +838,11 @@ const InventoryPage = () => {
                       </span>
                     </div>
                     <div className="w-full items-center justify-end flex">
-                      {data.unitPresets.length === 0 ? (
+                      {!data.product.is_Active ? (
+                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                          Deactivated
+                        </span>
+                      ) : data.unitPresets.length === 0 ? (
                         <span className="text-xs bg-red-100 border border-red-500 text-red-500 px-2 py-0.5 rounded-full font-medium">
                           No Presets
                         </span>

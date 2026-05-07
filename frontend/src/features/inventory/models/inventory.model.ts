@@ -6,6 +6,7 @@ export type InventoryProductModel = {
     product_Name: string;
     core_Product_Code: string;
     description: string;
+    is_Active: boolean;
     createdAt: string;
     updatedAt: string;
   };

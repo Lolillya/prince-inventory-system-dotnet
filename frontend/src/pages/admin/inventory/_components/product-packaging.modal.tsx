@@ -69,7 +69,8 @@ export const ProductPackagingModal = ({
   };
 
   const productsWithPresets =
-    inventory?.filter((p) => p.unitPresets.length > 0) ?? [];
+    inventory?.filter((p) => p.unitPresets.length > 0 && p.product.is_Active) ??
+    [];
 
   const selectedPresets: UnitPreset[] =
     viewingProduct?.unitPresets.filter((up) =>
@@ -204,7 +205,7 @@ export const ProductPackagingModal = ({
                     </div>
 
                     {/* Hierarchy levels top-to-bottom */}
-                        {/* <div className="flex flex-col gap-0.5 pl-6">
+                    {/* <div className="flex flex-col gap-0.5 pl-6">
                         {up.preset.presetLevels.map((level, idx) => (
                             <div
                             key={level.level_ID}
