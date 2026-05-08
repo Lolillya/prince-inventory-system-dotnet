@@ -35,6 +35,7 @@ export const EditProductModal = ({
           selectedProduct={selectedProduct}
           handleAddPackagingPreset={handleAddPackagingPreset}
           onEditSuccess={handleCloseModal}
+          setIsEditProductModalOpen={setIsEditProductModalOpen}
         />
       </div>
     </div>

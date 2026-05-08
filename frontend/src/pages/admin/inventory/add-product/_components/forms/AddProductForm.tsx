@@ -174,7 +174,7 @@ const AddProductForm = ({
               Product Code: (Auto-generated)
             </label>
             <span
-              className="text-gray-400"
+              className="text-gray-400 cursor-help"
               title="Product Code = Item - Brand - Variant"
             >
               <Info className="w-4 h-4" />

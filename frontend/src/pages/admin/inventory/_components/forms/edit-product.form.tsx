@@ -58,12 +58,14 @@ interface EditProductFormProps {
   selectedProduct: InventoryProductModel;
   onEditSuccess: () => void;
   handleAddPackagingPreset: () => void;
+  setIsEditProductModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const EditProductForm = ({
   selectedProduct,
   onEditSuccess,
   handleAddPackagingPreset,
+  setIsEditProductModalOpen,
 }: EditProductFormProps) => {
   const {
     register,
@@ -121,52 +123,35 @@ export const EditProductForm = ({
     >
       <div className="flex flex-col space-y-4 mb-auto">
         {/* PRODUCT CODE */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col">
           <label
             htmlFor="productCode"
-            className="block text-sm font-semibold text-nowrap"
+            className="block text-sm font-semibold text-nowrap text-green-600"
           >
-            Product Code:
+            Product Code (Auto-generated)
           </label>
-          <input
-            id="productCode"
-            type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
-            {...register("productCode")}
-            disabled
-          />
+          <span className="text-green-600 text-lg font-semibold my-1">
+            {watch("productCode") || "N/A"}
+          </span>
           <span className="text-red-500 text-xs normal-case">
             {errors.productCode?.message}
           </span>
         </div>
-        {/* PRODUCT NAME */}
+
+        {/* ITEM */}
         <div>
           <label htmlFor="productName" className="block text-sm font-medium">
-            Product Name
+            Item
           </label>
           <input
             id="productName"
             type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
+            className="w-full drop-shadow-none bg-custom-gray p-2 text-gray-400"
             {...register("productName")}
+            disabled
           />
           <span className="text-red-500 text-xs normal-case">
             {errors.productName?.message}
-          </span>
-        </div>
-
-        {/* DESCRIPTION */}
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium">
-            Description
-          </label>
-          <textarea
-            id="description"
-            className="w-full p-2 rounded-lg "
-            {...register("description")}
-          />
-          <span className="text-red-500 text-xs normal-case">
-            {errors.description?.message}
           </span>
         </div>
 
@@ -179,8 +164,8 @@ export const EditProductForm = ({
             <div className="flex items-center gap-2">
               <select
                 id="Brand_ID"
-                className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
-                disabled={productFieldsLoading}
+                className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white text-gray-400"
+                disabled={true}
                 value={watch("brand_ID")}
                 {...register("brand_ID")}
               >
@@ -196,6 +181,32 @@ export const EditProductForm = ({
               {errors.brand_ID?.message}
             </span>
           </div>
+        </div>
+
+        {/* VARIANT */}
+        <div>
+          <label htmlFor="variant_Id" className="block text-sm font-medium">
+            Variant
+          </label>
+          <div className="flex items-center gap-2">
+            <select
+              id="variant_Id"
+              className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white text-gray-400"
+              disabled={true}
+              value={watch("variant_Id")}
+              {...register("variant_Id")}
+            >
+              <option value="">Select a variant...</option>
+              {productFields?.variants.map((v) => (
+                <option key={v.variant_ID} value={v.variant_ID}>
+                  {v.variant_Name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <span className="text-red-500 text-xs normal-case">
+            {/* {errors.variant_Id?.message} */}
+          </span>
         </div>
 
         {/* CATEGORY */}
@@ -224,29 +235,18 @@ export const EditProductForm = ({
           </span>
         </div>
 
-        {/* VARIANT */}
+        {/* DESCRIPTION */}
         <div>
-          <label htmlFor="variant_Id" className="block text-sm font-medium">
-            Variant
+          <label htmlFor="description" className="block text-sm font-medium">
+            Description
           </label>
-          <div className="flex items-center gap-2">
-            <select
-              id="variant_Id"
-              className="rounded-lg w-full p-2 text-sm drop-shadow-none bg-custom-bg-white"
-              disabled={productFieldsLoading}
-              value={watch("variant_Id")}
-              {...register("variant_Id")}
-            >
-              <option value="">Select a variant...</option>
-              {productFields?.variants.map((v) => (
-                <option key={v.variant_ID} value={v.variant_ID}>
-                  {v.variant_Name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <textarea
+            id="description"
+            className="w-full p-2 rounded-lg "
+            {...register("description")}
+          />
           <span className="text-red-500 text-xs normal-case">
-            {/* {errors.variant_Id?.message} */}
+            {errors.description?.message}
           </span>
         </div>
       </div>
@@ -289,9 +289,18 @@ export const EditProductForm = ({
         </div>
       </div>
 
-      <button type="submit" disabled={isPending}>
-        {isPending ? "Updating..." : "Confirm Edit"}
-      </button>
+      <div className="flex gap-2 justify-between items-center">
+        <button
+          type="button"
+          onClick={() => setIsEditProductModalOpen(false)}
+          className="px-6 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 font-medium"
+        >
+          Cancel
+        </button>
+        <button type="submit" disabled={isPending} className="px-6 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700">
+          {isPending ? "Updating..." : "Confirm Edit"}
+        </button>
+      </div>
     </form>
   );
 };
