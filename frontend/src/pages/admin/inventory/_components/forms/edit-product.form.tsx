@@ -126,11 +126,15 @@ export const EditProductForm = ({
         <div className="flex flex-col">
           <label
             htmlFor="productCode"
-            className="block text-sm font-semibold text-nowrap text-green-600"
+            className="block text-sm font-semibold text-nowrap"
+            style={{ color: "#334155" }}
           >
             Product Code (Auto-generated)
           </label>
-          <span className="text-green-600 text-lg font-semibold my-1">
+          <span
+            className="text-lg font-semibold my-1"
+            style={{ color: "#00b69b" }}
+          >
             {watch("productCode") || "N/A"}
           </span>
           <span className="text-red-500 text-xs normal-case">
@@ -251,44 +255,6 @@ export const EditProductForm = ({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 h-full overflow-y-hidden">
-        <div className="flex gap-2 items-center">
-          <label>Packaging Preset(s)</label>
-          <span className="text-sm text-gray-500">
-            - {selectedProduct.unitPresets.length || 0} preset(s) found
-          </span>
-        </div>
-
-        <div className="w-full inset-shadow-sm border rounded-lg p-2 flex flex-col gap-2 overflow-y-scroll flex-1">
-          {selectedProduct.unitPresets.length === 0 ? (
-            <div className="p-2 rounded-lg shadow-sm border flex items-center">
-              <span className="text-vesper-gray text-sm font-semibold p-2">
-                No presets found
-              </span>
-            </div>
-          ) : (
-            selectedProduct.unitPresets.map((u, i) => (
-              <EditProductUnitCard
-                selectedProduct={u}
-                register={register}
-                index={i}
-                errors={errors}
-                key={i}
-              />
-            ))
-          )}
-          <div
-            className="px-2 py-4 rounded-lg border border-border bg-custom-gray-lighter inset-shadow-sm flex items-center justify-center cursor-pointer"
-            onClick={handleAddPackagingPreset}
-          >
-            <label className="text-gray-400 text-sm tracking-wider font-semibold text-center flex gap-2 items-center cursor-pointer">
-              <Plus size={18} />
-              Add Another Packaging Preset to this Product
-            </label>
-          </div>
-        </div>
-      </div>
-
       <div className="flex gap-2 justify-between items-center">
         <button
           type="button"
@@ -297,7 +263,12 @@ export const EditProductForm = ({
         >
           Cancel
         </button>
-        <button type="submit" disabled={isPending} className="px-6 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="px-6 py-2 rounded-lg text-white font-medium"
+          style={{ backgroundColor: "#00b69b" }}
+        >
           {isPending ? "Updating..." : "Confirm Edit"}
         </button>
       </div>

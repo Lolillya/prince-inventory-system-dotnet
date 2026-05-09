@@ -173,14 +173,14 @@ const AddProductForm = ({
             <label className="text-nowrap text-sm font-semibold">
               Product Code: (Auto-generated)
             </label>
-            <span
-              className="text-gray-400 cursor-help"
-              title="Product Code = Item - Brand - Variant"
-            >
-              <Info className="w-4 h-4" />
-            </span>
+            <div className="relative inline-flex items-center group">
+              <Info className="w-4 h-4 text-gray-400" />
+              <span className="invisible absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-xs text-white group-hover:visible">
+                Product Code = Item - Brand - Variant
+              </span>
+            </div>
           </div>
-          <span className="text-green-600 text-lg font-semibold">
+          <span className="text-lg font-semibold" style={{ color: "#00b69b" }}>
             {generatedProductCode || "xxx-xxx-xxxx"}
           </span>
           <span className="text-green-600 text-xs normal-case">
