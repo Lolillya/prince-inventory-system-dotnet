@@ -73,8 +73,7 @@ export const ProductPackagingModal = ({
   };
 
   const productsWithPresets = (
-    inventory?.filter((p) => p.unitPresets.length > 0 && p.product.is_Active) ??
-    []
+    inventory?.filter((p) => p.product.is_Active) ?? []
   ).filter((p) => {
     const q = search.toLowerCase();
     const matchesSearch =
@@ -83,7 +82,9 @@ export const ProductPackagingModal = ({
       p.product.product_Code.toLowerCase().includes(q) ||
       p.brand.brandName.toLowerCase().includes(q) ||
       p.variant.variant_Name.toLowerCase().includes(q);
-    const hasPricing = p.unitPresets.some((up) => up.presetPricing.length > 0);
+    const hasPricing =
+      p.unitPresets.length > 0 &&
+      p.unitPresets.some((up) => up.presetPricing.length > 0);
     const matchesFilter =
       pricingFilter === "any" ||
       (pricingFilter === "priced" && hasPricing) ||
@@ -100,7 +101,7 @@ export const ProductPackagingModal = ({
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50 gap-3">
       {/* ── MAIN LIST MODAL ── */}
       <Activity mode={isPricingModalOpen ? "hidden" : "visible"}>
-        <div className="w-5/12 h-4/5 bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4">
+        <div className="w-3/6 h-4/5 bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4">
           <div
             className="absolute top-4 right-4 cursor-pointer"
             onClick={onClose}
@@ -144,10 +145,10 @@ export const ProductPackagingModal = ({
 
           {/* Table header */}
           <div className="flex items-center px-2 py-1.5 border-b bg-gray-50 rounded-t-lg">
-            <span className="text-xs font-semibold text-gray-500 w-1/2">
-              Product
+            <span className="text-xs font-semibold text-gray-500 w-3/5">
+              Item
             </span>
-            <span className="text-xs font-semibold text-gray-500 w-1/3">
+            <span className="text-xs font-semibold text-gray-500 w-1/6">
               Packaging Presets
             </span>
             <span className="text-xs font-semibold text-gray-500 w-1/6 text-right">
@@ -159,7 +160,7 @@ export const ProductPackagingModal = ({
           <div className="flex flex-col gap-1 overflow-y-auto flex-1 min-h-0">
             {productsWithPresets.length === 0 ? (
               <p className="text-sm text-gray-500 text-center mt-8">
-                No products with packaging presets found.
+                No products found.
               </p>
             ) : (
               productsWithPresets.map((product) => (
@@ -172,7 +173,7 @@ export const ProductPackagingModal = ({
                       : "border-transparent hover:bg-gray-50"
                   }`}
                 >
-                  <div className="w-1/2">
+                  <div className="w-3/5">
                     <div className="flex gap-2 items-center">
                       <p className="text-sm font-semibold">
                         {product.product.product_Name}
@@ -186,17 +187,20 @@ export const ProductPackagingModal = ({
                     </p>
                   </div>
 
-                  <div className="w-1/3">
-                    <span className="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">
+                  <div className="w-1/6">
+                    <span
+                      className={`text-nowrap text-xs px-2 py-0.5 rounded-full ${product.unitPresets.length === 0 ? "bg-red-100 text-red-600" : "bg-teal-100 text-teal-700"}`}
+                    >
                       {product.unitPresets.length} packaging preset
                       {product.unitPresets.length !== 1 ? "s" : ""}
                     </span>
                   </div>
 
-                  <div className="w-1/6 flex justify-end">
+                  <div className="flex justify-end w-1/6 ml-auto">
                     <button
-                      className="text-xs px-3 py-1 rounded-lg  transition-all"
+                      className="text-xs px-3 py-1 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       onClick={() => handleView(product)}
+                      disabled={product.unitPresets.length === 0}
                     >
                       View
                     </button>
