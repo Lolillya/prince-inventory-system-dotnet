@@ -115,16 +115,35 @@ export const ProductPackagingModal = ({
 
   // ── Open pricing-assign modal ───────────────────────────────────────────────
   const handleOpenPricingAssign = () => {
-    if (newlySelectedPresetIds.length === 0) return;
+    const isEditMode = newlySelectedPresetIds.length === 0;
+    const presetIds = isEditMode
+      ? (viewingProduct?.unitPresets.map((u) => u.preset_ID) ?? [])
+      : newlySelectedPresetIds;
+
+    if (presetIds.length === 0) return;
+
     const initialPricing: Record<number, Record<string, string>> = {};
     const initialStock: Record<number, { low: string; veryLow: string }> = {};
-    newlySelectedPresetIds.forEach((id) => {
-      initialPricing[id] = {};
-      initialStock[id] = { low: "", veryLow: "" };
+    presetIds.forEach((id) => {
+      if (isEditMode) {
+        const up = viewingProduct?.unitPresets.find((u) => u.preset_ID === id);
+        const prices: Record<string, string> = {};
+        up?.presetPricing.forEach((pp) => {
+          prices[pp.unitName] = pp.price_Per_Unit?.toString() ?? "";
+        });
+        initialPricing[id] = prices;
+        initialStock[id] = {
+          low: up?.low_Stock_Level?.toString() ?? "",
+          veryLow: up?.very_Low_Stock_Level?.toString() ?? "",
+        };
+      } else {
+        initialPricing[id] = {};
+        initialStock[id] = { low: "", veryLow: "" };
+      }
     });
     setPricingInput(initialPricing);
     setStockInput(initialStock);
-    setActivePricingPresetId(newlySelectedPresetIds[0]);
+    setActivePricingPresetId(presetIds[0]);
     setIsPricingAssignOpen(true);
   };
 
@@ -163,90 +182,124 @@ export const ProductPackagingModal = ({
   const handleConfirmAssign = async () => {
     if (!viewingProduct) return;
     setIsSubmitting(true);
+    const isEditMode = newlySelectedPresetIds.length === 0;
     try {
-      // Step 1: assign each preset (creates Product_Unit_Preset records)
-      for (const presetId of newlySelectedPresetIds) {
-        const preset = allPresets?.find((p) => p.preset_ID === presetId);
-        if (!preset) continue;
-        const unitPrices = preset.levels
-          .filter((l) => pricingInput[presetId]?.[l.uoM_Name])
-          .map((l) => ({
-            unitName: l.uoM_Name,
-            price: parseFloat(pricingInput[presetId][l.uoM_Name]) || 0,
-          }));
-        await assignProductsToPreset({
-          preset_ID: presetId,
-          product_IDs: [viewingProduct.product.product_ID],
-          pricingData:
-            unitPrices.length > 0
-              ? [
-                  {
-                    product_ID: viewingProduct.product.product_ID,
-                    unitPrices,
-                  },
-                ]
-              : undefined,
-        });
-      }
-
-      // Step 2: update stock thresholds if any were set
-      const presetsWithStock = newlySelectedPresetIds.filter(
-        (id) => stockInput[id]?.low || stockInput[id]?.veryLow,
-      );
-
-      if (presetsWithStock.length > 0) {
-        // Refetch to get the newly created product_Preset_IDs
-        const freshResult = await refetch();
-        const freshProduct = freshResult.data?.find(
-          (p) => p.product.product_ID === viewingProduct.product.product_ID,
-        );
-
-        if (freshProduct) {
-          const unitPresetsPayload = presetsWithStock
-            .map((presetId) => {
-              const freshUp = freshProduct.unitPresets.find(
-                (up) => up.preset_ID === presetId,
-              );
-              if (!freshUp) return null;
-              return {
-                product_Preset_ID: freshUp.product_Preset_ID,
-                low_Stock_Level:
-                  parseInt(stockInput[presetId]?.low || "0") || 0,
-                very_Low_Stock_Level:
-                  parseInt(stockInput[presetId]?.veryLow || "0") || 0,
-              };
-            })
-            .filter(
-              (
-                x,
-              ): x is {
-                product_Preset_ID: number;
-                low_Stock_Level: number;
-                very_Low_Stock_Level: number;
-              } => x !== null,
-            );
-
-          if (unitPresetsPayload.length > 0) {
-            await editProductService({
-              productName: viewingProduct.product.product_Name,
-              description: viewingProduct.product.description,
-              productCode: viewingProduct.product.product_Code,
-              brand_ID: viewingProduct.brand.brand_ID,
-              category_Id: viewingProduct.category.category_ID,
-              variant_Id: viewingProduct.variant.variant_ID,
-              unitPresets: unitPresetsPayload,
+      if (isEditMode) {
+        // Edit mode: update pricing for already-assigned presets
+        for (const up of viewingProduct.unitPresets) {
+          const presetPricing = pricingInput[up.preset_ID];
+          if (!presetPricing) continue;
+          const unitPrices = Object.entries(presetPricing)
+            .filter(([, price]) => price !== "")
+            .map(([unitName, price]) => ({
+              unitName,
+              price: parseFloat(price) || 0,
+            }));
+          if (unitPrices.length > 0) {
+            await updatePresetPricing({
+              preset_ID: up.preset_ID,
+              product_ID: viewingProduct.product.product_ID,
+              unitPrices,
             });
           }
         }
+      } else {
+        // New assignment mode: assign each newly selected preset
+        for (const presetId of newlySelectedPresetIds) {
+          const preset = allPresets?.find((p) => p.preset_ID === presetId);
+          if (!preset) continue;
+          const unitPrices = preset.levels
+            .filter((l) => pricingInput[presetId]?.[l.uoM_Name])
+            .map((l) => ({
+              unitName: l.uoM_Name,
+              price: parseFloat(pricingInput[presetId][l.uoM_Name]) || 0,
+            }));
+          await assignProductsToPreset({
+            preset_ID: presetId,
+            product_IDs: [viewingProduct.product.product_ID],
+            pricingData:
+              unitPrices.length > 0
+                ? [
+                    {
+                      product_ID: viewingProduct.product.product_ID,
+                      unitPrices,
+                    },
+                  ]
+                : undefined,
+          });
+        }
       }
 
-      toast.success("Packaging presets assigned successfully");
+      // Stock threshold updates
+      const presetsToUpdateStock = isEditMode
+        ? viewingProduct.unitPresets.map((u) => u.preset_ID)
+        : newlySelectedPresetIds.filter(
+            (id) => stockInput[id]?.low || stockInput[id]?.veryLow,
+          );
+
+      if (presetsToUpdateStock.length > 0) {
+        let freshProduct = viewingProduct;
+        if (!isEditMode) {
+          // Refetch to get the newly created product_Preset_IDs
+          const freshResult = await refetch();
+          freshProduct =
+            freshResult.data?.find(
+              (p) => p.product.product_ID === viewingProduct.product.product_ID,
+            ) ?? viewingProduct;
+        }
+
+        const unitPresetsPayload = presetsToUpdateStock
+          .map((presetId) => {
+            const freshUp = freshProduct.unitPresets.find(
+              (up) => up.preset_ID === presetId,
+            );
+            if (!freshUp) return null;
+            return {
+              product_Preset_ID: freshUp.product_Preset_ID,
+              low_Stock_Level: parseInt(stockInput[presetId]?.low || "0") || 0,
+              very_Low_Stock_Level:
+                parseInt(stockInput[presetId]?.veryLow || "0") || 0,
+            };
+          })
+          .filter(
+            (
+              x,
+            ): x is {
+              product_Preset_ID: number;
+              low_Stock_Level: number;
+              very_Low_Stock_Level: number;
+            } => x !== null,
+          );
+
+        if (unitPresetsPayload.length > 0) {
+          await editProductService({
+            productName: viewingProduct.product.product_Name,
+            description: viewingProduct.product.description,
+            productCode: viewingProduct.product.product_Code,
+            brand_ID: viewingProduct.brand.brand_ID,
+            category_Id: viewingProduct.category.category_ID,
+            variant_Id: viewingProduct.variant.variant_ID,
+            unitPresets: unitPresetsPayload,
+          });
+        }
+      }
+
+      toast.success(
+        isEditMode
+          ? "Pricing updated successfully"
+          : "Packaging presets assigned successfully",
+      );
       handleCancelPricingAssign();
       setViewingProduct(null);
       setPresetSearch("");
       await refetch();
     } catch (error: any) {
-      toast.error(error?.response?.data || "Failed to assign presets");
+      toast.error(
+        error?.response?.data ||
+          (isEditMode
+            ? "Failed to update pricing"
+            : "Failed to assign presets"),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -291,7 +344,12 @@ export const ProductPackagingModal = ({
     : availablePresets;
 
   const selectedPresetsForPricing = (allPresets ?? []).filter((p) =>
-    newlySelectedPresetIds.includes(p.preset_ID),
+    (newlySelectedPresetIds.length > 0
+      ? newlySelectedPresetIds
+      : isPricingAssignOpen
+        ? (viewingProduct?.unitPresets.map((u) => u.preset_ID) ?? [])
+        : []
+    ).includes(p.preset_ID),
   );
 
   const activePresetForPricing =
@@ -402,13 +460,26 @@ export const ProductPackagingModal = ({
                     </p>
                   </div>
 
-                  <div className="w-1/6">
+                  <div className="w-fit flex flex-col gap-0.5">
                     <span
                       className={`text-nowrap text-xs px-2 py-0.5 rounded-full ${product.unitPresets.length === 0 ? "bg-red-100 text-red-600" : "bg-teal-100 text-teal-700"}`}
                     >
                       {product.unitPresets.length} packaging preset
                       {product.unitPresets.length !== 1 ? "s" : ""}
                     </span>
+                    {(() => {
+                      const incomplete = product.unitPresets.filter(
+                        (up) =>
+                          up.presetPricing.length === 0 ||
+                          (!up.low_Stock_Level && !up.very_Low_Stock_Level),
+                      ).length;
+                      return incomplete > 0 ? (
+                        <span className="text-nowrap text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600">
+                          {incomplete} incomplete preset
+                          {incomplete !== 1 ? "s" : ""}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
 
                   <div className="flex justify-end w-1/6 ml-auto">
@@ -471,7 +542,9 @@ export const ProductPackagingModal = ({
             <div className="rounded-lg border border-border p-3 flex flex-col gap-2 shrink-0">
               <div className="flex gap-2 items-center">
                 {viewingProduct.unitPresets.some(
-                  (up) => up.presetPricing.length === 0,
+                  (up) =>
+                    up.presetPricing.length === 0 ||
+                    (!up.low_Stock_Level && !up.very_Low_Stock_Level),
                 ) && (
                   <CircleAlert className="text-red-500 shrink-0" size={16} />
                 )}
@@ -492,14 +565,16 @@ export const ProductPackagingModal = ({
                     const label = details
                       ? formatPresetLabel(details)
                       : up.preset.preset_Name;
-                    const hasPricing = up.presetPricing.length > 0;
+                    const isIncomplete =
+                      up.presetPricing.length === 0 ||
+                      (!up.low_Stock_Level && !up.very_Low_Stock_Level);
                     return (
                       <div
                         key={up.preset_ID}
                         className="flex items-center justify-between text-xs py-1.5 px-2 rounded-lg bg-gray-50 border border-gray-100"
                       >
                         <span className="font-mono text-gray-700">{label}</span>
-                        {!hasPricing && (
+                        {isIncomplete && (
                           <CircleAlert
                             className="text-red-400 shrink-0 ml-2"
                             size={13}
@@ -570,10 +645,15 @@ export const ProductPackagingModal = ({
               </button>
               <button
                 className="w-full"
-                disabled={newlySelectedPresetIds.length === 0}
+                disabled={
+                  newlySelectedPresetIds.length === 0 &&
+                  (viewingProduct?.unitPresets.length ?? 0) === 0
+                }
                 onClick={handleOpenPricingAssign}
               >
-                Next: Set Prices ({newlySelectedPresetIds.length})
+                {newlySelectedPresetIds.length > 0
+                  ? `Next: Set Prices (${newlySelectedPresetIds.length})`
+                  : "Edit Prices"}
               </button>
             </div>
           </div>
@@ -892,7 +972,13 @@ export const ProductPackagingModal = ({
                 onClick={handleConfirmAssign}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Assigning..." : "Confirm & Assign"}
+                {isSubmitting
+                  ? newlySelectedPresetIds.length === 0
+                    ? "Saving..."
+                    : "Assigning..."
+                  : newlySelectedPresetIds.length === 0
+                    ? "Save Changes"
+                    : "Confirm & Assign"}
               </button>
               <button className="w-full" onClick={handleCancelPricingAssign}>
                 Cancel
