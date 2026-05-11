@@ -1,6 +1,6 @@
 import { Activity, useState } from "react";
-import { XIcon } from "@/icons";
-import { CheckIcon, PhilippinePeso } from "lucide-react";
+import { SearchIcon, XIcon } from "@/icons";
+import { CheckIcon, Layers, PhilippinePeso, Search } from "lucide-react";
 import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { updatePresetPricing } from "@/features/unit-of-measure/update-preset-pricing/update-preset-pricing.service";
@@ -25,6 +25,10 @@ export const ProductPackagingModal = ({
   const [selectedPresetIds, setSelectedPresetIds] = useState<number[]>([]);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [search, setSearch] = useState("");
+  const [pricingFilter, setPricingFilter] = useState<
+    "any" | "priced" | "unpriced"
+  >("any");
 
   const handleView = (product: InventoryProductModel) => {
     setViewingProduct(product);
@@ -68,9 +72,24 @@ export const ProductPackagingModal = ({
     }
   };
 
-  const productsWithPresets =
+  const productsWithPresets = (
     inventory?.filter((p) => p.unitPresets.length > 0 && p.product.is_Active) ??
-    [];
+    []
+  ).filter((p) => {
+    const q = search.toLowerCase();
+    const matchesSearch =
+      !q ||
+      p.product.product_Name.toLowerCase().includes(q) ||
+      p.product.product_Code.toLowerCase().includes(q) ||
+      p.brand.brandName.toLowerCase().includes(q) ||
+      p.variant.variant_Name.toLowerCase().includes(q);
+    const hasPricing = p.unitPresets.some((up) => up.presetPricing.length > 0);
+    const matchesFilter =
+      pricingFilter === "any" ||
+      (pricingFilter === "priced" && hasPricing) ||
+      (pricingFilter === "unpriced" && !hasPricing);
+    return matchesSearch && matchesFilter;
+  });
 
   const selectedPresets: UnitPreset[] =
     viewingProduct?.unitPresets.filter((up) =>
@@ -89,6 +108,39 @@ export const ProductPackagingModal = ({
             <XIcon />
           </div>
           <h1 className="text-xl font-bold">Product Packaging</h1>
+
+          <div className="flex w-full gap-2">
+            {/* SEARCH INPUT */}
+            <div className="relative w-full">
+              <input
+                placeholder="Search..."
+                className="input-style-2"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <SearchIcon />
+              </i>
+            </div>
+
+            {/* DROPDOWN FILTER SELECT */}
+            <div className="relative flex items-center shrink-0 w-1/2">
+              <Layers className="absolute left-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+              <select
+                value={pricingFilter}
+                onChange={(e) =>
+                  setPricingFilter(
+                    e.target.value as "any" | "priced" | "unpriced",
+                  )
+                }
+                className="w-full text-sm border rounded-lg pl-8 pr-3 py-3 outline-none focus:ring-2 focus:ring-blue-200 bg-white appearance-none cursor-pointer"
+              >
+                <option value="any">Any</option>
+                <option value="priced">Priced</option>
+                <option value="unpriced">Unpriced</option>
+              </select>
+            </div>
+          </div>
 
           {/* Table header */}
           <div className="flex items-center px-2 py-1.5 border-b bg-gray-50 rounded-t-lg">
@@ -121,13 +173,16 @@ export const ProductPackagingModal = ({
                   }`}
                 >
                   <div className="w-1/2">
-                    <p className="text-sm font-semibold">
-                      {product.product.product_Name}
-                    </p>
+                    <div className="flex gap-2 items-center">
+                      <p className="text-sm font-semibold">
+                        {product.product.product_Name}
+                      </p>
+                      <p className="text-xs rounded-md text-gray-400">
+                        {product.category.category_Name}
+                      </p>
+                    </div>
                     <p className="text-xs text-gray-500">
-                      {product.product.product_Code} &middot;{" "}
-                      {product.brand.brandName} &middot;{" "}
-                      {product.variant.variant_Name}
+                      {product.product.product_Code}
                     </p>
                   </div>
 
