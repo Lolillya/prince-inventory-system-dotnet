@@ -1,6 +1,13 @@
 import { Activity, useState } from "react";
 import { SearchIcon, XIcon } from "@/icons";
-import { CheckIcon, Layers, PhilippinePeso, Search } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronDown,
+  ChevronUp,
+  CircleAlert,
+  Layers,
+  PhilippinePeso,
+} from "lucide-react";
 import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { updatePresetPricing } from "@/features/unit-of-measure/update-preset-pricing/update-preset-pricing.service";
@@ -9,6 +16,11 @@ import {
   ProductPackagingPricingModal,
   ProductPackagingPricingData,
 } from "./product-packaging-pricing.modal";
+import { Separator } from "@/components/separator";
+import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
+import { UnitPresetLevel } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.model";
+import { assignProductsToPreset } from "@/features/unit-of-measure/assign-product-to-preset/assign-product.service";
+import { editProductService } from "@/features/inventory/edit-product/edit-product.service";
 
 type UnitPreset = InventoryProductModel["unitPresets"][number];
 
@@ -29,23 +41,27 @@ export const ProductPackagingModal = ({
   const [pricingFilter, setPricingFilter] = useState<
     "any" | "priced" | "unpriced"
   >("any");
+  const [presetSearch, setPresetSearch] = useState("");
+  const [newlySelectedPresetIds, setNewlySelectedPresetIds] = useState<
+    number[]
+  >([]);
+  const [isPricingAssignOpen, setIsPricingAssignOpen] = useState(false);
+  const [activePricingPresetId, setActivePricingPresetId] = useState<
+    number | null
+  >(null);
+  const [pricingInput, setPricingInput] = useState<
+    Record<number, Record<string, string>>
+  >({});
+  const [stockInput, setStockInput] = useState<
+    Record<number, { low: string; veryLow: string }>
+  >({});
+  const [auditExpanded, setAuditExpanded] = useState(false);
+
+  const { data: allPresets } = useUnitPresetQuery();
 
   const handleView = (product: InventoryProductModel) => {
     setViewingProduct(product);
     setSelectedPresetIds([]);
-  };
-
-  const togglePreset = (presetId: number) => {
-    setSelectedPresetIds((prev) =>
-      prev.includes(presetId)
-        ? prev.filter((id) => id !== presetId)
-        : [...prev, presetId],
-    );
-  };
-
-  const handleContinue = () => {
-    if (selectedPresetIds.length === 0) return;
-    setIsPricingModalOpen(true);
   };
 
   const handlePricingSubmit = async (
@@ -67,6 +83,168 @@ export const ProductPackagingModal = ({
       await refetch();
     } catch (error: any) {
       toast.error(error?.response?.data || "Failed to update pricing");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ── Preset label formatter ──────────────────────────────────────────────────
+  const formatPresetLabel = (preset: UnitPresetLevel): string => {
+    const mainLevel = [...preset.levels].find((l) => l.level === 1);
+    const subLevels = [...preset.levels]
+      .filter((l) => l.level > 1)
+      .sort((a, b) => a.level - b.level);
+    const mainName = mainLevel?.uoM_Name ?? preset.main_Unit_Name;
+    const parts = [
+      mainName,
+      ...subLevels.map((l) => `${l.uoM_Name} (${l.conversion_Factor}x)`),
+    ];
+    return `[${preset.preset_Code}] ${parts.join(" > ")}`;
+  };
+
+  // ── Available-preset toggle ─────────────────────────────────────────────────
+  const toggleNewPreset = (presetId: number) => {
+    setNewlySelectedPresetIds((prev) =>
+      prev.includes(presetId)
+        ? prev.filter((id) => id !== presetId)
+        : [...prev, presetId],
+    );
+  };
+
+  // ── Open pricing-assign modal ───────────────────────────────────────────────
+  const handleOpenPricingAssign = () => {
+    if (newlySelectedPresetIds.length === 0) return;
+    const initialPricing: Record<number, Record<string, string>> = {};
+    const initialStock: Record<number, { low: string; veryLow: string }> = {};
+    newlySelectedPresetIds.forEach((id) => {
+      initialPricing[id] = {};
+      initialStock[id] = { low: "", veryLow: "" };
+    });
+    setPricingInput(initialPricing);
+    setStockInput(initialStock);
+    setActivePricingPresetId(newlySelectedPresetIds[0]);
+    setIsPricingAssignOpen(true);
+  };
+
+  const handlePricingInputChange = (
+    presetId: number,
+    unitName: string,
+    value: string,
+  ) => {
+    setPricingInput((prev) => ({
+      ...prev,
+      [presetId]: { ...prev[presetId], [unitName]: value },
+    }));
+  };
+
+  const handleStockInputChange = (
+    presetId: number,
+    field: "low" | "veryLow",
+    value: string,
+  ) => {
+    setStockInput((prev) => ({
+      ...prev,
+      [presetId]: { ...prev[presetId], [field]: value },
+    }));
+  };
+
+  const handleCancelPricingAssign = () => {
+    setIsPricingAssignOpen(false);
+    setNewlySelectedPresetIds([]);
+    setPricingInput({});
+    setStockInput({});
+    setActivePricingPresetId(null);
+    setAuditExpanded(false);
+  };
+
+  // ── Confirm & assign ────────────────────────────────────────────────────────
+  const handleConfirmAssign = async () => {
+    if (!viewingProduct) return;
+    setIsSubmitting(true);
+    try {
+      // Step 1: assign each preset (creates Product_Unit_Preset records)
+      for (const presetId of newlySelectedPresetIds) {
+        const preset = allPresets?.find((p) => p.preset_ID === presetId);
+        if (!preset) continue;
+        const unitPrices = preset.levels
+          .filter((l) => pricingInput[presetId]?.[l.uoM_Name])
+          .map((l) => ({
+            unitName: l.uoM_Name,
+            price: parseFloat(pricingInput[presetId][l.uoM_Name]) || 0,
+          }));
+        await assignProductsToPreset({
+          preset_ID: presetId,
+          product_IDs: [viewingProduct.product.product_ID],
+          pricingData:
+            unitPrices.length > 0
+              ? [
+                  {
+                    product_ID: viewingProduct.product.product_ID,
+                    unitPrices,
+                  },
+                ]
+              : undefined,
+        });
+      }
+
+      // Step 2: update stock thresholds if any were set
+      const presetsWithStock = newlySelectedPresetIds.filter(
+        (id) => stockInput[id]?.low || stockInput[id]?.veryLow,
+      );
+
+      if (presetsWithStock.length > 0) {
+        // Refetch to get the newly created product_Preset_IDs
+        const freshResult = await refetch();
+        const freshProduct = freshResult.data?.find(
+          (p) => p.product.product_ID === viewingProduct.product.product_ID,
+        );
+
+        if (freshProduct) {
+          const unitPresetsPayload = presetsWithStock
+            .map((presetId) => {
+              const freshUp = freshProduct.unitPresets.find(
+                (up) => up.preset_ID === presetId,
+              );
+              if (!freshUp) return null;
+              return {
+                product_Preset_ID: freshUp.product_Preset_ID,
+                low_Stock_Level:
+                  parseInt(stockInput[presetId]?.low || "0") || 0,
+                very_Low_Stock_Level:
+                  parseInt(stockInput[presetId]?.veryLow || "0") || 0,
+              };
+            })
+            .filter(
+              (
+                x,
+              ): x is {
+                product_Preset_ID: number;
+                low_Stock_Level: number;
+                very_Low_Stock_Level: number;
+              } => x !== null,
+            );
+
+          if (unitPresetsPayload.length > 0) {
+            await editProductService({
+              productName: viewingProduct.product.product_Name,
+              description: viewingProduct.product.description,
+              productCode: viewingProduct.product.product_Code,
+              brand_ID: viewingProduct.brand.brand_ID,
+              category_Id: viewingProduct.category.category_ID,
+              variant_Id: viewingProduct.variant.variant_ID,
+              unitPresets: unitPresetsPayload,
+            });
+          }
+        }
+      }
+
+      toast.success("Packaging presets assigned successfully");
+      handleCancelPricingAssign();
+      setViewingProduct(null);
+      setPresetSearch("");
+      await refetch();
+    } catch (error: any) {
+      toast.error(error?.response?.data || "Failed to assign presets");
     } finally {
       setIsSubmitting(false);
     }
@@ -97,10 +275,36 @@ export const ProductPackagingModal = ({
       selectedPresetIds.includes(up.preset_ID),
     ) ?? [];
 
+  const assignedPresetIds =
+    viewingProduct?.unitPresets.map((up) => up.preset_ID) ?? [];
+
+  const availablePresets = (allPresets ?? []).filter(
+    (p) => !assignedPresetIds.includes(p.preset_ID),
+  );
+
+  const filteredAvailablePresets = presetSearch
+    ? availablePresets.filter((p) =>
+        formatPresetLabel(p).toLowerCase().includes(presetSearch.toLowerCase()),
+      )
+    : availablePresets;
+
+  const selectedPresetsForPricing = (allPresets ?? []).filter((p) =>
+    newlySelectedPresetIds.includes(p.preset_ID),
+  );
+
+  const activePresetForPricing =
+    selectedPresetsForPricing.find(
+      (p) => p.preset_ID === activePricingPresetId,
+    ) ??
+    selectedPresetsForPricing[0] ??
+    null;
+
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50 gap-3">
       {/* ── MAIN LIST MODAL ── */}
-      <Activity mode={isPricingModalOpen ? "hidden" : "visible"}>
+      <Activity
+        mode={isPricingModalOpen || isPricingAssignOpen ? "hidden" : "visible"}
+      >
         <div className="w-3/6 h-4/5 bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4">
           <div
             className="absolute top-4 right-4 cursor-pointer"
@@ -200,7 +404,7 @@ export const ProductPackagingModal = ({
                     <button
                       className="text-xs px-3 py-1 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       onClick={() => handleView(product)}
-                      disabled={product.unitPresets.length === 0}
+                      // disabled={product.unitPresets.length === 0}
                     >
                       View
                     </button>
@@ -215,117 +419,371 @@ export const ProductPackagingModal = ({
       {/* ── VIEW / PRESET PICKER PANEL ── */}
       <Activity
         mode={
-          viewingProduct !== null && !isPricingModalOpen ? "visible" : "hidden"
+          viewingProduct !== null && !isPricingModalOpen && !isPricingAssignOpen
+            ? "visible"
+            : "hidden"
         }
       >
         {viewingProduct && (
-          <div className="bg-white rounded-lg border shadow-lg py-6 px-5 flex flex-col gap-4 max-h-[80vh] w-92 h-full">
-            {/* Product info */}
-            <div className="flex flex-col gap-0.5">
-              <h3 className="font-bold text-sm">
-                {viewingProduct.product.product_Name}
-              </h3>
-              <p className="text-xs text-gray-500">
-                {viewingProduct.unitPresets.length} preset
-                {viewingProduct.unitPresets.length !== 1 ? "s" : ""} assigned
-              </p>
+          <div className="bg-white rounded-lg border shadow-lg py-6 px-5 flex flex-col gap-4 max-h-[80vh] w-96 h-full">
+            {/* Header */}
+            <div className="flex flex-col">
+              <div className="flex gap-2 items-center">
+                <label className="text-sm font-semibold">
+                  {viewingProduct.product.product_Name}
+                </label>
+                <label className="text-xs text-gray-400">
+                  {viewingProduct.category.category_Name}
+                </label>
+              </div>
+              <span className="text-xs text-vesper-gray">
+                Select packaging presets to associate with this product
+              </span>
             </div>
 
-            {/* Preset checkboxes */}
-            <div className="flex flex-col gap-2 overflow-y-auto flex-1 min-h-0 rounded-lg">
-              {viewingProduct.unitPresets.map((up) => {
-                const isSelected = selectedPresetIds.includes(up.preset_ID);
-                return (
-                  <div
-                    key={up.preset_ID}
-                    onClick={() => togglePreset(up.preset_ID)}
-                    className={`flex flex-col gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      isSelected
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    {/* Checkbox row */}
-                    <div className="flex items-center gap-2">
+            <Separator orientation="horizontal" />
+
+            {/* Preset search */}
+            <div className="relative w-full">
+              <input
+                placeholder="Search presets by code or units..."
+                className="input-style-2"
+                value={presetSearch}
+                onChange={(e) => setPresetSearch(e.target.value)}
+              />
+              <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <SearchIcon />
+              </i>
+            </div>
+
+            {/* Associated Presets */}
+            <div className="rounded-lg border border-border p-3 flex flex-col gap-2 shrink-0">
+              <div className="flex gap-2 items-center">
+                {viewingProduct.unitPresets.some(
+                  (up) => up.presetPricing.length === 0,
+                ) && (
+                  <CircleAlert className="text-red-500 shrink-0" size={16} />
+                )}
+                <label className="text-sm font-semibold">
+                  Associated Presets ({viewingProduct.unitPresets.length})
+                </label>
+              </div>
+              {viewingProduct.unitPresets.length === 0 ? (
+                <p className="text-xs text-gray-400">
+                  No presets assigned yet.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {viewingProduct.unitPresets.map((up) => {
+                    const details = allPresets?.find(
+                      (p) => p.preset_ID === up.preset_ID,
+                    );
+                    const label = details
+                      ? formatPresetLabel(details)
+                      : up.preset.preset_Name;
+                    const hasPricing = up.presetPricing.length > 0;
+                    return (
                       <div
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${
-                          isSelected
-                            ? "bg-blue-500 border-blue-500"
-                            : "border-gray-300"
-                        }`}
+                        key={up.preset_ID}
+                        className="flex items-center justify-between text-xs py-1.5 px-2 rounded-lg bg-gray-50 border border-gray-100"
                       >
-                        {isSelected && (
-                          <CheckIcon className="w-3 h-3 text-white" />
+                        <span className="font-mono text-gray-700">{label}</span>
+                        {!hasPricing && (
+                          <CircleAlert
+                            className="text-red-400 shrink-0 ml-2"
+                            size={13}
+                          />
                         )}
                       </div>
-                      <span className="text-sm font-semibold">
-                        {up.preset.preset_Name}
-                      </span>
-                    </div>
-
-                    {/* Hierarchy levels top-to-bottom */}
-                    {/* <div className="flex flex-col gap-0.5 pl-6">
-                        {up.preset.presetLevels.map((level, idx) => (
-                            <div
-                            key={level.level_ID}
-                            className="flex items-center gap-1 text-xs text-gray-600"
-                            >
-                            {idx > 0 && (
-                                <span className="text-gray-400 shrink-0">└</span>
-                            )}
-                            <span>{level.unitOfMeasure.uom_Name}</span>
-                            <span className="text-gray-400">
-                                ({level.conversion_Factor}x)
-                            </span>
-                            </div>
-                        ))}
-                        </div> */}
-
-                    {/* Pricing summary */}
-                    {up.presetPricing.length > 0 && (
-                      <div className="flex flex-col gap-1 pl-6 border-t pt-2 mt-0.5">
-                        {up.presetPricing.map((pp, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between text-xs"
-                          >
-                            <div className="flex gap-2">
-                              {idx > 0 && (
-                                <span className="text-gray-400 shrink-0">
-                                  └
-                                </span>
-                              )}
-                              <span className="text-gray-600">
-                                {pp.unitName}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-0.5 font-semibold">
-                              <PhilippinePeso className="w-3 h-3" />
-                              <span>
-                                {pp.price_Per_Unit?.toFixed(2) ?? "0.00"}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
+            {/* Available Presets */}
+            <div className="rounded-lg border border-border p-3 flex flex-col gap-2 overflow-y-auto flex-1 min-h-0">
+              <label className="text-sm font-semibold">
+                Available Presets ({filteredAvailablePresets.length})
+              </label>
+              {filteredAvailablePresets.length === 0 ? (
+                <p className="text-xs text-gray-400">No available presets.</p>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {filteredAvailablePresets.map((preset) => {
+                    const isChecked = newlySelectedPresetIds.includes(
+                      preset.preset_ID,
+                    );
+                    return (
+                      <div
+                        key={preset.preset_ID}
+                        onClick={() => toggleNewPreset(preset.preset_ID)}
+                        className={`flex items-center gap-2 text-xs py-2 px-2 rounded-lg border cursor-pointer transition-all ${
+                          isChecked
+                            ? "border-blue-400 bg-blue-50"
+                            : "border-transparent hover:bg-gray-50"
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${
+                            isChecked
+                              ? "bg-blue-500 border-blue-500"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          {isChecked && (
+                            <CheckIcon className="w-3 h-3 text-white" />
+                          )}
+                        </div>
+                        <span className="font-mono text-gray-700">
+                          {formatPresetLabel(preset)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
             <div className="flex gap-2">
               <button
-                className="w-full max-w-full"
-                onClick={handleContinue}
-                disabled={selectedPresetIds.length === 0}
+                className="w-full"
+                onClick={() => {
+                  setViewingProduct(null);
+                  setNewlySelectedPresetIds([]);
+                  setPresetSearch("");
+                }}
               >
-                Continue with {selectedPresetIds.length} selected
+                Cancel
               </button>
               <button
-                className="w-full max-w-full"
-                onClick={() => setViewingProduct(null)}
+                className="w-full"
+                disabled={newlySelectedPresetIds.length === 0}
+                onClick={handleOpenPricingAssign}
               >
+                Next: Set Prices ({newlySelectedPresetIds.length})
+              </button>
+            </div>
+          </div>
+        )}
+      </Activity>
+
+      {/* ── PRICING ASSIGN MODAL ── */}
+      <Activity mode={isPricingAssignOpen ? "visible" : "hidden"}>
+        {viewingProduct && (
+          <div className="bg-white rounded-lg border shadow-lg h-4/5 max-w-260 w-full flex flex-col overflow-hidden">
+            <div className="flex border-b border-border px-5 py-4">
+              <div className="flex flex-col">
+                <div className="flex gap-2 items-center">
+                  <label className="text-base font-semibold">
+                    {viewingProduct.product.product_Name}
+                  </label>
+                  <label className="text-sm text-gray-400">
+                    {viewingProduct.category.category_Name}
+                  </label>
+                </div>
+                <span className="text-xs text-vesper-gray">
+                  Set prices per unit conversion and stock threshold for each
+                  selected packaging preset.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-0 flex-1 min-h-0">
+              {/* Left – selected presets list */}
+              <div className="w-80 shrink-0 flex flex-col gap-4 p-5 overflow-y-auto min-h-0">
+                <div className="flex flex-col gap-1 flex-1 min-h-0">
+                  {selectedPresetsForPricing.map((preset) => (
+                    <div
+                      key={preset.preset_ID}
+                      onClick={() => setActivePricingPresetId(preset.preset_ID)}
+                      className={`cursor-pointer px-3 py-2 rounded-lg text-xs font-mono border transition-all ${
+                        activePricingPresetId === preset.preset_ID
+                          ? "border-blue-400 bg-blue-50 text-blue-800"
+                          : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                      }`}
+                    >
+                      {formatPresetLabel(preset)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right – pricing details */}
+              <div className="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 p-5 border-l border-border">
+                {activePresetForPricing ? (
+                  <>
+                    {/* Meta */}
+                    <div className="flex flex-col text-xs text-gray-400">
+                      <span>Last updated by: —</span>
+                      <span>Date: —</span>
+                    </div>
+                    {/* Pricing container */}
+                    <div className="border rounded-lg p-4 flex flex-col gap-3 bg-green-50">
+                      {/* <p className="text-xs font-mono text-gray-500">
+                      {formatPresetLabel(activePresetForPricing)}
+                    </p> */}
+                      <label className="text-green-600">
+                        [{activePresetForPricing.preset_Code}]
+                      </label>
+                      <div className="flex flex-col gap-1 font-semibold">
+                        {[...activePresetForPricing.levels]
+                          .sort((a, b) => a.level - b.level)
+                          .map((level, idx) => (
+                            <div
+                              key={level.level_ID}
+                              className="flex items-center justify-between"
+                            >
+                              <span className="text-sm text-gray-600 flex items-center gap-1">
+                                {idx > 0 && (
+                                  <span className="text-gray-600 font-mono">
+                                    └─
+                                  </span>
+                                )}
+                                {level.uoM_Name}
+                                {idx > 0 && (
+                                  <span className="text-gray-400">
+                                    ({level.conversion_Factor}x)
+                                  </span>
+                                )}
+                              </span>
+                              <div className="flex items-center bg-gray-200 rounded-sm">
+                                <i className="px-4">
+                                  <PhilippinePeso
+                                    className="text-gray-400"
+                                    size={14}
+                                  />
+                                </i>
+                                <input
+                                  type="number"
+                                  placeholder="—"
+                                  className="drop-shadow-none rounded-r-sm rounded-l-none p-2"
+                                  value={
+                                    pricingInput[
+                                      activePresetForPricing.preset_ID
+                                    ]?.[level.uoM_Name] ?? ""
+                                  }
+                                  onChange={(e) =>
+                                    handlePricingInputChange(
+                                      activePresetForPricing.preset_ID,
+                                      level.uoM_Name,
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+
+                    {/* Stock Threshold */}
+                    <div className="border rounded-lg p-4 flex flex-col gap-3 bg-green-50">
+                      <label className="text-xs font-semibold">
+                        Stock Threshold
+                      </label>
+                      <div className="flex justify-between">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex gap-2 items-center">
+                            <div className="rounded-full bg-yellow-400 w-3 h-3" />
+                            <span className="text-xs text-gray-600 text-nowrap">
+                              Low Stock
+                            </span>
+                          </div>
+
+                          <input
+                            type="number"
+                            placeholder="—"
+                            className="shadow-none drop-shadow-none "
+                            value={
+                              stockInput[activePresetForPricing.preset_ID]
+                                ?.low ?? ""
+                            }
+                            onChange={(e) =>
+                              handleStockInputChange(
+                                activePresetForPricing.preset_ID,
+                                "low",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between gap-2 ">
+                          <div className="flex gap-2 items-center">
+                            <div className="rounded-full bg-red-400 w-3 h-3" />
+                            <span className="text-xs text-gray-600 text-nowrap">
+                              Very Low Stock
+                            </span>
+                          </div>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="—"
+                            className="shadow-none drop-shadow-none "
+                            value={
+                              stockInput[activePresetForPricing.preset_ID]
+                                ?.veryLow ?? ""
+                            }
+                            onChange={(e) =>
+                              handleStockInputChange(
+                                activePresetForPricing.preset_ID,
+                                "veryLow",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <label className="text-xs">
+                          Threshold applies only to main unit.
+                        </label>
+
+                        <label className="text-xs font-semibold">
+                          ({activePresetForPricing.main_Unit_Name})
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Audit Log */}
+                    <div className="border rounded-lg overflow-hidden">
+                      <div
+                        className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold hover:bg-gray-50 transition-all"
+                        onClick={() => setAuditExpanded((prev) => !prev)}
+                      >
+                        <span>Audit Log (Recent Changes)</span>
+                        {auditExpanded ? (
+                          <ChevronUp size={14} />
+                        ) : (
+                          <ChevronDown size={14} />
+                        )}
+                      </div>
+                      {auditExpanded && (
+                        <div className="px-4 py-3 text-xs text-gray-400 border-t">
+                          No recent changes recorded.
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-gray-400 text-center mt-8">
+                    Select a preset from the left to configure its pricing.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-2 border-t border-border px-5 py-4 justify-end">
+              <button
+                className="w-full"
+                onClick={handleConfirmAssign}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Assigning..." : "Confirm & Assign"}
+              </button>
+              <button className="w-full" onClick={handleCancelPricingAssign}>
                 Cancel
               </button>
             </div>
@@ -345,3 +803,101 @@ export const ProductPackagingModal = ({
     </div>
   );
 };
+
+// const OldModal = () => {
+//   return (
+//     <div className="bg-white rounded-lg border shadow-lg py-6 px-5 flex flex-col gap-4 max-h-[80vh] w-92 h-full">
+//             {/* Product info */}
+//             <div className="flex flex-col gap-0.5">
+//               <h3 className="font-bold text-sm">
+//                 {viewingProduct.product.product_Name}
+//               </h3>
+//               <p className="text-xs text-gray-500">
+//                 {viewingProduct.unitPresets.length} preset
+//                 {viewingProduct.unitPresets.length !== 1 ? "s" : ""} assigned
+//               </p>
+//             </div>
+
+//             {/* Preset checkboxes */}
+//             <div className="flex flex-col gap-2 overflow-y-auto flex-1 min-h-0 rounded-lg">
+//               {viewingProduct.unitPresets.map((up) => {
+//                 const isSelected = selectedPresetIds.includes(up.preset_ID);
+//                 return (
+//                   <div
+//                     key={up.preset_ID}
+//                     onClick={() => togglePreset(up.preset_ID)}
+//                     className={`flex flex-col gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+//                       isSelected
+//                         ? "border-blue-500 bg-blue-50"
+//                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+//                     }`}
+//                   >
+//                     {/* Checkbox row */}
+//                     <div className="flex items-center gap-2">
+//                       <div
+//                         className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${
+//                           isSelected
+//                             ? "bg-blue-500 border-blue-500"
+//                             : "border-gray-300"
+//                         }`}
+//                       >
+//                         {isSelected && (
+//                           <CheckIcon className="w-3 h-3 text-white" />
+//                         )}
+//                       </div>
+//                       <span className="text-sm font-semibold">
+//                         {up.preset.preset_Name}
+//                       </span>
+//                     </div>
+
+//                     {/* Pricing summary */}
+//                     {up.presetPricing.length > 0 && (
+//                       <div className="flex flex-col gap-1 pl-6 border-t pt-2 mt-0.5">
+//                         {up.presetPricing.map((pp, idx) => (
+//                           <div
+//                             key={idx}
+//                             className="flex items-center justify-between text-xs"
+//                           >
+//                             <div className="flex gap-2">
+//                               {idx > 0 && (
+//                                 <span className="text-gray-400 shrink-0">
+//                                   └
+//                                 </span>
+//                               )}
+//                               <span className="text-gray-600">
+//                                 {pp.unitName}
+//                               </span>
+//                             </div>
+//                             <div className="flex items-center gap-0.5 font-semibold">
+//                               <PhilippinePeso className="w-3 h-3" />
+//                               <span>
+//                                 {pp.price_Per_Unit?.toFixed(2) ?? "0.00"}
+//                               </span>
+//                             </div>
+//                           </div>
+//                         ))}
+//                       </div>
+//                     )}
+//                   </div>
+//                 );
+//               })}
+//             </div>
+
+//             <div className="flex gap-2">
+//               <button
+//                 className="w-full max-w-full"
+//                 onClick={handleContinue}
+//                 disabled={selectedPresetIds.length === 0}
+//               >
+//                 Continue with {selectedPresetIds.length} selected
+//               </button>
+//               <button
+//                 className="w-full max-w-full"
+//                 onClick={() => setViewingProduct(null)}
+//               >
+//                 Cancel
+//               </button>
+//             </div>
+//           </div>
+//   )
+// }
