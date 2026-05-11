@@ -1,6 +1,7 @@
 import { Activity, useState } from "react";
 import { SearchIcon, XIcon } from "@/icons";
 import {
+  ArrowRight,
   CheckIcon,
   ChevronDown,
   ChevronUp,
@@ -21,6 +22,7 @@ import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/
 import { UnitPresetLevel } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.model";
 import { assignProductsToPreset } from "@/features/unit-of-measure/assign-product-to-preset/assign-product.service";
 import { editProductService } from "@/features/inventory/edit-product/edit-product.service";
+import { useProductAuditLogQuery } from "@/features/inventory/audit-log/audit-log.query";
 
 type UnitPreset = InventoryProductModel["unitPresets"][number];
 
@@ -298,6 +300,15 @@ export const ProductPackagingModal = ({
     ) ??
     selectedPresetsForPricing[0] ??
     null;
+
+  const activePricingProductPresetId = viewingProduct?.unitPresets?.find(
+    (up) => up.preset_ID === activePresetForPricing?.preset_ID,
+  )?.product_Preset_ID;
+
+  const { data: auditLogs, isLoading: auditLoading } = useProductAuditLogQuery(
+    viewingProduct?.product.product_ID,
+    activePricingProductPresetId,
+  );
 
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50 gap-3">
@@ -761,8 +772,108 @@ export const ProductPackagingModal = ({
                         )}
                       </div>
                       {auditExpanded && (
-                        <div className="px-4 py-3 text-xs text-gray-400 border-t">
-                          No recent changes recorded.
+                        <div className="border-t">
+                          {auditLoading ? (
+                            <p className="text-xs text-gray-400 px-4 py-3">
+                              Loading...
+                            </p>
+                          ) : !auditLogs || auditLogs.length === 0 ? (
+                            <p className="text-xs text-gray-400 px-4 py-3">
+                              No changes recorded yet.
+                            </p>
+                          ) : (
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="text-gray-400 border-b">
+                                  <th className="text-left px-4 py-2 font-medium w-2/5">
+                                    Date & Time
+                                  </th>
+                                  <th className="text-left px-4 py-2 font-medium w-1/5">
+                                    User
+                                  </th>
+                                  <th className="text-left px-4 py-2 font-medium w-2/5">
+                                    Change
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {auditLogs.map((log) => {
+                                  const initials = log.userName
+                                    .split(" ")
+                                    .slice(0, 2)
+                                    .map((w) => w[0]?.toUpperCase() ?? "")
+                                    .join("");
+                                  const date = new Date(log.createdAt);
+                                  const formatted = date.toLocaleString(
+                                    "en-PH",
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                      hour: "numeric",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    },
+                                  );
+                                  return (
+                                    <tr
+                                      key={log.auditLog_ID}
+                                      className="border-b last:border-b-0 hover:bg-gray-50"
+                                    >
+                                      <td className="px-4 py-2 text-gray-500">
+                                        {formatted}
+                                      </td>
+                                      <td className="px-4 py-2">
+                                        <div className="flex items-center gap-1.5">
+                                          <div className="rounded-full bg-purple-500 w-6 h-6 flex items-center justify-center shrink-0">
+                                            <span className="text-[10px] text-white font-semibold">
+                                              {initials}
+                                            </span>
+                                          </div>
+                                          <span className="text-gray-700">
+                                            {log.userName}
+                                          </span>
+                                        </div>
+                                      </td>
+                                      <td className="px-4 py-2">
+                                        {log.action === "PRICING_UPDATED" &&
+                                        log.fieldName &&
+                                        log.newValue ? (
+                                          <div className="flex items-center gap-1 flex-wrap">
+                                            <span className="font-medium text-gray-700">
+                                              {log.fieldName}
+                                            </span>
+                                            {log.oldValue ? (
+                                              <>
+                                                <div className="flex items-center gap-0.5 text-gray-400">
+                                                  <PhilippinePeso size={10} />
+                                                  <span>{log.oldValue}</span>
+                                                </div>
+                                                <ArrowRight
+                                                  size={10}
+                                                  className="text-gray-400"
+                                                />
+                                              </>
+                                            ) : null}
+                                            <div className="flex items-center gap-0.5 text-green-600">
+                                              <PhilippinePeso size={10} />
+                                              <span className="font-semibold">
+                                                {log.newValue}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <span className="text-gray-600">
+                                            {log.description}
+                                          </span>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          )}
                         </div>
                       )}
                     </div>

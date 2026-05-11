@@ -46,6 +46,7 @@ namespace backend.Data
         public DbSet<Supplier_Product_Preset_Price> SupplierProductPresetPrices { get; set; }
         public DbSet<CustomerTerm> CustomerTerms { get; set; }
         public DbSet<InvoicePayment> InvoicePayments { get; set; }
+        public DbSet<ProductAuditLog> ProductAuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -1,8 +1,12 @@
 using backend.Data;
 using backend.Dtos.UnitPreset;
+using backend.Models.Inventory;
 using backend.Models.Unit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace backend.Controller.UnitPreset
 {
@@ -18,12 +22,16 @@ namespace backend.Controller.UnitPreset
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Assign([FromBody] AssignProductsToPresetDto dto)
         {
             if (dto.Product_IDs == null || !dto.Product_IDs.Any())
             {
                 return BadRequest("At least one product ID is required");
             }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            var userName = User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue(JwtRegisteredClaimNames.GivenName) ?? "Unknown";
 
             await using var transaction = await _db.Database.BeginTransactionAsync();
 
@@ -69,6 +77,21 @@ namespace backend.Controller.UnitPreset
 
                     await _db.Product_Unit_Presets.AddAsync(assignment);
                     await _db.SaveChangesAsync(); // Save to get the Product_Preset_ID
+
+                    // Record audit log for preset assignment
+                    await _db.ProductAuditLogs.AddAsync(new ProductAuditLog
+                    {
+                        Product_ID = productId,
+                        Product_Preset_ID = assignment.Product_Preset_ID,
+                        UserId = userId,
+                        UserName = userName,
+                        Action = "PRESET_ASSIGNED",
+                        FieldName = null,
+                        OldValue = null,
+                        NewValue = preset.Preset_Code,
+                        Description = $"Assigned preset [{preset.Preset_Code}] to product",
+                        CreatedAt = DateTime.UtcNow
+                    });
 
                     // Create quantity records for each preset level (default to 0)
                     foreach (var presetLevel in preset.PresetLevels)
