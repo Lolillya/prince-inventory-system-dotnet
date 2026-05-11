@@ -23,6 +23,11 @@ import { UnitPresetLevel } from "@/features/unit-of-measure/get-unit-presets/get
 import { assignProductsToPreset } from "@/features/unit-of-measure/assign-product-to-preset/assign-product.service";
 import { editProductService } from "@/features/inventory/edit-product/edit-product.service";
 import { useProductAuditLogQuery } from "@/features/inventory/audit-log/audit-log.query";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 type UnitPreset = InventoryProductModel["unitPresets"][number];
 
@@ -575,10 +580,21 @@ export const ProductPackagingModal = ({
                       >
                         <span className="font-mono text-gray-700">{label}</span>
                         {isIncomplete && (
-                          <CircleAlert
-                            className="text-red-400 shrink-0 ml-2"
-                            size={13}
-                          />
+                          <HoverCard openDelay={100}>
+                            <HoverCardTrigger asChild>
+                              <CircleAlert
+                                className="text-red-400 shrink-0 ml-2 cursor-default"
+                                size={18}
+                              />
+                            </HoverCardTrigger>
+                            <HoverCardContent
+                              side="top"
+                              className="w-auto px-3 py-2 text-xs text-gray-700"
+                            >
+                              Set unit price and stock threshold to complete
+                              this preset.
+                            </HoverCardContent>
+                          </HoverCard>
                         )}
                       </div>
                     );
