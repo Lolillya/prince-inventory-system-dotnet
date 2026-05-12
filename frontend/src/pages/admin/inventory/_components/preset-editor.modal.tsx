@@ -1,5 +1,5 @@
 import { PlusIcon } from "@/icons";
-import { XIcon } from "lucide-react";
+import { XIcon, BoxIcon, LayersIcon, ShoppingBagIcon, RotateCcwIcon, ChevronDownIcon } from "lucide-react";
 import { Activity, useState } from "react";
 import { PresetEditorForm } from "./forms/preset-editor.form";
 // import { UseInventoryQuery } from "@/features/restock/inventory-batch";
@@ -120,9 +120,9 @@ export const ProductUnitPresetModal = ({
       const message = hasExistingAssignments
         ? "Product assignments updated successfully"
         : `${response.assigned_count} product(s) assigned successfully` +
-          (response.skipped_count > 0
-            ? `, ${response.skipped_count} already assigned`
-            : "");
+        (response.skipped_count > 0
+          ? `, ${response.skipped_count} already assigned`
+          : "");
 
       toast.success(message);
 
@@ -173,14 +173,15 @@ export const ProductUnitPresetModal = ({
       {/* MAIN PACKAGING PRESET MODAL */}
       <Activity mode={isPricingModalOpen ? "hidden" : "visible"}>
         <div
-          className={`w-5/12 ${isAddPresetOpen ? "h-fit" : "h-4/5"} bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4 transition-all duration-200`}
+          className={`w-9/12 ${isAddPresetOpen ? "h-fit" : "h-4/5"} bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4 transition-all duration-200`}
         >
           <div className="absolute top-4 right-4" onClick={handleCloseModal}>
-            <XIcon />
+            <XIcon className="cursor-pointer" />
           </div>
 
           <div className="w-full">
-            <h1>Packaging Presets</h1>
+            <h1 className="text-2xl font-bold">Packaging Presets</h1>
+            <p className="text-gray-500 text-sm mt-1">Manage your packaging presets and their conversion chains.</p>
           </div>
 
           <Activity mode={isAddPresetOpen ? "visible" : "hidden"}>
@@ -191,22 +192,62 @@ export const ProductUnitPresetModal = ({
           </Activity>
 
           {!isAddPresetOpen && (
-            <div className="flex flex-col gap-2 flex-1">
+            <div className="flex flex-col gap-4 flex-1 mt-2">
+              {/* FILTERS */}
+              <div className="flex gap-4">
+                <div className="flex items-center gap-3 border rounded-md p-3 w-1/4">
+                  <BoxIcon className="w-6 h-6 text-[#00b69b]" />
+                  <div className="flex flex-col flex-1">
+                    <span className="text-xs text-saltbox-gray">Main Unit</span>
+                    <div className="flex justify-between items-center text-sm font-semibold text-gray-800">
+                      <span>All</span>
+                      <ChevronDownIcon className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 border rounded-md p-3 w-1/4">
+                  <LayersIcon className="w-6 h-6 text-[#00b69b]" />
+                  <div className="flex flex-col flex-1">
+                    <span className="text-xs text-saltbox-gray">Conversions</span>
+                    <div className="flex justify-between items-center text-sm font-semibold text-gray-800">
+                      <span>Any</span>
+                      <ChevronDownIcon className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 border rounded-md p-3 flex-1">
+                  <ShoppingBagIcon className="w-6 h-6 text-[#00b69b]" />
+                  <div className="flex flex-col flex-1">
+                    <span className="text-xs text-saltbox-gray">Product</span>
+                    <span className="text-sm text-gray-400">Search product...</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center mb-2">
+                <span className="bg-gray-100 text-saltbox-gray text-xs px-3 py-1.5 rounded-md font-semibold">Active filters (0)</span>
+                <button className="flex items-center gap-1 text-[#00b69b] text-sm font-semibold hover:opacity-80">
+                  <RotateCcwIcon className="w-4 h-4" />
+                  Clear all
+                </button>
+              </div>
+
               {/* TABLE HEADER */}
               <div className="flex items-center justify-between p-2 border-b">
-                <label className="text-sm font-semibold text-saltbox-gray w-1/3">
+                <label className="text-sm font-semibold text-saltbox-gray w-2/12">
                   Preset Code
                 </label>
-                <label className="text-sm font-semibold text-saltbox-gray w-1/3">
+                <label className="text-sm font-semibold text-saltbox-gray w-2/12">
                   Main Unit
                 </label>
-                <label className="text-sm font-semibold text-saltbox-gray w-full">
+                <label className="text-sm font-semibold text-saltbox-gray w-6/12">
                   Conversion
                 </label>
-                <label className="text-sm font-semibold text-saltbox-gray w-1/2">
+                <label className="text-sm font-semibold text-saltbox-gray w-2/12 text-right">
                   Used by
                 </label>
-                <label className="text-sm font-semibold text-saltbox-gray w-1/3"></label>
               </div>
 
               {/* TABLE BODY */}
@@ -222,9 +263,9 @@ export const ProductUnitPresetModal = ({
                 ))}
               </div>
 
-              <div className="flex justify-center w-full">
+              <div className="flex justify-center w-full mt-4">
                 <button
-                  className="w-full max-w-full text-sm font-semibold"
+                  className="w-full max-w-full text-sm font-semibold bg-[#00b69b] text-white py-3 rounded-md flex items-center justify-center gap-2 hover:bg-[#00a38b] transition-colors"
                   onClick={handleAddPreset}
                 >
                   Add Packaging Preset <PlusIcon />
