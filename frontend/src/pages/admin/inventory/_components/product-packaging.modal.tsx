@@ -6,12 +6,18 @@ import {
   ChevronDown,
   ChevronUp,
   CircleAlert,
+  CircleOff,
   Layers,
+  LockKeyhole,
   PhilippinePeso,
+  Trash2,
+  TriangleAlert,
 } from "lucide-react";
 import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { updatePresetPricing } from "@/features/unit-of-measure/update-preset-pricing/update-preset-pricing.service";
+import axios from "axios";
+import { api } from "@/features/api/API.service";
 import { toast } from "sonner";
 import {
   ProductPackagingPricingModal,
@@ -172,6 +178,36 @@ export const ProductPackagingModal = ({
       ...prev,
       [presetId]: { ...prev[presetId], [field]: value },
     }));
+  };
+
+  const handleRemovePreset = async (presetId: number) => {
+    if (!viewingProduct) return;
+    try {
+      await axios.delete(
+        api +
+          `unit-presets/${presetId}/products/${viewingProduct.product.product_ID}`,
+      );
+      toast.success("Packaging preset removed");
+      const updated = await refetch();
+      const fresh = updated.data?.find(
+        (p) => p.product.product_ID === viewingProduct.product.product_ID,
+      );
+      if (fresh) {
+        setViewingProduct(fresh);
+        const remaining = fresh.unitPresets.map((u) => u.preset_ID);
+        if (
+          activePricingPresetId &&
+          !remaining.includes(activePricingPresetId)
+        ) {
+          setActivePricingPresetId(remaining[0] ?? null);
+        }
+        if (remaining.length === 0) {
+          setIsPricingAssignOpen(false);
+        }
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data || "Failed to remove preset");
+    }
   };
 
   const handleCancelPricingAssign = () => {
@@ -679,7 +715,7 @@ export const ProductPackagingModal = ({
       {/* ── PRICING ASSIGN MODAL ── */}
       <Activity mode={isPricingAssignOpen ? "visible" : "hidden"}>
         {viewingProduct && (
-          <div className="bg-white rounded-lg border shadow-lg h-4/5 max-w-260 w-full flex flex-col overflow-hidden">
+          <div className="bg-white rounded-lg border shadow-lg h-4/5 max-w-268 w-full flex flex-col overflow-hidden">
             <div className="flex border-b border-border px-5 py-4">
               <div className="flex flex-col">
                 <div className="flex gap-2 items-center">
@@ -699,21 +735,92 @@ export const ProductPackagingModal = ({
 
             <div className="flex gap-0 flex-1 min-h-0">
               {/* Left – selected presets list */}
-              <div className="w-80 shrink-0 flex flex-col gap-4 p-5 overflow-y-auto min-h-0">
-                <div className="flex flex-col gap-1 flex-1 min-h-0">
-                  {selectedPresetsForPricing.map((preset) => (
-                    <div
-                      key={preset.preset_ID}
-                      onClick={() => setActivePricingPresetId(preset.preset_ID)}
-                      className={`cursor-pointer px-3 py-2 rounded-lg text-xs font-mono border transition-all ${
-                        activePricingPresetId === preset.preset_ID
-                          ? "border-blue-400 bg-blue-50 text-blue-800"
-                          : "border-gray-200 hover:bg-gray-50 text-gray-700"
-                      }`}
-                    >
-                      {formatPresetLabel(preset)}
-                    </div>
-                  ))}
+              <div className="w-92 shrink-0 flex flex-col gap-4 p-5 overflow-y-auto min-h-0">
+                <div className="flex flex-col gap-1 flex-1 min-h-0 w-80">
+                  {selectedPresetsForPricing.map((preset) => {
+                    const productPreset = viewingProduct?.unitPresets.find(
+                      (up) => up.preset_ID === preset.preset_ID,
+                    );
+                    const isComplete =
+                      productPreset !== undefined &&
+                      productPreset.presetPricing.length > 0 &&
+                      (!!productPreset.low_Stock_Level ||
+                        !!productPreset.very_Low_Stock_Level);
+                    return (
+                      <div
+                        key={preset.preset_ID}
+                        onClick={() =>
+                          setActivePricingPresetId(preset.preset_ID)
+                        }
+                        className={`cursor-pointer px-3 py-2 rounded-lg text-xs font-mono border transition-all flex items-center justify-between gap-2 ${
+                          activePricingPresetId === preset.preset_ID
+                            ? "border-blue-400 bg-blue-50 text-blue-800"
+                            : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                        }`}
+                      >
+                        <span>{formatPresetLabel(preset)}</span>
+                        {isComplete ? (
+                          <HoverCard openDelay={100}>
+                            <HoverCardTrigger asChild>
+                              <LockKeyhole
+                                size={12}
+                                className="shrink-0 text-green-500 cursor-default"
+                              />
+                            </HoverCardTrigger>
+                            <HoverCardContent
+                              side="top"
+                              className="w-auto px-3 py-2 text-xs text-gray-700"
+                            >
+                              <div className="flex gap-1 items-center">
+                                <TriangleAlert
+                                  size={18}
+                                  className="text-yellow-500"
+                                />{" "}
+                                Cannot unassign
+                              </div>
+                            </HoverCardContent>
+                          </HoverCard>
+                        ) : (
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <HoverCard openDelay={100}>
+                              <HoverCardTrigger asChild>
+                                <CircleOff
+                                  size={12}
+                                  className="shrink-0 text-red-400 cursor-default"
+                                />
+                              </HoverCardTrigger>
+                              <HoverCardContent
+                                side="top"
+                                className="w-auto px-3 py-2 text-xs text-gray-700"
+                              >
+                                <div className="flex gap-1 items-center">
+                                  <TriangleAlert
+                                    size={18}
+                                    className="text-yellow-500"
+                                  />{" "}
+                                  Set unit prices and stock threshold to enable
+                                  this product
+                                </div>
+                              </HoverCardContent>
+                            </HoverCard>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemovePreset(preset.preset_ID);
+                              }}
+                              className="p-0.5 rounded hover:bg-red-100 transition-colors"
+                              title="Remove preset"
+                            >
+                              <Trash2
+                                size={11}
+                                className="text-red-400 hover:text-red-600"
+                              />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
