@@ -26,17 +26,17 @@ export const UnitPresetCard = ({
   return (
     <div className="flex items-center justify-between p-3 bg-custom-gray rounded-lg flex-col gap-2">
       <div className="flex items-center justify-between w-full">
-        <div className=" w-1/3">
+        <div className="w-2/12">
           <span className="text-sm rounded-md border-2 border-river-green font-semibold px-2 py-1 text-river-green">
             {unitPreset.preset_Code}
           </span>
         </div>
-        <span className="text-sm font-semibold text-saltbox-gray w-1/3">
+        <span className="text-sm font-semibold text-saltbox-gray w-2/12">
           {unitPreset.main_Unit_Name}
         </span>
-        <div className="w-full flex items-center gap-2">
+        <div className="w-6/12 flex items-center gap-2 flex-wrap">
           {unitPreset.levels.map((l, idx) => (
-            <span className="text-sm font-semibold text-saltbox-gray" key={idx}>
+            <span className="text-sm font-semibold text-saltbox-gray whitespace-nowrap" key={idx}>
               {idx > 0 && <span className="mx-1">&gt;</span>}
               {l.uoM_Name}
               {idx > 0 && (
@@ -48,17 +48,10 @@ export const UnitPresetCard = ({
           ))}
         </div>
         <span
-          className="text-sm font-semibold text-saltbox-gray cursor-pointer hover:underline w-1/2"
+          className="text-sm font-semibold text-saltbox-gray cursor-pointer hover:underline w-2/12 text-right"
           onClick={handleShowAssociatedProducts}
         >
           {unitPreset.product_Count} Products
-        </span>
-
-        <span
-          className="text-sm font-semibold hover:underline cursor-pointer w-1/3 text-river-green"
-          onClick={() => handleAddProductsToPreset(unitPreset.preset_ID)}
-        >
-          {isThisPresetSelected ? "Close" : "Add"}
         </span>
       </div>
 
