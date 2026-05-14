@@ -69,7 +69,7 @@ export const SelectedProduct = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-3 p-5">
+    <div className="w-full flex flex-col gap-2.5 p-5">
       <div className="flex justify-between w-full">
         <div className="flex flex-col gap-1 ">
           <span className="text-sm">{product.variant.variant_Name}</span>
@@ -116,7 +116,7 @@ export const SelectedProduct = ({
         ))} */}
       </div>
 
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col">
         <div className="flex justify-between items-center">
           <h3>Assocciated Preset</h3>
           <span
@@ -128,10 +128,10 @@ export const SelectedProduct = ({
         </div>
         <Separator orientation="horizontal" />
 
-        <div className="rounded-lg border inset-shadow-sm p-1 h-full min-h-0">
+        <div className="rounded-lg inset-shadow-sm p-1">
           <div className="flex gap-2 bg-wash-gray p-2 rounded-lg shadow-sm flex-col overflow-y-auto max-h-112 min-h-0">
             {product.unitPresets.length === 0 ? (
-              <span className="text-sm font-semibold">
+              <span className="text-xs font-semibold">
                 No associated unit preset.
               </span>
             ) : (
@@ -142,7 +142,7 @@ export const SelectedProduct = ({
                     key={i}
                   >
                     <div className="w-full flex">
-                      <div className="w-full flex gap-2 h-fit items-center">
+                      <div className="w-full flex gap-2 h-fit items-center text-xs">
                         {product.product.quantity === 0 ? (
                           <div className="w-2 h-2 bg-gray-500 rounded-full" />
                         ) : product.product.quantity <=
@@ -169,14 +169,14 @@ export const SelectedProduct = ({
 
                     <div className="flex flex-col">
                       <div className="flex flex-col gap-3">
-                        <label className="text-sm text-saltbox-gray font-semibold border-b pb-1 text-nowrap">
+                        <label className="text-xs text-saltbox-gray font-semibold border-b pb-1 text-nowrap">
                           Batch Pricing
                         </label>
-                        <div className="flex flex-col gap-2 rounded-lg overflow-y-hidden">
-                          <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 rounded-lg overflow-y-hidden">
+                          <div className="flex flex-col">
                             {u.presetPricing.map((pp, pidx) => (
                               <div
-                                className="flex items-center gap-2 text-sm"
+                                className="flex items-center gap-2 text-xs"
                                 key={pidx}
                               >
                                 {/* {pp.uoM_ID === u.preset.main_Unit_ID && (
@@ -213,7 +213,7 @@ export const SelectedProduct = ({
                       <ChevronDown
                         className={`w-4 h-4 transition-transform ${expandedBreakdowns.has(i) ? "rotate-180" : ""}`}
                       />
-                      <span className="text-sm font-semibold">Breakdown</span>
+                      <span className="text-xs font-semibold">Breakdown</span>
                     </div>
 
                     {expandedBreakdowns.has(i) && (
@@ -224,7 +224,7 @@ export const SelectedProduct = ({
                             <label className="text-xs text-gray-500 font-semibold">
                               Restock No.
                             </label>
-                            <span className="text-sm font-semibold">
+                            <span className="text-xs font-semibold">
                               {u.restock_Number ?? "N/A"}
                             </span>
                           </div>
@@ -233,7 +233,7 @@ export const SelectedProduct = ({
                             <label className="text-xs text-gray-500 font-semibold">
                               PO Ref.
                             </label>
-                            <span className="text-sm font-semibold">
+                            <span className="text-xs font-semibold">
                               #PO-456
                             </span>
                           </div> */}
@@ -255,10 +255,10 @@ export const SelectedProduct = ({
                               if (!mainLevel) return null;
                               return (
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm font-semibold">
+                                  <span className="text-xs font-semibold">
                                     {mainQty?.original_Quantity ?? 0}
                                   </span>
-                                  <span className="text-sm text-gray-600">
+                                  <span className="text-xs text-gray-600">
                                     {mainLevel.unitOfMeasure.uom_Name}
                                   </span>
                                 </div>
