@@ -2,555 +2,378 @@ import { Separator } from "@/components/separator";
 import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measure";
 import { createUnitPreset } from "@/features/unit-of-measure/create-unit-preset/create-unit-preset.service";
 import { CreateUnitPresetPayload } from "@/features/unit-of-measure/create-unit-preset/create-unit-preset.model";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as yup from "yup";
-import { useState } from "react";
-import { GripVertical, Info, Trash, Trash2, TrashIcon } from "lucide-react";
+import { useState, useId } from "react";
+import { GripVertical, Info, Trash2 } from "lucide-react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
+import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
 
 interface PresetEditorFormProps {
   handleCancelAddPreset: () => void;
   onOpenAddUnitModal: () => void;
 }
 
-const schema = yup.object().shape({
-  presetName: yup.string().required("Preset Name is required"),
-  baseUnit: yup.string().required("Base Unit is required"),
-  conversion1: yup.string().required("Conversion 1 is required"),
-  conversion1Qty: yup.string().required("Conversion 1 Quantity is required"),
-  conversion2: yup
-    .string()
-    .test(
-      "minimum-conversions",
-      "You must select at least 2 conversions (in addition to the Base Unit). Please select Conversion 2.",
-      function (_value) {
-        const { conversion1, conversion2, conversion3, conversion4 } =
-          this.parent;
-        const conversions = [
-          conversion1,
-          conversion2,
-          conversion3,
-          conversion4,
-        ].filter((conv) => conv && conv !== "None");
+type ConversionRow = {
+  id: string;
+  uomId: string;
+  factor: string;
+};
 
-        return conversions.length >= 2;
-      },
-    ),
-  conversion2Qty: yup.string().when("conversion2", {
-    is: (val: string) => val && val !== "None",
-    then: (schema) =>
-      schema.required(
-        "Conversion 2 Quantity is required when Conversion 2 is selected",
-      ),
-  }),
-  conversion3: yup.string(),
-  conversion3Qty: yup.string().when("conversion3", {
-    is: (val: string) => val && val !== "None",
-    then: (schema) =>
-      schema.required(
-        "Conversion 3 Quantity is required when Conversion 3 is selected",
-      ),
-  }),
-  conversion4: yup.string(),
-  conversion4Qty: yup.string().when("conversion4", {
-    is: (val: string) => val && val !== "None",
-    then: (schema) =>
-      schema.required(
-        "Conversion 4 Quantity is required when Conversion 4 is selected",
-      ),
-  }),
-});
+const MAX_CONVERSIONS = 4;
 
 export const PresetEditorForm = ({
   handleCancelAddPreset,
   onOpenAddUnitModal,
 }: PresetEditorFormProps) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
-
   const { data: units = [] } = useUnitOfMeasureQuery();
+  const { refetch: refetchPresets } = useUnitPresetQuery();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [presetName, setPresetName] = useState("");
+  const [mainUnitId, setMainUnitId] = useState("");
+  const [conversions, setConversions] = useState<ConversionRow[]>([
+    { id: "conv-init", uomId: "", factor: "" },
+  ]);
+  const uid = useId();
 
-  // Watch all unit selections
-  const baseUnit = watch("baseUnit");
-  const conversion1 = watch("conversion1");
-  const conversion2 = watch("conversion2");
-  const conversion3 = watch("conversion3");
-  const conversion4 = watch("conversion4");
+  const usedIds = [mainUnitId, ...conversions.map((c) => c.uomId)].filter(
+    Boolean,
+  );
 
-  // Get all selected unit IDs (excluding None)
-  const selectedUnitIds = [
-    baseUnit,
-    conversion1,
-    conversion2,
-    conversion3,
-    conversion4,
-  ].filter((unit) => unit && unit !== "None");
+  const availableFor = (currentValue: string) =>
+    units.filter(
+      (u) =>
+        !usedIds.includes(String(u.uom_ID)) ||
+        String(u.uom_ID) === currentValue,
+    );
 
-  // Count valid conversions (excluding base unit)
-  const conversionCount = [
-    conversion1,
-    conversion2,
-    conversion3,
-    conversion4,
-  ].filter((conv) => conv && conv !== "None").length;
+  const handleAddConversion = () => {
+    if (conversions.length >= MAX_CONVERSIONS) return;
+    setConversions((prev) => [
+      ...prev,
+      { id: `${uid}-${Date.now()}`, uomId: "", factor: "" },
+    ]);
+  };
 
-  // Helper function to check if a unit is available for a specific field
-  const isUnitAvailable = (unitId: number, currentFieldValue?: string) => {
-    const unitIdStr = String(unitId);
-    // Show the unit if it's not selected anywhere, or if it's the current field's value
-    return (
-      !selectedUnitIds.includes(unitIdStr) || unitIdStr === currentFieldValue
+  const handleRemoveConversion = (index: number) => {
+    setConversions((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleConversionChange = (
+    index: number,
+    field: "uomId" | "factor",
+    value: string,
+  ) => {
+    setConversions((prev) =>
+      prev.map((c, i) => (i === index ? { ...c, [field]: value } : c)),
     );
   };
 
-  const handleSubmitForm = async (data: any) => {
-    console.log("Form inputs:", data);
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const items = Array.from(conversions);
+    const [moved] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, moved);
+    setConversions(items);
+  };
+
+  const selectedMainUnit = units.find((u) => String(u.uom_ID) === mainUnitId);
+
+  const handleSubmit = async () => {
+    // if (!presetName.trim()) {
+    //   toast.error("Preset name is required");
+    //   return;
+    // }
+    if (!mainUnitId) {
+      toast.error("Please select a main unit");
+      return;
+    }
+
+    const validConversions = conversions.filter(
+      (c) => c.uomId && c.factor !== "",
+    );
+
+    const levels: CreateUnitPresetPayload["levels"] = [
+      { uom_ID: Number(mainUnitId), level: 1, conversion_Factor: 1 },
+      ...validConversions.map((c, i) => ({
+        uom_ID: Number(c.uomId),
+        level: i + 2,
+        conversion_Factor: Number(c.factor) || 1,
+      })),
+    ];
+
+    const payload: CreateUnitPresetPayload = {
+      preset_Name: presetName.trim(),
+      main_Unit_ID: Number(mainUnitId),
+      levels,
+    };
 
     setIsSubmitting(true);
-
     try {
-      // Build the levels array
-      const levels = [];
-      let levelCounter = 1;
-
-      // Base unit (level 1)
-      levels.push({
-        uom_ID: Number(data.baseUnit),
-        level: levelCounter++,
-        conversion_Factor: 1.0,
-      });
-
-      // Add conversions if they exist
-      if (
-        data.conversion1 &&
-        data.conversion1 !== "None" &&
-        data.conversion1Qty
-      ) {
-        levels.push({
-          uom_ID: Number(data.conversion1),
-          level: levelCounter++,
-          conversion_Factor: Number(data.conversion1Qty),
-        });
-      }
-
-      if (
-        data.conversion2 &&
-        data.conversion2 !== "None" &&
-        data.conversion2Qty
-      ) {
-        levels.push({
-          uom_ID: Number(data.conversion2),
-          level: levelCounter++,
-          conversion_Factor: Number(data.conversion2Qty),
-        });
-      }
-
-      if (
-        data.conversion3 &&
-        data.conversion3 !== "None" &&
-        data.conversion3Qty
-      ) {
-        levels.push({
-          uom_ID: Number(data.conversion3),
-          level: levelCounter++,
-          conversion_Factor: Number(data.conversion3Qty),
-        });
-      }
-
-      if (
-        data.conversion4 &&
-        data.conversion4 !== "None" &&
-        data.conversion4Qty
-      ) {
-        levels.push({
-          uom_ID: Number(data.conversion4),
-          level: levelCounter++,
-          conversion_Factor: Number(data.conversion4Qty),
-        });
-      }
-
-      const payload: CreateUnitPresetPayload = {
-        preset_Name: data.presetName,
-        main_Unit_ID: Number(data.baseUnit),
-        levels: levels,
-      };
-
       const response = await createUnitPreset(payload);
       toast.success(
         response.message || "Packaging Preset Created Successfully",
       );
+      await refetchPresets();
       handleCancelAddPreset();
     } catch (error: any) {
-      console.error("Error creating preset:", error);
       toast.error(error?.response?.data || "Failed to create packaging preset");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleFormError = (errors: any) => {
-    const firstError = Object.values(errors)[0] as any;
-    toast.error(firstError?.message || "Please fill in all required fields");
-  };
-
-  console.log("Validation errors:", errors);
-
   return (
-    <>
-      {/* <form
-        onSubmit={handleSubmit(handleSubmitForm, handleFormError)}
-        className="flex flex-col flex-1 gap-5"
-      >
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col">
-            <label className="text-xs font-semibold">Preset Name *</label>
-            <input
-              type="text"
-              placeholder="Enter preset name (e.g., Weight Measurement)"
-              className="input-style-3"
-              {...register("presetName")}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
-          <span className="text-xs text-gray-600">
-            Need a new unit that's not in the list?
-          </span>
-          <button
-            type="button"
-            onClick={onOpenAddUnitModal}
-            className="text-xs font-semibold"
-          >
-            + Add New Unit
-          </button>
-        </div>
-
-        {(errors.conversion2?.message ||
-          (conversionCount < 2 && conversionCount > 0)) && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-            {errors.conversion2?.message ||
-              "You must select at least 2 conversions (in addition to the Base Unit)"}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <label className="text-xs">Base Unit</label>
-
-            <div className="flex gap-1">
-              <select
-                {...register("baseUnit")}
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-              >
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, baseUnit) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-            </div>
-          </div>
-
-          <Separator orientation="vertical" />
-
-          <div className="flex flex-col">
-            <label className="text-xs">Conversion 1</label>
-
-            <div className="flex gap-1">
-              <select
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-                {...register("conversion1")}
-              >
-                <option value={"None"}>None</option>
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, conversion1) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-              <input
-                type="number"
-                step="any"
-                placeholder="qty x"
-                className="input-style-3"
-                {...register("conversion1Qty")}
-              />
-            </div>
-          </div>
-
-          <Separator orientation="vertical" />
-
-          <div className="flex flex-col">
-            <label className="text-xs">Conversion 2</label>
-
-            <div className="flex gap-1">
-              <select
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-                {...register("conversion2")}
-              >
-                <option value={"None"}>None</option>
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, conversion2) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-              <input
-                type="number"
-                step="any"
-                placeholder="qty x"
-                className="input-style-3"
-                {...register("conversion2Qty")}
-              />
-            </div>
-          </div>
-
-          <Separator orientation="vertical" />
-
-          <div className="flex flex-col">
-            <label className="text-xs">Conversion 3</label>
-
-            <div className="flex gap-1">
-              <select
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-                {...register("conversion3")}
-              >
-                <option value={"None"}>None</option>
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, conversion3) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-              <input
-                type="number"
-                step="any"
-                placeholder="qty x"
-                className="input-style-3"
-                {...register("conversion3Qty")}
-              />
-            </div>
-          </div>
-
-          <Separator orientation="vertical" />
-
-          <div className="flex flex-col">
-            <label className="text-xs">Conversion 4</label>
-
-            <div className="flex gap-1">
-              <select
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-                {...register("conversion4")}
-              >
-                <option value={"None"}>None</option>
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, conversion4) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-              <input
-                type="number"
-                step="any"
-                placeholder="qty x"
-                className="input-style-3"
-                {...register("conversion4Qty")}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 mt-auto">
-          <div className="flex flex-col gap-2">
-            <span className="text-vesper-gray text-xs">
-              Note: The system only allow up to 5 unit conversions (including
-              the Base Unit).
-            </span>
-            <div
-              className={`text-xs font-medium ${
-                conversionCount < 2 ? "text-red-600" : "text-green-600"
-              }`}
-            >
-              {conversionCount} conversion{conversionCount !== 1 ? "s" : ""}{" "}
-              selected (minimum 2 required)
-            </div>
-          </div>
-
-          <div className="flex gap-1 w-full justify-center">
-            <button
-              type="submit"
-              className="w-full max-w-max"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Creating..." : "Confirm Packaging Preset"}
-            </button>
-
-            <button
-              type="button"
-              className="w-full max-w-max"
-              onClick={handleCancelAddPreset}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </form> */}
-      <form className="flex flex-col gap-2">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-4">
-            <label className="flex gap-1 items-center text-sm font-semibold">
-              Preset Code (Auto-generated)
-            </label>
-            <Info size={18} className="text-vesper-gray" />
-          </div>
-          <div>
-            <span className="p-1 border-2 border-gray-300 rounded-md text-green-600 font-semibold bg-gray-100">
-              0004
-            </span>
-          </div>
-          <label className="text-vesper-gray text-xs">
-            A unique code will be assigned when you create this preset.
+    <div className="flex flex-col gap-4">
+      {/* Preset Code */}
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-semibold">
+            Preset Code (Auto-generated)
           </label>
+          <Info size={15} className="text-vesper-gray" />
+        </div>
+        <span className="self-start px-2 py-0.5 border-2 border-gray-300 rounded-md text-green-600 font-semibold bg-gray-100 text-sm">
+          ????
+        </span>
+        <label className="text-vesper-gray text-xs">
+          A unique code will be assigned when you create this preset.
+        </label>
+      </div>
+
+      {/* <Separator orientation="horizontal" className="bg-vesper-gray/30" />
+
+      
+      <div className="flex flex-col gap-1">
+        <label className="font-semibold text-sm">
+          Preset Name<span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          placeholder="e.g. Box-Pack-Piece"
+          className="input-style-2"
+          value={presetName}
+          onChange={(e) => setPresetName(e.target.value)}
+        />
+      </div> */}
+
+      <Separator orientation="horizontal" className="bg-vesper-gray/30" />
+
+      {/* Main Unit */}
+      <div className="flex flex-col gap-1">
+        <label className="font-semibold text-sm">
+          Main Unit<span className="text-red-500">*</span>
+        </label>
+        <select
+          className="rounded-md p-2 border text-sm max-w-xs bg-white"
+          value={mainUnitId}
+          onChange={(e) => {
+            const newId = e.target.value;
+            setConversions((prev) =>
+              prev.map((c) => (c.uomId === newId ? { ...c, uomId: "" } : c)),
+            );
+            setMainUnitId(newId);
+          }}
+        >
+          <option value="">Select Unit...</option>
+          {units
+            .filter(
+              (u) =>
+                !usedIds.includes(String(u.uom_ID)) ||
+                String(u.uom_ID) === mainUnitId,
+            )
+            .map((u) => (
+              <option key={u.uom_ID} value={String(u.uom_ID)}>
+                {u.uom_Name}
+              </option>
+            ))}
+          <Separator orientation="horizontal" className="bg-vesper-gray" />
+          <option className="text-river-green">+ Add New Unit</option>
+        </select>
+        <label className="text-xs text-vesper-gray">
+          Select the main or largest unit for this packaging preset.
+        </label>
+      </div>
+
+      <Separator orientation="horizontal" className="bg-vesper-gray/30" />
+
+      {/* Conversion Chain */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col">
+          <label className="font-semibold text-sm">Conversion Chain</label>
+          <span className="text-xs text-vesper-gray">
+            Define the conversion flow from the main unit down to the smallest
+            unit. Conversions are optional — leave empty for a standalone
+            preset.
+          </span>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Separator orientation="horizontal" className="bg-vesper-gray" />
-
-          <div className="flex flex-col gap-2">
-            <label className="font-semibold">
-              Main Unit<span className="text-red-500">*</span>
-            </label>
-
-            <select className="max-w-2/6 rounded-md p-4">
-              <option disabled>Select Unit...</option>
-            </select>
-            <label className="text-xs text-vesper-gray">
-              Select the main or largest unit for this packaging preset.
-            </label>
-          </div>
-
-          <Separator orientation="horizontal" className="bg-vesper-gray" />
-
-          {/* DEFAULT STATE */}
-          {/* <div className="flex items-center gap-2">
-            <Info size={18} className="text-vesper-gray" />
-            <div className="flex flex-col">
-              <span className="text-xs text-vesper-gray">
-                Define the conversion flow from the main unit down to the
-                smallest unit.
-              </span>
-              <span className="text-xs text-vesper-gray">
-                You can add up to 5 conversions (including the main unit).
-                Minimum of 2 conversions required.
-              </span>
+        <div className="flex flex-col gap-1.5">
+          {/* Level 1 — static main unit */}
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 bg-river-green text-white rounded-full flex items-center justify-center text-xs shrink-0 ml-1">
+              1
             </div>
-          </div> */}
-
-          {/* INITIAL STATE */}
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-col">
-              <label className="font-semibold">
-                Conversion Chain<span className="text-red-500">*</span>
-              </label>
-              <span className="text-xs text-vesper-gray">
-                Define the conversion flow from the main unit down to the
-                smallest unit.
-              </span>
-            </div>
-
-            <div className="flex flex-col">
-              <div className="flex items-center gap-4">
-                <div className="w-7 h-7 bg-river-green text-white rounded-full flex items-center justify-center text-sm">
-                  1
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <label className="text-sm font-medium">BOX</label>
-                  <label className="text-xs text-vesper-gray">
-                    (Main Unit)
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-7 h-7 bg-river-green text-white rounded-full flex items-center justify-center text-sm">
-                  2
-                </div>
-
-                <div className="flex items-center gap-4 w-full">
-                  <label className="text-lg font-medium">└─</label>
-                  <GripVertical size={18} className="cursor-grab" />
-                  <select className="max-w-2/6 rounded-md p-4">
-                    <option disabled>Select Unit...</option>
-                  </select>
-
-                  <input className="drop-shadow-none border border-vesper-gray/50 rounded-md p-4 shadow-md drop-shadow-md max-w-2/6 w-full" />
-
-                  <div className=" border-red-500/20 p-3 rounded-md bg-red-50 cursor-pointer border-2 hover:border-red-500 transition-colors">
-                    <Trash2 size={20} className="text-red-500" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button className="bg-white text-river-green border-2 border-river-green py-2">
-              + Add Converions
-            </button>
-
             <div className="flex items-center gap-2">
-              <Info size={18} className="text-vesper-gray" />
-              <div className="flex flex-col">
-                <span className="text-xs text-vesper-gray">
-                  Drag and drop to reorder conversions (starting from conversion
-                  2).
-                </span>
-                <span className="text-xs text-vesper-gray">
-                  You can add up to 5 conversions (including th main unit).
-                  Minimum of 2 conversions required.
-                </span>
-              </div>
-            </div>
-
-            <Separator orientation="horizontal" className="bg-vesper-gray" />
-
-            <div className="flex justify-between">
-              <button className="text-black bg-white border-2 border-vesper-gray max-w-fit py-2">
-                Cancel
-              </button>
-              <button className=" py-2 text-nowrap max-w-fit">
-                Confirm Packaging Preset
-              </button>
+              <span className="text-sm font-semibold">
+                {selectedMainUnit ? (
+                  selectedMainUnit.uom_Name
+                ) : (
+                  <span className="text-gray-400 italic">Main Unit</span>
+                )}
+              </span>
+              <span className="text-xs text-vesper-gray">(Main Unit)</span>
             </div>
           </div>
+
+          {/* Draggable conversion rows */}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="conversions">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="flex flex-col gap-1.5"
+                >
+                  {conversions.map((conv, idx) => (
+                    <Draggable key={conv.id} draggableId={conv.id} index={idx}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={`flex items-center gap-2 rounded-md p-1 transition-colors ${
+                            snapshot.isDragging ? "bg-blue-50 shadow-md" : ""
+                          }`}
+                        >
+                          <div className="w-6 h-6 bg-river-green text-white rounded-full flex items-center justify-center text-xs shrink-0">
+                            {idx + 2}
+                          </div>
+
+                          <span className="text-base text-gray-400 select-none font-mono">
+                            └─
+                          </span>
+
+                          <div
+                            {...provided.dragHandleProps}
+                            className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+                          >
+                            <GripVertical size={16} />
+                          </div>
+
+                          <select
+                            className="rounded-md p-2 border text-sm max-w-xs"
+                            value={conv.uomId}
+                            onChange={(e) =>
+                              handleConversionChange(
+                                idx,
+                                "uomId",
+                                e.target.value,
+                              )
+                            }
+                          >
+                            <option value="">Select Unit...</option>
+                            {availableFor(conv.uomId).map((u) => (
+                              <option key={u.uom_ID} value={String(u.uom_ID)}>
+                                {u.uom_Name}
+                              </option>
+                            ))}
+                          </select>
+
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="Enter quantity..."
+                            className="max-w-xs w-full shrink-0 rounded-md border p-2 text-sm drop-shadow-none shadow-none"
+                            value={conv.factor}
+                            onChange={(e) =>
+                              handleConversionChange(
+                                idx,
+                                "factor",
+                                e.target.value,
+                              )
+                            }
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveConversion(idx)}
+                            className="p-2 rounded-md bg-red-50 border-2 border-red-200 hover:border-red-500 transition-colors shrink-0 w-fit"
+                          >
+                            <Trash2 size={15} className="text-red-500" />
+                          </button>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
-      </form>
-    </>
+
+        <button
+          type="button"
+          disabled={conversions.length >= MAX_CONVERSIONS}
+          onClick={handleAddConversion}
+          className="bg-white text-river-green border-2 border-river-green py-1.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          + Add Conversion
+        </button>
+
+        <div className="flex items-start gap-2">
+          <Info size={15} className="text-vesper-gray mt-0.5 shrink-0" />
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs text-vesper-gray">
+              Drag and drop to reorder conversions.
+            </span>
+            <span className="text-xs text-vesper-gray">
+              You can add up to {MAX_CONVERSIONS} conversions (plus the main
+              unit). Conversions are optional for standalone presets.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Add new unit shortcut */}
+      {/* <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
+        <span className="text-xs text-gray-600">
+          Need a new unit that's not in the list?
+        </span>
+        <button
+          type="button"
+          onClick={onOpenAddUnitModal}
+          className="text-xs font-semibold"
+        >
+          + Add New Unit
+        </button>
+      </div> */}
+
+      <Separator orientation="horizontal" className="bg-vesper-gray/30" />
+
+      {/* Footer */}
+      <div className="flex justify-between gap-2">
+        <button
+          type="button"
+          className="text-black bg-white border-2 border-vesper-gray max-w-fit py-2"
+          onClick={handleCancelAddPreset}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="py-2 text-nowrap max-w-fit"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Creating..." : "Confirm Packaging Preset"}
+        </button>
+      </div>
+    </div>
   );
 };
