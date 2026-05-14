@@ -44,6 +44,7 @@ export const PresetEditorForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [nextCode, setNextCode] = useState("...");
   const [mainUnitId, setMainUnitId] = useState("");
+  const [focusedFactorIdx, setFocusedFactorIdx] = useState<number | null>(null);
   const [conversions, setConversions] = useState<ConversionRow[]>([
     { id: "conv-init", uomId: "", factor: "" },
   ]);
@@ -158,22 +159,6 @@ export const PresetEditorForm = ({
           A unique code will be assigned when you create this preset.
         </label>
       </div>
-
-      {/* <Separator orientation="horizontal" className="bg-vesper-gray/30" />
-
-      
-      <div className="flex flex-col gap-1">
-        <label className="font-semibold text-sm">
-          Preset Name<span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          placeholder="e.g. Box-Pack-Piece"
-          className="input-style-2"
-          value={presetName}
-          onChange={(e) => setPresetName(e.target.value)}
-        />
-      </div> */}
 
       <Separator orientation="horizontal" className="bg-vesper-gray/30" />
 
@@ -320,18 +305,31 @@ export const PresetEditorForm = ({
                           </Select>
 
                           <input
-                            type="number"
-                            min="1"
+                            type="text"
+                            inputMode="decimal"
                             placeholder="Enter quantity..."
                             className="max-w-xs w-full shrink-0 rounded-md border p-2 text-sm drop-shadow-none shadow-none"
-                            value={conv.factor}
-                            onChange={(e) =>
-                              handleConversionChange(
-                                idx,
-                                "factor",
-                                e.target.value,
-                              )
+                            value={
+                              focusedFactorIdx === idx
+                                ? conv.factor
+                                : conv.factor
+                                  ? `${conv.factor}x`
+                                  : ""
                             }
+                            onFocus={() => setFocusedFactorIdx(idx)}
+                            onBlur={() => setFocusedFactorIdx(null)}
+                            onChange={(e) => {
+                              const digits = e.target.value.replace(
+                                /[^0-9]/g,
+                                "",
+                              );
+                              const parsed = Number(digits);
+                              const value =
+                                digits === "" || parsed < 1
+                                  ? ""
+                                  : String(parsed);
+                              handleConversionChange(idx, "factor", value);
+                            }}
                           />
 
                           <button
