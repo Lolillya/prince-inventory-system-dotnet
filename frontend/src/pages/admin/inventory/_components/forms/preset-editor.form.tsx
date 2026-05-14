@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as yup from "yup";
 import { useState } from "react";
+import { GripVertical, Info, Trash, Trash2, TrashIcon } from "lucide-react";
 
 interface PresetEditorFormProps {
   handleCancelAddPreset: () => void;
@@ -204,7 +205,7 @@ export const PresetEditorForm = ({
 
   return (
     <>
-      <form
+      {/* <form
         onSubmit={handleSubmit(handleSubmitForm, handleFormError)}
         className="flex flex-col flex-1 gap-5"
       >
@@ -418,6 +419,135 @@ export const PresetEditorForm = ({
             >
               Cancel
             </button>
+          </div>
+        </div>
+      </form> */}
+      <form className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-4">
+            <label className="flex gap-1 items-center text-sm font-semibold">
+              Preset Code (Auto-generated)
+            </label>
+            <Info size={18} className="text-vesper-gray" />
+          </div>
+          <div>
+            <span className="p-1 border-2 border-gray-300 rounded-md text-green-600 font-semibold bg-gray-100">
+              0004
+            </span>
+          </div>
+          <label className="text-vesper-gray text-xs">
+            A unique code will be assigned when you create this preset.
+          </label>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Separator orientation="horizontal" className="bg-vesper-gray" />
+
+          <div className="flex flex-col gap-2">
+            <label className="font-semibold">
+              Main Unit<span className="text-red-500">*</span>
+            </label>
+
+            <select className="max-w-2/6 rounded-md p-4">
+              <option disabled>Select Unit...</option>
+            </select>
+            <label className="text-xs text-vesper-gray">
+              Select the main or largest unit for this packaging preset.
+            </label>
+          </div>
+
+          <Separator orientation="horizontal" className="bg-vesper-gray" />
+
+          {/* DEFAULT STATE */}
+          {/* <div className="flex items-center gap-2">
+            <Info size={18} className="text-vesper-gray" />
+            <div className="flex flex-col">
+              <span className="text-xs text-vesper-gray">
+                Define the conversion flow from the main unit down to the
+                smallest unit.
+              </span>
+              <span className="text-xs text-vesper-gray">
+                You can add up to 5 conversions (including the main unit).
+                Minimum of 2 conversions required.
+              </span>
+            </div>
+          </div> */}
+
+          {/* INITIAL STATE */}
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col">
+              <label className="font-semibold">
+                Conversion Chain<span className="text-red-500">*</span>
+              </label>
+              <span className="text-xs text-vesper-gray">
+                Define the conversion flow from the main unit down to the
+                smallest unit.
+              </span>
+            </div>
+
+            <div className="flex flex-col">
+              <div className="flex items-center gap-4">
+                <div className="w-7 h-7 bg-river-green text-white rounded-full flex items-center justify-center text-sm">
+                  1
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <label className="text-sm font-medium">BOX</label>
+                  <label className="text-xs text-vesper-gray">
+                    (Main Unit)
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="w-7 h-7 bg-river-green text-white rounded-full flex items-center justify-center text-sm">
+                  2
+                </div>
+
+                <div className="flex items-center gap-4 w-full">
+                  <label className="text-lg font-medium">└─</label>
+                  <GripVertical size={18} className="cursor-grab" />
+                  <select className="max-w-2/6 rounded-md p-4">
+                    <option disabled>Select Unit...</option>
+                  </select>
+
+                  <input className="drop-shadow-none border border-vesper-gray/50 rounded-md p-4 shadow-md drop-shadow-md max-w-2/6 w-full" />
+
+                  <div className=" border-red-500/20 p-3 rounded-md bg-red-50 cursor-pointer border-2 hover:border-red-500 transition-colors">
+                    <Trash2 size={20} className="text-red-500" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button className="bg-white text-river-green border-2 border-river-green py-2">
+              + Add Converions
+            </button>
+
+            <div className="flex items-center gap-2">
+              <Info size={18} className="text-vesper-gray" />
+              <div className="flex flex-col">
+                <span className="text-xs text-vesper-gray">
+                  Drag and drop to reorder conversions (starting from conversion
+                  2).
+                </span>
+                <span className="text-xs text-vesper-gray">
+                  You can add up to 5 conversions (including th main unit).
+                  Minimum of 2 conversions required.
+                </span>
+              </div>
+            </div>
+
+            <Separator orientation="horizontal" className="bg-vesper-gray" />
+
+            <div className="flex justify-between">
+              <button className="text-black bg-white border-2 border-vesper-gray max-w-fit py-2">
+                Cancel
+              </button>
+              <button className=" py-2 text-nowrap max-w-fit">
+                Confirm Packaging Preset
+              </button>
+            </div>
           </div>
         </div>
       </form>
