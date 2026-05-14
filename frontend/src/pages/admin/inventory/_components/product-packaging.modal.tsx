@@ -68,6 +68,9 @@ export const ProductPackagingModal = ({
   const [stockInput, setStockInput] = useState<
     Record<number, { low: string; veryLow: string }>
   >({});
+  const [dirtyFields, setDirtyFields] = useState<
+    Record<number, Record<string, boolean>>
+  >({});
   const [auditExpanded, setAuditExpanded] = useState(false);
 
   const { data: allPresets } = useUnitPresetQuery();
@@ -154,6 +157,7 @@ export const ProductPackagingModal = ({
     });
     setPricingInput(initialPricing);
     setStockInput(initialStock);
+    setDirtyFields({});
     setActivePricingPresetId(presetIds[0]);
     setIsPricingAssignOpen(true);
   };
@@ -166,6 +170,10 @@ export const ProductPackagingModal = ({
     setPricingInput((prev) => ({
       ...prev,
       [presetId]: { ...prev[presetId], [unitName]: value },
+    }));
+    setDirtyFields((prev) => ({
+      ...prev,
+      [presetId]: { ...prev[presetId], [unitName]: true },
     }));
   };
 
@@ -215,6 +223,7 @@ export const ProductPackagingModal = ({
     setNewlySelectedPresetIds([]);
     setPricingInput({});
     setStockInput({});
+    setDirtyFields({});
     setActivePricingPresetId(null);
     setAuditExpanded(false);
   };
@@ -834,7 +843,26 @@ export const ProductPackagingModal = ({
                       <span>Date: —</span>
                     </div>
                     {/* Pricing container */}
-                    <div className="border rounded-lg p-4 flex flex-col gap-3 bg-green-50">
+                    <div
+                      className={`border rounded-lg p-4 flex flex-col gap-3 ${(() => {
+                        const pid = activePresetForPricing.preset_ID;
+                        const isEditMode = newlySelectedPresetIds.length === 0;
+                        const hasDirty = Object.values(
+                          dirtyFields[pid] ?? {},
+                        ).some(Boolean);
+                        const levels = activePresetForPricing.levels;
+                        const allFilled = levels.every(
+                          (l) => (pricingInput[pid]?.[l.uoM_Name] ?? "") !== "",
+                        );
+                        if (isEditMode) {
+                          return hasDirty ? "bg-yellow-50" : "bg-green-50";
+                        } else {
+                          if (allFilled) return "bg-green-50";
+                          if (hasDirty) return "bg-yellow-50";
+                          return "bg-red-50";
+                        }
+                      })()}`}
+                    >
                       {/* <p className="text-xs font-mono text-gray-500">
                       {formatPresetLabel(activePresetForPricing)}
                     </p> */}
@@ -872,7 +900,13 @@ export const ProductPackagingModal = ({
                                 <input
                                   type="number"
                                   placeholder="—"
-                                  className="drop-shadow-none rounded-r-sm rounded-l-none p-2"
+                                  className={`drop-shadow-none rounded-r-sm rounded-l-none p-2 ${
+                                    dirtyFields[
+                                      activePresetForPricing.preset_ID
+                                    ]?.[level.uoM_Name]
+                                      ? "border border-yellow-400"
+                                      : ""
+                                  }`}
                                   value={
                                     pricingInput[
                                       activePresetForPricing.preset_ID
@@ -893,7 +927,16 @@ export const ProductPackagingModal = ({
                     </div>
 
                     {/* Stock Threshold */}
-                    <div className="border rounded-lg p-4 flex flex-col gap-3 bg-green-50">
+                    <div
+                      className={`border rounded-lg p-4 flex flex-col gap-3 ${(() => {
+                        const pid = activePresetForPricing.preset_ID;
+                        const isEditMode = newlySelectedPresetIds.length === 0;
+                        const stock = stockInput[pid];
+                        const filled = !!(stock?.low || stock?.veryLow);
+                        if (isEditMode) return "bg-green-50";
+                        return filled ? "bg-green-50" : "bg-red-50";
+                      })()}`}
+                    >
                       <label className="text-xs font-semibold">
                         Stock Threshold
                       </label>
