@@ -28,6 +28,13 @@ namespace backend.Controller.UnitPreset
                     return NotFound($"Product {productId} is not assigned to preset {presetId}");
                 }
 
+                var auditLogs = await _db.ProductAuditLogs
+                    .Where(a => a.Product_Preset_ID == assignment.Product_Preset_ID)
+                    .ToListAsync();
+
+                if (auditLogs.Count > 0)
+                    _db.ProductAuditLogs.RemoveRange(auditLogs);
+
                 _db.Product_Unit_Presets.Remove(assignment);
                 await _db.SaveChangesAsync();
 
