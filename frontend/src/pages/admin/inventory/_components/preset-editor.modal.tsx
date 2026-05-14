@@ -3,10 +3,8 @@ import {
   XIcon,
   BoxIcon,
   LayersIcon,
-  ShoppingBagIcon,
   RotateCcwIcon,
   ChevronDownIcon,
-  Search,
 } from "lucide-react";
 import { Activity, useState } from "react";
 import { PresetEditorForm } from "./forms/preset-editor.form";
