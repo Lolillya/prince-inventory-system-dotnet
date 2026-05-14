@@ -254,7 +254,7 @@ export const ProductUnitPresetModal = ({
           </Activity>
 
           {!isAddPresetOpen && (
-            <div className="flex flex-col gap-4 flex-1 mt-2">
+            <div className="flex flex-col gap-4 flex-1 mt-2 min-h-0">
               {/* FILTERS ROW 1 */}
               {/* general search */}
               <div className="relative w-full">
@@ -396,7 +396,7 @@ export const ProductUnitPresetModal = ({
               </div>
 
               {/* TABLE BODY */}
-              <div className="flex flex-col gap-2 flex-1">
+              <div className="flex flex-col gap-2 flex-1 overflow-auto min-h-0">
                 {filteredPresets.map((p, i) => (
                   <UnitPresetCard
                     key={i}
