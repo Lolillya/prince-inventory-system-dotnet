@@ -451,11 +451,7 @@ const InventoryPage = () => {
                     ) : null} */}
                     <div className="gap-2 flex items-center flex-nowrap text-nowrap">
                       <span className="capitalize">
-                        {data.product.product_Code}
-                      </span>
-                      <span className="capitalize">{data.brand.brandName}</span>
-                      <span className="capitalize">
-                        {data.variant.variant_Name}
+                        {data.product.product_Name} - {data.brand.brandName} - {data.variant.variant_Name}
                       </span>
                     </div>
                     <div className="w-full items-center justify-end flex">
