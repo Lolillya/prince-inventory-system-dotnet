@@ -230,7 +230,7 @@ export const ProductUnitPresetModal = ({
                 <span className="bg-gray-100 text-saltbox-gray text-xs px-3 py-1.5 rounded-md font-semibold">Active filters (0)</span>
                 <button className="flex items-center gap-1 text-[#00b69b] text-sm font-semibold hover:opacity-80">
                   <RotateCcwIcon className="w-4 h-4" />
-                  Clear all
+                  Clear All
                 </button>
               </div>
 
