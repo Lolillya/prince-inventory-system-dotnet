@@ -123,7 +123,7 @@ export const ProductPackagingPricingModal = ({
             >
               <div className="mb-3">
                 <h3 className="font-semibold text-sm">
-                  {up.preset.preset_Name}
+                  {up.preset.preset_Code}
                 </h3>
                 <p className="text-xs text-gray-500">
                   {up.preset.presetLevels

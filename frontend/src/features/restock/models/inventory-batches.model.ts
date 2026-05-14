@@ -57,7 +57,6 @@ type Preset = {
   };
   presetLevels: PresetLevel[];
   preset_ID: number;
-  preset_Name: string;
   updated_At: string;
 };
 

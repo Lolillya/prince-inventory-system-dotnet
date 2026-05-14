@@ -93,7 +93,7 @@ export const PresetSelectorModal = ({
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-lg">
-                          {preset.preset_Name}
+                          {preset.preset_Code}
                         </h3>
                         {isAssigned && (
                           <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">

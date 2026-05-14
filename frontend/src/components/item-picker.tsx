@@ -118,7 +118,7 @@ export const ItemPicker = () => {
             main_Unit_ID: lineItem.unit_Preset.main_Unit_ID,
             presetLevels,
             preset_ID: lineItem.unit_Preset.preset_ID,
-            preset_Name: lineItem.unit_Preset.preset_Name,
+            preset_Code: lineItem.unit_Preset.preset_Code,
             updated_At: "",
           },
           preset_ID: lineItem.unit_Preset.preset_ID,

@@ -280,7 +280,7 @@ export const PurchasePriceModal = ({
                                   key={preset.preset_ID}
                                   value={preset.preset_ID}
                                 >
-                                  {preset.preset_Name} (
+                                  {preset.preset_Code} (
                                   {preset.main_Unit?.uom_Name ?? "Unit"})
                                 </option>
                               ))}
@@ -338,7 +338,7 @@ export const PurchasePriceModal = ({
                   {activeProduct.product_Name}
                 </h4>
                 <p className="text-sm text-slate-500">
-                  {activePreset.preset_Name} · Primary unit:{" "}
+                  {activePreset.preset_Code} · Primary unit:{" "}
                   {activePreset.main_Unit?.uom_Name ?? "Unit"}
                 </p>
               </div>

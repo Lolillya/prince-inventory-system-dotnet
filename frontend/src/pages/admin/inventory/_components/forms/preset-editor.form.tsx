@@ -3,8 +3,9 @@ import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measur
 import { createUnitPreset } from "@/features/unit-of-measure/create-unit-preset/create-unit-preset.service";
 import { CreateUnitPresetPayload } from "@/features/unit-of-measure/create-unit-preset/create-unit-preset.model";
 import { toast } from "sonner";
-import { useState, useId } from "react";
+import { useState, useEffect, useId } from "react";
 import { GripVertical, Info, Trash2 } from "lucide-react";
+import { getNextPresetCode } from "@/features/unit-of-measure/get-next-preset-code/get-next-preset-code.service";
 import {
   DragDropContext,
   Droppable,
@@ -41,12 +42,18 @@ export const PresetEditorForm = ({
   const { data: units = [] } = useUnitOfMeasureQuery();
   const { refetch: refetchPresets } = useUnitPresetQuery();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [presetName, setPresetName] = useState("");
+  const [nextCode, setNextCode] = useState("...");
   const [mainUnitId, setMainUnitId] = useState("");
   const [conversions, setConversions] = useState<ConversionRow[]>([
     { id: "conv-init", uomId: "", factor: "" },
   ]);
   const uid = useId();
+
+  useEffect(() => {
+    getNextPresetCode()
+      .then((data) => setNextCode(data.next_Code))
+      .catch(() => setNextCode("????"));
+  }, []);
 
   const usedIds = [mainUnitId, ...conversions.map((c) => c.uomId)].filter(
     Boolean,
@@ -115,7 +122,6 @@ export const PresetEditorForm = ({
     ];
 
     const payload: CreateUnitPresetPayload = {
-      preset_Name: presetName.trim(),
       main_Unit_ID: Number(mainUnitId),
       levels,
     };
@@ -146,7 +152,7 @@ export const PresetEditorForm = ({
           <Info size={15} className="text-vesper-gray" />
         </div>
         <span className="self-start px-2 py-0.5 border-2 border-gray-300 rounded-md text-green-600 font-semibold bg-gray-100 text-sm">
-          ????
+          {nextCode}
         </span>
         <label className="text-vesper-gray text-xs">
           A unique code will be assigned when you create this preset.

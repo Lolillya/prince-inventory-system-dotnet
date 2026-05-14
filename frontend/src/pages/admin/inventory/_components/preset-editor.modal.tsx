@@ -196,7 +196,6 @@ export const ProductUnitPresetModal = ({
     const matchesSearch =
       !q ||
       p.preset_Code?.toLowerCase().includes(q) ||
-      p.preset_Name.toLowerCase().includes(q) ||
       p.main_Unit_Name.toLowerCase().includes(q) ||
       p.levels.some((l) => l.uoM_Name.toLowerCase().includes(q));
     // const pq = productSearch.toLowerCase();

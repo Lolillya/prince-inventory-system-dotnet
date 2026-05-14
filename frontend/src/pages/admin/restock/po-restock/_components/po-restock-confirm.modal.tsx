@@ -48,7 +48,7 @@ export const PORestockConfirmModal = ({
       lineItemId: card.lineItemId,
       productName: li?.product?.product_Name ?? "",
       brand: li?.product?.brand ?? "",
-      presetName: li?.unit_Preset?.preset_Name ?? "",
+      presetCode: li?.unit_Preset?.preset_Code ?? "",
       orderedQuantity: card.orderedQuantity,
       receivedSoFar: card.receivedQuantity,
       remainingQuantity: card.remainingQuantity,

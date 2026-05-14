@@ -18,7 +18,7 @@ interface EditProductUnitCardProps {
       }>;
 
       preset_ID: number;
-      preset_Name: string;
+      preset_Code: string;
       updated_At: string;
     };
     preset_ID: number;
