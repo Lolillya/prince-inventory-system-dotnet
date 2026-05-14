@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { Separator } from "@/components/separator";
-import { ChevronDown, PhilippinePeso } from "lucide-react";
+import { ChevronDown, PhilippinePeso, Box, Plus } from "lucide-react";
 import { deactivateProductService } from "@/features/inventory/deactivate-product/deactivate-product.service";
 import { reactivateProductService } from "@/features/inventory/deactivate-product/reactivate-product.service";
 import { ProductActionConfirmModal } from "./product-action-confirm.modal";
@@ -117,23 +117,38 @@ export const SelectedProduct = ({
       </div>
 
       <div className="flex flex-col">
-        <div className="flex justify-between items-center">
-          <h3>Assocciated Preset</h3>
-          <span
-            className="text-sm hover:underline cursor-pointer"
-            onClick={handlePresetSelector}
-          >
-            Add Unit Preset
-          </span>
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="flex items-center gap-2 font-medium">
+            Associated Preset
+            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-semibold">
+              {product.unitPresets.length}
+            </span>
+          </h3>
         </div>
-        <Separator orientation="horizontal" />
 
         <div className="rounded-lg inset-shadow-sm p-1">
-          <div className="flex gap-2 bg-wash-gray p-2 rounded-lg shadow-sm flex-col overflow-y-auto max-h-112 min-h-0">
+          <div
+            className={`flex gap-2 rounded-lg shadow-sm flex-col overflow-y-auto max-h-112 min-h-0 ${product.unitPresets.length === 0
+                ? "bg-white border border-gray-100 p-8 items-center justify-center"
+                : "bg-wash-gray p-2"
+              }`}
+          >
             {product.unitPresets.length === 0 ? (
-              <span className="text-xs font-semibold">
-                No associated unit preset.
-              </span>
+              <div className="flex flex-col items-center justify-center w-full">
+                <div className="bg-gray-50 h-16 w-16 flex items-center justify-center rounded-full mb-3">
+                  <Box className="w-8 h-8 text-gray-400 stroke-[1.5]" />
+                </div>
+                <span className="text-sm font-semibold text-gray-900 mb-4">
+                  No preset yet
+                </span>
+                <button
+                  onClick={handlePresetSelector}
+                  className="flex items-center gap-2 px-4 py-2 border border-blue-500 text-blue-500 hover:bg-blue-50 bg-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  Associate a preset
+                </button>
+              </div>
             ) : (
               product.unitPresets.map((u, i) => (
                 <>
