@@ -772,8 +772,8 @@ export const ProductPackagingModal = ({
                           <HoverCard openDelay={100}>
                             <HoverCardTrigger asChild>
                               <LockKeyhole
-                                size={12}
-                                className="shrink-0 text-green-500 cursor-default"
+                                size={18}
+                                className="shrink-0 text-gray-500 cursor-default"
                               />
                             </HoverCardTrigger>
                             <HoverCardContent
@@ -794,7 +794,7 @@ export const ProductPackagingModal = ({
                             <HoverCard openDelay={100}>
                               <HoverCardTrigger asChild>
                                 <CircleOff
-                                  size={12}
+                                  size={18}
                                   className="shrink-0 text-red-400 cursor-default"
                                 />
                               </HoverCardTrigger>
@@ -812,7 +812,7 @@ export const ProductPackagingModal = ({
                                 </div>
                               </HoverCardContent>
                             </HoverCard>
-                            <button
+                            <div
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleRemovePreset(preset.preset_ID);
@@ -821,10 +821,10 @@ export const ProductPackagingModal = ({
                               title="Remove preset"
                             >
                               <Trash2
-                                size={11}
+                                size={18}
                                 className="text-red-400 hover:text-red-600"
                               />
-                            </button>
+                            </div>
                           </div>
                         )}
                       </div>
