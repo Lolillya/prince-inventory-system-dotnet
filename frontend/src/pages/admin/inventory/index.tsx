@@ -431,10 +431,10 @@ const InventoryPage = () => {
               <>
                 <div
                   className={`flex justify-between ${!data.product.is_Active
-                      ? "opacity-60 bg-gray-100 dark:bg-gray-900/30"
-                      : data.isFavorited
-                        ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
-                        : "hover:bg-accent"
+                    ? "opacity-60 bg-gray-100 dark:bg-gray-900/30"
+                    : data.isFavorited
+                      ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
+                      : "hover:bg-accent"
                     } p-2 rounded-lg transition-all duration-300`}
                   key={index}
                   onClick={() => handleClick(data)}
@@ -451,11 +451,7 @@ const InventoryPage = () => {
                     ) : null} */}
                     <div className="gap-2 flex items-center flex-nowrap text-nowrap">
                       <span className="capitalize">
-                        {data.product.product_Code}
-                      </span>
-                      <span className="capitalize">{data.brand.brandName}</span>
-                      <span className="capitalize">
-                        {data.variant.variant_Name}
+                        {data.product.product_Name} - {data.brand.brandName} - {data.variant.variant_Name}
                       </span>
                     </div>
                     <div className="w-full items-center justify-end flex">

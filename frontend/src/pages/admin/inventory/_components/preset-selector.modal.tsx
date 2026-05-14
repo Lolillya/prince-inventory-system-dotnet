@@ -1,6 +1,7 @@
 import { XIcon } from "@/icons";
 import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
-import { useSelectedProductQuery } from "@/features/inventory/product-selected";
+import { useSelectedProductQuery, useSetSelectedProduct } from "@/features/inventory/product-selected";
+import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { assignProductsToPreset } from "@/features/unit-of-measure/assign-product-to-preset/assign-product.service";
 import { useState } from "react";
 import { CheckIcon } from "lucide-react";
@@ -18,6 +19,7 @@ export const PresetSelectorModal = ({
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
+  const setSelectedProduct = useSetSelectedProduct();
 
   const handleAssign = async () => {
     if (!selectedPresetId || !selectedProduct) return;
@@ -31,6 +33,17 @@ export const PresetSelectorModal = ({
 
       // Refetch inventory to update the UI
       await queryClient.invalidateQueries({ queryKey: ["inventory"] });
+
+      // Update selected product state with fresh data so right panel reflects changes immediately
+      const inventory = queryClient.getQueryData<InventoryProductModel[]>(["inventory"]);
+      if (inventory) {
+        const updatedProd = inventory.find(
+          (p) => p.product.product_ID === selectedProduct.product.product_ID
+        );
+        if (updatedProd) {
+          setSelectedProduct(updatedProd);
+        }
+      }
 
       alert("Preset assigned successfully!");
       handlePresetSelector();
@@ -83,11 +96,10 @@ export const PresetSelectorModal = ({
                 <div
                   key={preset.preset_ID}
                   onClick={() => setSelectedPresetId(preset.preset_ID)}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    isSelected
+                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${isSelected
                       ? "border-blue-500 bg-blue-50"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -121,11 +133,10 @@ export const PresetSelectorModal = ({
                       </p>
                     </div>
                     <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        isSelected
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected
                           ? "border-blue-500 bg-blue-500"
                           : "border-gray-300"
-                      }`}
+                        }`}
                     >
                       {isSelected && (
                         <CheckIcon size={14} className="text-white" />
