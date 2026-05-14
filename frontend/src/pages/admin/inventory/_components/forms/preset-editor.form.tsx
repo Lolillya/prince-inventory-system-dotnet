@@ -2,425 +2,435 @@ import { Separator } from "@/components/separator";
 import { useUnitOfMeasureQuery } from "@/features/unit-of-measure/unit-of-measure";
 import { createUnitPreset } from "@/features/unit-of-measure/create-unit-preset/create-unit-preset.service";
 import { CreateUnitPresetPayload } from "@/features/unit-of-measure/create-unit-preset/create-unit-preset.model";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as yup from "yup";
-import { useState } from "react";
+import { useState, useEffect, useId } from "react";
+import { GripVertical, Info, Trash2 } from "lucide-react";
+import { getNextPresetCode } from "@/features/unit-of-measure/get-next-preset-code/get-next-preset-code.service";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
+import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PresetEditorFormProps {
   handleCancelAddPreset: () => void;
   onOpenAddUnitModal: () => void;
 }
 
-const schema = yup.object().shape({
-  presetName: yup.string().required("Preset Name is required"),
-  baseUnit: yup.string().required("Base Unit is required"),
-  conversion1: yup.string().required("Conversion 1 is required"),
-  conversion1Qty: yup.string().required("Conversion 1 Quantity is required"),
-  conversion2: yup
-    .string()
-    .test(
-      "minimum-conversions",
-      "You must select at least 2 conversions (in addition to the Base Unit). Please select Conversion 2.",
-      function (_value) {
-        const { conversion1, conversion2, conversion3, conversion4 } =
-          this.parent;
-        const conversions = [
-          conversion1,
-          conversion2,
-          conversion3,
-          conversion4,
-        ].filter((conv) => conv && conv !== "None");
+type ConversionRow = {
+  id: string;
+  uomId: string;
+  factor: string;
+};
 
-        return conversions.length >= 2;
-      },
-    ),
-  conversion2Qty: yup.string().when("conversion2", {
-    is: (val: string) => val && val !== "None",
-    then: (schema) =>
-      schema.required(
-        "Conversion 2 Quantity is required when Conversion 2 is selected",
-      ),
-  }),
-  conversion3: yup.string(),
-  conversion3Qty: yup.string().when("conversion3", {
-    is: (val: string) => val && val !== "None",
-    then: (schema) =>
-      schema.required(
-        "Conversion 3 Quantity is required when Conversion 3 is selected",
-      ),
-  }),
-  conversion4: yup.string(),
-  conversion4Qty: yup.string().when("conversion4", {
-    is: (val: string) => val && val !== "None",
-    then: (schema) =>
-      schema.required(
-        "Conversion 4 Quantity is required when Conversion 4 is selected",
-      ),
-  }),
-});
+const MAX_CONVERSIONS = 4;
 
 export const PresetEditorForm = ({
   handleCancelAddPreset,
   onOpenAddUnitModal,
 }: PresetEditorFormProps) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
-
   const { data: units = [] } = useUnitOfMeasureQuery();
+  const { data: existingPresets = [], refetch: refetchPresets } =
+    useUnitPresetQuery();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [nextCode, setNextCode] = useState("...");
+  const [mainUnitId, setMainUnitId] = useState("");
+  const [focusedFactorIdx, setFocusedFactorIdx] = useState<number | null>(null);
+  const [conversions, setConversions] = useState<ConversionRow[]>([
+    { id: "conv-init", uomId: "", factor: "" },
+  ]);
+  const uid = useId();
 
-  // Watch all unit selections
-  const baseUnit = watch("baseUnit");
-  const conversion1 = watch("conversion1");
-  const conversion2 = watch("conversion2");
-  const conversion3 = watch("conversion3");
-  const conversion4 = watch("conversion4");
+  useEffect(() => {
+    getNextPresetCode()
+      .then((data) => setNextCode(data.next_Code))
+      .catch(() => setNextCode("????"));
+  }, []);
 
-  // Get all selected unit IDs (excluding None)
-  const selectedUnitIds = [
-    baseUnit,
-    conversion1,
-    conversion2,
-    conversion3,
-    conversion4,
-  ].filter((unit) => unit && unit !== "None");
+  const usedIds = [mainUnitId, ...conversions.map((c) => c.uomId)].filter(
+    Boolean,
+  );
 
-  // Count valid conversions (excluding base unit)
-  const conversionCount = [
-    conversion1,
-    conversion2,
-    conversion3,
-    conversion4,
-  ].filter((conv) => conv && conv !== "None").length;
+  const availableFor = (currentValue: string) =>
+    units.filter(
+      (u) =>
+        !usedIds.includes(String(u.uom_ID)) ||
+        String(u.uom_ID) === currentValue,
+    );
 
-  // Helper function to check if a unit is available for a specific field
-  const isUnitAvailable = (unitId: number, currentFieldValue?: string) => {
-    const unitIdStr = String(unitId);
-    // Show the unit if it's not selected anywhere, or if it's the current field's value
-    return (
-      !selectedUnitIds.includes(unitIdStr) || unitIdStr === currentFieldValue
+  const handleAddConversion = () => {
+    if (conversions.length >= MAX_CONVERSIONS) return;
+    setConversions((prev) => [
+      ...prev,
+      { id: `${uid}-${Date.now()}`, uomId: "", factor: "" },
+    ]);
+  };
+
+  const handleRemoveConversion = (index: number) => {
+    setConversions((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleConversionChange = (
+    index: number,
+    field: "uomId" | "factor",
+    value: string,
+  ) => {
+    setConversions((prev) =>
+      prev.map((c, i) => (i === index ? { ...c, [field]: value } : c)),
     );
   };
 
-  const handleSubmitForm = async (data: any) => {
-    console.log("Form inputs:", data);
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const items = Array.from(conversions);
+    const [moved] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, moved);
+    setConversions(items);
+  };
+
+  const selectedMainUnit = units.find((u) => String(u.uom_ID) === mainUnitId);
+
+  const handleSubmit = async () => {
+    // if (!presetName.trim()) {
+    //   toast.error("Preset name is required");
+    //   return;
+    // }
+    if (!mainUnitId) {
+      toast.error("Please select a main unit");
+      return;
+    }
+
+    const validConversions = conversions.filter(
+      (c) => c.uomId && c.factor !== "",
+    );
+
+    const newUnits = [
+      Number(mainUnitId),
+      ...validConversions.map((c) => Number(c.uomId)),
+    ];
+    const newFactors = [1, ...validConversions.map((c) => Number(c.factor))];
+
+    const isDuplicate = existingPresets.some((preset) => {
+      const sorted = [...preset.levels].sort((a, b) => a.level - b.level);
+      if (sorted.length !== newUnits.length) return false;
+      return sorted.every(
+        (l, i) =>
+          l.uoM_ID === newUnits[i] && l.conversion_Factor === newFactors[i],
+      );
+    });
+
+    if (isDuplicate) {
+      toast.error(
+        "A preset with the same unit arrangement and quantities already exists.",
+      );
+      return;
+    }
+
+    const levels: CreateUnitPresetPayload["levels"] = [
+      { uom_ID: Number(mainUnitId), level: 1, conversion_Factor: 1 },
+      ...validConversions.map((c, i) => ({
+        uom_ID: Number(c.uomId),
+        level: i + 2,
+        conversion_Factor: Number(c.factor) || 1,
+      })),
+    ];
+
+    const payload: CreateUnitPresetPayload = {
+      main_Unit_ID: Number(mainUnitId),
+      levels,
+    };
 
     setIsSubmitting(true);
-
     try {
-      // Build the levels array
-      const levels = [];
-      let levelCounter = 1;
-
-      // Base unit (level 1)
-      levels.push({
-        uom_ID: Number(data.baseUnit),
-        level: levelCounter++,
-        conversion_Factor: 1.0,
-      });
-
-      // Add conversions if they exist
-      if (
-        data.conversion1 &&
-        data.conversion1 !== "None" &&
-        data.conversion1Qty
-      ) {
-        levels.push({
-          uom_ID: Number(data.conversion1),
-          level: levelCounter++,
-          conversion_Factor: Number(data.conversion1Qty),
-        });
-      }
-
-      if (
-        data.conversion2 &&
-        data.conversion2 !== "None" &&
-        data.conversion2Qty
-      ) {
-        levels.push({
-          uom_ID: Number(data.conversion2),
-          level: levelCounter++,
-          conversion_Factor: Number(data.conversion2Qty),
-        });
-      }
-
-      if (
-        data.conversion3 &&
-        data.conversion3 !== "None" &&
-        data.conversion3Qty
-      ) {
-        levels.push({
-          uom_ID: Number(data.conversion3),
-          level: levelCounter++,
-          conversion_Factor: Number(data.conversion3Qty),
-        });
-      }
-
-      if (
-        data.conversion4 &&
-        data.conversion4 !== "None" &&
-        data.conversion4Qty
-      ) {
-        levels.push({
-          uom_ID: Number(data.conversion4),
-          level: levelCounter++,
-          conversion_Factor: Number(data.conversion4Qty),
-        });
-      }
-
-      const payload: CreateUnitPresetPayload = {
-        preset_Name: data.presetName,
-        main_Unit_ID: Number(data.baseUnit),
-        levels: levels,
-      };
-
       const response = await createUnitPreset(payload);
       toast.success(
         response.message || "Packaging Preset Created Successfully",
       );
+      await refetchPresets();
       handleCancelAddPreset();
     } catch (error: any) {
-      console.error("Error creating preset:", error);
       toast.error(error?.response?.data || "Failed to create packaging preset");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleFormError = (errors: any) => {
-    const firstError = Object.values(errors)[0] as any;
-    toast.error(firstError?.message || "Please fill in all required fields");
-  };
-
-  console.log("Validation errors:", errors);
-
   return (
-    <>
-      <form
-        onSubmit={handleSubmit(handleSubmitForm, handleFormError)}
-        className="flex flex-col flex-1 gap-5"
-      >
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col">
-            <label className="text-xs font-semibold">Preset Name *</label>
-            <input
-              type="text"
-              placeholder="Enter preset name (e.g., Weight Measurement)"
-              className="input-style-3"
-              {...register("presetName")}
-            />
-          </div>
+    <div className="flex flex-col gap-4">
+      {/* Preset Code */}
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-semibold">
+            Preset Code (Auto-generated)
+          </label>
+          <Info size={15} className="text-vesper-gray" />
         </div>
+        <span className="self-start px-2 py-0.5 border-2 border-gray-300 rounded-md text-green-600 font-semibold bg-gray-100 text-sm">
+          {nextCode}
+        </span>
+        <label className="text-vesper-gray text-xs">
+          A unique code will be assigned when you create this preset.
+        </label>
+      </div>
 
-        <Separator />
+      <Separator orientation="horizontal" className="bg-vesper-gray/30" />
 
-        <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
-          <span className="text-xs text-gray-600">
-            Need a new unit that's not in the list?
+      {/* Main Unit */}
+      <div className="flex flex-col gap-1">
+        <label className="font-semibold text-sm">
+          Main Unit<span className="text-red-500">*</span>
+        </label>
+        <Select
+          value={mainUnitId}
+          onValueChange={(newId) => {
+            if (newId === "__add_new__") {
+              onOpenAddUnitModal();
+              return;
+            }
+            setConversions((prev) =>
+              prev.map((c) => (c.uomId === newId ? { ...c, uomId: "" } : c)),
+            );
+            setMainUnitId(newId);
+          }}
+        >
+          <SelectTrigger className="rounded-md p-2 border text-sm max-w-xs bg-white w-full">
+            <SelectValue placeholder="Select Unit..." />
+          </SelectTrigger>
+          <SelectContent>
+            {units
+              .filter(
+                (u) =>
+                  !usedIds.includes(String(u.uom_ID)) ||
+                  String(u.uom_ID) === mainUnitId,
+              )
+              .map((u) => (
+                <SelectItem key={u.uom_ID} value={String(u.uom_ID)}>
+                  {u.uom_Name}
+                </SelectItem>
+              ))}
+            <SelectSeparator />
+            <SelectItem value="__add_new__">
+              <span className="text-river-green font-semibold">
+                + Add New Unit
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <label className="text-xs text-vesper-gray">
+          Select the main or largest unit for this packaging preset.
+        </label>
+      </div>
+
+      <Separator orientation="horizontal" className="bg-vesper-gray/30" />
+
+      {/* Conversion Chain */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col">
+          <label className="font-semibold text-sm">Conversion Chain</label>
+          <span className="text-xs text-vesper-gray">
+            Define the conversion flow from the main unit down to the smallest
+            unit. Conversions are optional — leave empty for a standalone
+            preset.
           </span>
-          <button
-            type="button"
-            onClick={onOpenAddUnitModal}
-            className="text-xs font-semibold"
-          >
-            + Add New Unit
-          </button>
         </div>
 
-        {(errors.conversion2?.message ||
-          (conversionCount < 2 && conversionCount > 0)) && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-            {errors.conversion2?.message ||
-              "You must select at least 2 conversions (in addition to the Base Unit)"}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <label className="text-xs">Base Unit</label>
-
-            <div className="flex gap-1">
-              <select
-                {...register("baseUnit")}
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-              >
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, baseUnit) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
+        <div className="flex flex-col gap-1.5">
+          {/* Level 1 — static main unit */}
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 bg-river-green text-white rounded-full flex items-center justify-center text-xs shrink-0 ml-1">
+              1
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold">
+                {selectedMainUnit ? (
+                  selectedMainUnit.uom_Name
+                ) : (
+                  <span className="text-gray-400 italic">Main Unit</span>
                 )}
-              </select>
+              </span>
+              <span className="text-xs text-vesper-gray">(Main Unit)</span>
             </div>
           </div>
 
-          <Separator orientation="vertical" />
+          {/* Draggable conversion rows */}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="conversions">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="flex flex-col gap-1.5"
+                >
+                  {conversions.map((conv, idx) => (
+                    <Draggable key={conv.id} draggableId={conv.id} index={idx}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={`flex items-center gap-2 rounded-md p-1 transition-colors ${
+                            snapshot.isDragging ? "bg-blue-50 shadow-md" : ""
+                          }`}
+                        >
+                          <div className="w-6 h-6 bg-river-green text-white rounded-full flex items-center justify-center text-xs shrink-0">
+                            {idx + 2}
+                          </div>
 
-          <div className="flex flex-col">
-            <label className="text-xs">Conversion 1</label>
+                          <span className="text-base text-gray-400 select-none font-mono">
+                            └─
+                          </span>
 
-            <div className="flex gap-1">
-              <select
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-                {...register("conversion1")}
-              >
-                <option value={"None"}>None</option>
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, conversion1) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-              <input
-                type="number"
-                step="any"
-                placeholder="qty x"
-                className="input-style-3"
-                {...register("conversion1Qty")}
-              />
-            </div>
-          </div>
+                          <div
+                            {...provided.dragHandleProps}
+                            className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+                          >
+                            <GripVertical size={16} />
+                          </div>
 
-          <Separator orientation="vertical" />
+                          <Select
+                            value={conv.uomId}
+                            onValueChange={(value) => {
+                              if (value === "__add_new__") {
+                                onOpenAddUnitModal();
+                                return;
+                              }
+                              handleConversionChange(idx, "uomId", value);
+                            }}
+                          >
+                            <SelectTrigger className="rounded-md p-2 border text-sm max-w-xs bg-white w-full">
+                              <SelectValue placeholder="Select Unit..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableFor(conv.uomId).map((u) => (
+                                <SelectItem
+                                  key={u.uom_ID}
+                                  value={String(u.uom_ID)}
+                                >
+                                  {u.uom_Name}
+                                </SelectItem>
+                              ))}
+                              <SelectSeparator />
+                              <SelectItem value="__add_new__">
+                                <span className="text-river-green font-semibold">
+                                  + Add New Unit
+                                </span>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
 
-          <div className="flex flex-col">
-            <label className="text-xs">Conversion 2</label>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="Enter quantity..."
+                            className="max-w-xs w-full shrink-0 rounded-md border p-2 text-sm drop-shadow-none shadow-none"
+                            value={
+                              focusedFactorIdx === idx
+                                ? conv.factor
+                                : conv.factor
+                                  ? `${conv.factor}x`
+                                  : ""
+                            }
+                            onFocus={() => setFocusedFactorIdx(idx)}
+                            onBlur={() => setFocusedFactorIdx(null)}
+                            onChange={(e) => {
+                              const digits = e.target.value.replace(
+                                /[^0-9]/g,
+                                "",
+                              );
+                              const parsed = Number(digits);
+                              const value =
+                                digits === "" || parsed < 1
+                                  ? ""
+                                  : String(parsed);
+                              handleConversionChange(idx, "factor", value);
+                            }}
+                          />
 
-            <div className="flex gap-1">
-              <select
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-                {...register("conversion2")}
-              >
-                <option value={"None"}>None</option>
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, conversion2) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-              <input
-                type="number"
-                step="any"
-                placeholder="qty x"
-                className="input-style-3"
-                {...register("conversion2Qty")}
-              />
-            </div>
-          </div>
-
-          <Separator orientation="vertical" />
-
-          <div className="flex flex-col">
-            <label className="text-xs">Conversion 3</label>
-
-            <div className="flex gap-1">
-              <select
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-                {...register("conversion3")}
-              >
-                <option value={"None"}>None</option>
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, conversion3) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-              <input
-                type="number"
-                step="any"
-                placeholder="qty x"
-                className="input-style-3"
-                {...register("conversion3Qty")}
-              />
-            </div>
-          </div>
-
-          <Separator orientation="vertical" />
-
-          <div className="flex flex-col">
-            <label className="text-xs">Conversion 4</label>
-
-            <div className="flex gap-1">
-              <select
-                // value={selectedUnit}
-                // onChange={(e) => handleChangeUnit(Number(e.target.value))}
-                {...register("conversion4")}
-              >
-                <option value={"None"}>None</option>
-                {units.map((u, i) =>
-                  isUnitAvailable(u.uom_ID, conversion4) ? (
-                    <option value={u.uom_ID} key={i}>
-                      {u.uom_Name}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-              <input
-                type="number"
-                step="any"
-                placeholder="qty x"
-                className="input-style-3"
-                {...register("conversion4Qty")}
-              />
-            </div>
-          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveConversion(idx)}
+                            className="p-2 rounded-md bg-red-50 border-2 border-red-200 hover:border-red-500 transition-colors shrink-0 w-fit"
+                          >
+                            <Trash2 size={15} className="text-red-500" />
+                          </button>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
 
-        <div className="flex flex-col gap-3 mt-auto">
-          <div className="flex flex-col gap-2">
-            <span className="text-vesper-gray text-xs">
-              Note: The system only allow up to 5 unit conversions (including
-              the Base Unit).
+        <button
+          type="button"
+          disabled={conversions.length >= MAX_CONVERSIONS}
+          onClick={handleAddConversion}
+          className="bg-white text-river-green border-2 border-river-green py-1.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          + Add Conversion
+        </button>
+
+        <div className="flex items-start gap-2">
+          <Info size={15} className="text-vesper-gray mt-0.5 shrink-0" />
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs text-vesper-gray">
+              Drag and drop to reorder conversions.
             </span>
-            <div
-              className={`text-xs font-medium ${
-                conversionCount < 2 ? "text-red-600" : "text-green-600"
-              }`}
-            >
-              {conversionCount} conversion{conversionCount !== 1 ? "s" : ""}{" "}
-              selected (minimum 2 required)
-            </div>
-          </div>
-
-          <div className="flex gap-1 w-full justify-center">
-            <button
-              type="submit"
-              className="w-full max-w-max"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Creating..." : "Confirm Packaging Preset"}
-            </button>
-
-            <button
-              type="button"
-              className="w-full max-w-max"
-              onClick={handleCancelAddPreset}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
+            <span className="text-xs text-vesper-gray">
+              You can add up to {MAX_CONVERSIONS} conversions (plus the main
+              unit). Conversions are optional for standalone presets.
+            </span>
           </div>
         </div>
-      </form>
-    </>
+      </div>
+
+      {/* Add new unit shortcut */}
+      {/* <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
+        <span className="text-xs text-gray-600">
+          Need a new unit that's not in the list?
+        </span>
+        <button
+          type="button"
+          onClick={onOpenAddUnitModal}
+          className="text-xs font-semibold"
+        >
+          + Add New Unit
+        </button>
+      </div> */}
+
+      <Separator orientation="horizontal" className="bg-vesper-gray/30" />
+
+      {/* Footer */}
+      <div className="flex justify-between gap-2">
+        <button
+          type="button"
+          className="text-black bg-white border-2 border-vesper-gray max-w-fit py-2"
+          onClick={handleCancelAddPreset}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="py-2 text-nowrap max-w-fit"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Creating..." : "Confirm Packaging Preset"}
+        </button>
+      </div>
+    </div>
   );
 };

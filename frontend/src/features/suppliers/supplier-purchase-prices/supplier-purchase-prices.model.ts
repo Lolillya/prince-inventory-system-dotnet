@@ -15,7 +15,7 @@ export type PresetLevelModel = {
 export type ProductWithPresetItem = {
   product_Preset_ID: number;
   preset_ID: number;
-  preset_Name: string;
+  preset_Code: string;
   main_Unit_ID: number;
   main_Unit: UomModel | null;
   preset_Levels: PresetLevelModel[];
@@ -44,7 +44,7 @@ export type SupplierPurchasePriceModel = {
   };
   preset: {
     preset_ID: number;
-    preset_Name: string;
+    preset_Code: string;
     main_Unit_ID: number;
     main_Unit: UomModel | null;
   };

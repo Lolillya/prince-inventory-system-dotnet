@@ -19,11 +19,6 @@ namespace backend.Controller.UnitPreset
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUnitPresetDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.Preset_Name))
-            {
-                return BadRequest("Preset name is required");
-            }
-
             if (dto.Levels == null || !dto.Levels.Any())
             {
                 return BadRequest("At least one level is required");
@@ -40,7 +35,6 @@ namespace backend.Controller.UnitPreset
             {
                 var preset = new Unit_Preset
                 {
-                    Preset_Name = dto.Preset_Name,
                     Main_Unit_ID = dto.Main_Unit_ID,
                     Created_At = DateTime.UtcNow,
                     Updated_At = DateTime.UtcNow

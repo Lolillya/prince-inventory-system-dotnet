@@ -233,7 +233,7 @@ namespace backend.Controller.RestockControllers
                                 unit_Preset = rli.UnitPreset != null ? new
                                 {
                                     rli.UnitPreset.Preset_ID,
-                                    rli.UnitPreset.Preset_Name,
+                                    rli.UnitPreset.Preset_Code,
                                     rli.UnitPreset.Main_Unit_ID,
                                     main_Unit = rli.UnitPreset.MainUnit != null ? new
                                     {

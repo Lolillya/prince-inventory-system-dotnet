@@ -1,6 +1,5 @@
 export type UnitPresetLevel = {
   preset_ID: number;
-  preset_Name: string;
   main_Unit_ID: number;
   main_Unit_Name: string;
   created_At: string;

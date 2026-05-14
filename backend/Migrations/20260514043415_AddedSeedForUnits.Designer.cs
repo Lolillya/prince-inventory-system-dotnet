@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260514043415_AddedSeedForUnits")]
+    partial class AddedSeedForUnits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2114,6 +2117,10 @@ namespace backend.Migrations
                     b.Property<string>("Preset_Code")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Preset_Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("Updated_At")
                         .HasColumnType("datetime2");
 
@@ -2130,6 +2137,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 1,
                             Preset_Code = "0001",
+                            Preset_Name = "PIECE",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2138,6 +2146,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 2,
                             Preset_Code = "0002",
+                            Preset_Name = "PAD",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2146,6 +2155,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 3,
                             Preset_Code = "0003",
+                            Preset_Name = "SET",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2154,6 +2164,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 4,
                             Preset_Code = "0004",
+                            Preset_Name = "BOX",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2162,6 +2173,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 5,
                             Preset_Code = "0005",
+                            Preset_Name = "BUNDLE",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2170,6 +2182,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 6,
                             Preset_Code = "0006",
+                            Preset_Name = "ROLL",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2178,6 +2191,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 7,
                             Preset_Code = "0007",
+                            Preset_Name = "GALLON",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2186,6 +2200,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 8,
                             Preset_Code = "0008",
+                            Preset_Name = "PACK",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2194,6 +2209,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 9,
                             Preset_Code = "0009",
+                            Preset_Name = "TUBE",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2202,6 +2218,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 10,
                             Preset_Code = "0010",
+                            Preset_Name = "CARTON",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2210,6 +2227,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 11,
                             Preset_Code = "0011",
+                            Preset_Name = "CASE",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2218,6 +2236,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 12,
                             Preset_Code = "0012",
+                            Preset_Name = "REAM",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -2226,6 +2245,7 @@ namespace backend.Migrations
                             Created_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Main_Unit_ID = 13,
                             Preset_Code = "0013",
+                            Preset_Name = "BOTTLE",
                             Updated_At = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });

@@ -71,7 +71,6 @@ export type VariantModel = {
 
 export type UnitPresetModel = {
   preset_ID: number;
-  preset_Name: string;
   main_Unit_ID: number;
   main_Unit: UnitOfMeasureModel | null;
   preset_Levels: PresetLevelModel[];

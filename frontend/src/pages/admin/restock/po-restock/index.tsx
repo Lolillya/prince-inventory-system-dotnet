@@ -72,7 +72,7 @@ function buildFakeProduct(
             presetPricing: [],
             preset: {
               preset_ID: li.preset_ID,
-              preset_Name: li.unit_Preset?.preset_Name ?? "",
+              preset_Code: li.unit_Preset?.preset_Code ?? "",
               main_Unit_ID: 0,
               created_At: "",
               updated_At: "",

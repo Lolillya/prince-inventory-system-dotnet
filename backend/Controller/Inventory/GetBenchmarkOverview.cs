@@ -62,7 +62,7 @@ namespace backend.Controller.Inventory
                         {
                             product_Preset_ID = pup.Product_Preset_ID,
                             preset_ID = pup.Preset_ID,
-                            preset_Name = pup.Preset.Preset_Name,
+                            preset_Code = pup.Preset.Preset_Code,
                             main_Unit_ID = pup.Preset.Main_Unit_ID,
                             main_Unit = pup.Preset.MainUnit != null
                                 ? new { pup.Preset.MainUnit.uom_ID, pup.Preset.MainUnit.uom_Name }
@@ -115,7 +115,7 @@ namespace backend.Controller.Inventory
                             {
                                 p.product_Preset_ID,
                                 p.preset_ID,
-                                p.preset_Name,
+                                p.preset_Code,
                                 p.main_Unit_ID,
                                 p.main_Unit,
                                 p.preset_Levels,

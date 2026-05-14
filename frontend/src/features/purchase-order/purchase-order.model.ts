@@ -62,7 +62,6 @@ export type PurchaseOrderRecord = {
     } | null;
     unit_Preset: {
       preset_ID: number;
-      preset_Name: string;
       preset_Levels: Array<{
         level: number;
         uom_Name: string;

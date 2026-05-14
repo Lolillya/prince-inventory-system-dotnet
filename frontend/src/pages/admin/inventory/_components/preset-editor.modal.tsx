@@ -1,5 +1,11 @@
-import { PlusIcon } from "@/icons";
-import { XIcon, BoxIcon, LayersIcon, ShoppingBagIcon, RotateCcwIcon, ChevronDownIcon } from "lucide-react";
+import { PlusIcon, SearchIcon } from "@/icons";
+import {
+  XIcon,
+  BoxIcon,
+  LayersIcon,
+  RotateCcwIcon,
+  ChevronDownIcon,
+} from "lucide-react";
 import { Activity, useState } from "react";
 import { PresetEditorForm } from "./forms/preset-editor.form";
 // import { UseInventoryQuery } from "@/features/restock/inventory-batch";
@@ -32,6 +38,10 @@ export const ProductUnitPresetModal = ({
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [isAddUnitModalOpen, setIsAddUnitModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [search, setSearch] = useState("");
+  const [mainUnitFilter, setMainUnitFilter] = useState("All");
+  const [conversionCountFilter, setConversionCountFilter] = useState("Any");
+  const [conversionUnitFilter, setConversionUnitFilter] = useState("Any");
 
   const { data: products } = UseInventoryQuery();
   const { data: unitPresets, refetch: refetchUnitPresets } =
@@ -120,9 +130,9 @@ export const ProductUnitPresetModal = ({
       const message = hasExistingAssignments
         ? "Product assignments updated successfully"
         : `${response.assigned_count} product(s) assigned successfully` +
-        (response.skipped_count > 0
-          ? `, ${response.skipped_count} already assigned`
-          : "");
+          (response.skipped_count > 0
+            ? `, ${response.skipped_count} already assigned`
+            : "");
 
       toast.success(message);
 
@@ -151,6 +161,55 @@ export const ProductUnitPresetModal = ({
 
   const alreadyAssignedProductIds = getAlreadyAssignedProductIds();
   const selectedCount = selectedState?.selectedProductIds.length || 0;
+
+  const uniqueMainUnits = Array.from(
+    new Set((unitPresets ?? []).map((p) => p.main_Unit_Name)),
+  ).sort();
+
+  const uniqueConversionCounts = Array.from(
+    new Set(
+      (unitPresets ?? []).map(
+        (p) => p.levels.filter((l) => l.level > 1).length,
+      ),
+    ),
+  ).sort((a, b) => a - b);
+
+  const uniqueConversionUnits = Array.from(
+    new Set(
+      (unitPresets ?? []).flatMap((p) =>
+        p.levels.filter((l) => l.level > 1).map((l) => l.uoM_Name),
+      ),
+    ),
+  ).sort();
+
+  const filteredPresets = (unitPresets ?? []).filter((p) => {
+    const matchesMainUnit =
+      mainUnitFilter === "All" || p.main_Unit_Name === mainUnitFilter;
+    const subLevels = p.levels.filter((l) => l.level > 1);
+    const matchesConvCount =
+      conversionCountFilter === "Any" ||
+      subLevels.length === Number(conversionCountFilter);
+    const matchesConvUnit =
+      conversionUnitFilter === "Any" ||
+      subLevels.some((l) => l.uoM_Name === conversionUnitFilter);
+    const q = search.toLowerCase();
+    const matchesSearch =
+      !q ||
+      p.preset_Code?.toLowerCase().includes(q) ||
+      p.main_Unit_Name.toLowerCase().includes(q) ||
+      p.levels.some((l) => l.uoM_Name.toLowerCase().includes(q));
+    // const pq = productSearch.toLowerCase();
+
+    return (
+      matchesMainUnit && matchesConvCount && matchesConvUnit && matchesSearch
+    );
+  });
+
+  const activeFilterCount =
+    (mainUnitFilter !== "All" ? 1 : 0) +
+    (conversionCountFilter !== "Any" ? 1 : 0) +
+    (conversionUnitFilter !== "Any" ? 1 : 0) +
+    (search !== "" ? 1 : 0);
   const hasExistingAssignments = alreadyAssignedProductIds.length > 0;
 
   const getSelectedProducts = () => {
@@ -173,7 +232,7 @@ export const ProductUnitPresetModal = ({
       {/* MAIN PACKAGING PRESET MODAL */}
       <Activity mode={isPricingModalOpen ? "hidden" : "visible"}>
         <div
-          className={`w-9/12 ${isAddPresetOpen ? "h-fit" : "h-4/5"} bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4 transition-all duration-200`}
+          className={`w-3/6 ${isAddPresetOpen ? "h-fit" : "h-4/5"} bg-white px-5 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4 transition-all duration-200`}
         >
           <div className="absolute top-4 right-4" onClick={handleCloseModal}>
             <XIcon className="cursor-pointer" />
@@ -181,7 +240,9 @@ export const ProductUnitPresetModal = ({
 
           <div className="w-full">
             <h1 className="text-2xl font-bold">Packaging Presets</h1>
-            <p className="text-gray-500 text-sm mt-1">Manage your packaging presets and their conversion chains.</p>
+            <p className="text-gray-500 text-sm mt-1">
+              Manage your packaging presets and their conversion chains.
+            </p>
           </div>
 
           <Activity mode={isAddPresetOpen ? "visible" : "hidden"}>
@@ -192,43 +253,126 @@ export const ProductUnitPresetModal = ({
           </Activity>
 
           {!isAddPresetOpen && (
-            <div className="flex flex-col gap-4 flex-1 mt-2">
-              {/* FILTERS */}
-              <div className="flex gap-4">
-                <div className="flex items-center gap-3 border rounded-md p-3 w-1/4">
-                  <BoxIcon className="w-6 h-6 text-[#00b69b]" />
-                  <div className="flex flex-col flex-1">
+            <div className="flex flex-col gap-4 flex-1 mt-2 min-h-0">
+              {/* FILTERS ROW 1 */}
+              {/* general search */}
+              <div className="relative w-full">
+                <input
+                  placeholder="Search preset code, name, or unit..."
+                  className="input-style-2"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <SearchIcon />
+                </i>
+              </div>
+              <div className="flex gap-3">
+                {/* Main Unit */}
+                <div className="flex items-center gap-2 border rounded-md p-3 flex-1 min-w-0">
+                  <BoxIcon className="w-5 h-5 text-[#00b69b] shrink-0" />
+                  <div className="flex flex-col flex-1 min-w-0">
                     <span className="text-xs text-saltbox-gray">Main Unit</span>
-                    <div className="flex justify-between items-center text-sm font-semibold text-gray-800">
-                      <span>All</span>
-                      <ChevronDownIcon className="w-4 h-4" />
+                    <div className="relative flex items-center">
+                      <select
+                        value={mainUnitFilter}
+                        onChange={(e) => setMainUnitFilter(e.target.value)}
+                        className="w-full text-sm font-semibold text-gray-800 bg-transparent outline-none appearance-none cursor-pointer pr-4 truncate"
+                      >
+                        <option value="All">All</option>
+                        {uniqueMainUnits.map((u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDownIcon className="w-4 h-4 pointer-events-none absolute right-0 shrink-0" />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 border rounded-md p-3 w-1/4">
-                  <LayersIcon className="w-6 h-6 text-[#00b69b]" />
-                  <div className="flex flex-col flex-1">
-                    <span className="text-xs text-saltbox-gray">Conversions</span>
-                    <div className="flex justify-between items-center text-sm font-semibold text-gray-800">
-                      <span>Any</span>
-                      <ChevronDownIcon className="w-4 h-4" />
+                {/* Conv. Count */}
+                <div className="flex items-center gap-2 border rounded-md  p-2 flex-1 min-w-0">
+                  <LayersIcon className="w-5 h-5 text-[#00b69b] shrink-0" />
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-xs text-saltbox-gray">
+                      Conversion Count
+                    </span>
+                    <div className="relative flex items-center">
+                      <select
+                        value={conversionCountFilter}
+                        onChange={(e) =>
+                          setConversionCountFilter(e.target.value)
+                        }
+                        className="w-full text-sm font-semibold text-gray-800 bg-transparent outline-none appearance-none cursor-pointer pr-4"
+                      >
+                        <option value="Any">Any</option>
+                        {uniqueConversionCounts.map((c) => (
+                          <option key={c} value={String(c)}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDownIcon className="w-4 h-4 pointer-events-none absolute right-0 shrink-0" />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 border rounded-md p-3 flex-1">
-                  <ShoppingBagIcon className="w-6 h-6 text-[#00b69b]" />
-                  <div className="flex flex-col flex-1">
-                    <span className="text-xs text-saltbox-gray">Product</span>
-                    <span className="text-sm text-gray-400">Search product...</span>
+                {/* Conv. Unit */}
+                <div className="flex items-center gap-2 border rounded-md p-3 flex-1 min-w-0">
+                  <LayersIcon className="w-5 h-5 text-[#00b69b] shrink-0" />
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-xs text-saltbox-gray">
+                      Conversion Unit
+                    </span>
+                    <div className="relative flex items-center">
+                      <select
+                        value={conversionUnitFilter}
+                        onChange={(e) =>
+                          setConversionUnitFilter(e.target.value)
+                        }
+                        className="w-full text-sm font-semibold text-gray-800 bg-transparent outline-none appearance-none cursor-pointer pr-4 truncate"
+                      >
+                        <option value="Any">Any</option>
+                        {uniqueConversionUnits.map((u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDownIcon className="w-4 h-4 pointer-events-none absolute right-0 shrink-0" />
+                    </div>
                   </div>
                 </div>
               </div>
+              {/* Product */}
+              {/* <div className="flex items-center gap-2 border rounded-md p-3 flex-1 min-w-0">
+                <Search className="w-5 h-5 text-[#00b69b] shrink-0" />
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-xs text-saltbox-gray">Product</span>
+                  <input
+                    placeholder="Search product..."
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    className="text-sm font-semibold text-gray-800 bg-transparent outline-none w-full truncate placeholder:font-normal placeholder:text-gray-400"
+                  />
+                </div>
+              </div> */}
 
               <div className="flex justify-between items-center mb-2">
-                <span className="bg-gray-100 text-saltbox-gray text-xs px-3 py-1.5 rounded-md font-semibold">Active filters (0)</span>
-                <button className="flex items-center gap-1 text-[#00b69b] text-sm font-semibold hover:opacity-80">
+                <span className="bg-gray-100 text-saltbox-gray text-xs px-3 py-1.5 rounded-md font-semibold">
+                  Active filters ({activeFilterCount})
+                </span>
+                <div
+                  className="flex items-center gap-1 text-[#00b69b] text-sm font-semibold hover:opacity-80"
+                  onClick={() => {
+                    setSearch("");
+                    setMainUnitFilter("All");
+                    setConversionCountFilter("Any");
+                    setConversionUnitFilter("Any");
+                    // setProductSearch("");
+                  }}
+                >
                   <RotateCcwIcon className="w-4 h-4" />
                   Clear All
                 </button>
@@ -251,8 +395,8 @@ export const ProductUnitPresetModal = ({
               </div>
 
               {/* TABLE BODY */}
-              <div className="flex flex-col gap-2 flex-1">
-                {unitPresets?.map((p, i) => (
+              <div className="flex flex-col gap-2 flex-1 overflow-auto min-h-0">
+                {filteredPresets.map((p, i) => (
                   <UnitPresetCard
                     key={i}
                     unitPreset={p}

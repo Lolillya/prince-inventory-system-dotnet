@@ -286,7 +286,7 @@ export const PurchasePriceBenchmarkModal = ({
                   {activeProduct.product_Name}
                 </h4>
                 <p className="text-sm text-slate-500">
-                  {activePreset.preset_Name} · Primary unit:{" "}
+                  {activePreset.preset_Code} · Primary unit:{" "}
                   {activePreset.main_Unit?.uom_Name ??
                     `UOM ${activePreset.main_Unit_ID}`}
                 </p>
