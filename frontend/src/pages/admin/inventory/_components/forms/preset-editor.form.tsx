@@ -40,7 +40,8 @@ export const PresetEditorForm = ({
   onOpenAddUnitModal,
 }: PresetEditorFormProps) => {
   const { data: units = [] } = useUnitOfMeasureQuery();
-  const { refetch: refetchPresets } = useUnitPresetQuery();
+  const { data: existingPresets = [], refetch: refetchPresets } =
+    useUnitPresetQuery();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [nextCode, setNextCode] = useState("...");
   const [mainUnitId, setMainUnitId] = useState("");
@@ -112,6 +113,28 @@ export const PresetEditorForm = ({
     const validConversions = conversions.filter(
       (c) => c.uomId && c.factor !== "",
     );
+
+    const newUnits = [
+      Number(mainUnitId),
+      ...validConversions.map((c) => Number(c.uomId)),
+    ];
+    const newFactors = [1, ...validConversions.map((c) => Number(c.factor))];
+
+    const isDuplicate = existingPresets.some((preset) => {
+      const sorted = [...preset.levels].sort((a, b) => a.level - b.level);
+      if (sorted.length !== newUnits.length) return false;
+      return sorted.every(
+        (l, i) =>
+          l.uoM_ID === newUnits[i] && l.conversion_Factor === newFactors[i],
+      );
+    });
+
+    if (isDuplicate) {
+      toast.error(
+        "A preset with the same unit arrangement and quantities already exists.",
+      );
+      return;
+    }
 
     const levels: CreateUnitPresetPayload["levels"] = [
       { uom_ID: Number(mainUnitId), level: 1, conversion_Factor: 1 },
