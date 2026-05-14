@@ -173,6 +173,10 @@ export const PresetEditorForm = ({
           value={mainUnitId}
           onChange={(e) => {
             const newId = e.target.value;
+            if (newId === "__add_new__") {
+              onOpenAddUnitModal();
+              return;
+            }
             setConversions((prev) =>
               prev.map((c) => (c.uomId === newId ? { ...c, uomId: "" } : c)),
             );
@@ -191,8 +195,13 @@ export const PresetEditorForm = ({
                 {u.uom_Name}
               </option>
             ))}
-          <Separator orientation="horizontal" className="bg-vesper-gray" />
-          <option className="text-river-green">+ Add New Unit</option>
+          <option disabled>──────────</option>
+          <option
+            value="__add_new__"
+            className="text-river-green font-semibold"
+          >
+            + Add New Unit
+          </option>
         </select>
         <label className="text-xs text-vesper-gray">
           Select the main or largest unit for this packaging preset.
@@ -267,20 +276,33 @@ export const PresetEditorForm = ({
                           <select
                             className="rounded-md p-2 border text-sm max-w-xs"
                             value={conv.uomId}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              if (e.target.value === "__add_new__") {
+                                onOpenAddUnitModal();
+                                return;
+                              }
                               handleConversionChange(
                                 idx,
                                 "uomId",
                                 e.target.value,
-                              )
-                            }
+                              );
+                            }}
                           >
-                            <option value="">Select Unit...</option>
+                            <option value="" disabled>
+                              Select Unit...
+                            </option>
                             {availableFor(conv.uomId).map((u) => (
                               <option key={u.uom_ID} value={String(u.uom_ID)}>
                                 {u.uom_Name}
                               </option>
                             ))}
+                            <option disabled>────────────</option>
+                            <option
+                              value="__add_new__"
+                              className="text-river-green font-semibold"
+                            >
+                              + Add New Unit
+                            </option>
                           </select>
 
                           <input
