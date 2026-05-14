@@ -97,7 +97,7 @@ namespace backend.Controller.RestockControllers
                             Preset = new
                             {
                                 pp.Preset.Preset_ID,
-                                pp.Preset.Preset_Name,
+                                pp.Preset.Preset_Code,
                                 pp.Preset.Main_Unit_ID,
                                 pp.Preset.Created_At,
                                 pp.Preset.Updated_At,

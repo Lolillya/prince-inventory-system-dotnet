@@ -3,7 +3,6 @@ namespace backend.Dtos.UnitPreset
     public class UnitPresetResponseDto
     {
         public int Preset_ID { get; set; }
-        public string Preset_Name { get; set; } = null!;
         public string? Preset_Code { get; set; }
         public int Main_Unit_ID { get; set; }
         public string Main_Unit_Name { get; set; } = null!;
