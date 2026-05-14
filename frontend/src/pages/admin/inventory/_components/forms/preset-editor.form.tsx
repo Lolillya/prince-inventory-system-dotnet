@@ -12,6 +12,14 @@ import {
   DropResult,
 } from "@hello-pangea/dnd";
 import { useUnitPresetQuery } from "@/features/unit-of-measure/get-unit-presets/get-unit-presets.state";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PresetEditorFormProps {
   handleCancelAddPreset: () => void;
@@ -168,11 +176,9 @@ export const PresetEditorForm = ({
         <label className="font-semibold text-sm">
           Main Unit<span className="text-red-500">*</span>
         </label>
-        <select
-          className="rounded-md p-2 border text-sm max-w-xs bg-white"
+        <Select
           value={mainUnitId}
-          onChange={(e) => {
-            const newId = e.target.value;
+          onValueChange={(newId) => {
             if (newId === "__add_new__") {
               onOpenAddUnitModal();
               return;
@@ -183,26 +189,29 @@ export const PresetEditorForm = ({
             setMainUnitId(newId);
           }}
         >
-          <option value="">Select Unit...</option>
-          {units
-            .filter(
-              (u) =>
-                !usedIds.includes(String(u.uom_ID)) ||
-                String(u.uom_ID) === mainUnitId,
-            )
-            .map((u) => (
-              <option key={u.uom_ID} value={String(u.uom_ID)}>
-                {u.uom_Name}
-              </option>
-            ))}
-          <option disabled>──────────</option>
-          <option
-            value="__add_new__"
-            className="text-river-green font-semibold"
-          >
-            + Add New Unit
-          </option>
-        </select>
+          <SelectTrigger className="rounded-md p-2 border text-sm max-w-xs bg-white w-full">
+            <SelectValue placeholder="Select Unit..." />
+          </SelectTrigger>
+          <SelectContent>
+            {units
+              .filter(
+                (u) =>
+                  !usedIds.includes(String(u.uom_ID)) ||
+                  String(u.uom_ID) === mainUnitId,
+              )
+              .map((u) => (
+                <SelectItem key={u.uom_ID} value={String(u.uom_ID)}>
+                  {u.uom_Name}
+                </SelectItem>
+              ))}
+            <SelectSeparator />
+            <SelectItem value="__add_new__">
+              <span className="text-river-green font-semibold">
+                + Add New Unit
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
         <label className="text-xs text-vesper-gray">
           Select the main or largest unit for this packaging preset.
         </label>
@@ -273,37 +282,36 @@ export const PresetEditorForm = ({
                             <GripVertical size={16} />
                           </div>
 
-                          <select
-                            className="rounded-md p-2 border text-sm max-w-xs"
+                          <Select
                             value={conv.uomId}
-                            onChange={(e) => {
-                              if (e.target.value === "__add_new__") {
+                            onValueChange={(value) => {
+                              if (value === "__add_new__") {
                                 onOpenAddUnitModal();
                                 return;
                               }
-                              handleConversionChange(
-                                idx,
-                                "uomId",
-                                e.target.value,
-                              );
+                              handleConversionChange(idx, "uomId", value);
                             }}
                           >
-                            <option value="" disabled>
-                              Select Unit...
-                            </option>
-                            {availableFor(conv.uomId).map((u) => (
-                              <option key={u.uom_ID} value={String(u.uom_ID)}>
-                                {u.uom_Name}
-                              </option>
-                            ))}
-                            <option disabled>────────────</option>
-                            <option
-                              value="__add_new__"
-                              className="text-river-green font-semibold"
-                            >
-                              + Add New Unit
-                            </option>
-                          </select>
+                            <SelectTrigger className="rounded-md p-2 border text-sm max-w-xs bg-white w-full">
+                              <SelectValue placeholder="Select Unit..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableFor(conv.uomId).map((u) => (
+                                <SelectItem
+                                  key={u.uom_ID}
+                                  value={String(u.uom_ID)}
+                                >
+                                  {u.uom_Name}
+                                </SelectItem>
+                              ))}
+                              <SelectSeparator />
+                              <SelectItem value="__add_new__">
+                                <span className="text-river-green font-semibold">
+                                  + Add New Unit
+                                </span>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
 
                           <input
                             type="number"
