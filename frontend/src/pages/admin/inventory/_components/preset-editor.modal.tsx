@@ -375,7 +375,7 @@ export const ProductUnitPresetModal = ({
                 >
                   <RotateCcwIcon className="w-4 h-4" />
                   Clear All
-                </button>
+                </div>
               </div>
 
               {/* TABLE HEADER */}
