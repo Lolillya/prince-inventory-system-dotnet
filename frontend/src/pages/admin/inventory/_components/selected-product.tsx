@@ -73,9 +73,13 @@ export const SelectedProduct = ({
       <div className="flex flex-col gap-6 bg-white border border-gray-100 p-6 rounded-xl shadow-sm mb-2">
         <div className="grid grid-cols-2 gap-y-6 gap-x-4">
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Item</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase">
+              Item
+            </span>
             <div className="flex items-center gap-2">
-              <span className="text-lg font-semibold text-slate-900">{product.product.product_Name}</span>
+              <span className="text-lg font-semibold text-slate-900">
+                {product.product.product_Name}
+              </span>
               {!product.product.is_Active && (
                 <span className="bg-red-100 text-red-700 rounded-full py-0.5 px-2 text-[10px] font-semibold whitespace-nowrap">
                   Deactivated
@@ -84,10 +88,14 @@ export const SelectedProduct = ({
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Product Code</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase">
+              Product Code
+            </span>
             <span className="text-lg font-semibold text-slate-900">
               {(() => {
-                const code = product.product.core_Product_Code ?? product.product.product_Code;
+                const code =
+                  product.product.core_Product_Code ??
+                  product.product.product_Code;
                 return code?.length === 10
                   ? `${code.slice(0, 3)}-${code.slice(3, 6)}-${code.slice(6)}`
                   : code;
@@ -96,24 +104,36 @@ export const SelectedProduct = ({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Brand</span>
-            <span className="text-base text-slate-800">{product.brand.brandName}</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase">
+              Brand
+            </span>
+            <span className="text-base text-slate-800">
+              {product.brand.brandName}
+            </span>
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Variant</span>
-            <span className="text-base text-slate-800">{product.variant.variant_Name}</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase">
+              Variant
+            </span>
+            <span className="text-base text-slate-800">
+              {product.variant.variant_Name}
+            </span>
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-slate-500 uppercase">Category</span>
+          <span className="text-xs font-semibold text-slate-500 uppercase">
+            Category
+          </span>
           <span className="w-fit bg-slate-100 text-slate-600 rounded-full py-1.5 px-3.5 text-xs font-medium">
             {product.category.category_Name}
           </span>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold text-slate-500 uppercase">Note</span>
+          <span className="text-xs font-semibold text-slate-500 uppercase">
+            Note
+          </span>
           <span className="text-base text-slate-800">
             {product.product.description || "No note available"}
           </span>
@@ -138,10 +158,11 @@ export const SelectedProduct = ({
 
         <div className="rounded-lg inset-shadow-sm p-1">
           <div
-            className={`flex gap-2 rounded-lg shadow-sm flex-col overflow-y-auto max-h-112 min-h-0 ${product.unitPresets.length === 0
-              ? "bg-white border border-gray-100 p-8 items-center justify-center"
-              : "bg-wash-gray p-2"
-              }`}
+            className={`flex gap-2 rounded-lg shadow-sm flex-col overflow-y-auto max-h-112 min-h-0 ${
+              product.unitPresets.length === 0
+                ? "bg-white border border-gray-100 p-8 items-center justify-center"
+                : "bg-wash-gray p-2"
+            }`}
           >
             {product.unitPresets.length === 0 ? (
               <div className="flex flex-col items-center justify-center w-full py-8">
@@ -168,19 +189,24 @@ export const SelectedProduct = ({
                     <div className="flex items-center gap-2 w-1/3">
                       {product.product.quantity === 0 ? (
                         <div className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200">
-                          <div className="w-2.5 h-2.5 bg-gray-500 rounded-full" /> Out of Stock
+                          <div className="w-2.5 h-2.5 bg-gray-500 rounded-full" />{" "}
+                          Out of Stock
                         </div>
-                      ) : product.product.quantity <= u.very_Low_Stock_Level! ? (
+                      ) : product.product.quantity <=
+                        u.very_Low_Stock_Level! ? (
                         <div className="flex items-center gap-1.5 bg-red-50 text-red-600 px-2.5 py-1 rounded-full border border-red-200">
-                          <div className="w-2.5 h-2.5 bg-red-500 rounded-full" /> Critical Stock
+                          <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />{" "}
+                          Critical Stock
                         </div>
                       ) : product.product.quantity <= u.low_Stock_Level! ? (
                         <div className="flex items-center gap-1.5 bg-orange-50 text-orange-500 px-2.5 py-1 rounded-full border border-orange-200">
-                          <div className="w-2.5 h-2.5 bg-orange-400 rounded-full" /> Low Stock
+                          <div className="w-2.5 h-2.5 bg-orange-400 rounded-full" />{" "}
+                          Low Stock
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5 bg-green-50 text-green-600 px-2.5 py-1 rounded-full border border-green-200">
-                          <div className="w-2.5 h-2.5 bg-green-500 rounded-full" /> Sufficient Stock
+                          <div className="w-2.5 h-2.5 bg-green-500 rounded-full" />{" "}
+                          Sufficient Stock
                         </div>
                       )}
                     </div>
@@ -189,37 +215,63 @@ export const SelectedProduct = ({
                   </div>
 
                   <div className="flex flex-col gap-3">
-                    {u.preset.presetLevels.sort((a, b) => a.level - b.level).map((level, idx) => {
-                      const qty = u.presetQuantities.find(q => q.level === level.level) || u.presetQuantities[idx];
-                      const price = u.presetPricing.find(p => p.unitName === level.unitOfMeasure?.uom_Name) || u.presetPricing[idx];
-                      const isMain = idx === 0;
+                    {u.preset.presetLevels
+                      .sort((a, b) => a.level - b.level)
+                      .map((level, idx) => {
+                        const qty =
+                          u.presetQuantities.find(
+                            (q) => q.level === level.level,
+                          ) || u.presetQuantities[idx];
+                        const price =
+                          u.presetPricing.find(
+                            (p) => p.unitName === level.unitOfMeasure?.uom_Name,
+                          ) || u.presetPricing[idx];
+                        const isMain = idx === 0;
 
-                      return (
-                        <div className="flex w-full items-center text-sm font-semibold text-gray-800" key={idx}>
-                          <div className="w-1/3 flex items-center gap-2">
-                            {!isMain && (
-                              <div className="text-gray-400 border-l-2 border-b-2 h-3 w-3 mb-1 shrink-0 ml-1" />
-                            )}
-                            <span className={isMain ? "uppercase" : "uppercase text-gray-600"}>
-                              {level.unitOfMeasure?.uom_Name || qty?.unitName}{!isMain && ` (${level.conversion_Factor}x)`}
-                            </span>
+                        return (
+                          <div
+                            className="flex w-full items-center text-sm font-semibold text-gray-800"
+                            key={idx}
+                          >
+                            <div className="w-1/3 flex items-center gap-2">
+                              {!isMain && (
+                                <div className="text-gray-400 border-l-2 border-b-2 h-3 w-3 mb-1 shrink-0 ml-1" />
+                              )}
+                              <span
+                                className={
+                                  isMain
+                                    ? "uppercase"
+                                    : "uppercase text-gray-600"
+                                }
+                              >
+                                {level.unitOfMeasure?.uom_Name || qty?.unitName}
+                                {!isMain && ` (${level.conversion_Factor}x)`}
+                              </span>
+                            </div>
+                            <div className="w-1/3 text-center text-gray-600">
+                              {qty?.remaining_Quantity ?? 0}
+                            </div>
+                            <div className="w-1/3 text-right flex items-center justify-end font-semibold">
+                              {price?.price_Per_Unit ? (
+                                <>
+                                  <span>₱</span>
+                                  <span>
+                                    {price.price_Per_Unit.toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2,
+                                      },
+                                    )}
+                                  </span>
+                                </>
+                              ) : (
+                                <span>₱0</span>
+                              )}
+                            </div>
                           </div>
-                          <div className="w-1/3 text-center text-gray-600">
-                            {qty?.remaining_Quantity ?? 0}
-                          </div>
-                          <div className="w-1/3 text-right flex items-center justify-end font-semibold">
-                            {price?.price_Per_Unit ? (
-                              <>
-                                <span>₱</span>
-                                <span>{price.price_Per_Unit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
-                              </>
-                            ) : (
-                              <span>₱0</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
                 </div>
               ))
@@ -228,7 +280,7 @@ export const SelectedProduct = ({
         </div>
       </div>
 
-      <Separator />
+      {/* <Separator /> */}
 
       <div className="w-full flex justify-end">
         {product.product.is_Active ? (
