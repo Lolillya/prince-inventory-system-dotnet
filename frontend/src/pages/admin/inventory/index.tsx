@@ -256,12 +256,16 @@ const InventoryPage = () => {
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-56">
                     <DropdownMenuItem
-                      onClick={() => exportMasterlistPdf(inventory ?? [], true, true)}
+                      onClick={() =>
+                        exportMasterlistPdf(inventory ?? [], true, true)
+                      }
                     >
                       Include no stock
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => exportMasterlistPdf(inventory ?? [], true, false)}
+                      onClick={() =>
+                        exportMasterlistPdf(inventory ?? [], true, false)
+                      }
                     >
                       Exclude no stock
                     </DropdownMenuItem>
@@ -274,10 +278,14 @@ const InventoryPage = () => {
                     Export Pricelist
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-64">
-                    <DropdownMenuItem onClick={() => exportPricelistPdf(inventory ?? [], true)}>
+                    <DropdownMenuItem
+                      onClick={() => exportPricelistPdf(inventory ?? [], true)}
+                    >
                       Include Packaging Hierarchy
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => exportPricelistPdf(inventory ?? [], false)}>
+                    <DropdownMenuItem
+                      onClick={() => exportPricelistPdf(inventory ?? [], false)}
+                    >
                       Exclude Packaging Hierarchy
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
@@ -363,7 +371,9 @@ const InventoryPage = () => {
                     <Separator />
                     <DropdownMenuItem
                       className="gap-2 py-2.5"
-                      onClick={() => exportStocklistPdf(inventory ?? [], stocklistFilters)}
+                      onClick={() =>
+                        exportStocklistPdf(inventory ?? [], stocklistFilters)
+                      }
                       disabled={stocklistFilters.size === 0}
                     >
                       Export Stocklist
@@ -430,28 +440,20 @@ const InventoryPage = () => {
             {filteredInventory?.map((data, index) => (
               <>
                 <div
-                  className={`flex justify-between ${!data.product.is_Active
-                    ? "opacity-60 bg-gray-100 dark:bg-gray-900/30"
-                    : data.isFavorited
-                      ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
-                      : "hover:bg-accent"
-                    } p-2 rounded-lg transition-all duration-300`}
+                  className={`flex justify-between ${
+                    !data.product.is_Active
+                      ? "opacity-60 bg-gray-100 dark:bg-gray-900/30"
+                      : data.isFavorited
+                        ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
+                        : "hover:bg-accent"
+                  } p-2 rounded-lg transition-all duration-300`}
                   key={index}
                   onClick={() => handleClick(data)}
                 >
                   <div className="flex items-center w-full">
-                    {/* {data.unitPresets.length === 0 ? (
-                      <span className="text-xs bg-saltbox-gray text-white px-2 py-0.5 rounded-full font-medium">
-                        No Presets
-                      </span>
-                    ) : getIncompletePresetCount(data) > 0 ? (
-                      <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-medium">
-                        {getIncompletePresetCount(data)} preset incomplete
-                      </span>
-                    ) : null} */}
                     <div className="gap-2 flex items-center flex-nowrap text-nowrap">
                       <span className="capitalize">
-                        {data.product.product_Name} - {data.brand.brandName} - {data.variant.variant_Name}
+                        {data.product.product_Name}
                       </span>
                     </div>
                     <div className="w-full items-center justify-end flex">

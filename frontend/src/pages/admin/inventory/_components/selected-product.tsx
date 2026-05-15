@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
-import { Separator } from "@/components/separator";
-import { ChevronDown, PhilippinePeso, Archive, Plus } from "lucide-react";
+import { Archive } from "lucide-react";
 import { deactivateProductService } from "@/features/inventory/deactivate-product/deactivate-product.service";
 import { reactivateProductService } from "@/features/inventory/deactivate-product/reactivate-product.service";
 import { ProductActionConfirmModal } from "./product-action-confirm.modal";
@@ -24,9 +23,9 @@ export const SelectedProduct = ({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [expandedBreakdowns, setExpandedBreakdowns] = useState<Set<number>>(
-    new Set(),
-  );
+  // const [expandedBreakdowns, setExpandedBreakdowns] = useState<Set<number>>(
+  //   new Set(),
+  // );
 
   const openModal = (action: "deactivate" | "reactivate") => {
     setModalAction(action);
@@ -56,17 +55,17 @@ export const SelectedProduct = ({
     }
   };
 
-  const toggleBreakdown = (index: number) => {
-    setExpandedBreakdowns((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
-      return newSet;
-    });
-  };
+  // const toggleBreakdown = (index: number) => {
+  //   setExpandedBreakdowns((prev) => {
+  //     const newSet = new Set(prev);
+  //     if (newSet.has(index)) {
+  //       newSet.delete(index);
+  //     } else {
+  //       newSet.add(index);
+  //     }
+  //     return newSet;
+  //   });
+  // };
 
   return (
     <div className="w-full flex flex-col gap-2.5 p-5">
