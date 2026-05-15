@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { Separator } from "@/components/separator";
-import { ChevronDown, PhilippinePeso } from "lucide-react";
+import { ChevronDown, PhilippinePeso, Archive, Plus } from "lucide-react";
 import { deactivateProductService } from "@/features/inventory/deactivate-product/deactivate-product.service";
 import { reactivateProductService } from "@/features/inventory/deactivate-product/reactivate-product.service";
 import { ProductActionConfirmModal } from "./product-action-confirm.modal";
@@ -70,44 +70,54 @@ export const SelectedProduct = ({
 
   return (
     <div className="w-full flex flex-col gap-2.5 p-5">
-      <div className="flex justify-between w-full">
-        <div className="flex flex-col gap-1 ">
-          <span className="text-sm">{product.variant.variant_Name}</span>
-          <span className="text-sm">
-            {(() => {
-              const code =
-                product.product.core_Product_Code ??
-                product.product.product_Code;
-              return code?.length === 10
-                ? `${code.slice(0, 3)}-${code.slice(3, 6)}-${code.slice(6)}`
-                : code;
-            })()}
-          </span>
+      <div className="flex flex-col gap-6 bg-white border border-gray-100 p-6 rounded-xl shadow-sm mb-2">
+        <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase">Item</span>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-semibold text-slate-900">{product.product.product_Name}</span>
+              {!product.product.is_Active && (
+                <span className="bg-red-100 text-red-700 rounded-full py-0.5 px-2 text-[10px] font-semibold whitespace-nowrap">
+                  Deactivated
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase">Product Code</span>
+            <span className="text-lg font-semibold text-slate-900">
+              {(() => {
+                const code = product.product.core_Product_Code ?? product.product.product_Code;
+                return code?.length === 10
+                  ? `${code.slice(0, 3)}-${code.slice(3, 6)}-${code.slice(6)}`
+                  : code;
+              })()}
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase">Brand</span>
+            <span className="text-base text-slate-800">{product.brand.brandName}</span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase">Variant</span>
+            <span className="text-base text-slate-800">{product.variant.variant_Name}</span>
+          </div>
         </div>
 
-        <div className="flex gap-2 items-center flex-wrap justify-end">
-          {!product.product.is_Active && (
-            <span className="bg-gray-200 text-gray-600 rounded-full py-1 px-2 text-xs font-semibold text-nowrap">
-              Deactivated
-            </span>
-          )}
-          <span className="bg-teal-200 rounded-full py-1 px-2 items-center flex text-center justify-center text-xs text-nowrap h-fit">
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold text-slate-500 uppercase">Category</span>
+          <span className="w-fit bg-slate-100 text-slate-600 rounded-full py-1.5 px-3.5 text-xs font-medium">
             {product.category.category_Name}
           </span>
         </div>
-      </div>
 
-      <Separator />
-
-      <div className="flex flex-col">
-        <label>{product.product.product_Name}</label>
-        <label>{product.brand.brandName}</label>
-        <label>{product.category.category_Name}</label>
-      </div>
-
-      <div className="flex flex-col">
-        <label>notes</label>
-        <textarea disabled value={product.product.description} rows={2} />
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-slate-500 uppercase">Note</span>
+          <span className="text-base text-slate-800">
+            {product.product.description || "No note available"}
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -117,181 +127,101 @@ export const SelectedProduct = ({
       </div>
 
       <div className="flex flex-col">
-        <div className="flex justify-between items-center">
-          <h3>Assocciated Preset</h3>
-          <span
-            className="text-sm hover:underline cursor-pointer"
-            onClick={handlePresetSelector}
-          >
-            Add Unit Preset
-          </span>
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="flex items-center gap-2 font-medium">
+            Associated Preset
+            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-semibold">
+              {product.unitPresets.length}
+            </span>
+          </h3>
         </div>
-        <Separator orientation="horizontal" />
 
         <div className="rounded-lg inset-shadow-sm p-1">
-          <div className="flex gap-2 bg-wash-gray p-2 rounded-lg shadow-sm flex-col overflow-y-auto max-h-112 min-h-0">
+          <div
+            className={`flex gap-2 rounded-lg shadow-sm flex-col overflow-y-auto max-h-112 min-h-0 ${product.unitPresets.length === 0
+              ? "bg-white border border-gray-100 p-8 items-center justify-center"
+              : "bg-wash-gray p-2"
+              }`}
+          >
             {product.unitPresets.length === 0 ? (
-              <span className="text-xs font-semibold">
-                No associated unit preset.
-              </span>
+              <div className="flex flex-col items-center justify-center w-full py-8">
+                <div className="bg-slate-50 h-16 w-16 flex items-center justify-center rounded-full mb-4">
+                  <Archive className="w-8 h-8 text-slate-400 stroke-[1.5]" />
+                </div>
+                <span className="text-sm font-semibold text-slate-900 mb-4">
+                  No preset yet
+                </span>
+                <button
+                  onClick={handlePresetSelector}
+                  className="flex items-center gap-2 px-4 py-2 border border-blue-500 text-blue-500 hover:bg-blue-50 bg-white rounded-lg text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  + Associate a Preset
+                </button>
+              </div>
             ) : (
               product.unitPresets.map((u, i) => (
-                <>
-                  <div
-                    className="flex gap-2 bg-wash-gray text-sm rounded-lg cursor-default w-full"
-                    key={i}
-                  >
-                    <div className="w-full flex">
-                      <div className="w-full flex gap-2 h-fit items-center text-xs">
-                        {product.product.quantity === 0 ? (
-                          <div className="w-2 h-2 bg-gray-500 rounded-full" />
-                        ) : product.product.quantity <=
-                          u.very_Low_Stock_Level! ? (
-                          <div className="w-2 h-2 bg-red-500 rounded-full" />
-                        ) : product.product.quantity <= u.low_Stock_Level! ? (
-                          <div className="w-2 h-2 bg-yellow-500 rounded-full" />
-                        ) : (
-                          <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        )}
-                        {u.preset.presetLevels.map((level, idx) => (
-                          <>
-                            <span>
-                              {level.unitOfMeasure.uom_Name} (
-                              {level.conversion_Factor}x)
-                            </span>
-                            {idx < u.preset.presetLevels.length - 1 && (
-                              <span>&gt;</span>
+                <div
+                  className="flex flex-col bg-white border border-gray-100 shadow-sm rounded-lg w-full p-4 gap-4"
+                  key={i}
+                >
+                  <div className="flex w-full items-center justify-between text-saltbox-gray text-xs font-semibold mb-2">
+                    <div className="flex items-center gap-2 w-1/3">
+                      {product.product.quantity === 0 ? (
+                        <div className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200">
+                          <div className="w-2.5 h-2.5 bg-gray-500 rounded-full" /> Out of Stock
+                        </div>
+                      ) : product.product.quantity <= u.very_Low_Stock_Level! ? (
+                        <div className="flex items-center gap-1.5 bg-red-50 text-red-600 px-2.5 py-1 rounded-full border border-red-200">
+                          <div className="w-2.5 h-2.5 bg-red-500 rounded-full" /> Critical Stock
+                        </div>
+                      ) : product.product.quantity <= u.low_Stock_Level! ? (
+                        <div className="flex items-center gap-1.5 bg-orange-50 text-orange-500 px-2.5 py-1 rounded-full border border-orange-200">
+                          <div className="w-2.5 h-2.5 bg-orange-400 rounded-full" /> Low Stock
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 bg-green-50 text-green-600 px-2.5 py-1 rounded-full border border-green-200">
+                          <div className="w-2.5 h-2.5 bg-green-500 rounded-full" /> Sufficient Stock
+                        </div>
+                      )}
+                    </div>
+                    <div className="w-1/3 text-center">Quantity</div>
+                    <div className="w-1/3 text-right">Price</div>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    {u.preset.presetLevels.sort((a, b) => a.level - b.level).map((level, idx) => {
+                      const qty = u.presetQuantities.find(q => q.level === level.level) || u.presetQuantities[idx];
+                      const price = u.presetPricing.find(p => p.unitName === level.unitOfMeasure?.uom_Name) || u.presetPricing[idx];
+                      const isMain = idx === 0;
+
+                      return (
+                        <div className="flex w-full items-center text-sm font-semibold text-gray-800" key={idx}>
+                          <div className="w-1/3 flex items-center gap-2">
+                            {!isMain && (
+                              <div className="text-gray-400 border-l-2 border-b-2 h-3 w-3 mb-1 shrink-0 ml-1" />
                             )}
-                          </>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col">
-                      <div className="flex flex-col gap-3">
-                        <label className="text-xs text-saltbox-gray font-semibold border-b pb-1 text-nowrap">
-                          Batch Pricing
-                        </label>
-                        <div className="flex flex-col gap-1 rounded-lg overflow-y-hidden">
-                          <div className="flex flex-col">
-                            {u.presetPricing.map((pp, pidx) => (
-                              <div
-                                className="flex items-center gap-2 text-xs"
-                                key={pidx}
-                              >
-                                {/* {pp.uoM_ID === u.preset.main_Unit_ID && (
-                                  <label>{u.main_Unit_Quantity}</label>
-                                )} */}
-                                <span className="text-gray-600">
-                                  {pp.unitName}
-                                </span>
-                                <div className="flex items-center gap-1">
-                                  {pp.price_Per_Unit ? (
-                                    <>
-                                      <PhilippinePeso width={12} />
-                                      <span className="font-semibold">
-                                        {pp.price_Per_Unit.toFixed(2)}
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span className="text-gray-400">0.00</span>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col border-t pt-3 mt-3">
-                    <div
-                      className="flex gap-2 items-center justify-center mb-3 cursor-pointer hover:bg-gray-50 rounded py-1"
-                      onClick={() => toggleBreakdown(i)}
-                    >
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform ${expandedBreakdowns.has(i) ? "rotate-180" : ""}`}
-                      />
-                      <span className="text-xs font-semibold">Breakdown</span>
-                    </div>
-
-                    {expandedBreakdowns.has(i) && (
-                      <div className="flex w-full justify-between px-2">
-                        {/* Column 1: Restock Info */}
-                        <div className="flex flex-col gap-3 min-w-[100px]">
-                          <div className="flex flex-col">
-                            <label className="text-xs text-gray-500 font-semibold">
-                              Restock No.
-                            </label>
-                            <span className="text-xs font-semibold">
-                              {u.restock_Number ?? "N/A"}
+                            <span className={isMain ? "uppercase" : "uppercase text-gray-600"}>
+                              {level.unitOfMeasure?.uom_Name || qty?.unitName}{!isMain && ` (${level.conversion_Factor}x)`}
                             </span>
                           </div>
-
-                          {/* <div className="flex flex-col">
-                            <label className="text-xs text-gray-500 font-semibold">
-                              PO Ref.
-                            </label>
-                            <span className="text-xs font-semibold">
-                              #PO-456
-                            </span>
-                          </div> */}
-                        </div>
-
-                        {/* Column 2: Original Quantities */}
-                        <div className="flex flex-col gap-1 min-w-[100px]">
-                          <label className="text-xs text-gray-500 font-semibold mb-1">
-                            Original
-                          </label>
-                          <div className="flex flex-col gap-1">
-                            {(() => {
-                              const mainLevel = u.preset.presetLevels.find(
-                                (l) => l.level === 1,
-                              );
-                              const mainQty = u.presetQuantities.find(
-                                (q) => q.level === 1,
-                              );
-                              if (!mainLevel) return null;
-                              return (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-semibold">
-                                    {mainQty?.original_Quantity ?? 0}
-                                  </span>
-                                  <span className="text-xs text-gray-600">
-                                    {mainLevel.unitOfMeasure.uom_Name}
-                                  </span>
-                                </div>
-                              );
-                            })()}
+                          <div className="w-1/3 text-center text-gray-600">
+                            {qty?.remaining_Quantity ?? 0}
+                          </div>
+                          <div className="w-1/3 text-right flex items-center justify-end font-semibold">
+                            {price?.price_Per_Unit ? (
+                              <>
+                                <span>₱</span>
+                                <span>{price.price_Per_Unit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                              </>
+                            ) : (
+                              <span>₱0</span>
+                            )}
                           </div>
                         </div>
-
-                        {/* Column 3: Remaining Quantities */}
-                        <div className="flex flex-col gap-1 min-w-fit">
-                          <label className="text-xs text-gray-500 font-semibold mb-1">
-                            Remaining
-                          </label>
-                          <div className="flex flex-col gap-1">
-                            {u.presetQuantities.map((qty, idx) => (
-                              <div
-                                className="flex items-center gap-2"
-                                key={idx}
-                              >
-                                <span className="text-sm font-semibold text-green-600">
-                                  {qty.remaining_Quantity}
-                                </span>
-                                <span className="text-sm text-gray-600">
-                                  {qty.unitName}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })}
                   </div>
-                </>
+                </div>
               ))
             )}
           </div>
