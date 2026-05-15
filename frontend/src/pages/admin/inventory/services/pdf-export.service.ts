@@ -2,13 +2,12 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import jsPDF from "jspdf";
 
 const buildProductDescription = (item: InventoryProductModel) => {
-    return `${item.product.product_Name}-${item.brand.brandName}-${item.variant.variant_Name}`;
+    return `${item.product.product_Name} - ${item.brand.brandName} - ${item.variant.variant_Name}`;
 };
 
 export const exportMasterlistPdf = (
     inventory: InventoryProductModel[],
-    includePackagingHierarchy: boolean,
-    includeNoStock: boolean,
+    includePackagingHierarchy: boolean
 ) => {
     if (!inventory || inventory.length === 0) return;
 
@@ -18,35 +17,55 @@ export const exportMasterlistPdf = (
         format: "a4",
     });
 
+    const dateStr = new Date().toLocaleDateString("en-US", {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+
     const pageHeight = doc.internal.pageSize.getHeight();
-    const xCode = 15;
-    const xDescription = 65;
-    const xUom = 160;
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    const xCode = 12;
+    const xDescription = 55;
+    const descMaxWidth = 95;
+    const xUom = 155;
     const contentBottom = pageHeight - 12;
 
-    let y = 18;
+    let y = 15;
+    let rowIndex = 0;
 
     const drawHeader = () => {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("Inventory Masterlist", xCode, y);
+        doc.setFont("courier", "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(0, 0, 0);
+        doc.text("INVENTORY MASTERLIST", xCode, y);
 
-        y += 10;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.setTextColor(153, 153, 153);
+        doc.text(dateStr, xCode + 115, y);
+
+        y += 12;
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
-        doc.text("Product Code", xCode, y);
-        doc.text("Description", xDescription, y);
-        doc.text("UOM", xUom, y);
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+
+        doc.text("PRODUCT CODE", xCode + 2, y);
+        doc.text("DESCRIPTION", xDescription + 2, y);
+        doc.text("UOM", xUom + 2, y);
+
+        y += 4;
+        doc.setDrawColor(238, 238, 238);
+        doc.line(10, y, pageWidth - 10, y);
 
         y += 6;
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10.5);
     };
 
     const ensureSpace = (neededHeight: number) => {
         if (y + neededHeight > contentBottom) {
             doc.addPage();
-            y = 18;
+            y = 15;
             drawHeader();
         }
     };
@@ -54,8 +73,7 @@ export const exportMasterlistPdf = (
     drawHeader();
 
     const source = inventory.filter((item) => {
-        if (includeNoStock) return true;
-        return item.product.quantity > 0;
+        return item.unitPresets && item.unitPresets.length > 0;
     });
 
     source.forEach((item) => {
@@ -64,41 +82,64 @@ export const exportMasterlistPdf = (
         ].sort((a, b) => a.level - b.level);
 
         const primaryUom = sortedLevels[0]?.unitOfMeasure.uom_Name ?? "-";
+        const codeLines = doc.splitTextToSize(item.product.product_Code ?? "-", 40);
+        const descLines = doc.splitTextToSize(buildProductDescription(item), descMaxWidth);
 
-        const codeLines = doc.splitTextToSize(item.product.product_Code, 45);
-        const descLines = doc.splitTextToSize(buildProductDescription(item), 85);
         const maxLines = Math.max(codeLines.length, descLines.length);
-        const blockHeight = maxLines * 5 + 2;
-
-        ensureSpace(blockHeight);
-        doc.text(codeLines, xCode, y);
-        doc.text(descLines, xDescription, y);
-        doc.text(primaryUom, xUom, y);
-        y += blockHeight;
+        let blockHeight = maxLines * 5 + 4;
 
         if (includePackagingHierarchy && sortedLevels.length > 1) {
+            blockHeight += (sortedLevels.length - 1) * 5;
+        }
+
+        ensureSpace(blockHeight);
+
+        if (rowIndex % 2 === 1) {
+            doc.setFillColor(250, 250, 250);
+            doc.rect(10, y - 4, pageWidth - 20, blockHeight + 2, 'F');
+        }
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10.5);
+        doc.setTextColor(0, 0, 0);
+
+        doc.text(codeLines, xCode + 2, y);
+        doc.text(descLines, xDescription + 2, y);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(primaryUom, xUom + 2, y);
+
+        let currentY = y + 5;
+
+        if (includePackagingHierarchy && sortedLevels.length > 1) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9.5);
+            doc.setTextColor(153, 153, 153);
+
             sortedLevels.slice(1).forEach((level) => {
-                ensureSpace(5);
                 doc.text(
-                    `-- ${level.unitOfMeasure.uom_Name} (x${level.conversion_Factor})`,
-                    xUom,
-                    y,
+                    `└─ ${level.unitOfMeasure.uom_Name} (${level.conversion_Factor}x)`,
+                    xUom + 6,
+                    currentY,
                 );
-                y += 5;
+                currentY += 5;
             });
         }
 
-        y += 2;
+        y += blockHeight - 2;
+
+        doc.setDrawColor(238, 238, 238);
+        doc.line(10, y, pageWidth - 10, y);
+        y += 6;
+
+        rowIndex++;
     });
 
     const hierarchySuffix = includePackagingHierarchy
         ? "with-packaging-hierarchy"
         : "without-packaging-hierarchy";
-    const stockSuffix = includeNoStock
-        ? "include-no-stock"
-        : "exclude-no-stock";
 
-    doc.save(`inventory-masterlist-${hierarchySuffix}-${stockSuffix}.pdf`);
+    doc.save(`inventory-masterlist-${hierarchySuffix}.pdf`);
 };
 
 export const exportPricelistPdf = (

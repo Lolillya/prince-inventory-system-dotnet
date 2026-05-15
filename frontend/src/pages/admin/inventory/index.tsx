@@ -254,16 +254,16 @@ const InventoryPage = () => {
                     <List size={16} />
                     Export Masterlist
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="w-56">
+                  <DropdownMenuSubContent className="w-64">
                     <DropdownMenuItem
-                      onClick={() => exportMasterlistPdf(inventory ?? [], true, true)}
+                      onClick={() => exportMasterlistPdf(inventory ?? [], true)}
                     >
-                      Include no stock
+                      Include Packaging Hierarchy
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => exportMasterlistPdf(inventory ?? [], true, false)}
+                      onClick={() => exportMasterlistPdf(inventory ?? [], false)}
                     >
-                      Exclude no stock
+                      Exclude Packaging Hierarchy
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
