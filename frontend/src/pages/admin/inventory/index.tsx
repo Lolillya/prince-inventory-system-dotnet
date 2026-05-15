@@ -455,6 +455,33 @@ const InventoryPage = () => {
                 >
                   <div className="flex items-center w-full">
                     <div className="gap-2 flex items-center flex-nowrap text-nowrap">
+                      <div className="flex flex-col gap-0.5">
+                        {data.product.quantity === 0 ? (
+                          <div className="w-2 h-2 rounded-full bg-gray-400" />
+                        ) : (
+                          <>
+                            {data.unitPresets.some(
+                              (u) =>
+                                u.low_Stock_Level != null &&
+                                data.product.quantity <= u.low_Stock_Level &&
+                                (u.very_Low_Stock_Level == null ||
+                                  data.product.quantity >
+                                    u.very_Low_Stock_Level),
+                            ) && (
+                              <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                            )}
+                            {data.unitPresets.some(
+                              (u) =>
+                                u.very_Low_Stock_Level != null &&
+                                data.product.quantity > 0 &&
+                                data.product.quantity <=
+                                  u.very_Low_Stock_Level,
+                            ) && (
+                              <div className="w-2 h-2 rounded-full bg-red-500" />
+                            )}
+                          </>
+                        )}
+                      </div>
                       <span className="capitalize">
                         {data.product.product_Name}
                       </span>
