@@ -39,7 +39,10 @@ export const UnitPresetCard = ({
             .filter((l) => l.level > 1)
             .sort((a, b) => a.level - b.level)
             .map((l, idx) => (
-              <span className="text-sm font-semibold text-saltbox-gray whitespace-nowrap" key={idx}>
+              <span
+                className="text-sm font-semibold text-saltbox-gray whitespace-nowrap"
+                key={idx}
+              >
                 {idx > 0 && <span className="mx-1">&gt;</span>}
                 {l.uoM_Name}
                 <span className="text-sm font-semibold text-saltbox-gray ml-1">
