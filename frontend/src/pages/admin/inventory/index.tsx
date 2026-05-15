@@ -197,13 +197,16 @@ const InventoryPage = () => {
       </Activity>
 
       {/* PRESET EDITOR MODAL */}
-      <Activity mode={isPresetEditorOpen ? "visible" : "hidden"}>
+      {/* <Activity mode={isPresetEditorOpen ? "visible" : "hidden"}>
         <ProductUnitPresetModal handlePresetEditor={handlePresetEditor} />
-      </Activity>
+      </Activity> */}
 
       {/* PRESET SELECTOR MODAL */}
       <Activity mode={isPresetSelectorOpen ? "visible" : "hidden"}>
-        <PresetSelectorModal handlePresetSelector={handlePresetSelector} />
+        <ProductPackagingModal
+          onClose={() => setIsProductPackagingOpen(false)}
+        />
+        {/* <PresetSelectorModal handlePresetSelector={handlePresetSelector} /> */}
       </Activity>
 
       <Activity mode={isProductPackagingOpen ? "visible" : "hidden"}>
@@ -515,7 +518,7 @@ const InventoryPage = () => {
             ) : (
               <SelectedProduct
                 product={selectedProduct}
-                handlePresetSelector={handlePresetSelector}
+                handlePresetSelector={() => setIsProductPackagingOpen(true)}
               />
             )}
           </div>
