@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "sonner";
 import { createUnitOfMeasure } from "@/features/unit-of-measure/add-unit-of-measure.service";
+import { createUnitPreset } from "@/features/unit-of-measure/create-unit-preset/create-unit-preset.service";
 
 interface AddUnitModalProps {
   isOpen: boolean;
@@ -54,6 +55,12 @@ export const AddUnitModal = ({
       });
 
       toast.success(response.message || "Unit of measure created successfully");
+
+      await createUnitPreset({
+        main_Unit_ID: response.uom_ID,
+        levels: [{ uom_ID: response.uom_ID, level: 1, conversion_Factor: 1 }],
+      });
+
       reset();
       onSuccess();
       onClose();

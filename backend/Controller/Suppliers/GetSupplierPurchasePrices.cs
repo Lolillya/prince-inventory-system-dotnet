@@ -42,7 +42,7 @@ namespace backend.Controller.Suppliers
                     preset = new
                     {
                         sp.Preset.Preset_ID,
-                        sp.Preset.Preset_Name,
+                        sp.Preset.Preset_Code,
                         sp.Preset.Main_Unit_ID,
                         main_Unit = sp.Preset.MainUnit != null ? new
                         {

@@ -2,7 +2,6 @@ namespace backend.Dtos.UnitPreset
 {
     public class CreateUnitPresetDto
     {
-        public string Preset_Name { get; set; } = null!;
         public int Main_Unit_ID { get; set; }
         public List<UnitPresetLevelDto> Levels { get; set; } = new List<UnitPresetLevelDto>();
     }

@@ -360,7 +360,7 @@ export const QuotationGeneratorModal = ({
               >
                 {selectedConfig.item.unitPresets.map((preset, i) => (
                   <option key={preset.preset_ID} value={i}>
-                    {preset.preset.preset_Name}
+                    {preset.preset.preset_Code}
                   </option>
                 ))}
               </select>

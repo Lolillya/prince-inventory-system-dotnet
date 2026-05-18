@@ -71,6 +71,7 @@ namespace backend.Data
 
             // Seed Unit of Measure
             Seeders.SeedUnitOfMeasure.SeedUnitOfMeasureData(builder);
+            Seeders.SeedUnitPreset.SeedUnitPresetData(builder);
 
             builder.Entity<Inventory>(entity =>
             {

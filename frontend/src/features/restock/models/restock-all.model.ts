@@ -39,7 +39,6 @@ type LineItem = {
 
 type UnitPreset = {
   preset_ID: number;
-  preset_Name: string;
   main_Unit: {
     uom_ID: number;
     uom_Name: string;

@@ -35,17 +35,24 @@ export const UnitPresetCard = ({
           {unitPreset.main_Unit_Name}
         </span>
         <div className="w-6/12 flex items-center gap-2 flex-wrap">
-          {unitPreset.levels.map((l, idx) => (
-            <span className="text-sm font-semibold text-saltbox-gray whitespace-nowrap" key={idx}>
-              {idx > 0 && <span className="mx-1">&gt;</span>}
-              {l.uoM_Name}
-              {idx > 0 && (
+          {unitPreset.levels
+            .filter((l) => l.level > 1)
+            .sort((a, b) => a.level - b.level)
+            .map((l, idx) => (
+              <span
+                className="text-sm font-semibold text-saltbox-gray whitespace-nowrap"
+                key={idx}
+              >
+                {idx > 0 && <span className="mx-1">&gt;</span>}
+                {l.uoM_Name}
                 <span className="text-sm font-semibold text-saltbox-gray ml-1">
                   ({l.conversion_Factor}x)
                 </span>
-              )}
-            </span>
-          ))}
+              </span>
+            ))}
+          {unitPreset.levels.filter((l) => l.level > 1).length === 0 && (
+            <span className="text-sm text-gray-400">—</span>
+          )}
         </div>
         <span
           className="text-sm font-semibold text-saltbox-gray cursor-pointer hover:underline w-2/12 text-right"

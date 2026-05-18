@@ -118,7 +118,7 @@ namespace backend.Controller.Inventory
                                 Preset = new
                                 {
                                     pup.Preset.Preset_ID,
-                                    pup.Preset.Preset_Name,
+                                    pup.Preset.Preset_Code,
                                     pup.Preset.Main_Unit_ID,
                                     pup.Preset.Created_At,
                                     pup.Preset.Updated_At,

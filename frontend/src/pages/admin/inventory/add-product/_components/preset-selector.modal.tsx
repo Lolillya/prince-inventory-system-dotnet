@@ -64,7 +64,7 @@ export const PresetSelectorModal = ({
                     />
                     <div className="flex-1">
                       <div className="font-semibold text-sm">
-                        {preset.preset_Name}
+                        {preset.preset_Code}
                       </div>
                       <div className="flex gap-1 text-xs text-gray-600 mt-1">
                         {preset.levels.map((level, i) => (

@@ -15,7 +15,7 @@ export type BenchmarkPresetLevelModel = {
 export type BenchmarkPresetItem = {
   product_Preset_ID: number;
   preset_ID: number;
-  preset_Name: string;
+  preset_Code: string;
   main_Unit_ID: number;
   main_Unit: BenchmarkUomModel | null;
   preset_Levels: BenchmarkPresetLevelModel[];

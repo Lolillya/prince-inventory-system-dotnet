@@ -5,7 +5,6 @@ export interface UnitPresetLevel {
 }
 
 export interface CreateUnitPresetPayload {
-  preset_Name: string;
   main_Unit_ID: number;
   levels: UnitPresetLevel[];
 }

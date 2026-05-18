@@ -197,13 +197,16 @@ const InventoryPage = () => {
       </Activity>
 
       {/* PRESET EDITOR MODAL */}
-      <Activity mode={isPresetEditorOpen ? "visible" : "hidden"}>
+      {/* <Activity mode={isPresetEditorOpen ? "visible" : "hidden"}>
         <ProductUnitPresetModal handlePresetEditor={handlePresetEditor} />
-      </Activity>
+      </Activity> */}
 
       {/* PRESET SELECTOR MODAL */}
       <Activity mode={isPresetSelectorOpen ? "visible" : "hidden"}>
-        <PresetSelectorModal handlePresetSelector={handlePresetSelector} />
+        <ProductPackagingModal
+          onClose={() => setIsProductPackagingOpen(false)}
+        />
+        {/* <PresetSelectorModal handlePresetSelector={handlePresetSelector} /> */}
       </Activity>
 
       <Activity mode={isProductPackagingOpen ? "visible" : "hidden"}>
@@ -256,12 +259,16 @@ const InventoryPage = () => {
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-64">
                     <DropdownMenuItem
-                      onClick={() => exportMasterlistPdf(inventory ?? [], true)}
+                      onClick={() =>
+                        exportMasterlistPdf(inventory ?? [], true, true)
+                      }
                     >
                       Include Packaging Hierarchy
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => exportMasterlistPdf(inventory ?? [], false)}
+                      onClick={() =>
+                        exportMasterlistPdf(inventory ?? [], true, false)
+                      }
                     >
                       Exclude Packaging Hierarchy
                     </DropdownMenuItem>
@@ -274,10 +281,14 @@ const InventoryPage = () => {
                     Export Pricelist
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-64">
-                    <DropdownMenuItem onClick={() => exportPricelistPdf(inventory ?? [], true)}>
+                    <DropdownMenuItem
+                      onClick={() => exportPricelistPdf(inventory ?? [], true)}
+                    >
                       Include Packaging Hierarchy
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => exportPricelistPdf(inventory ?? [], false)}>
+                    <DropdownMenuItem
+                      onClick={() => exportPricelistPdf(inventory ?? [], false)}
+                    >
                       Exclude Packaging Hierarchy
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
@@ -288,99 +299,88 @@ const InventoryPage = () => {
                     Export Stocklist
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-72 p-0">
-                    <div className="p-2 border-b">
-                      <div className="text-xs font-semibold text-slate-500 mb-2 px-2">Stock Levels</div>
-                      <DropdownMenuItem
-                        className="gap-2 py-2"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleStocklistFilter("sufficient-stock");
-                        }}
-                      >
-                        <Check
-                          size={16}
-                          className={
-                            stocklistFilters.has("sufficient-stock")
-                              ? "text-slate-700"
-                              : "text-transparent"
-                          }
-                        />
-                        <span className="h-4 w-4 rounded-full bg-[#8fd19e]" />
-                        Sufficient stock
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="gap-2 py-2"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleStocklistFilter("low-stock");
-                        }}
-                      >
-                        <Check
-                          size={16}
-                          className={
-                            stocklistFilters.has("low-stock")
-                              ? "text-slate-700"
-                              : "text-transparent"
-                          }
-                        />
-                        <span className="h-4 w-4 rounded-full bg-[#f0db96]" />
-                        Low stock
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="gap-2 py-2"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleStocklistFilter("very-low-stock");
-                        }}
-                      >
-                        <Check
-                          size={16}
-                          className={
-                            stocklistFilters.has("very-low-stock")
-                              ? "text-slate-700"
-                              : "text-transparent"
-                          }
-                        />
-                        <span className="h-4 w-4 rounded-full bg-[#f28e8e]" />
-                        Very low stock
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="gap-2 py-2"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleStocklistFilter("no-stock");
-                        }}
-                      >
-                        <Check
-                          size={16}
-                          className={
-                            stocklistFilters.has("no-stock")
-                              ? "text-slate-700"
-                              : "text-transparent"
-                          }
-                        />
-                        <span className="h-4 w-4 rounded-full bg-[#d5dae3]" />
-                        No stock
-                      </DropdownMenuItem>
-                    </div>
-
-                    <div className="p-2">
-                      <div className="text-xs font-semibold text-slate-500 mb-2 px-2">Hierarchy Options</div>
-                      <DropdownMenuItem
-                        className="gap-2 py-2"
-                        disabled={stocklistFilters.size === 0}
-                        onClick={() => exportStocklistPdf(inventory ?? [], stocklistFilters, true)}
-                      >
-                        Include Packaging Hierarchy
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="gap-2 py-2"
-                        disabled={stocklistFilters.size === 0}
-                        onClick={() => exportStocklistPdf(inventory ?? [], stocklistFilters, false)}
-                      >
-                        Exclude Packaging Hierarchy
-                      </DropdownMenuItem>
-                    </div>
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleStocklistFilter("sufficient-stock");
+                      }}
+                    >
+                      <Check
+                        size={16}
+                        className={
+                          stocklistFilters.has("sufficient-stock")
+                            ? "text-slate-700"
+                            : "text-transparent"
+                        }
+                      />
+                      <span className="h-4 w-4 rounded-full bg-[#8fd19e]" />
+                      Sufficient stock
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleStocklistFilter("low-stock");
+                      }}
+                    >
+                      <Check
+                        size={16}
+                        className={
+                          stocklistFilters.has("low-stock")
+                            ? "text-slate-700"
+                            : "text-transparent"
+                        }
+                      />
+                      <span className="h-4 w-4 rounded-full bg-[#f0db96]" />
+                      Low stock
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleStocklistFilter("very-low-stock");
+                      }}
+                    >
+                      <Check
+                        size={16}
+                        className={
+                          stocklistFilters.has("very-low-stock")
+                            ? "text-slate-700"
+                            : "text-transparent"
+                        }
+                      />
+                      <span className="h-4 w-4 rounded-full bg-[#f28e8e]" />
+                      Very low stock
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleStocklistFilter("no-stock");
+                      }}
+                    >
+                      <Check
+                        size={16}
+                        className={
+                          stocklistFilters.has("no-stock")
+                            ? "text-slate-700"
+                            : "text-transparent"
+                        }
+                      />
+                      <span className="h-4 w-4 rounded-full bg-[#d5dae3]" />
+                      No stock
+                    </DropdownMenuItem>
+                    <Separator />
+                    <DropdownMenuItem
+                      className="gap-2 py-2.5"
+                      onClick={() =>
+                        exportStocklistPdf(inventory ?? [], stocklistFilters)
+                      }
+                      disabled={stocklistFilters.size === 0}
+                    >
+                      Export Stocklist
+                    </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuItem
@@ -443,28 +443,47 @@ const InventoryPage = () => {
             {filteredInventory?.map((data, index) => (
               <>
                 <div
-                  className={`flex justify-between ${!data.product.is_Active
-                    ? "opacity-60 bg-gray-100 dark:bg-gray-900/30"
-                    : data.isFavorited
-                      ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
-                      : "hover:bg-accent"
-                    } p-2 rounded-lg transition-all duration-300`}
+                  className={`flex justify-between ${
+                    !data.product.is_Active
+                      ? "opacity-60 bg-gray-100 dark:bg-gray-900/30"
+                      : data.isFavorited
+                        ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
+                        : "hover:bg-accent"
+                  } p-2 rounded-lg transition-all duration-300`}
                   key={index}
                   onClick={() => handleClick(data)}
                 >
                   <div className="flex items-center w-full">
-                    {/* {data.unitPresets.length === 0 ? (
-                      <span className="text-xs bg-saltbox-gray text-white px-2 py-0.5 rounded-full font-medium">
-                        No Presets
-                      </span>
-                    ) : getIncompletePresetCount(data) > 0 ? (
-                      <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-medium">
-                        {getIncompletePresetCount(data)} preset incomplete
-                      </span>
-                    ) : null} */}
                     <div className="gap-2 flex items-center flex-nowrap text-nowrap">
+                      <div className="flex flex-col gap-0.5">
+                        {data.product.quantity === 0 ? (
+                          <div className="w-2 h-2 rounded-full bg-gray-400" />
+                        ) : (
+                          <>
+                            {data.unitPresets.some(
+                              (u) =>
+                                u.low_Stock_Level != null &&
+                                data.product.quantity <= u.low_Stock_Level &&
+                                (u.very_Low_Stock_Level == null ||
+                                  data.product.quantity >
+                                    u.very_Low_Stock_Level),
+                            ) && (
+                              <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                            )}
+                            {data.unitPresets.some(
+                              (u) =>
+                                u.very_Low_Stock_Level != null &&
+                                data.product.quantity > 0 &&
+                                data.product.quantity <=
+                                  u.very_Low_Stock_Level,
+                            ) && (
+                              <div className="w-2 h-2 rounded-full bg-red-500" />
+                            )}
+                          </>
+                        )}
+                      </div>
                       <span className="capitalize">
-                        {data.product.product_Name} - {data.brand.brandName} - {data.variant.variant_Name}
+                        {data.product.product_Name}
                       </span>
                     </div>
                     <div className="w-full items-center justify-end flex">
@@ -526,7 +545,7 @@ const InventoryPage = () => {
             ) : (
               <SelectedProduct
                 product={selectedProduct}
-                handlePresetSelector={handlePresetSelector}
+                handlePresetSelector={() => setIsProductPackagingOpen(true)}
               />
             )}
           </div>

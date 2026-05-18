@@ -614,7 +614,7 @@ export const ProductPackagingModal = ({
                     );
                     const label = details
                       ? formatPresetLabel(details)
-                      : up.preset.preset_Name;
+                      : up.preset.preset_Code;
                     const isIncomplete =
                       up.presetPricing.length === 0 ||
                       (!up.low_Stock_Level && !up.very_Low_Stock_Level);

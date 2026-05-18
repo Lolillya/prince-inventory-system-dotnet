@@ -46,7 +46,7 @@ namespace backend.Controller.Inventory
                         {
                             product_Preset_ID = pup.Product_Preset_ID,
                             preset_ID = pup.Preset_ID,
-                            preset_Name = pup.Preset.Preset_Name,
+                            preset_Code = pup.Preset.Preset_Code,
                             main_Unit_ID = pup.Preset.Main_Unit_ID,
                             main_Unit = pup.Preset.MainUnit != null
                                 ? new
