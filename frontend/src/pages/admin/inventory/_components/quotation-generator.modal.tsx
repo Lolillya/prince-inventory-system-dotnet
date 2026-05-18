@@ -1,8 +1,9 @@
 import { SearchIcon } from "@/icons";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
-import { ArrowLeft, FileSearch, X } from "lucide-react";
+import { ArrowLeft, FileSearch, Layers, PhilippinePeso, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import jsPDF from "jspdf";
+import { Separator } from "@/components/separator";
 
 interface QuotationGeneratorModalProps {
   isOpen: boolean;
@@ -15,8 +16,9 @@ interface QuotationGeneratorModalProps {
 type QuotationUomRow = {
   level: number; // 1 = main unit, 2+ = sub-units
   uom: string;
+  conversionFactor: number;
   price: number | null;
-  included: boolean; // main unit is always true; sub-units can be toggled
+  included: boolean;
 };
 
 type QuotationLineItem = {
@@ -34,7 +36,22 @@ type SelectedItemConfig = {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const buildDescription = (item: InventoryProductModel) =>
-  `${item.product.product_Name}-${item.brand.brandName}-${item.variant.variant_Name}`;
+  `${item.product.product_Name}`;
+
+const buildPresetLabel = (
+  preset: InventoryProductModel["unitPresets"][number],
+): string => {
+  const levels = [...(preset.preset?.presetLevels ?? [])].sort(
+    (a, b) => a.level - b.level,
+  );
+  return levels
+    .map((lvl, idx) =>
+      idx === 0
+        ? lvl.unitOfMeasure.uom_Name
+        : `${lvl.unitOfMeasure.uom_Name} (${lvl.conversion_Factor}x)`,
+    )
+    .join(" \u2192 ");
+};
 
 const buildRowStates = (
   item: InventoryProductModel,
@@ -54,6 +71,7 @@ const buildRowStates = (
     return {
       level: lvl.level,
       uom: lvl.unitOfMeasure.uom_Name,
+      conversionFactor: lvl.conversion_Factor,
       price: pricing ? pricing.price_Per_Unit : null,
       included: true,
     };
@@ -127,7 +145,7 @@ const generateQuotationPdf = (lineItems: QuotationLineItem[]) => {
     includedRows.forEach((row, rowIndex) => {
       const isMainRow = row.level === 1;
       const itemLabel = isMainRow ? lineItem.description : "";
-      const uomLabel = isMainRow ? row.uom : `\u2514\u2500 ${row.uom}`;
+      const uomLabel = isMainRow ? row.uom : `\t${row.uom}`;
       const priceLabel = row.price === null ? "-" : row.price.toFixed(2);
 
       const itemLines = isMainRow
@@ -175,6 +193,7 @@ export const QuotationGeneratorModal = ({
   const [lineItems, setLineItems] = useState<QuotationLineItem[]>([]);
   const [selectedConfig, setSelectedConfig] =
     useState<SelectedItemConfig | null>(null);
+  const [includeHierarchy, setIncludeHierarchy] = useState(false);
 
   const filteredInventory = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -215,17 +234,6 @@ export const QuotationGeneratorModal = ({
     });
   };
 
-  // Toggles the included checkbox for a sub-unit row
-  const handleToggleRow = (level: number) => {
-    if (!selectedConfig) return;
-    setSelectedConfig({
-      ...selectedConfig,
-      rowStates: selectedConfig.rowStates.map((r) =>
-        r.level === level ? { ...r, included: !r.included } : r,
-      ),
-    });
-  };
-
   // Updates the local price for a row (does not affect global preset data)
   const handlePriceChange = (level: number, value: string) => {
     if (!selectedConfig) return;
@@ -242,15 +250,19 @@ export const QuotationGeneratorModal = ({
   const handleAddToQuotation = () => {
     if (!selectedConfig) return;
     const { item, rowStates } = selectedConfig;
+    const rows = (
+      includeHierarchy ? rowStates : rowStates.filter((r) => r.level === 1)
+    ).map((r) => ({ ...r, included: true }));
     setLineItems((prev) => [
       ...prev,
       {
         productId: item.product.product_ID,
         description: buildDescription(item),
-        rows: rowStates,
+        rows,
       },
     ]);
     setSelectedConfig(null);
+    setIncludeHierarchy(false);
   };
 
   if (!isOpen) return null;
@@ -336,13 +348,13 @@ export const QuotationGeneratorModal = ({
           <div className="flex flex-col gap-5 flex-1 min-h-0">
             {/* Back button + title */}
             <div className="flex items-center gap-2">
-              <button
-                className="p-1 rounded-md hover:bg-custom-gray transition text-vesper-gray"
+              <div
+                className="p-1 rounded-md hover:bg-custom-gray transition text-vesper-gray cursor-pointer"
                 onClick={() => setSelectedConfig(null)}
                 aria-label="Back to search"
               >
                 <ArrowLeft size={18} />
-              </button>
+              </div>
               <h3 className="font-bold text-sm truncate">
                 {buildDescription(selectedConfig.item)}
               </h3>
@@ -354,20 +366,108 @@ export const QuotationGeneratorModal = ({
                 Packaging Preset
               </label>
               <select
-                className="input-style-2 text-sm"
+                className="text-sm"
                 value={selectedConfig.selectedPresetIndex}
                 onChange={(e) => handlePresetChange(Number(e.target.value))}
               >
                 {selectedConfig.item.unitPresets.map((preset, i) => (
                   <option key={preset.preset_ID} value={i}>
-                    {preset.preset.preset_Code}
+                    {buildPresetLabel(preset)}
                   </option>
                 ))}
               </select>
             </div>
 
+            <div className="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto border border-border rounded-lg p-3">
+              {/* Main unit row (level 1) */}
+              {selectedConfig.rowStates[0] && (
+                <div className="flex items-center gap-2">
+                  <Layers size={18} className="text-river-green shrink-0" />
+                  <span className="text-sm font-medium flex-1">
+                    {selectedConfig.rowStates[0].uom}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <PhilippinePeso
+                      size={14}
+                      className="text-gray-500 shrink-0"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={
+                        selectedConfig.rowStates[0].price === null
+                          ? ""
+                          : selectedConfig.rowStates[0].price
+                      }
+                      placeholder="0.00"
+                      onChange={(e) => handlePriceChange(1, e.target.value)}
+                      className="drop-shadow-none border border-border"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <Separator orientation="horizontal" />
+
+              {/* Hierarchy toggle + tree */}
+              <div className="flex flex-col gap-1">
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="checkbox"
+                    id="include-hierarchy"
+                    checked={includeHierarchy}
+                    onChange={(e) => setIncludeHierarchy(e.target.checked)}
+                    className="cursor-pointer"
+                  />
+                  <label
+                    htmlFor="include-hierarchy"
+                    className="text-sm cursor-pointer"
+                  >
+                    Include packaging hierarchy in the quotation
+                  </label>
+                </div>
+
+                {includeHierarchy && selectedConfig.rowStates.length > 1 && (
+                  <div className="ml-5 flex flex-col gap-1">
+                    {selectedConfig.rowStates.slice(1).map((row) => (
+                      <div
+                        key={row.level}
+                        className="relative flex items-center gap-2"
+                      >
+                        {/* <div className="absolute left-0 top-1/2 w-6  -translate-y-1/2" /> */}
+                        <span className="text-sm text-gray-600 flex-1">
+                          └─ {row.uom}
+                          <span className="text-xs text-gray-400 ml-1">
+                            ({row.conversionFactor}x)
+                          </span>
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <PhilippinePeso
+                            size={14}
+                            className="text-gray-500 shrink-0"
+                          />
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={row.price === null ? "" : row.price}
+                            placeholder="0.00"
+                            onChange={(e) =>
+                              handlePriceChange(row.level, e.target.value)
+                            }
+                            className="drop-shadow-none border border-border"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Unit hierarchy */}
-            <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto">
+            {/* <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto">
               <label className="text-xs font-semibold text-saltbox-gray">
                 Unit Hierarchy
               </label>
@@ -383,7 +483,6 @@ export const QuotationGeneratorModal = ({
                       key={row.level}
                       className="flex items-center gap-2 p-2 rounded-lg border bg-custom-gray"
                     >
-                      {/* Checkbox (locked for main unit) */}
                       <input
                         type="checkbox"
                         checked={row.included}
@@ -392,12 +491,10 @@ export const QuotationGeneratorModal = ({
                         className="shrink-0 cursor-pointer disabled:cursor-default"
                       />
 
-                      {/* UOM label */}
                       <span className="text-sm flex-1 truncate">
                         {row.level === 1 ? row.uom : `└─ ${row.uom}`}
                       </span>
 
-                      {/* Local price input */}
                       <input
                         type="number"
                         min="0"
@@ -413,7 +510,7 @@ export const QuotationGeneratorModal = ({
                   ))}
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* Add to quotation */}
             <button
@@ -443,42 +540,29 @@ export const QuotationGeneratorModal = ({
             <div className="flex flex-col overflow-y-auto gap-2 border p-3 rounded-lg inset-shadow-sm flex-1 min-h-0">
               {filteredInventory.map((item) => {
                 const isAdded = addedProductIds.has(item.product.product_ID);
-                const preset = item.unitPresets[0];
-                const levels = [...(preset?.preset?.presetLevels ?? [])].sort(
-                  (a, b) => a.level - b.level,
-                );
-                const primaryUom =
-                  levels[0]?.unitOfMeasure.uom_Name ??
-                  item.restockInfo?.[0]?.presetPricing?.[0]?.unitName ??
-                  "-";
-                const primaryPrice =
-                  (preset?.presetPricing ?? []).find((p) => p.level === 1)
-                    ?.price_Per_Unit ??
-                  item.restockInfo?.[0]?.base_Unit_Price ??
-                  null;
+                const hasNoPreset = item.unitPresets.length === 0;
+                const isDisabled = isAdded || hasNoPreset;
 
                 return (
                   <div
                     key={item.product.product_ID}
-                    className="p-3 rounded-lg border bg-custom-gray flex items-center justify-between gap-2"
+                    className={`p-3 rounded-lg border flex items-center justify-between gap-2 ${isDisabled ? "opacity-50" : "bg-custom-gray"}`}
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-semibold truncate">
                         {buildDescription(item)}
                       </p>
-                      <p className="text-xs text-vesper-gray">
-                        {primaryUom}
-                        {" · "}
-                        {primaryPrice === null
-                          ? "No price"
-                          : primaryPrice.toFixed(2)}
-                      </p>
+                      {hasNoPreset && (
+                        <p className="text-xs text-vesper-gray">
+                          No packaging preset assigned
+                        </p>
+                      )}
                     </div>
 
                     <button
                       className="max-w-fit px-3 py-2 text-xs shrink-0"
                       onClick={() => handleSelectItem(item)}
-                      disabled={isAdded}
+                      disabled={isDisabled}
                     >
                       {isAdded ? "Added" : "Add"}
                     </button>

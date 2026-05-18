@@ -50,6 +50,7 @@ type UnitPresets = {
   very_Low_Stock_Level?: number;
   main_Unit_Quantity?: number;
   restock_Number?: string;
+  sku?: string;
   presetPricing: PresetPricing[];
   presetQuantities: PresetQuantity[];
 };
