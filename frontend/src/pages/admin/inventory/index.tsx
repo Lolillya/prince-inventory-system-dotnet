@@ -288,86 +288,99 @@ const InventoryPage = () => {
                     Export Stocklist
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-72 p-0">
-                    <DropdownMenuItem
-                      className="gap-2 py-2.5"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleStocklistFilter("sufficient-stock");
-                      }}
-                    >
-                      <Check
-                        size={16}
-                        className={
-                          stocklistFilters.has("sufficient-stock")
-                            ? "text-slate-700"
-                            : "text-transparent"
-                        }
-                      />
-                      <span className="h-4 w-4 rounded-full bg-[#8fd19e]" />
-                      Sufficient stock
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="gap-2 py-2.5"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleStocklistFilter("low-stock");
-                      }}
-                    >
-                      <Check
-                        size={16}
-                        className={
-                          stocklistFilters.has("low-stock")
-                            ? "text-slate-700"
-                            : "text-transparent"
-                        }
-                      />
-                      <span className="h-4 w-4 rounded-full bg-[#f0db96]" />
-                      Low stock
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="gap-2 py-2.5"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleStocklistFilter("very-low-stock");
-                      }}
-                    >
-                      <Check
-                        size={16}
-                        className={
-                          stocklistFilters.has("very-low-stock")
-                            ? "text-slate-700"
-                            : "text-transparent"
-                        }
-                      />
-                      <span className="h-4 w-4 rounded-full bg-[#f28e8e]" />
-                      Very low stock
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="gap-2 py-2.5"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleStocklistFilter("no-stock");
-                      }}
-                    >
-                      <Check
-                        size={16}
-                        className={
-                          stocklistFilters.has("no-stock")
-                            ? "text-slate-700"
-                            : "text-transparent"
-                        }
-                      />
-                      <span className="h-4 w-4 rounded-full bg-[#d5dae3]" />
-                      No stock
-                    </DropdownMenuItem>
-                    <Separator />
-                    <DropdownMenuItem
-                      className="gap-2 py-2.5"
-                      onClick={() => exportStocklistPdf(inventory ?? [], stocklistFilters)}
-                      disabled={stocklistFilters.size === 0}
-                    >
-                      Export Stocklist
-                    </DropdownMenuItem>
+                    <div className="p-2 border-b">
+                      <div className="text-xs font-semibold text-slate-500 mb-2 px-2">Stock Levels</div>
+                      <DropdownMenuItem
+                        className="gap-2 py-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleStocklistFilter("sufficient-stock");
+                        }}
+                      >
+                        <Check
+                          size={16}
+                          className={
+                            stocklistFilters.has("sufficient-stock")
+                              ? "text-slate-700"
+                              : "text-transparent"
+                          }
+                        />
+                        <span className="h-4 w-4 rounded-full bg-[#8fd19e]" />
+                        Sufficient stock
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="gap-2 py-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleStocklistFilter("low-stock");
+                        }}
+                      >
+                        <Check
+                          size={16}
+                          className={
+                            stocklistFilters.has("low-stock")
+                              ? "text-slate-700"
+                              : "text-transparent"
+                          }
+                        />
+                        <span className="h-4 w-4 rounded-full bg-[#f0db96]" />
+                        Low stock
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="gap-2 py-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleStocklistFilter("very-low-stock");
+                        }}
+                      >
+                        <Check
+                          size={16}
+                          className={
+                            stocklistFilters.has("very-low-stock")
+                              ? "text-slate-700"
+                              : "text-transparent"
+                          }
+                        />
+                        <span className="h-4 w-4 rounded-full bg-[#f28e8e]" />
+                        Very low stock
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="gap-2 py-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleStocklistFilter("no-stock");
+                        }}
+                      >
+                        <Check
+                          size={16}
+                          className={
+                            stocklistFilters.has("no-stock")
+                              ? "text-slate-700"
+                              : "text-transparent"
+                          }
+                        />
+                        <span className="h-4 w-4 rounded-full bg-[#d5dae3]" />
+                        No stock
+                      </DropdownMenuItem>
+                    </div>
+
+                    <div className="p-2">
+                      <div className="text-xs font-semibold text-slate-500 mb-2 px-2">Hierarchy Options</div>
+                      <DropdownMenuItem
+                        className="gap-2 py-2"
+                        disabled={stocklistFilters.size === 0}
+                        onClick={() => exportStocklistPdf(inventory ?? [], stocklistFilters, true)}
+                      >
+                        Include Packaging Hierarchy
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="gap-2 py-2"
+                        disabled={stocklistFilters.size === 0}
+                        onClick={() => exportStocklistPdf(inventory ?? [], stocklistFilters, false)}
+                      >
+                        Exclude Packaging Hierarchy
+                      </DropdownMenuItem>
+                    </div>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuItem
