@@ -259,15 +259,13 @@ const InventoryPage = () => {
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-64">
                     <DropdownMenuItem
-                      onClick={() =>
-                        exportMasterlistPdf(inventory ?? [], true, true)
-                      }
+                      onClick={() => exportMasterlistPdf(inventory ?? [], true)}
                     >
                       Include Packaging Hierarchy
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() =>
-                        exportMasterlistPdf(inventory ?? [], true, false)
+                        exportMasterlistPdf(inventory ?? [], false)
                       }
                     >
                       Exclude Packaging Hierarchy
@@ -375,7 +373,11 @@ const InventoryPage = () => {
                     <DropdownMenuItem
                       className="gap-2 py-2.5"
                       onClick={() =>
-                        exportStocklistPdf(inventory ?? [], stocklistFilters)
+                        exportStocklistPdf(
+                          inventory ?? [],
+                          stocklistFilters,
+                          true,
+                        )
                       }
                       disabled={stocklistFilters.size === 0}
                     >
@@ -474,8 +476,7 @@ const InventoryPage = () => {
                               (u) =>
                                 u.very_Low_Stock_Level != null &&
                                 data.product.quantity > 0 &&
-                                data.product.quantity <=
-                                  u.very_Low_Stock_Level,
+                                data.product.quantity <= u.very_Low_Stock_Level,
                             ) && (
                               <div className="w-2 h-2 rounded-full bg-red-500" />
                             )}
