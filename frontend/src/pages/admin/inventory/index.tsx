@@ -197,9 +197,9 @@ const InventoryPage = () => {
       </Activity>
 
       {/* PRESET EDITOR MODAL */}
-      {/* <Activity mode={isPresetEditorOpen ? "visible" : "hidden"}>
+      <Activity mode={isPresetEditorOpen ? "visible" : "hidden"}>
         <ProductUnitPresetModal handlePresetEditor={handlePresetEditor} />
-      </Activity> */}
+      </Activity>
 
       {/* PRESET SELECTOR MODAL */}
       <Activity mode={isPresetSelectorOpen ? "visible" : "hidden"}>
