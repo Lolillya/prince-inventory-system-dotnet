@@ -23,6 +23,7 @@ type QuotationUomRow = {
 
 type QuotationLineItem = {
   productId: number;
+  product_Code: string;
   description: string;
   rows: QuotationUomRow[];
 };
@@ -87,43 +88,51 @@ const generateQuotationPdf = (lineItems: QuotationLineItem[]) => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const contentBottom = pageHeight - 12;
 
-  const xItem = 14;
-  const xUom = 105;
-  const xPrice = pageWidth - 14; // right-aligned
-  const itemWidth = 86;
-  const uomWidth = 56;
+  const dateStr = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+  const xCode = 12;
+  const xDesc = 55;
+  const xUom = 135;
+  const xPrice = pageWidth - 14;
+  const codeWidth = 40;
+  const descWidth = 76;
+  const uomWidth = 45;
 
   let y = 16;
 
   const drawHeader = () => {
-    // Company name
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("Prince", xItem, y);
-    y += 7;
+    doc.setFont("courier", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(0, 0, 0);
+    doc.text("QUOTATION", xCode, y);
 
-    // Document title
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.text("Quotation", xItem, y);
-    y += 3;
+    doc.setTextColor(153, 153, 153);
+    doc.text(dateStr, xCode + 115, y);
 
-    // Divider
-    doc.setDrawColor(180, 180, 180);
-    doc.setLineWidth(0.4);
-    doc.line(xItem, y, pageWidth - 14, y);
-    y += 6;
-
-    // Column headers
+    y += 12;
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text("Item", xItem, y);
-    doc.text("UOM", xUom, y);
-    doc.text("Price per Unit", xPrice, y, { align: "right" });
-    y += 2;
-    doc.line(xItem, y, pageWidth - 14, y);
-    y += 5;
+    doc.setTextColor(0, 0, 0);
+
+    doc.text("PRODUCT CODE", xCode + 2, y);
+    doc.text("DESCRIPTION", xDesc + 2, y);
+    doc.text("UOM", xUom + 2, y);
+    doc.text("PRICE", xPrice, y, { align: "right" });
+
+    y += 4;
+    doc.setDrawColor(238, 238, 238);
+    doc.line(10, y, pageWidth - 10, y);
+    y += 6;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
   };
 
   const ensureSpace = (needed: number) => {
@@ -144,22 +153,31 @@ const generateQuotationPdf = (lineItems: QuotationLineItem[]) => {
 
     includedRows.forEach((row, rowIndex) => {
       const isMainRow = row.level === 1;
-      const itemLabel = isMainRow ? lineItem.description : "";
-      const uomLabel = isMainRow ? row.uom : `\t${row.uom}`;
+      const codeLabel = isMainRow ? lineItem.product_Code : "";
+      const descLabel = isMainRow ? lineItem.description : "";
+      const uomLabel = isMainRow ? row.uom : `\t ${row.uom}`;
       const priceLabel = row.price === null ? "-" : row.price.toFixed(2);
 
-      const itemLines = isMainRow
-        ? doc.splitTextToSize(itemLabel, itemWidth)
+      const codeLines = isMainRow
+        ? doc.splitTextToSize(codeLabel, codeWidth)
+        : [""];
+      const descLines = isMainRow
+        ? doc.splitTextToSize(descLabel, descWidth)
         : [""];
       const uomLines = doc.splitTextToSize(uomLabel, uomWidth);
-      const lineCount = Math.max(itemLines.length, uomLines.length, 1);
+      const lineCount = Math.max(
+        codeLines.length,
+        descLines.length,
+        uomLines.length,
+        1,
+      );
       const rowH = lineCount * 5 + 3;
 
       ensureSpace(rowH);
 
       if (isShaded) {
         doc.setFillColor(245, 245, 245);
-        doc.rect(xItem - 2, y - 3.5, pageWidth - 26, rowH, "F");
+        doc.rect(10, y - 3.5, pageWidth - 20, rowH, "F");
       }
 
       if (isMainRow && rowIndex === 0) {
@@ -169,8 +187,9 @@ const generateQuotationPdf = (lineItems: QuotationLineItem[]) => {
       }
 
       doc.setFontSize(10);
-      doc.text(itemLines, xItem, y);
-      doc.text(uomLines, xUom, y);
+      doc.text(codeLines, xCode + 2, y);
+      doc.text(descLines, xDesc + 2, y);
+      doc.text(uomLines, xUom + 2, y);
       doc.text(priceLabel, xPrice, y, { align: "right" });
 
       y += rowH;
@@ -250,6 +269,8 @@ export const QuotationGeneratorModal = ({
   const handleAddToQuotation = () => {
     if (!selectedConfig) return;
     const { item, rowStates } = selectedConfig;
+    const preset = item.unitPresets[selectedConfig.selectedPresetIndex];
+    const product_Code = preset?.sku ?? item.product.product_Code ?? "-";
     const rows = (
       includeHierarchy ? rowStates : rowStates.filter((r) => r.level === 1)
     ).map((r) => ({ ...r, included: true }));
@@ -257,6 +278,7 @@ export const QuotationGeneratorModal = ({
       ...prev,
       {
         productId: item.product.product_ID,
+        product_Code,
         description: buildDescription(item),
         rows,
       },
