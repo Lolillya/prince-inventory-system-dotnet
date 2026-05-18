@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
+import { Separator } from "@/components/separator";
 
 const schema = yup.object().shape({
   newPassword: yup
@@ -112,6 +113,13 @@ export const RecoverAccountForm = ({
         )}
       </div>
 
+      <ul className=" list-disc ml-4">
+        <li className="text-vesper-gray text-xs">Minimum of 8 characters</li>
+        <li className="text-vesper-gray text-xs">Must include a number</li>
+      </ul>
+
+      <Separator orientation="horizontal" />
+
       <div className="flex justify-end gap-3 pt-2">
         <button
           type="button"
@@ -122,7 +130,7 @@ export const RecoverAccountForm = ({
           Cancel
         </button>
         <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Change Password"}
+          {isSubmitting ? "Saving..." : "Update Password"}
         </button>
       </div>
     </form>
