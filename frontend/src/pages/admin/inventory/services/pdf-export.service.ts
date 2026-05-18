@@ -118,7 +118,7 @@ export const exportMasterlistPdf = (
 
             sortedLevels.slice(1).forEach((level) => {
                 doc.text(
-                    `└─ ${level.unitOfMeasure.uom_Name} (${level.conversion_Factor}x)`,
+                    `${level.unitOfMeasure.uom_Name} (${level.conversion_Factor}x)`,
                     xUom + 6,
                     currentY,
                 );

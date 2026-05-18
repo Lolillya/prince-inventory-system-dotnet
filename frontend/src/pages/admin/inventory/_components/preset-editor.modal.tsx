@@ -228,10 +228,7 @@ export const ProductUnitPresetModal = ({
 
               <div className="flex justify-between items-center mb-2">
                 <span className="bg-gray-100 text-saltbox-gray text-xs px-3 py-1.5 rounded-md font-semibold">Active filters (0)</span>
-                <button className="flex items-center gap-1 text-[#00b69b] text-sm font-semibold hover:opacity-80">
-                  <RotateCcwIcon className="w-4 h-4" />
-                  Clear All
-                </button>
+                <span className="text-[#00b69b] text-sm font-semibold underline decoration-[#00b69b] underline-offset-2">⟳ Clear All</span>
               </div>
 
               {/* TABLE HEADER */}
