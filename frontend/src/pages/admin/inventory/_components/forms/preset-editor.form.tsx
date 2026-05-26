@@ -231,170 +231,178 @@ export const PresetEditorForm = ({
         </label>
       </div>
 
-      <Separator orientation="horizontal" className="bg-vesper-gray/30" />
+      {mainUnitId && (
+        <Separator orientation="horizontal" className="bg-vesper-gray/30" />
+      )}
 
       {/* Conversion Chain */}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col">
-          <label className="font-semibold text-sm">Conversion Chain</label>
-          <span className="text-xs text-vesper-gray">
-            Define the conversion flow from the main unit down to the smallest
-            unit. Conversions are optional — leave empty for a standalone
-            preset.
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          {/* Level 1 — static main unit */}
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-river-green text-white rounded-full flex items-center justify-center text-xs shrink-0 ml-1">
-              1
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">
-                {selectedMainUnit ? (
-                  selectedMainUnit.uom_Name
-                ) : (
-                  <span className="text-gray-400 italic">Main Unit</span>
-                )}
-              </span>
-              <span className="text-xs text-vesper-gray">(Main Unit)</span>
-            </div>
+      {mainUnitId && (
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col">
+            <label className="font-semibold text-sm">Conversion Chain</label>
+            <span className="text-xs text-vesper-gray">
+              Define the conversion flow from the main unit down to the smallest
+              unit. Conversions are optional — leave empty for a standalone
+              preset.
+            </span>
           </div>
 
-          {/* Draggable conversion rows */}
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="conversions">
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className="flex flex-col gap-1.5"
-                >
-                  {conversions.map((conv, idx) => (
-                    <Draggable key={conv.id} draggableId={conv.id} index={idx}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={`flex items-center gap-2 rounded-md p-1 transition-colors ${
-                            snapshot.isDragging ? "bg-blue-50 shadow-md" : ""
-                          }`}
-                        >
-                          <div className="w-6 h-6 bg-river-green text-white rounded-full flex items-center justify-center text-xs shrink-0">
-                            {idx + 2}
-                          </div>
+          <div className="flex flex-col gap-1.5">
+            {/* Level 1 — static main unit */}
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 bg-river-green text-white rounded-full flex items-center justify-center text-xs shrink-0 ml-1">
+                1
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold">
+                  {selectedMainUnit ? (
+                    selectedMainUnit.uom_Name
+                  ) : (
+                    <span className="text-gray-400 italic">Main Unit</span>
+                  )}
+                </span>
+                <span className="text-xs text-vesper-gray">(Main Unit)</span>
+              </div>
+            </div>
 
-                          <span className="text-base text-gray-400 select-none font-mono">
-                            └─
-                          </span>
-
+            {/* Draggable conversion rows */}
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="conversions">
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="flex flex-col gap-1.5"
+                  >
+                    {conversions.map((conv, idx) => (
+                      <Draggable
+                        key={conv.id}
+                        draggableId={conv.id}
+                        index={idx}
+                      >
+                        {(provided, snapshot) => (
                           <div
-                            {...provided.dragHandleProps}
-                            className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={`flex items-center gap-2 rounded-md p-1 transition-colors ${
+                              snapshot.isDragging ? "bg-blue-50 shadow-md" : ""
+                            }`}
                           >
-                            <GripVertical size={16} />
-                          </div>
+                            <div className="w-6 h-6 bg-river-green text-white rounded-full flex items-center justify-center text-xs shrink-0">
+                              {idx + 2}
+                            </div>
 
-                          <Select
-                            value={conv.uomId}
-                            onValueChange={(value) => {
-                              if (value === "__add_new__") {
-                                onOpenAddUnitModal();
-                                return;
-                              }
-                              handleConversionChange(idx, "uomId", value);
-                            }}
-                          >
-                            <SelectTrigger className="rounded-md p-2 border text-sm max-w-xs bg-white w-full">
-                              <SelectValue placeholder="Select Unit..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableFor(conv.uomId).map((u) => (
-                                <SelectItem
-                                  key={u.uom_ID}
-                                  value={String(u.uom_ID)}
-                                >
-                                  {u.uom_Name}
+                            <span className="text-base text-gray-400 select-none font-mono">
+                              └─
+                            </span>
+
+                            <div
+                              {...provided.dragHandleProps}
+                              className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+                            >
+                              <GripVertical size={16} />
+                            </div>
+
+                            <Select
+                              value={conv.uomId}
+                              onValueChange={(value) => {
+                                if (value === "__add_new__") {
+                                  onOpenAddUnitModal();
+                                  return;
+                                }
+                                handleConversionChange(idx, "uomId", value);
+                              }}
+                            >
+                              <SelectTrigger className="rounded-md p-2 border text-sm max-w-xs bg-white w-full">
+                                <SelectValue placeholder="Select Unit..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {availableFor(conv.uomId).map((u) => (
+                                  <SelectItem
+                                    key={u.uom_ID}
+                                    value={String(u.uom_ID)}
+                                  >
+                                    {u.uom_Name}
+                                  </SelectItem>
+                                ))}
+                                <SelectSeparator />
+                                <SelectItem value="__add_new__">
+                                  <span className="text-river-green font-semibold">
+                                    + Add New Unit
+                                  </span>
                                 </SelectItem>
-                              ))}
-                              <SelectSeparator />
-                              <SelectItem value="__add_new__">
-                                <span className="text-river-green font-semibold">
-                                  + Add New Unit
-                                </span>
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                              </SelectContent>
+                            </Select>
 
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="Enter quantity..."
-                            className="max-w-xs w-full shrink-0 rounded-md border p-2 text-sm drop-shadow-none shadow-none"
-                            value={
-                              focusedFactorIdx === idx
-                                ? conv.factor
-                                : conv.factor
-                                  ? `${conv.factor}x`
-                                  : ""
-                            }
-                            onFocus={() => setFocusedFactorIdx(idx)}
-                            onBlur={() => setFocusedFactorIdx(null)}
-                            onChange={(e) => {
-                              const digits = e.target.value.replace(
-                                /[^0-9]/g,
-                                "",
-                              );
-                              const parsed = Number(digits);
-                              const value =
-                                digits === "" || parsed < 1
-                                  ? ""
-                                  : String(parsed);
-                              handleConversionChange(idx, "factor", value);
-                            }}
-                          />
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="Enter quantity..."
+                              className="max-w-xs w-full shrink-0 rounded-md border p-2 text-sm drop-shadow-none shadow-none"
+                              value={
+                                focusedFactorIdx === idx
+                                  ? conv.factor
+                                  : conv.factor
+                                    ? `${conv.factor}x`
+                                    : ""
+                              }
+                              onFocus={() => setFocusedFactorIdx(idx)}
+                              onBlur={() => setFocusedFactorIdx(null)}
+                              onChange={(e) => {
+                                const digits = e.target.value.replace(
+                                  /[^0-9]/g,
+                                  "",
+                                );
+                                const parsed = Number(digits);
+                                const value =
+                                  digits === "" || parsed < 1
+                                    ? ""
+                                    : String(parsed);
+                                handleConversionChange(idx, "factor", value);
+                              }}
+                            />
 
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveConversion(idx)}
-                            className="p-2 rounded-md bg-red-50 border-2 border-red-200 hover:border-red-500 transition-colors shrink-0 w-fit"
-                          >
-                            <Trash2 size={15} className="text-red-500" />
-                          </button>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveConversion(idx)}
+                              className="p-2 rounded-md bg-red-50 border-2 border-red-200 hover:border-red-500 transition-colors shrink-0 w-fit"
+                            >
+                              <Trash2 size={15} className="text-red-500" />
+                            </button>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
 
-        <button
-          type="button"
-          disabled={conversions.length >= MAX_CONVERSIONS}
-          onClick={handleAddConversion}
-          className="bg-white text-river-green border-2 border-river-green py-1.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          + Add Conversion
-        </button>
+          <button
+            type="button"
+            disabled={conversions.length >= MAX_CONVERSIONS}
+            onClick={handleAddConversion}
+            className="bg-white text-river-green border-2 border-river-green py-1.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            + Add Conversion
+          </button>
 
-        <div className="flex items-start gap-2">
-          <Info size={15} className="text-vesper-gray mt-0.5 shrink-0" />
-          <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-vesper-gray">
-              Drag and drop to reorder conversions.
-            </span>
-            <span className="text-xs text-vesper-gray">
-              You can add up to {MAX_CONVERSIONS} conversions (plus the main
-              unit). Conversions are optional for standalone presets.
-            </span>
+          <div className="flex items-start gap-2">
+            <Info size={15} className="text-vesper-gray mt-0.5 shrink-0" />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-vesper-gray">
+                Drag and drop to reorder conversions.
+              </span>
+              <span className="text-xs text-vesper-gray">
+                You can add up to {MAX_CONVERSIONS} conversions (plus the main
+                unit). Conversions are optional for standalone presets.
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Add new unit shortcut */}
       {/* <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
