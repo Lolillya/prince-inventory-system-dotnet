@@ -370,7 +370,7 @@ const InventoryPage = () => {
                       No stock
                     </DropdownMenuItem>
                     <Separator />
-                    <DropdownMenuItem
+                    {/* <DropdownMenuItem
                       className="gap-2 py-2.5"
                       onClick={() =>
                         exportStocklistPdf(
@@ -382,6 +382,13 @@ const InventoryPage = () => {
                       disabled={stocklistFilters.size === 0}
                     >
                       Export Stocklist
+                    </DropdownMenuItem> */}
+
+                    <DropdownMenuItem>
+                      Include Packaging Hierarchy
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      Exclude Packaging Hierarchy
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
