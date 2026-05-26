@@ -384,10 +384,28 @@ const InventoryPage = () => {
                       Export Stocklist
                     </DropdownMenuItem> */}
 
-                    <DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        exportStocklistPdf(
+                          inventory ?? [],
+                          stocklistFilters,
+                          true,
+                        )
+                      }
+                      disabled={stocklistFilters.size === 0}
+                    >
                       Include Packaging Hierarchy
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        exportStocklistPdf(
+                          inventory ?? [],
+                          stocklistFilters,
+                          false,
+                        )
+                      }
+                      disabled={stocklistFilters.size === 0}
+                    >
                       Exclude Packaging Hierarchy
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
