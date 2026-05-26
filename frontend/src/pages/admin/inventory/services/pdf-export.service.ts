@@ -2,7 +2,12 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import jsPDF from "jspdf";
 
 const buildProductDescription = (item: InventoryProductModel) => {
-  return item.product.product_Name;
+  const itemName = item.product.product_Name;
+  const brandName = item.brand?.brandName || "";
+  const variantName = item.variant?.variant_Name || "";
+  
+  const parts = [itemName, brandName, variantName].filter(Boolean);
+  return parts.join(" - ");
 };
 
 export const exportMasterlistPdf = (
