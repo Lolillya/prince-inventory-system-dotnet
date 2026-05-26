@@ -57,6 +57,7 @@ interface AddProductFormProps {
   setIsVariantModalOpen: (isOpen: boolean) => void;
   setIsItemModalOpen: (isOpen: boolean) => void;
   setIsAddProductModalOpen: (isOpen: boolean) => void;
+  setIsModalOpen: (isOpen: boolean) => void;
 }
 
 const AddProductForm = ({
@@ -70,6 +71,7 @@ const AddProductForm = ({
   setIsVariantModalOpen,
   setIsItemModalOpen,
   setIsAddProductModalOpen,
+  setIsModalOpen,
 }: AddProductFormProps) => {
   const {
     register,
@@ -107,6 +109,12 @@ const AddProductForm = ({
     const variantCode = String(watchedVariantId).padStart(4, "0");
 
     setGeneratedProductCode(`${itemCode}-${brandCode}-${variantCode}`);
+  };
+
+  const handleReset = () => {
+    reset();
+
+    setIsModalOpen(false);
   };
 
   // Auto-generate code when dependencies change
@@ -342,7 +350,7 @@ const AddProductForm = ({
       <div className="flex gap-2 justify-between items-center">
         <button
           type="button"
-          onClick={() => reset()}
+          onClick={handleReset}
           className="px-6 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 font-medium hover:bg-gray-50"
         >
           Cancel

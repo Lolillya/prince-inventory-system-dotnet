@@ -92,6 +92,7 @@ export const AddProductModal = ({
             setIsVariantModalOpen={setIsVariantModalOpen}
             setIsItemModalOpen={setIsItemModalOpen}
             setIsAddProductModalOpen={setIsAddProductModalOpen}
+            setIsModalOpen={setIsModalOpen}
           />
         )}
 
