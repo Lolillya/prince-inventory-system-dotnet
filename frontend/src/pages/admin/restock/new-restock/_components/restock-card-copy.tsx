@@ -118,15 +118,13 @@ export const RestockCard2 = ({
 
       <div className="flex gap-2 items-center text-xs justify-between">
         <div>
-          <span>{product.product.product_Name}</span>
-          <span> - </span>
-          <span>{product.brand.brandName}</span>
-          <span> - </span>
-          <span>{product.variant.variant_Name}</span>
+          <span className="font-semibold text-base">
+            {product.product.product_Name}
+          </span>
         </div>
 
         <div
-          className="cursor-pointer hover:bg-gray-200 rounded p-1"
+          className="cursor-pointer hover:bg-gray-200 rounded p-1 text-gray-500 hover:text-gray-700 transition-colors duration-300"
           onClick={onRemove}
         >
           <XIcon />
@@ -192,9 +190,14 @@ export const RestockCard2 = ({
                 <input
                   type="number"
                   className="input-style-3 w-full"
-                  value={mainQuantity}
-                  onChange={(e) => handleQuantityChange(Number(e.target.value))}
-                  min="0"
+                  value={mainQuantity || ""}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val > 0) handleQuantityChange(val);
+                    else if (e.target.value === "") handleQuantityChange(0);
+                  }}
+                  min={1}
+                  placeholder="Enter quantity..."
                 />
               </div>
 
