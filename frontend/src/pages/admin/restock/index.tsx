@@ -182,7 +182,7 @@ const RestockPage = () => {
             <NoRestockState />
           </div>
         ) : (
-          restockItems?.map((r) => (
+          restockItems?.slice().sort((a, b) => new Date(b.created_At).getTime() - new Date(a.created_At).getTime()).map((r) => (
             <div
               key={r.restock_Id}
               className="relative flex flex-col justify-between gap-5 border rounded-lg py-3 px-5 bg-custom-gray h-fit w-full break-inside-avoid"

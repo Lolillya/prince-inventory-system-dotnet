@@ -5,10 +5,12 @@ import { SupplierPicker } from "@/components/supplier-picker";
 
 interface CreateRestockModalProps {
   createRestock: () => void;
+  nextRestockNumber: string;
 }
 
 export const CreateRestockModal = ({
   createRestock,
+  nextRestockNumber,
 }: CreateRestockModalProps) => {
   const { data: suppliersData } = useSuppliersQuery();
   return (
@@ -20,7 +22,7 @@ export const CreateRestockModal = ({
             <div className="flex items-center gap-2">
               <h2>Restock Confirmation</h2>
               <span className="text-vesper-gray text-lg tracking-wider">
-                #000000
+                {nextRestockNumber}
               </span>
             </div>
             <div onClick={createRestock}>

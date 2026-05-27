@@ -100,7 +100,10 @@ const NewRestockPage = () => {
   return (
     <>
       <Activity mode={isModalOpen ? "visible" : "hidden"}>
-        <CreateRestockModal createRestock={createRestock} />
+        <CreateRestockModal
+          createRestock={createRestock}
+          nextRestockNumber={nextRestockNumber}
+        />
       </Activity>
       <section className="relative">
         <div className="flex flex-col min-h-0 flex-1 gap-5">
