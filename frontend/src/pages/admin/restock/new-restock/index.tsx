@@ -133,7 +133,7 @@ const NewRestockPage = () => {
                 {!items || items.length === 0 ? (
                   <NoSelectedState />
                 ) : (
-                  <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
+                  <div className="grid grid-cols-2 gap-2 h-full overflow-y-auto flex-1 pr-2 content-start auto-rows-min">
                     {items.map((item, i) => {
                       // Get all selected presets for this product from other items
                       const selectedPresetIds = items
