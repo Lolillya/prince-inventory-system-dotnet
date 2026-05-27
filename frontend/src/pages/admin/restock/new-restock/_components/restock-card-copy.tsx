@@ -136,8 +136,8 @@ export const RestockCard2 = ({
 
       <Separator orientation="horizontal" />
 
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-3 pt-2">
+        <div className="flex flex-col gap-2">
           <label className="font-semibold">Packaging Preset</label>
           {isPresetLocked ? (
             <div className="text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded px-2 py-1">
@@ -250,7 +250,7 @@ export const RestockCard2 = ({
         )}
       </div>
 
-      <Separator orientation="horizontal" />
+      {/* <Separator orientation="horizontal" /> */}
     </div>
   );
 };
