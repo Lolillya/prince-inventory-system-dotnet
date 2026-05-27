@@ -186,28 +186,32 @@ export const SelectedProduct = ({
                 >
                   <div className="flex w-full items-center justify-between text-saltbox-gray text-xs font-semibold mb-2">
                     <div className="flex items-center gap-2 w-1/3">
-                      {product.product.quantity === 0 ? (
-                        <div className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200">
-                          <div className="w-2.5 h-2.5 bg-gray-500 rounded-full" />{" "}
-                          Out of Stock
-                        </div>
-                      ) : product.product.quantity <=
-                        u.very_Low_Stock_Level! ? (
-                        <div className="flex items-center gap-1.5 bg-red-50 text-red-600 px-2.5 py-1 rounded-full border border-red-200">
-                          <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />{" "}
-                          Critical Stock
-                        </div>
-                      ) : product.product.quantity <= u.low_Stock_Level! ? (
-                        <div className="flex items-center gap-1.5 bg-orange-50 text-orange-500 px-2.5 py-1 rounded-full border border-orange-200">
-                          <div className="w-2.5 h-2.5 bg-orange-400 rounded-full" />{" "}
-                          Low Stock
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 bg-green-50 text-green-600 px-2.5 py-1 rounded-full border border-green-200">
-                          <div className="w-2.5 h-2.5 bg-green-500 rounded-full" />{" "}
-                          Sufficient Stock
-                        </div>
-                      )}
+                      {(() => {
+                        const remainingQty =
+                          u.presetQuantities?.find((q) => q.level === 1)
+                            ?.remaining_Quantity ?? 0;
+                        return remainingQty === 0 ? (
+                          <div className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200">
+                            <div className="w-2.5 h-2.5 bg-gray-500 rounded-full" />{" "}
+                            Out of Stock
+                          </div>
+                        ) : remainingQty <= u.very_Low_Stock_Level! ? (
+                          <div className="flex items-center gap-1.5 bg-red-50 text-red-600 px-2.5 py-1 rounded-full border border-red-200">
+                            <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />{" "}
+                            Critical Stock
+                          </div>
+                        ) : remainingQty <= u.low_Stock_Level! ? (
+                          <div className="flex items-center gap-1.5 bg-orange-50 text-orange-500 px-2.5 py-1 rounded-full border border-orange-200">
+                            <div className="w-2.5 h-2.5 bg-orange-400 rounded-full" />{" "}
+                            Low Stock
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 bg-green-50 text-green-600 px-2.5 py-1 rounded-full border border-green-200">
+                            <div className="w-2.5 h-2.5 bg-green-500 rounded-full" />{" "}
+                            Sufficient Stock
+                          </div>
+                        );
+                      })()}
                     </div>
                     <div className="w-1/3 text-center">Quantity</div>
                     <div className="w-1/3 text-right">Price</div>
