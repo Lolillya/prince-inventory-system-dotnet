@@ -166,12 +166,14 @@ namespace backend.Controller.RestockControllers
                             .ThenInclude(rli => rli.UnitPreset)
                                 .ThenInclude(up => up!.PresetLevels)
                                     .ThenInclude(pl => pl.UnitOfMeasure)
+                    .Include(r => r.PurchaseOrder)
                     .Select(r => new
                     {
                         r.Status,
                         restock_Id = r.Restock_ID,
                         restock_Number = r.Restock_Number,
                         restock_Notes = r.Restock_Notes,
+                        purchase_order_number = r.PurchaseOrder != null ? r.PurchaseOrder.Purchase_Order_Number : null,
                         clerk = r.Clerk != null ? new
                         {
                             r.Clerk.Id,

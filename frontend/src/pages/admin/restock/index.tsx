@@ -179,7 +179,7 @@ const RestockPage = () => {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 overflow-y-auto overflow-x-hidden flex-1 pr-1">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 overflow-y-auto overflow-x-hidden pr-1">
         {restockItems?.length === 0 ? (
           <div className="flex-1 flex justify-center items-center">
             <NoRestockState />
@@ -211,6 +211,12 @@ const RestockPage = () => {
                         <span className="text-lg font-bold text-saltbox-gray tracking-wide">
                           #{r.restock_Number}
                         </span>
+
+                        {r.purchase_order_number && (
+                          <span className="text-sm font-semibold text-saltbox-gray border border-gray-200 rounded px-2 py-0.5">
+                            PO {r.purchase_order_number}
+                          </span>
+                        )}
                         <Pin className="text-amber-300 rotate-45" size={20} />
 
                         <Popover>
