@@ -5,6 +5,7 @@ import { PurchaseOrderRecord } from "@/features/purchase-order/purchase-order.mo
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { RestockCard2 } from "../new-restock/_components/restock-card-copy";
 import { PORestockConfirmModal } from "./_components/po-restock-confirm.modal";
+import { ArrowLeft } from "lucide-react";
 
 export type PORestockCardState = {
   lineItemId: number;
@@ -158,12 +159,13 @@ const PORestockPage = () => {
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <button
+        <div
           onClick={() => navigate("/admin/restock")}
-          className="text-sm text-gray-500 hover:text-gray-700 hover:underline"
+          className="text-sm text-gray-500 hover:text-gray-700 hover:underline flex gap-2 items-center cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200"
         >
-          ← Back
-        </button>
+          <ArrowLeft />
+          <label>Back</label>
+        </div>
         <h1 className="text-lg font-semibold">PO Restock</h1>
         <span className="text-saltbox-gray text-sm tracking-wider">
           #{po.purchase_Order_Number}
@@ -186,7 +188,7 @@ const PORestockPage = () => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-auto h-full">
           {cards
             .filter((c) => !c.removed)
             .map((card) => {
@@ -223,7 +225,7 @@ const PORestockPage = () => {
       {activeCards.length > 0 && (
         <div className="flex justify-end">
           <button
-            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+            className="cursor-pointer text-white rounded text-sm"
             onClick={() => setIsConfirmOpen(true)}
           >
             Continue
