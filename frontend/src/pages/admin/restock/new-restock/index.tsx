@@ -10,12 +10,27 @@ import {
 } from "@/features/restock/unit-preset-restock.query";
 import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
+import { useRestockQuery } from "@/features/restock/restock-get-all";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
   const { data: inventoryData, isLoading, error } = UseInventoryQuery();
   const { data: items = [] } = useUnitPresetRestockItems();
   const { addProduct, removeProduct, clearAll } = useUnitPresetRestock();
+  const { data: allRestocks = [] } = useRestockQuery();
+
+  const nextRestockNumber = (() => {
+    const year = new Date().getFullYear();
+    const prefix = `RS-${year}-`;
+    const numbers = allRestocks
+      .map((r) => {
+        const match = r.restock_Number?.match(/RS-\d{4}-(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+      .filter((n) => n > 0);
+    const next = numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
+    return `${prefix}${String(next).padStart(3, "0")}`;
+  })();
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,7 +108,7 @@ const NewRestockPage = () => {
             <div className="flex gap-3 border-b pb-5 items-center">
               <LeftArrowIcon />
               <span>new restock</span>
-              <span>#123456</span>
+              <span>{nextRestockNumber}</span>
             </div>
           </div>
 
@@ -125,7 +140,7 @@ const NewRestockPage = () => {
                         .filter(
                           (otherItem) =>
                             otherItem.product.product_ID ===
-                            item.product.product_ID &&
+                              item.product.product_ID &&
                             (otherItem as any).itemId !== (item as any).itemId,
                         )
                         .map(
@@ -168,16 +183,23 @@ const NewRestockPage = () => {
                   </div>
 
                   <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
-                    {inventoryData?.filter((data) =>
-                      data.product.product_Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      data.product.product_Code.toLowerCase().includes(searchTerm.toLowerCase())
-                    ).map((data, i) => (
-                      <ProductCard
-                        product={data}
-                        onClick={() => handleClick(data)}
-                        key={i}
-                      />
-                    ))}
+                    {inventoryData
+                      ?.filter(
+                        (data) =>
+                          data.product.product_Name
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()) ||
+                          data.product.product_Code
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()),
+                      )
+                      .map((data, i) => (
+                        <ProductCard
+                          product={data}
+                          onClick={() => handleClick(data)}
+                          key={i}
+                        />
+                      ))}
                   </div>
                 </div>
 
@@ -186,10 +208,11 @@ const NewRestockPage = () => {
                   <button
                     onClick={createRestock}
                     disabled={!allItemsReady}
-                    className={`px-4 py-2 rounded ${allItemsReady
+                    className={`px-4 py-2 rounded ${
+                      allItemsReady
                         ? "text-white cursor-pointer"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      }`}
+                    }`}
                   >
                     confirm restock
                   </button>
