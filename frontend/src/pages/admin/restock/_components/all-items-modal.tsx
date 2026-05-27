@@ -67,7 +67,7 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
             {/* TABLE DATA HEADERS */}
             <div className="flex justify-between py-3 px-5 bg-custom-gray rounded-lg gap-2">
               <label className="text-left w-full uppercase text-xs font-semibold">
-                Item
+                Product
               </label>
               <label className="text-left w-[70%] uppercase text-xs font-semibold">
                 Conversion
@@ -86,10 +86,6 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                 >
                   <div className="text-nowrap text-sm w-full">
                     <span>{item.product.product_Name}</span>
-                    <span> - </span>
-                    <span>{item.product.brand.brandName}</span>
-                    <span> - </span>
-                    <span>{item.product.variant.variant_Name}</span>
                   </div>
                   <span className="text-left w-[70%]">
                     {item.unit_Preset?.preset_Levels
@@ -97,7 +93,7 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                         (l) =>
                           l.unit?.uom_Name +
                           (l.conversion_Factor !== 1
-                            ? ` (x${l.conversion_Factor})`
+                            ? ` (${l.conversion_Factor}x)`
                             : ""),
                       )
                       .filter(Boolean)

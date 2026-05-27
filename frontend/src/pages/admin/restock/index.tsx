@@ -206,7 +206,7 @@ const RestockPage = () => {
                 </div>
                 <div className="flex flex-1 p-3">
                   <div className="flex flex-col gap-3 w-full">
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-4">
                       <div className="flex items-center gap-5">
                         <span className="text-lg font-bold text-saltbox-gray tracking-wide">
                           #{r.restock_Number}
