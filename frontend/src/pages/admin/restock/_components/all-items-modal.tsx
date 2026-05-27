@@ -1,6 +1,8 @@
 import { Separator } from "@/components/separator";
 import { RestockAllModel } from "@/features/restock/models/restock-all.model";
+import { useUpdateRestockNotesMutation } from "@/features/restock/update-restock-notes.query";
 import { Calendar } from "lucide-react";
+import { useState } from "react";
 
 interface Props {
   selectedRestock: RestockAllModel;
@@ -8,6 +10,16 @@ interface Props {
 }
 
 export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
+  const { mutateAsync: updateNotes, isPending: isSaving } =
+    useUpdateRestockNotesMutation();
+  const [notes, setNotes] = useState(selectedRestock.restock_Notes ?? "");
+  const isDirty = notes !== (selectedRestock.restock_Notes ?? "");
+
+  const handleSave = async () => {
+    await updateNotes({ restockId: selectedRestock.restock_Id, notes });
+    onClose();
+  };
+
   console.log("selected-restock", selectedRestock);
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
@@ -109,8 +121,9 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
             <textarea
               rows={4}
               placeholder="No restock notes"
-              value={selectedRestock.restock_Notes}
-              className="focus:outline-none p-2"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="focus:outline-none p-2 resize-none border rounded"
             />
 
             {/* FOOTER */}
@@ -131,7 +144,13 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                 </div>
               </div>
 
-              <button onClick={onClose}>Close</button>
+              <button
+                onClick={isDirty ? handleSave : onClose}
+                disabled={isSaving}
+                className="disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : isDirty ? "Save" : "Close"}
+              </button>
             </div>
           </div>
         </div>
