@@ -14,7 +14,7 @@ export const DeliveryStatusChoiceModal = ({
 }: DeliveryStatusChoiceModalProps) => {
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-60">
-      <div className="w-[760px] bg-white px-8 py-7 rounded-lg border shadow-xl flex flex-col gap-6">
+      <div className="w-[900px] max-w-[95vw] bg-white px-8 py-5 rounded-lg border shadow-xl flex flex-col gap-4">
         <div>
           <h2 className="text-2xl font-bold text-[#0A1931]">Mark Delivery Status</h2>
           <p className="text-base text-gray-500 mt-2">
@@ -29,7 +29,7 @@ export const DeliveryStatusChoiceModal = ({
           </div>
 
           <div className="px-4 pb-2">
-            <div className="max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-gray-500 text-xs font-semibold">
@@ -82,14 +82,14 @@ export const DeliveryStatusChoiceModal = ({
                 Partial Delivery
               </label>
             </div>
-            <p className="text-sm text-[#A67C00] flex-grow leading-relaxed mb-6 font-medium">
+            <p className="text-sm text-[#A67C00] flex-grow leading-relaxed mb-4 font-medium">
               The PO stays open. Remaining quantities are remembered and will be
               pre-filled the next time you restock from this PO.
             </p>
             <button
               disabled={isPending}
               onClick={() => onChoose("PARTIAL")}
-              className="text-center font-bold text-[#A67C00] disabled:opacity-50 hover:underline transition-all"
+              className="self-center bg-transparent border-none outline-none whitespace-nowrap text-center font-bold text-[#A67C00] disabled:opacity-50 hover:underline transition-all"
             >
               Mark As Partial Delivery
             </button>
@@ -102,14 +102,14 @@ export const DeliveryStatusChoiceModal = ({
                 Fully Delivered
               </label>
             </div>
-            <p className="text-sm text-[#208350] flex-grow leading-relaxed mb-6 font-medium">
+            <p className="text-sm text-[#208350] flex-grow leading-relaxed mb-4 font-medium">
               Received items are added to inventory. Any remaining undelivered
               quantities are waived. This PO will be closed.
             </p>
             <button
               disabled={isPending}
               onClick={() => onChoose("FULLY_DELIVERED")}
-              className="text-center font-bold text-[#208350] disabled:opacity-50 hover:underline transition-all"
+              className="self-center bg-transparent border-none outline-none whitespace-nowrap text-center font-bold text-[#208350] disabled:opacity-50 hover:underline transition-all"
             >
               Mark As Fully Delivered
             </button>
