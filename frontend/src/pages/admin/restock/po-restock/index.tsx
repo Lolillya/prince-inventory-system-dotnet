@@ -5,7 +5,7 @@ import { PurchaseOrderRecord } from "@/features/purchase-order/purchase-order.mo
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { RestockCard2 } from "../new-restock/_components/restock-card-copy";
 import { PORestockConfirmModal } from "./_components/po-restock-confirm.modal";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Truck } from "lucide-react";
 
 export type PORestockCardState = {
   lineItemId: number;
@@ -66,21 +66,21 @@ function buildFakeProduct(
     },
     unitPresets: li.preset_ID
       ? [
-          {
-            assigned_At: "",
+        {
+          assigned_At: "",
+          preset_ID: li.preset_ID,
+          product_Preset_ID: 0,
+          presetPricing: [],
+          preset: {
             preset_ID: li.preset_ID,
-            product_Preset_ID: 0,
-            presetPricing: [],
-            preset: {
-              preset_ID: li.preset_ID,
-              preset_Code: li.unit_Preset?.preset_Code ?? "",
-              main_Unit_ID: 0,
-              created_At: "",
-              updated_At: "",
-              presetLevels,
-            },
+            preset_Code: li.unit_Preset?.preset_Code ?? "",
+            main_Unit_ID: 0,
+            created_At: "",
+            updated_At: "",
+            presetLevels,
           },
-        ]
+        },
+      ]
       : [],
     isComplete: false,
     isFavorited: false,
@@ -158,22 +158,32 @@ const PORestockPage = () => {
       )}
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-start gap-4 mb-6 pb-4 border-b border-gray-200">
         <div
           onClick={() => navigate("/admin/restock")}
-          className="text-sm text-gray-500 hover:text-gray-700 hover:underline flex gap-2 items-center cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200"
+          className="text-gray-500 hover:text-gray-700 flex items-center cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200"
         >
-          <ArrowLeft />
-          <label>Back</label>
+          <ArrowLeft className="w-5 h-5" />
         </div>
-        <h1 className="text-lg font-semibold">PO Restock</h1>
-        <span className="text-saltbox-gray text-sm tracking-wider">
-          #{po.purchase_Order_Number}
-        </span>
-        <span className="text-xs text-gray-500">
-          {po.supplier.company_Name ||
-            `${po.supplier.first_Name} ${po.supplier.last_Name}`}
-        </span>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-gray-800">PO Restock</h1>
+            <span className="text-gray-500 font-medium">
+              #{po.purchase_Order_Number}
+            </span>
+            <span className="text-gray-400">•</span>
+            <span className="text-xs bg-yellow-50 text-yellow-600 px-3 py-0.5 rounded-full border border-yellow-200 font-medium">
+              Partial
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+            <Truck className="w-4 h-4" />
+            <span>
+              {po.supplier.company_Name ||
+                `${po.supplier.first_Name} ${po.supplier.last_Name}`}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Cards grid */}
@@ -223,9 +233,9 @@ const PORestockPage = () => {
 
       {/* Footer action */}
       {activeCards.length > 0 && (
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-4">
           <button
-            className="cursor-pointer text-white rounded text-sm"
+            className="cursor-pointer text-white bg-blue-500 hover:bg-blue-600 rounded px-6 py-2 text-sm font-medium"
             onClick={() => setIsConfirmOpen(true)}
           >
             Continue

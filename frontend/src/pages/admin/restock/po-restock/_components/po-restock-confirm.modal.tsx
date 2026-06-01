@@ -6,7 +6,7 @@ import { useCreatePORestockMutation } from "@/features/restock/po-restock.query"
 import { PORestockDeliveryStatus } from "@/features/restock/models/po-restock.model";
 import { PORestockCardState } from "../index";
 import { DeliveryStatusChoiceModal } from "./delivery-status-choice.modal";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ClipboardList } from "lucide-react";
 
 interface PORestockConfirmModalProps {
   po: PurchaseOrderRecord;
@@ -87,7 +87,7 @@ export const PORestockConfirmModal = ({
   return (
     <>
       <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
-        <div className="w-[820px] max-h-[90vh] overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg flex flex-col gap-4">
+        <div className="w-[1024px] max-h-[90vh] overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg flex flex-col gap-4">
           {/* Header */}
           <div>
             <div className="flex items-center gap-2">
@@ -168,10 +168,10 @@ export const PORestockConfirmModal = ({
                   </div>
                   <div
                     className={`col-span-1 text-right font-bold ${row.discrepancy > 0
-                        ? "text-blue-600"
-                        : row.discrepancy < 0
-                          ? "text-red-500"
-                          : "text-green-600"
+                      ? "text-blue-600"
+                      : row.discrepancy < 0
+                        ? "text-red-500"
+                        : "text-green-600"
                       }`}
                   >
                     {row.discrepancy > 0
@@ -200,7 +200,8 @@ export const PORestockConfirmModal = ({
           <details className="group border border-gray-200 rounded-md overflow-hidden bg-gray-50/50">
             <summary className="flex text-sm cursor-pointer items-center justify-between px-4 py-3 font-semibold text-gray-700 hover:bg-gray-100 list-none [&::-webkit-details-marker]:hidden">
               <span className="flex items-center gap-2">
-                Add restock notes
+                <ClipboardList className="w-4 h-4 text-gray-500" />
+                Add notes (optional)
               </span>
               <ChevronDown className="w-4 h-4 text-gray-500 transition-transform group-open:rotate-180" />
             </summary>
