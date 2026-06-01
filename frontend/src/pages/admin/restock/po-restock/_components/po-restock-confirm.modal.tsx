@@ -49,7 +49,7 @@ export const PORestockConfirmModal = ({
       lineItemId: card.lineItemId,
       productName: li?.product?.product_Name ?? "",
       brand: li?.product?.brand ?? "",
-      presetCode: li?.unit_Preset?.preset_Code ?? "",
+      presetCode: li?.unit_Preset?.preset_Levels?.map((l) => l.uom_Name).join(" → ") || li?.unit_Preset?.preset_Code || "",
       orderedQuantity: card.orderedQuantity,
       receivedSoFar: card.receivedQuantity,
       remainingQuantity: card.remainingQuantity,
@@ -129,19 +129,19 @@ export const PORestockConfirmModal = ({
           {/* Items table */}
           <div className="rounded-lg border overflow-hidden">
             <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-gray-50/80 text-[11px] text-gray-500 font-bold uppercase tracking-wider border-b">
-              <div className="col-span-3">Product</div>
-              <div className="col-span-2 text-right">Ordered</div>
-              <div className="col-span-2 text-right">Prev. Received</div>
-              <div className="col-span-2 text-right">Remaining</div>
-              <div className="col-span-2 text-right">Receiving</div>
-              <div className="col-span-1 text-right">Disc.</div>
+              <div className="col-span-3 font-bold">PRODUCT</div>
+              <div className="col-span-2 text-center font-bold">ORDERED</div>
+              <div className="col-span-2 text-center font-bold">PREV. RECEIVED</div>
+              <div className="col-span-2 text-center font-bold">REMAINING</div>
+              <div className="col-span-2 text-center font-bold">RECEIVING</div>
+              <div className="col-span-1 text-center font-bold">DISC.</div>
             </div>
 
             <div className="max-h-64 overflow-y-auto">
               {lineItemRows.map((row, idx) => (
                 <div
                   key={row.lineItemId}
-                  className={`grid grid-cols-12 gap-4 px-4 py-4 text-xs items-center ${row.removed ? "opacity-40 line-through" : ""
+                  className={`grid grid-cols-12 gap-4 px-4 py-6 text-xs items-center ${row.removed ? "opacity-40 line-through" : ""
                     } ${idx !== lineItemRows.length - 1 ? "border-b border-gray-100" : ""}`}
                 >
                   <div className="col-span-3 flex flex-col gap-1">
@@ -154,20 +154,20 @@ export const PORestockConfirmModal = ({
                       </div>
                     )}
                   </div>
-                  <div className="col-span-2 text-right font-medium text-gray-600">
+                  <div className="col-span-2 text-center font-medium text-gray-600">
                     {row.orderedQuantity}
                   </div>
-                  <div className="col-span-2 text-right font-medium text-gray-400">
+                  <div className="col-span-2 text-center font-medium text-gray-400">
                     {row.receivedSoFar}
                   </div>
-                  <div className="col-span-2 text-right font-medium text-gray-600">
+                  <div className="col-span-2 text-center font-medium text-gray-600">
                     {row.remainingQuantity}
                   </div>
-                  <div className="col-span-2 text-right font-bold text-gray-800">
+                  <div className="col-span-2 text-center font-bold text-gray-800">
                     {row.receivingQuantity}
                   </div>
                   <div
-                    className={`col-span-1 text-right font-bold ${row.discrepancy > 0
+                    className={`col-span-1 text-center font-bold ${row.discrepancy > 0
                       ? "text-blue-600"
                       : row.discrepancy < 0
                         ? "text-red-500"
