@@ -111,7 +111,7 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
 
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
-      <div className="w-[1000px] max-h-[80vh] bg-white px-8 py-6 rounded-lg border shadow-lg flex flex-col gap-4">
+      <div className="w-[1200px] max-h-[80vh] bg-white px-8 py-6 rounded-lg border shadow-lg flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -144,14 +144,14 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
         {/* Status Filters */}
         <div>
           <p className="text-sm font-semibold mb-2">Status Filters</p>
-          <div className="grid grid-cols-5 gap-3">
+          <div className="flex flex-nowrap gap-3">
             {FILTER_CONFIG.map((filter) => {
               const IconComponent = filter.icon;
               return (
                 <button
                   key={filter.key}
                   onClick={() => toggleFilter(filter.key)}
-                  className={`text-sm font-semibold px-4 py-2 rounded-md border transition-colors flex items-center gap-2 ${
+                  className={`text-sm font-semibold px-4 py-2 rounded-md border transition-colors flex items-center gap-2 whitespace-nowrap ${
                     activeFilters.includes(filter.key)
                       ? filter.activeClasses
                       : "bg-gray-50 text-gray-400 border-gray-200"
@@ -174,15 +174,16 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
         {/* Table */}
         <div className="flex flex-col overflow-hidden flex-1 border rounded-lg">
           {/* Header row */}
-          <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-custom-gray text-xs font-semibold uppercase">
+          <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-custom-gray text-xs font-semibold uppercase">
             <div className="col-span-3">PO #</div>
             <div className="col-span-4">Supplier</div>
-            <div className="col-span-3">Date</div>
+            <div className="col-span-2">Date</div>
             <div className="col-span-2">Status</div>
+            <div className="col-span-1"></div>
           </div>
 
           {/* Body */}
-          <div className="overflow-y-auto max-h-72">
+          <div className="overflow-y-auto flex-1">
             {isLoading ? (
               <div className="py-6 text-center text-sm text-gray-400">
                 Loading...
@@ -196,7 +197,7 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
                 <div
                   key={po.purchase_Order_ID}
                   onClick={() => handleSelectPO(po)}
-                  className={`grid grid-cols-12 gap-2 px-3 py-3 text-sm cursor-pointer hover:bg-blue-50 transition-colors ${
+                  className={`grid grid-cols-12 gap-4 px-4 py-3 text-sm cursor-pointer hover:bg-blue-50 transition-colors items-center ${
                     idx !== filtered.length - 1 ? "border-b" : ""
                   }`}
                 >
@@ -207,7 +208,7 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
                     {po.supplier.company_Name ||
                       `${po.supplier.first_Name} ${po.supplier.last_Name}`}
                   </div>
-                  <div className="col-span-3 text-gray-500 text-xs">
+                  <div className="col-span-2 text-gray-500 text-xs">
                     {new Intl.DateTimeFormat("en-US", {
                       month: "short",
                       day: "numeric",
@@ -234,6 +235,22 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
                         f.statuses.includes(po.status),
                       )?.label ?? po.status}
                     </span>
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-gray-400"
+                    >
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
                   </div>
                 </div>
               ))
