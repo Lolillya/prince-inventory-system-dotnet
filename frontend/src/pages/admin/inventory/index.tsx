@@ -218,10 +218,12 @@ const InventoryPage = () => {
       {isEditProductModalOpen && selectedProduct && (
         <EditProductModal
           setIsEditProductModalOpen={setIsEditProductModalOpen}
+          isEditProductModalOpen={isEditProductModalOpen}
           selectedProduct={selectedProduct}
           handleAddPackagingPreset={handleAddPackagingPreset}
         />
       )}
+
       {/* HEADER */}
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full">
@@ -470,12 +472,13 @@ const InventoryPage = () => {
             {filteredInventory?.map((data, index) => (
               <>
                 <div
-                  className={`flex justify-between ${!data.product.is_Active
+                  className={`flex justify-between ${
+                    !data.product.is_Active
                       ? "opacity-60 bg-gray-100 dark:bg-gray-900/30"
                       : data.isFavorited
                         ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
                         : "hover:bg-accent"
-                    } p-2 rounded-lg transition-all duration-300`}
+                  } p-2 rounded-lg transition-all duration-300`}
                   key={index}
                   onClick={() => handleClick(data)}
                 >
@@ -492,18 +495,18 @@ const InventoryPage = () => {
                                 data.product.quantity <= u.low_Stock_Level &&
                                 (u.very_Low_Stock_Level == null ||
                                   data.product.quantity >
-                                  u.very_Low_Stock_Level),
+                                    u.very_Low_Stock_Level),
                             ) && (
-                                <div className="w-2 h-2 rounded-full bg-yellow-400" />
-                              )}
+                              <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                            )}
                             {data.unitPresets.some(
                               (u) =>
                                 u.very_Low_Stock_Level != null &&
                                 data.product.quantity > 0 &&
                                 data.product.quantity <= u.very_Low_Stock_Level,
                             ) && (
-                                <div className="w-2 h-2 rounded-full bg-red-500" />
-                              )}
+                              <div className="w-2 h-2 rounded-full bg-red-500" />
+                            )}
                           </>
                         )}
                       </div>
