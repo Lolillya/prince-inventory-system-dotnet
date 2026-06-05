@@ -45,6 +45,7 @@ export const AddCategoryForm = ({
     await addNewCategoryService(data.category_Name);
     await queryClient.invalidateQueries({ queryKey: ["product-fields"] });
     setIsCategoryModalOpen(!isCategoryModalOpen);
+    setIsEditProductFormOpen(!isEditProductFormOpen);
     reset();
   };
 

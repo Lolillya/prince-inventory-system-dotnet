@@ -18,7 +18,6 @@ import { AddProductModal } from "./add-product/_components/AddProductModal";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { EditProductModal } from "./_components/edit-product.modal";
 import { ProductUnitPresetModal } from "./_components/preset-editor.modal";
-import { PresetSelectorModal } from "./_components/preset-selector.modal";
 import { ProductPackagingModal } from "./_components/product-packaging.modal";
 import { QuotationGeneratorModal } from "./_components/quotation-generator.modal";
 import {

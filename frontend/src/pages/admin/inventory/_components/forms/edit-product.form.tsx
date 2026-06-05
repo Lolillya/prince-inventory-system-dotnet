@@ -3,7 +3,6 @@ import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.q
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { EditProductUnitCard } from "./_components/edit-product-unit-card";
 import { useEditProductMutation } from "@/features/inventory/edit-product/edit-product.mutation";
 import { EditProductPayload } from "@/features/inventory/edit-product/edit-product-payload.model";
 import { Plus } from "lucide-react";
