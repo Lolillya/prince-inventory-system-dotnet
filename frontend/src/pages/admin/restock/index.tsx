@@ -224,7 +224,7 @@ const RestockPage = () => {
                             <Ellipsis className="text-saltbox-gray" />
                           </PopoverTrigger>
                           <PopoverContent className="w-fit">
-                            <ul className="flex flex-col gap-1">
+                            {/* <ul className="flex flex-col gap-1">
                               <li className="text-sm cursor-pointer hover:underline">
                                 Print
                               </li>
@@ -232,11 +232,12 @@ const RestockPage = () => {
                                 Export
                               </li>
                             </ul>
-                            <Separator orientation="horizontal" />
+                            
+                            <Separator orientation="horizontal" /> */}
                             <ul className="flex flex-col gap-1">
-                              <li className="text-sm cursor-pointer hover:underline ">
+                              {/* <li className="text-sm cursor-pointer hover:underline ">
                                 View Restock
-                              </li>
+                              </li> */}
                               <li
                                 className="text-sm cursor-pointer hover:underline"
                                 onClick={() => handleViewSupplier(r)}
@@ -257,7 +258,9 @@ const RestockPage = () => {
                                     // onClick={() => handleVoidRestock(r.restock_Id)}
                                     onClick={() => handleVoidPrompt(r)}
                                   >
-                                    {isVoidingRestock ? "Voiding..." : "Void"}
+                                    {isVoidingRestock
+                                      ? "Processing..."
+                                      : "Undo"}
                                   </li>
                                 </ul>
                               </>
