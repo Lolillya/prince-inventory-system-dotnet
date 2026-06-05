@@ -14,6 +14,7 @@ import {
   Ellipsis,
   Package,
   Pin,
+  RotateCcw,
   Truck,
 } from "lucide-react";
 import {
@@ -200,8 +201,9 @@ const RestockPage = () => {
               >
                 <div className="absolute -top-1">
                   {r.status === "VOIDED" && (
-                    <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
-                      Voided
+                    <div className="bg-orange-200  text-xs px-2 py-1 rounded-b-lg shadow-md border-2 border-orange-300 font-semibold flex text-orange-500 items-center gap-2">
+                      <RotateCcw size={14} />
+                      reversed
                     </div>
                   )}
                 </div>
