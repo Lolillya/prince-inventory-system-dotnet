@@ -111,7 +111,7 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
 
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
-      <div className="w-[900px] max-h-[80vh] bg-white px-8 py-6 rounded-lg border shadow-lg flex flex-col gap-4">
+      <div className="w-[1000px] max-h-[80vh] bg-white px-8 py-6 rounded-lg border shadow-lg flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -144,20 +144,20 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
         {/* Status Filters */}
         <div>
           <p className="text-sm font-semibold mb-2">Status Filters</p>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="grid grid-cols-5 gap-3">
             {FILTER_CONFIG.map((filter) => {
               const IconComponent = filter.icon;
               return (
                 <button
                   key={filter.key}
                   onClick={() => toggleFilter(filter.key)}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors flex items-center gap-1.5 ${
+                  className={`text-sm font-semibold px-4 py-2 rounded-md border transition-colors flex items-center gap-2 ${
                     activeFilters.includes(filter.key)
                       ? filter.activeClasses
                       : "bg-gray-50 text-gray-400 border-gray-200"
                   }`}
                 >
-                  <IconComponent width={14} height={14} />
+                  <IconComponent width={16} height={16} />
                   {filter.label} ({filter.count})
                 </button>
               );
