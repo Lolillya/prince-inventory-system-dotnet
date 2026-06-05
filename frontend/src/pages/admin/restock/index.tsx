@@ -41,6 +41,7 @@ const RestockPage = () => {
     useState<boolean>(false);
   const [selectedRestock, setSelectedRestock] =
     useState<RestockAllModel | null>(null);
+  const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
 
   const handleOpenModal = (restock: RestockAllModel) => {
     setSelectedRestock(restock);
@@ -219,28 +220,23 @@ const RestockPage = () => {
                         )}
                         <Pin className="text-amber-300 rotate-45" size={20} />
 
-                        <Popover>
-                          <PopoverTrigger asChild className="cursor-pointer ">
+                        <Popover
+                          open={openPopoverId === r.restock_Id}
+                          onOpenChange={(open) =>
+                            setOpenPopoverId(open ? r.restock_Id : null)
+                          }
+                        >
+                          <PopoverTrigger asChild className="cursor-pointer">
                             <Ellipsis className="text-saltbox-gray" />
                           </PopoverTrigger>
                           <PopoverContent className="w-fit">
-                            {/* <ul className="flex flex-col gap-1">
-                              <li className="text-sm cursor-pointer hover:underline">
-                                Print
-                              </li>
-                              <li className="text-sm cursor-pointer hover:underline">
-                                Export
-                              </li>
-                            </ul>
-                            
-                            <Separator orientation="horizontal" /> */}
                             <ul className="flex flex-col gap-1">
-                              {/* <li className="text-sm cursor-pointer hover:underline ">
-                                View Restock
-                              </li> */}
                               <li
                                 className="text-sm cursor-pointer hover:underline"
-                                onClick={() => handleViewSupplier(r)}
+                                onClick={() => {
+                                  handleViewSupplier(r);
+                                  setOpenPopoverId(null); // close popover
+                                }}
                               >
                                 View Supplier
                               </li>
@@ -255,8 +251,10 @@ const RestockPage = () => {
                                         ? "text-red-300 cursor-not-allowed"
                                         : "text-red-400 cursor-pointer"
                                     }`}
-                                    // onClick={() => handleVoidRestock(r.restock_Id)}
-                                    onClick={() => handleVoidPrompt(r)}
+                                    onClick={() => {
+                                      handleVoidPrompt(r);
+                                      setOpenPopoverId(null); // close popover
+                                    }}
                                   >
                                     {isVoidingRestock
                                       ? "Processing..."

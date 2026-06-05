@@ -509,8 +509,11 @@ const InventoryPage = () => {
                           </>
                         )}
                       </div>
-                      <span className="capitalize">
+                      <span className="capitalize text-sm font-semibold">
                         {data.product.product_Name}
+                      </span>
+                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                        {data.category.category_Name}
                       </span>
                     </div>
                     <div className="w-full items-center justify-end flex">
