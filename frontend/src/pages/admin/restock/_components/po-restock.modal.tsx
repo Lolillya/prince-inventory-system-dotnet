@@ -1,15 +1,59 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { XIcon, SearchIcon } from "@/icons";
+import {
+  XIcon,
+  SearchIcon,
+  FileTextIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  BanIcon,
+  CircleSlashIcon,
+} from "@/icons";
 import { useGetAllPurchaseOrdersQuery } from "@/features/purchase-order/purchase-order.query";
 import { PurchaseOrderRecord } from "@/features/purchase-order/purchase-order.model";
 
-const STATUS_LABELS: Record<string, string> = {
-  NOT_DELIVERED: "Not Delivered",
-  PARTIAL: "Partial",
-  FULLY_DELIVERED: "Fully Delivered",
-  CANCELLED: "Cancelled",
-};
+const FILTER_CONFIG = [
+  {
+    key: "NOT_DELIVERED",
+    label: "Not Delivered",
+    icon: FileTextIcon,
+    count: "1,200",
+    activeClasses: "border-blue-300 bg-blue-50 text-blue-700",
+    statuses: ["NOT_DELIVERED"],
+  },
+  {
+    key: "PARTIAL",
+    label: "Partial",
+    icon: ClockIcon,
+    count: "2,300",
+    activeClasses: "border-amber-300 bg-amber-50 text-amber-700",
+    statuses: ["PARTIAL"],
+  },
+  {
+    key: "FULLY_DELIVERED",
+    label: "Fully Delivered",
+    icon: CheckCircleIcon,
+    count: "3,800",
+    activeClasses: "border-green-300 bg-green-50 text-green-700",
+    statuses: ["FULLY_DELIVERED"],
+  },
+  {
+    key: "CANCELLED_NO_DEL",
+    label: "Cancelled – No Delivery",
+    icon: BanIcon,
+    count: "1,100",
+    activeClasses: "border-red-300 bg-red-50 text-red-700",
+    statuses: ["CANCELLED"],
+  },
+  {
+    key: "CANCELLED_AFTER",
+    label: "Cancelled – After Partial Delivery",
+    icon: CircleSlashIcon,
+    count: "1,200",
+    activeClasses: "border-purple-300 bg-purple-50 text-purple-700",
+    statuses: ["CANCELLED"],
+  },
+];
 
 const STATUS_COLORS: Record<string, string> = {
   NOT_DELIVERED: "bg-blue-100 text-blue-700 border-blue-200",
@@ -30,6 +74,9 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
   const [activeFilters, setActiveFilters] = useState<string[]>([
     "NOT_DELIVERED",
     "PARTIAL",
+    "FULLY_DELIVERED",
+    "CANCELLED_NO_DEL",
+    "CANCELLED_AFTER",
   ]);
 
   const toggleFilter = (status: string) => {
@@ -41,7 +88,12 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
   };
 
   const filtered = purchaseOrders.filter((po) => {
-    if (!activeFilters.includes(po.status)) return false;
+    const allowedStatuses = FILTER_CONFIG.filter((f) =>
+      activeFilters.includes(f.key),
+    ).flatMap((f) => f.statuses);
+
+    if (!allowedStatuses.includes(po.status)) return false;
+
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase();
     return (
@@ -59,7 +111,7 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
 
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
-      <div className="w-[700px] max-h-[80vh] bg-white px-8 py-6 rounded-lg border shadow-lg flex flex-col gap-4">
+      <div className="w-[1200px] max-h-[80vh] bg-white px-8 py-6 rounded-lg border shadow-lg flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -89,43 +141,49 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
           />
         </div>
 
-        {/* Status filters */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-gray-500 mr-1">Show:</span>
-          {(
-            [
-              "NOT_DELIVERED",
-              "PARTIAL",
-              "FULLY_DELIVERED",
-              "CANCELLED",
-            ] as const
-          ).map((status) => (
-            <button
-              key={status}
-              onClick={() => toggleFilter(status)}
-              className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                activeFilters.includes(status)
-                  ? STATUS_COLORS[status]
-                  : "bg-gray-50 text-gray-400 border-gray-200"
-              }`}
-            >
-              {STATUS_LABELS[status]}
-            </button>
-          ))}
+        {/* Status Filters */}
+        <div>
+          <p className="text-sm font-semibold mb-2">Status Filters</p>
+          <div className="flex flex-wrap gap-2">
+            {FILTER_CONFIG.map((filter) => {
+              const IconComponent = filter.icon;
+              return (
+                <button
+                  key={filter.key}
+                  onClick={() => toggleFilter(filter.key)}
+                  className={`text-sm font-semibold px-3 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 ${
+                    activeFilters.includes(filter.key)
+                      ? filter.activeClasses
+                      : "bg-gray-50 text-gray-400 border-gray-200"
+                  }`}
+                >
+                  <IconComponent width={16} height={16} />
+                  {filter.label} ({filter.count})
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Total count */}
+        <p className="text-sm text-gray-500">
+          Showing <strong className="text-blue-600">{filtered.length}</strong>{" "}
+          purchase orders
+        </p>
 
         {/* Table */}
         <div className="flex flex-col overflow-hidden flex-1 border rounded-lg">
           {/* Header row */}
-          <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-custom-gray text-xs font-semibold uppercase">
+          <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-custom-gray text-xs font-semibold uppercase">
             <div className="col-span-3">PO #</div>
             <div className="col-span-4">Supplier</div>
-            <div className="col-span-3">Date</div>
+            <div className="col-span-2">Date</div>
             <div className="col-span-2">Status</div>
+            <div className="col-span-1"></div>
           </div>
 
           {/* Body */}
-          <div className="overflow-y-auto max-h-72">
+          <div className="overflow-y-auto flex-1">
             {isLoading ? (
               <div className="py-6 text-center text-sm text-gray-400">
                 Loading...
@@ -139,7 +197,7 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
                 <div
                   key={po.purchase_Order_ID}
                   onClick={() => handleSelectPO(po)}
-                  className={`grid grid-cols-12 gap-2 px-3 py-3 text-sm cursor-pointer hover:bg-blue-50 transition-colors ${
+                  className={`grid grid-cols-12 gap-4 px-4 py-3 text-sm cursor-pointer hover:bg-blue-50 transition-colors items-center ${
                     idx !== filtered.length - 1 ? "border-b" : ""
                   }`}
                 >
@@ -150,7 +208,7 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
                     {po.supplier.company_Name ||
                       `${po.supplier.first_Name} ${po.supplier.last_Name}`}
                   </div>
-                  <div className="col-span-3 text-gray-500 text-xs">
+                  <div className="col-span-2 text-gray-500 text-xs">
                     {new Intl.DateTimeFormat("en-US", {
                       month: "short",
                       day: "numeric",
@@ -159,13 +217,40 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
                   </div>
                   <div className="col-span-2">
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full border ${
+                      className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 w-fit ${
                         STATUS_COLORS[po.status] ??
                         "bg-gray-100 text-gray-500 border-gray-200"
                       }`}
                     >
-                      {STATUS_LABELS[po.status] ?? po.status}
+                      {(() => {
+                        const config = FILTER_CONFIG.find((f) =>
+                          f.statuses.includes(po.status),
+                        );
+                        const IconComponent = config?.icon ?? BanIcon;
+                        return (
+                          <IconComponent width={12} height={12} />
+                        );
+                      })()}
+                      {FILTER_CONFIG.find((f) =>
+                        f.statuses.includes(po.status),
+                      )?.label ?? po.status}
                     </span>
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-gray-400"
+                    >
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
                   </div>
                 </div>
               ))
