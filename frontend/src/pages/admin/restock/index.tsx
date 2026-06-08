@@ -206,6 +206,13 @@ const RestockPage = () => {
                       reversed
                     </div>
                   )}
+
+                  {r.restock_Number.match("AUTO-") && (
+                    <div className="bg-purple-200 text-xs px-2 py-1 rounded-b-lg shadow-md border-2 border-purple-300 font-semibold flex items-center gap-2 text-purple-500">
+                      <Package size={14} />
+                      Auto Restock
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-1 p-3">
                   <div className="flex flex-col gap-3 w-full">
