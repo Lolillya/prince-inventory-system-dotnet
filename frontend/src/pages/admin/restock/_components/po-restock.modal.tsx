@@ -144,14 +144,14 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
         {/* Status Filters */}
         <div>
           <p className="text-sm font-semibold mb-2">Status Filters</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 justify-between">
             {FILTER_CONFIG.map((filter) => {
               const IconComponent = filter.icon;
               return (
                 <button
                   key={filter.key}
                   onClick={() => toggleFilter(filter.key)}
-                  className={`text-sm font-semibold px-3 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 ${
+                  className={`text-sm font-semibold px-3 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 text-nowrap max-w-full w-full${
                     activeFilters.includes(filter.key)
                       ? filter.activeClasses
                       : "bg-gray-50 text-gray-400 border-gray-200"
@@ -227,13 +227,10 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
                           f.statuses.includes(po.status),
                         );
                         const IconComponent = config?.icon ?? BanIcon;
-                        return (
-                          <IconComponent width={12} height={12} />
-                        );
+                        return <IconComponent width={12} height={12} />;
                       })()}
-                      {FILTER_CONFIG.find((f) =>
-                        f.statuses.includes(po.status),
-                      )?.label ?? po.status}
+                      {FILTER_CONFIG.find((f) => f.statuses.includes(po.status))
+                        ?.label ?? po.status}
                     </span>
                   </div>
                   <div className="col-span-1 flex justify-end">
