@@ -7,6 +7,7 @@ import { ShowAllModal } from "./_components/all-items-modal";
 import { NoRestockState } from "./_components/no-restock-state";
 import {
   Archive,
+  Bot,
   Box,
   BoxIcon,
   Calendar,
@@ -108,7 +109,6 @@ const RestockPage = () => {
     setSelectedRestock(null);
   };
 
-  console.log(restockItems);
   return (
     <section>
       {isPORestockModalOpen && (
@@ -201,15 +201,15 @@ const RestockPage = () => {
               >
                 <div className="absolute -top-1">
                   {r.status === "VOIDED" && (
-                    <div className="bg-orange-200  text-xs px-2 py-1 rounded-b-lg shadow-md border-2 border-orange-300 font-semibold flex text-orange-500 items-center gap-2">
+                    <div className="bg-orange-200 text-xs px-2 py-1 rounded-b-lg shadow-md border-2 border-orange-300 font-semibold flex text-orange-500 items-center gap-2">
                       <RotateCcw size={14} />
-                      reversed
+                      Reversed
                     </div>
                   )}
 
                   {r.restock_Number.match("AUTO-") && (
                     <div className="bg-purple-200 text-xs px-2 py-1 rounded-b-lg shadow-md border-2 border-purple-300 font-semibold flex items-center gap-2 text-purple-500">
-                      <Package size={14} />
+                      <Bot size={14} />
                       Auto Restock
                     </div>
                   )}
@@ -221,6 +221,12 @@ const RestockPage = () => {
                         <span className="text-lg font-bold text-saltbox-gray tracking-wide">
                           #{r.restock_Number}
                         </span>
+
+                        {r.restock_Invoice_Reference && (
+                          <span className="text-sm font-semibold text-saltbox-gray border border-gray-200 rounded px-2 py-0.5">
+                            {r.restock_Invoice_Reference}
+                          </span>
+                        )}
 
                         {r.purchase_order_number && (
                           <span className="text-sm font-semibold text-saltbox-gray border border-gray-200 rounded px-2 py-0.5">

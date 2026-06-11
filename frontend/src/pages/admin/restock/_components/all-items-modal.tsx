@@ -1,7 +1,8 @@
 import { Separator } from "@/components/separator";
 import { RestockAllModel } from "@/features/restock/models/restock-all.model";
 import { useUpdateRestockNotesMutation } from "@/features/restock/update-restock-notes.query";
-import { Calendar } from "lucide-react";
+import { InvoiceIcon } from "@/icons";
+import { Bot, Box, Calendar, NotebookText, Zap } from "lucide-react";
 import { useState } from "react";
 
 interface Props {
@@ -27,6 +28,14 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
         <div className="flex flex-col gap-5 flex-1 h-full">
           {/* HEADER */}
           <div className="flex flex-col gap-2">
+            {selectedRestock.restock_Number.match("AUTO-") && (
+              <div className="flex items-center gap-2 border-2 border-purple-400 bg-purple-50 rounded-sm p-1 w-max">
+                <Bot size={20} className="text-purple-800" />
+                <label className="font-semibold text-xs text-purple-800">
+                  Auto Restock
+                </label>
+              </div>
+            )}
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2">
                 <h3>{selectedRestock.restock_Number}</h3>
@@ -54,14 +63,22 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
           <div className="flex gap-3">
             <div className="flex flex-col w-full gap-2">
               <label className="text-sm font-semibold">Supplier</label>
-              <input
-                value={selectedRestock.supplier.companyName}
-                className="input-style-3"
-              />
+              <div className="relative">
+                <input
+                  value={selectedRestock.supplier.companyName}
+                  className="input-style-3"
+                />
+                {selectedRestock.restock_Number.match("AUTO-") && (
+                  <label className="text-purple-700 absolute left-50 top-1/6 text-xs border-2 border-purple-400 rounded-sm p-1 uppercase font-semibold">
+                    internal
+                  </label>
+                )}
+              </div>
             </div>
 
-            <div className="flex flex-col w-full gap-2">
+            <div className="flex flex-col w-full gap-2 relative">
               <label className="text-sm font-semibold">Recorded by</label>
+
               <input
                 value={
                   selectedRestock.clerk.firstName +
@@ -118,13 +135,43 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                 </div>
               ))}
             </div>
-            <textarea
-              rows={4}
-              placeholder="No restock notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="focus:outline-none p-2 resize-none border rounded"
-            />
+            {selectedRestock.restock_Number.match("AUTO-") ? (
+              <div className="flex flex-col gap-4 bg-purple-50 border-2 border-purple-400 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <Bot className="text-purple-800" />
+                  <label className="text-purple-800 font-semibold">
+                    Auto Restock Information
+                  </label>
+                </div>
+                <div className="flex justify-between">
+                  <span className="flex items-center gap-2 text-sm ">
+                    <NotebookText size={21} className=" text-purple-800" />
+                    <label className="font-semibold text-xs">
+                      Linked Invoice:{" "}
+                    </label>
+                  </span>
+                  <span className="flex items-center gap-2 text-sm">
+                    <Box size={21} className=" text-purple-800" />
+                    <label className="font-semibold text-xs">Type: </label>
+                    <label className="text-xs">Internal System Restock</label>
+                  </span>
+                  <span className="flex items-center gap-2 text-sm ">
+                    <Zap size={21} className=" text-purple-800" />
+                    <label className="text-xs">
+                      Generated Automatically During Invoice Confirmation
+                    </label>
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <textarea
+                rows={4}
+                placeholder="No restock notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="focus:outline-none p-2 resize-none border rounded"
+              />
+            )}
 
             {/* FOOTER */}
             <div className="flex justify-between">
