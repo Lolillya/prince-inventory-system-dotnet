@@ -567,19 +567,36 @@ namespace backend.Controller.InvoiceControllers
                     deficitInBaseUnits = (int)Math.Ceiling(deficitInBaseUnits / (decimal)cfg.Conversion_Factor);
                 }
 
-                // Create the RestockLineItems record (base-unit entry).
-                var mainLevel = presetLevels.First(pl => pl.Level == 1);
-
-                var restockLineItem = new RestockLineItems
+                // Create RestockLineItems records for ALL preset levels (not just base level).
+                // This maintains the full unit preset structure in the restock batch.
+                foreach (var level in presetLevels)
                 {
-                    Batch_ID = batch.Batch_ID,
-                    Product_ID = line.Product_ID,
-                    Base_UOM_ID = mainLevel.UOM_ID,
-                    Base_Unit_Price = 0,
-                    Base_Unit_Quantity = deficitInBaseUnits
-                };
+                    // Calculate the deficit quantity at this level by converting from base units
+                    int deficitAtLevel = deficitInBaseUnits;
+                    
+                    // Convert from base (level 1) up to the current level
+                    for (var lvl = 2; lvl <= level.Level; lvl++)
+                    {
+                        var cfg = presetLevels.FirstOrDefault(pl => pl.Level == lvl);
+                        if (cfg == null || cfg.Conversion_Factor <= 0) break;
+                        deficitAtLevel = (int)Math.Floor(deficitAtLevel / (decimal)cfg.Conversion_Factor);
+                    }
 
-                _db.RestockLineItems.Add(restockLineItem);
+                    // Only create restock entry if there's a positive deficit at this level
+                    if (deficitAtLevel > 0)
+                    {
+                        var restockLineItem = new RestockLineItems
+                        {
+                            Batch_ID = batch.Batch_ID,
+                            Product_ID = line.Product_ID,
+                            Base_UOM_ID = level.UOM_ID,
+                            Base_Unit_Price = 0,
+                            Base_Unit_Quantity = deficitAtLevel
+                        };
+
+                        _db.RestockLineItems.Add(restockLineItem);
+                    }
+                }
                 await _db.SaveChangesAsync();
 
                 // Update / create preset quantities for each level.
@@ -601,15 +618,29 @@ namespace backend.Controller.InvoiceControllers
                         productPreset.PresetQuantities.Add(qRow);
                         quantityByLevel[level.Level] = qRow;
                     }
+
+                    // Calculate the deficit quantity for this level
+                    int deficitAtLevel = deficitInBaseUnits;
+                    
+                    // Convert from base (level 1) up to the current level
+                    for (var lvl = 2; lvl <= level.Level; lvl++)
+                    {
+                        var cfg = presetLevels.FirstOrDefault(pl => pl.Level == lvl);
+                        if (cfg == null || cfg.Conversion_Factor <= 0) break;
+                        deficitAtLevel = (int)Math.Floor(deficitAtLevel / (decimal)cfg.Conversion_Factor);
+                    }
+
+                    // Update quantity records for all levels
+                    if (deficitAtLevel > 0)
+                    {
+                        qRow.Remaining_Quantity += deficitAtLevel;
+                        qRow.Original_Quantity += deficitAtLevel;
+                        qRow.Updated_At = now;
+                    }
                 }
 
-                // Add the replenished base units to level-1 and propagate downward (no cascade needed;
-                // the deduction step will borrow upward as usual).
+                // Update the main preset's overall quantity based on level-1
                 var level1Row = quantityByLevel[1];
-                level1Row.Remaining_Quantity += deficitInBaseUnits;
-                level1Row.Original_Quantity += deficitInBaseUnits;
-                level1Row.Updated_At = now;
-
                 productPreset.Main_Unit_Quantity = Math.Max(0, level1Row.Remaining_Quantity);
 
                 // Update the inventory total to reflect the replenished stock.

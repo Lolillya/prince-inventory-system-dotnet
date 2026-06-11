@@ -23,6 +23,8 @@ const NewInvoicePage = () => {
     useSelectedInvoiceProduct();
   const { isLoading, error } = useInvoiceBatchQuery();
 
+  console.log(payloadData);
+
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
 
