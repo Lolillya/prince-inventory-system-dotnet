@@ -573,7 +573,7 @@ namespace backend.Controller.InvoiceControllers
                 {
                     // Calculate the deficit quantity at this level by converting from base units
                     int deficitAtLevel = deficitInBaseUnits;
-                    
+
                     // Convert from base (level 1) up to the current level
                     for (var lvl = 2; lvl <= level.Level; lvl++)
                     {
@@ -621,7 +621,7 @@ namespace backend.Controller.InvoiceControllers
 
                     // Calculate the deficit quantity for this level
                     int deficitAtLevel = deficitInBaseUnits;
-                    
+
                     // Convert from base (level 1) up to the current level
                     for (var lvl = 2; lvl <= level.Level; lvl++)
                     {
