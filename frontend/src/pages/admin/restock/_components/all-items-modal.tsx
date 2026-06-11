@@ -95,12 +95,19 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
           <div className="flex-1 flex flex-col overflow-hidden gap-2">
             {/* TABLE DATA HEADERS */}
             <div className="flex justify-between py-3 px-5 bg-custom-gray rounded-lg gap-2">
-              <label className="text-left w-full uppercase text-xs font-semibold">
+              <label className="text-left w-full text-xs font-semibold uppercase">
                 Product
               </label>
-              <label className="text-left w-[70%] uppercase text-xs font-semibold">
-                Conversion
-              </label>
+              {selectedRestock.restock_Number.match("AUTO-") ? (
+                <label className="text-left w-full text-xs font-semibold uppercase">
+                  Fullfilment Unit
+                </label>
+              ) : (
+                <label className="text-left w-[70%] uppercase text-xs font-semibold">
+                  Conversion
+                </label>
+              )}
+
               <label className="text-left w-[30%] uppercase text-xs font-semibold">
                 Quantity
               </label>
@@ -146,8 +153,9 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                 <div className="flex justify-between">
                   <span className="flex items-center gap-2 text-sm ">
                     <NotebookText size={21} className=" text-purple-800" />
-                    <label className="font-semibold text-xs">
-                      Linked Invoice:{" "}
+                    <label className="font-bold text-xs">Linked Invoice:</label>
+                    <label className="text-xs">
+                      {selectedRestock.restock_Invoice_Reference}
                     </label>
                   </span>
                   <span className="flex items-center gap-2 text-sm">
