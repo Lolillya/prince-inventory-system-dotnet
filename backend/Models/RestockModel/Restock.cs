@@ -25,6 +25,9 @@ namespace backend.Models.RestockModel
         public int? Purchase_Order_ID { get; set; }
         public PurchaseOrder? PurchaseOrder { get; set; }
 
+        // Auto-replenish invoice reference (e.g., "DR/INV-000001")
+        public string? Restock_Invoice_Reference { get; set; }
+
         // Navigation properties
         public ICollection<RestockBatch> RestockBatches { get; set; } = new List<RestockBatch>();
     }

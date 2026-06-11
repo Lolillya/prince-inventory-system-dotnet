@@ -36,6 +36,10 @@ namespace backend.Models.InvoiceModel
         public string? Status { get; set; }
         public int Term { get; set; }
 
+        // Optional FK to Restock (set when auto-replenish creates a restock)
+        public int? AutoReplenish_Restock_ID { get; set; }
+        public RestockModel.Restock? AutoReplenishRestock { get; set; }
+
         public ICollection<LineItems.InvoiceLineItems> LineItems { get; set; } = new List<LineItems.InvoiceLineItems>();
         public ICollection<InvoicePayment> Payments { get; set; } = new List<InvoicePayment>();
     }

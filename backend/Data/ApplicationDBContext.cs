@@ -127,6 +127,12 @@ namespace backend.Data
                     .HasForeignKey(i => i.Invoice_Clerk)
                     .OnDelete(DeleteBehavior.NoAction);
 
+                entity.HasOne(i => i.AutoReplenishRestock)
+                    .WithMany()
+                    .HasForeignKey(i => i.AutoReplenish_Restock_ID)
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .IsRequired(false);
+
                 entity.HasMany(i => i.Payments)
                     .WithOne(p => p.Invoice)
                     .HasForeignKey(p => p.Invoice_ID)
