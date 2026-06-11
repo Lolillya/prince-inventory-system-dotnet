@@ -256,7 +256,7 @@ const RestockPage = () => {
                                 View Supplier
                               </li>
                             </ul>
-                            {r.status !== "VOIDED" && (
+                            {/* {r.status !== "VOIDED" && (
                               <>
                                 <Separator orientation="horizontal" />
                                 <ul>
@@ -277,7 +277,7 @@ const RestockPage = () => {
                                   </li>
                                 </ul>
                               </>
-                            )}
+                            )} */}
                           </PopoverContent>
                         </Popover>
                       </div>
