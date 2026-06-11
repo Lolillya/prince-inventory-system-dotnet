@@ -123,21 +123,27 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                   <div className="text-nowrap text-sm w-full">
                     <span>{item.product.product_Name}</span>
                   </div>
-                  <span className="text-left w-[70%]">
-                    {item.unit_Preset?.preset_Levels
-                      ?.map(
-                        (l) =>
-                          l.unit?.uom_Name +
-                          (l.conversion_Factor !== 1
-                            ? ` (${l.conversion_Factor}x)`
-                            : ""),
-                      )
-                      .filter(Boolean)
-                      .join(" → ") || "No preset"}
-                  </span>
+                  {selectedRestock.restock_Number.match("AUTO-") ? (
+                    <span className="text-left w-[70%]">
+                      {item.base_Unit.uom_Name}
+                    </span>
+                  ) : (
+                    <span className="text-left w-[70%]">
+                      {item.unit_Preset?.preset_Levels
+                        ?.map(
+                          (l) =>
+                            l.unit?.uom_Name +
+                            (l.conversion_Factor !== 1
+                              ? ` (${l.conversion_Factor}x)`
+                              : ""),
+                        )
+                        .filter(Boolean)
+                        .join(" → ") || "No preset"}
+                    </span>
+                  )}
 
                   <span className="text-left w-[30%]">
-                    {item.base_Unit_Quantity} {item.base_Unit.uom_Name}
+                    {item.base_Unit_Quantity}
                   </span>
                 </div>
               ))}
