@@ -123,7 +123,9 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                   <div className="text-sm w-full flex gap-2 font-semibold">
                     <span>{item.product.product_Name}</span>
                     <span>•</span>
-                    <span>{item.product.category.category_Name}</span>
+                    <span className="text-vesper-gray">
+                      {item.product.category.category_Name}
+                    </span>
                   </div>
                   {selectedRestock.restock_Number.match("AUTO-") ? (
                     <span className="text-left w-[70%] font-semibold text-sm">
