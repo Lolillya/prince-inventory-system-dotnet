@@ -119,10 +119,14 @@ export const RestockCard2 = ({
         )}
       </div>
 
-      <div className="flex gap-2 items-center text-xs justify-between">
-        <div>
+      <div className="flex gap-2 items-center text-sm justify-between">
+        <div className="flex gap-2 items-center">
           <span className="font-semibold text-base">
             {product.product.product_Name}
+          </span>
+          <span>•</span>
+          <span className="text-vesper-gray font-semibold">
+            {product.category.category_Name}
           </span>
         </div>
 
@@ -157,6 +161,7 @@ export const RestockCard2 = ({
             <select
               value={selectedPresetId || ""}
               onChange={(e) => handlePresetChange(Number(e.target.value))}
+              className="text-xs font-semibold text-primary"
             >
               <option value="">Select a preset</option>
               {product.unitPresets
