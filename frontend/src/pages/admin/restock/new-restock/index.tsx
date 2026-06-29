@@ -196,13 +196,16 @@ const NewRestockPage = () => {
                             .toLowerCase()
                             .includes(searchTerm.toLowerCase()),
                       )
-                      .map((data, i) => (
-                        <ProductCard
-                          product={data}
-                          onClick={() => handleClick(data)}
-                          key={i}
-                        />
-                      ))}
+                      .map(
+                        (data, i) =>
+                          data.unitPresets.length != 0 && (
+                            <ProductCard
+                              product={data}
+                              onClick={() => handleClick(data)}
+                              key={i}
+                            />
+                          ),
+                      )}
                   </div>
                 </div>
 
