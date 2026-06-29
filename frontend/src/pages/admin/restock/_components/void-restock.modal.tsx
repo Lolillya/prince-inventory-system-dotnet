@@ -73,7 +73,7 @@ export const VoidRestockModal = ({
           <label className="text-xl font-semibold">
             {selectedRestock.restock_Number}
           </label>
-          <label className="text-sm text-vesper-gray">
+          <label className="text-sm text-vesper-gray font-semibold">
             Supplier: {selectedRestock.supplier.firstName}{" "}
             {selectedRestock.supplier.lastName}
           </label>
@@ -106,14 +106,14 @@ export const VoidRestockModal = ({
                   className={`py-3 px-5 flex justify-between gap-2 rounded-lg items-center ${i % 2 != 0 && "bg-custom-gray"}`}
                   key={i}
                 >
-                  <div className="text-nowrap text-sm w-full">
+                  <div className="text-xs w-full flex gap-2 items-center font-semibold">
                     <span>{item.product.product_Name}</span>
-                    <span> - </span>
-                    <span>{item.product.brand.brandName}</span>
-                    <span> - </span>
-                    <span>{item.product.variant.variant_Name}</span>
+                    <span>•</span>
+                    <span className="text-vesper-gray">
+                      {item.product.category.category_Name}
+                    </span>
                   </div>
-                  <span className="text-left w-[70%] text-sm">
+                  <span className="text-left w-[70%] text-xs font-semibold">
                     {item.unit_Preset?.preset_Levels
                       ?.map(
                         (l) =>
@@ -126,7 +126,7 @@ export const VoidRestockModal = ({
                       .join(" → ") || "No preset"}
                   </span>
 
-                  <span className="text-left w-[30%] text-sm">
+                  <span className="text-left w-[30%] text-xs font-semibold">
                     {item.base_Unit_Quantity} {item.base_Unit.uom_Name}
                   </span>
                 </div>
@@ -136,12 +136,16 @@ export const VoidRestockModal = ({
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
-              <label className="text-sm text-vesper-gray">Reason</label>
+              <label className="text-sm font-semibold">Reason</label>
               <span className="text-red-500">*</span>
             </div>
+            <label className="text-vesper-gray text-xs">
+              The reason will be recorded in inventory history and will also
+              replacce the current restock notes for this restock entry.
+            </label>
             <textarea
-              className="border rounded-md p-2"
-              rows={2}
+              className="border rounded-md p-2 text-xs"
+              rows={4}
               value={reason}
               onChange={(e) => {
                 setReason(e.target.value);
