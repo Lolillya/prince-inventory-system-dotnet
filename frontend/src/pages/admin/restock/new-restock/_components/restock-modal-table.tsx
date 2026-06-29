@@ -99,11 +99,15 @@ export const RestockTable = ({ close }: { close: () => void }) => {
                 key={i}
               >
                 <span className="text-left w-full">
-                  <div>
+                  <div className="flex items-center gap-2 flex-wrap font-semibold">
                     <span>{item.product.product_Name}</span>
+                    <span>•</span>
+                    <span className="text-vesper-gray">
+                      {item.category.category_Name}
+                    </span>
                   </div>
                 </span>
-                <span className="text-left w-[70%]">
+                <span className="text-left w-[70%] font-semibold">
                   {preset?.preset.presetLevels
                     .map(
                       (l, i) =>
@@ -112,7 +116,7 @@ export const RestockTable = ({ close }: { close: () => void }) => {
                     )
                     .join(" → ")}
                 </span>
-                <span className="text-left w-[30%]">
+                <span className="text-left w-[30%] font-semibold">
                   {typedItem.selectedPreset?.main_Unit_Quantity}{" "}
                   {preset?.preset.presetLevels[0].unitOfMeasure.uom_Name}
                 </span>
