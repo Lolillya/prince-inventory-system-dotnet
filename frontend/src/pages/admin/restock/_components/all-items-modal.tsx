@@ -120,15 +120,17 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                   className={`py-3 px-5 flex justify-between gap-2 rounded-lg items-center ${i % 2 != 0 && "bg-custom-gray"}`}
                   key={i}
                 >
-                  <div className="text-nowrap text-sm w-full">
+                  <div className="text-sm w-full flex gap-2 font-semibold">
                     <span>{item.product.product_Name}</span>
+                    <span>•</span>
+                    <span>{item.product.category.category_Name}</span>
                   </div>
                   {selectedRestock.restock_Number.match("AUTO-") ? (
-                    <span className="text-left w-[70%]">
+                    <span className="text-left w-[70%] font-semibold text-sm">
                       {item.base_Unit.uom_Name}
                     </span>
                   ) : (
-                    <span className="text-left w-[70%]">
+                    <span className="text-left w-[70%] font-semibold text-sm">
                       {item.unit_Preset?.preset_Levels
                         ?.map(
                           (l) =>
@@ -142,7 +144,7 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                     </span>
                   )}
 
-                  <span className="text-left w-[30%]">
+                  <span className="text-left w-[30%] font-semibold text-sm">
                     {item.base_Unit_Quantity}
                   </span>
                 </div>
