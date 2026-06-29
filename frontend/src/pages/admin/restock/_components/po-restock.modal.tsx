@@ -193,64 +193,76 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
                 No purchase orders found
               </div>
             ) : (
-              filtered.map((po, idx) => (
-                <div
-                  key={po.purchase_Order_ID}
-                  onClick={() => handleSelectPO(po)}
-                  className={`grid grid-cols-12 gap-4 px-4 py-3 text-sm cursor-pointer hover:bg-blue-50 transition-colors items-center ${
-                    idx !== filtered.length - 1 ? "border-b" : ""
-                  }`}
-                >
-                  <div className="col-span-3 font-medium text-xs">
-                    {po.purchase_Order_Number}
-                  </div>
-                  <div className="col-span-4 text-gray-600 text-xs truncate">
-                    {po.supplier.company_Name ||
-                      `${po.supplier.first_Name} ${po.supplier.last_Name}`}
-                  </div>
-                  <div className="col-span-2 text-gray-500 text-xs">
-                    {new Intl.DateTimeFormat("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    }).format(new Date(po.created_At))}
-                  </div>
-                  <div className="col-span-2">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 w-fit ${
-                        STATUS_COLORS[po.status] ??
-                        "bg-gray-100 text-gray-500 border-gray-200"
-                      }`}
-                    >
-                      {(() => {
-                        const config = FILTER_CONFIG.find((f) =>
+              filtered.map((po, idx) => {
+                const isFullyDelivered = po.status === "FULLY_DELIVERED";
+                const isCancelledNoDelivery = po.status === "CANCELLED";
+
+                return (
+                  <div
+                    key={po.purchase_Order_ID}
+                    onClick={
+                      isFullyDelivered || isCancelledNoDelivery
+                        ? undefined
+                        : () => handleSelectPO(po)
+                    }
+                    className={`grid grid-cols-12 gap-4 px-4 py-3 text-sm transition-colors items-center ${
+                      idx !== filtered.length - 1 ? "border-b" : ""
+                    } ${isFullyDelivered ? "" : "cursor-pointer hover:bg-blue-50"}`}
+                  >
+                    <div className="col-span-3 font-medium text-xs">
+                      {po.purchase_Order_Number}
+                    </div>
+                    <div className="col-span-4 text-gray-600 text-xs truncate">
+                      {po.supplier.company_Name ||
+                        `${po.supplier.first_Name} ${po.supplier.last_Name}`}
+                    </div>
+                    <div className="col-span-2 text-gray-500 text-xs">
+                      {new Intl.DateTimeFormat("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }).format(new Date(po.created_At))}
+                    </div>
+                    <div className="col-span-2">
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 w-fit ${
+                          STATUS_COLORS[po.status] ??
+                          "bg-gray-100 text-gray-500 border-gray-200"
+                        }`}
+                      >
+                        {(() => {
+                          const config = FILTER_CONFIG.find((f) =>
+                            f.statuses.includes(po.status),
+                          );
+                          const IconComponent = config?.icon ?? BanIcon;
+                          return <IconComponent width={12} height={12} />;
+                        })()}
+                        {FILTER_CONFIG.find((f) =>
                           f.statuses.includes(po.status),
-                        );
-                        const IconComponent = config?.icon ?? BanIcon;
-                        return <IconComponent width={12} height={12} />;
-                      })()}
-                      {FILTER_CONFIG.find((f) => f.statuses.includes(po.status))
-                        ?.label ?? po.status}
-                    </span>
+                        )?.label ?? po.status}
+                      </span>
+                    </div>
+                    <div className="col-span-1 flex justify-end">
+                      {!isFullyDelivered && (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-gray-400"
+                        >
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      )}
+                    </div>
                   </div>
-                  <div className="col-span-1 flex justify-end">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-gray-400"
-                    >
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
