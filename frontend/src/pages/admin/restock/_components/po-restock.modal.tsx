@@ -151,7 +151,7 @@ export const PO_RestockModal = ({ onClose }: PORestockModalProps) => {
                 <button
                   key={filter.key}
                   onClick={() => toggleFilter(filter.key)}
-                  className={`text-sm font-semibold px-3 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 text-nowrap max-w-full w-full${
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 text-nowrap max-w-full w-full${
                     activeFilters.includes(filter.key)
                       ? filter.activeClasses
                       : "bg-gray-50 text-gray-400 border-gray-200"
