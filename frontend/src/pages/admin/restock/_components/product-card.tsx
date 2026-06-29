@@ -17,9 +17,15 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
         className="flex justify-between bg-gray-bg rounded-lg py-2 px-2 text-xs items-center cursor-pointer hover:bg-gray-200"
         onClick={onClick}
       >
-        <div className="grid gap-3 items-center">
+        <div className="grid gap-3 items-center font-semibold">
           <span>{product.product.product_Name}</span>
-          <span>{product.brand.brandName}</span>
+          <div className="flex gap-2">
+            <span>{product.brand.brandName}</span>
+            <span>•</span>
+            <span className="text-vesper-gray">
+              {product.category.category_Name}
+            </span>
+          </div>
           <span>{product.variant.variant_Name}</span>
         </div>
         <HoverCard>
