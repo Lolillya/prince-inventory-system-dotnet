@@ -1,22 +1,49 @@
+import { PurchaseOrderRecord } from "@/features/purchase-order/purchase-order.model";
 import { PORestockDeliveryStatus } from "@/features/restock/models/po-restock.model";
-import { AlertTriangle, ChevronDown } from "lucide-react";
+import { PORestockCardState } from "../index";
+import { AlertTriangle } from "lucide-react";
 
 interface DeliveryStatusChoiceModalProps {
+  po: PurchaseOrderRecord;
+  cards: PORestockCardState[];
   isPending: boolean;
   onClose: () => void;
   onChoose: (status: PORestockDeliveryStatus) => void;
 }
 
 export const DeliveryStatusChoiceModal = ({
+  po,
+  cards,
   isPending,
   onClose,
   onChoose,
 }: DeliveryStatusChoiceModalProps) => {
+  const shortDeliveries = cards
+    .filter((c) => !c.removed && c.receivingQuantity < c.remainingQuantity)
+    .map((c) => {
+      const li = po.line_Items.find(
+        (l) => l.purchase_Order_LineItem_ID === c.lineItemId,
+      );
+      return {
+        lineItemId: c.lineItemId,
+        productName: li?.product?.product_Name ?? "",
+        presetConversion:
+          li?.unit_Preset?.preset_Levels.map((l) => l.uom_Name).join(" → ") ??
+          "",
+        shortQty: c.remainingQuantity - c.receivingQuantity,
+        mainUnitName:
+          li?.unit_Preset?.preset_Levels[0]?.uom_Name ??
+          li?.unit?.uom_Name ??
+          "",
+      };
+    });
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-60">
       <div className="w-[900px] max-w-[95vw] bg-white px-8 py-5 rounded-lg border shadow-xl flex flex-col gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#0A1931]">Mark Delivery Status</h2>
+          <h2 className="text-2xl font-bold text-[#0A1931]">
+            Mark Delivery Status
+          </h2>
           <p className="text-base text-gray-500 mt-2">
             How would you like to mark this delivery?
           </p>
@@ -25,7 +52,9 @@ export const DeliveryStatusChoiceModal = ({
         <div className="border border-gray-200 rounded-lg overflow-hidden">
           <div className="flex items-center gap-2 p-4 pb-2">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
-            <span className="font-semibold text-orange-500 text-sm tracking-wide">SHORT DELIVERIES</span>
+            <span className="font-semibold text-orange-500 text-sm tracking-wide">
+              SHORT DELIVERIES
+            </span>
           </div>
 
           <div className="px-4 pb-2">
@@ -34,43 +63,40 @@ export const DeliveryStatusChoiceModal = ({
                 <thead>
                   <tr className="border-b text-gray-500 text-xs font-semibold">
                     <th className="text-left font-semibold py-3">PRODUCT</th>
-                    <th className="text-left font-semibold py-3">PRESET CONVERSION</th>
-                    <th className="text-right font-semibold py-3">SHORT QTY (MAIN UNIT)</th>
+                    <th className="text-left font-semibold py-3">
+                      PRESET CONVERSION
+                    </th>
+                    <th className="text-right font-semibold py-3">
+                      SHORT QTY (MAIN UNIT)
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 text-gray-800 font-medium">Product A</td>
-                    <td className="py-4 text-gray-500">SET &rarr; PAD (90x) &rarr; PIECE (120x)</td>
-                    <td className="py-4 text-right text-orange-600 font-bold">2 SETS</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 text-gray-800 font-medium">Product B</td>
-                    <td className="py-4 text-gray-500">BOX &rarr; PACK (12x)</td>
-                    <td className="py-4 text-right text-orange-600 font-bold">1 BOX</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 text-gray-800 font-medium">Product C</td>
-                    <td className="py-4 text-gray-500">CASE &rarr; PACK (24x) &rarr; PIECE (240x)</td>
-                    <td className="py-4 text-right text-orange-600 font-bold">3 CASES</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 text-gray-800 font-medium">Product D</td>
-                    <td className="py-4 text-gray-500">KIT &rarr; PACK (10x) &rarr; PIECE (50x)</td>
-                    <td className="py-4 text-right text-orange-600 font-bold">5 KITS</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 text-gray-800 font-medium">Product E</td>
-                    <td className="py-4 text-gray-500">BUNDLE &rarr; PIECE (20x)</td>
-                    <td className="py-4 text-right text-orange-600 font-bold">1 BUNDLE</td>
-                  </tr>
+                  {shortDeliveries.map((row) => (
+                    <tr
+                      key={row.lineItemId}
+                      className="border-b border-gray-100"
+                    >
+                      <td className="py-4 text-gray-800 font-medium">
+                        {row.productName}
+                      </td>
+                      <td className="py-4 text-gray-500">
+                        {row.presetConversion}
+                      </td>
+                      <td className="py-4 text-right text-orange-600 font-bold">
+                        {row.shortQty} {row.mainUnitName}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
 
           <div className="flex items-center justify-center py-3 border-t text-sm text-gray-500">
-            Showing 5 of 15 items <ChevronDown className="ml-1 w-4 h-4" />
+            {shortDeliveries.length === 0
+              ? "No short deliveries"
+              : `${shortDeliveries.length} item${shortDeliveries.length !== 1 ? "s" : ""} short`}
           </div>
         </div>
 

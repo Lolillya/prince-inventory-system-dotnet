@@ -90,8 +90,8 @@ export const PORestockConfirmModal = ({
 
   return (
     <>
-      <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-999999">
-        <div className="w-[1024px] max-h-[90vh] overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg flex flex-col gap-4">
+      <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
+        <div className="w-5xl max-h-[90vh] overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg flex flex-col gap-4">
           {/* Header */}
           <div>
             <div className="flex items-center gap-2">
@@ -251,6 +251,8 @@ export const PORestockConfirmModal = ({
           isPending={isPending}
           onClose={() => setIsStatusChoiceOpen(false)}
           onChoose={handleSubmit}
+          po={po}
+          cards={cards}
         />
       )}
     </>
