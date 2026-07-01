@@ -100,8 +100,6 @@ const PORestockPage = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [notes, setNotes] = useState("");
 
-  console.log(po);
-
   useEffect(() => {
     if (!po) return;
     setCards(
@@ -115,6 +113,7 @@ const PORestockPage = () => {
           receivedQuantity: li.received_quantity ?? 0,
           remainingQuantity: li.remaining_quantity ?? li.quantity,
           receivingQuantity: li.remaining_quantity ?? li.quantity,
+          category: li.product?.category ?? "",
           removed: false,
         })),
     );
@@ -155,7 +154,7 @@ const PORestockPage = () => {
     activeCards.length > 0 && readyItemsCount === activeCards.length;
 
   return (
-    <section className="relative">
+    <>
       {isConfirmOpen && (
         <PORestockConfirmModal
           po={po}
@@ -165,119 +164,120 @@ const PORestockPage = () => {
           onClose={() => setIsConfirmOpen(false)}
         />
       )}
-
-      {/* Header */}
-      <div className="flex items-start gap-4 mb-6 pb-4 border-b border-gray-200">
-        <div
-          onClick={() => navigate("/admin/restock")}
-          className="text-gray-500 hover:text-gray-700 flex items-center cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-gray-800">PO Restock</h1>
-            <span className="text-gray-500 font-medium">
-              #{po.purchase_Order_Number}
-            </span>
-            <span className="text-gray-400">•</span>
-            <span className="text-xs bg-yellow-50 text-yellow-600 px-3 py-0.5 rounded-full border border-yellow-200 font-medium">
-              Partial
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-            <Truck className="w-4 h-4" />
-            <span>
-              {po.supplier.company_Name ||
-                `${po.supplier.first_Name} ${po.supplier.last_Name}`}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {activeCards.length === 0 ? (
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full border-border border shadow-sm px-4 py-2 bg-white">
-          <label className="text-sm font-medium">No items added</label>
-        </div>
-      ) : (
-        <div
-          className={`absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full border shadow-sm px-4 py-2 z-10 transition-colors ${
-            allItemsReady
-              ? "bg-green-50 border-green-400"
-              : "bg-white border-border"
-          }`}
-        >
-          <label
-            className={`text-sm font-medium ${allItemsReady ? "text-green-700" : ""}`}
-          >
-            {readyItemsCount}/{activeCards.length} product
-            {activeCards.length !== 1 ? "s" : ""} ready for restock
-          </label>
-        </div>
-      )}
-
-      {/* Cards grid */}
-      {activeCards.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-sm text-gray-400">
-          <p>All items have been removed.</p>
-          <button
-            className="mt-4 text-blue-500 hover:underline"
+      <section className="relative">
+        {/* Header */}
+        <div className="flex items-start gap-4 mb-6 pb-4 border-b border-gray-200">
+          <div
             onClick={() => navigate("/admin/restock")}
+            className="text-gray-500 hover:text-gray-700 flex items-center cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200"
           >
-            Go back to Restock
-          </button>
+            <ArrowLeft className="w-5 h-5" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-gray-800">PO Restock</h1>
+              <span className="text-gray-500 font-medium">
+                #{po.purchase_Order_Number}
+              </span>
+              <span className="text-gray-400">•</span>
+              <span className="text-xs bg-yellow-50 text-yellow-600 px-3 py-0.5 rounded-full border border-yellow-200 font-medium">
+                Partial
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+              <Truck className="w-4 h-4" />
+              <span>
+                {po.supplier.company_Name ||
+                  `${po.supplier.first_Name} ${po.supplier.last_Name}`}
+              </span>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-auto h-full">
-          {cards
-            .filter((c) => !c.removed)
-            .map((card) => {
-              const li = po.line_Items.find(
-                (l) => l.purchase_Order_LineItem_ID === card.lineItemId,
-              );
-              if (!li) return null;
 
-              const fakeProduct = buildFakeProduct(li);
-              // Inject selectedPreset so RestockCard2 initializes with the pre-set values
-              (fakeProduct as any).selectedPreset = {
-                preset_ID: card.presetId,
-                main_Unit_Quantity: card.receivingQuantity,
-                levelPricing: [],
-              };
-
-              return (
-                <RestockCard2
-                  key={card.lineItemId}
-                  product={fakeProduct}
-                  itemId={String(card.lineItemId)}
-                  isPresetLocked
-                  onQuantityChange={(qty) =>
-                    handleQuantityChange(card.lineItemId, qty)
-                  }
-                  onRemove={() => handleRemove(card.lineItemId)}
-                />
-              );
-            })}
-        </div>
-      )}
-
-      {/* Footer action */}
-      {activeCards.length > 0 && (
-        <div className="flex justify-end mt-4">
-          <button
-            disabled={!allItemsReady}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+        {activeCards.length === 0 ? (
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full border-border border shadow-sm px-4 py-2 bg-white">
+            <label className="text-sm font-medium">No items added</label>
+          </div>
+        ) : (
+          <div
+            className={`absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full border shadow-sm px-4 py-2 z-10 transition-colors ${
               allItemsReady
-                ? " text-white cursor-pointer"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                ? "bg-green-50 border-green-400"
+                : "bg-white border-border"
             }`}
-            onClick={() => setIsConfirmOpen(true)}
           >
-            Continue
-          </button>
-        </div>
-      )}
-    </section>
+            <label
+              className={`text-sm font-medium ${allItemsReady ? "text-green-700" : ""}`}
+            >
+              {readyItemsCount}/{activeCards.length} product
+              {activeCards.length !== 1 ? "s" : ""} ready for restock
+            </label>
+          </div>
+        )}
+
+        {/* Cards grid */}
+        {activeCards.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-sm text-gray-400">
+            <p>All items have been removed.</p>
+            <button
+              className="mt-4 text-blue-500 hover:underline"
+              onClick={() => navigate("/admin/restock")}
+            >
+              Go back to Restock
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-auto h-full">
+            {cards
+              .filter((c) => !c.removed)
+              .map((card) => {
+                const li = po.line_Items.find(
+                  (l) => l.purchase_Order_LineItem_ID === card.lineItemId,
+                );
+                if (!li) return null;
+
+                const fakeProduct = buildFakeProduct(li);
+                // Inject selectedPreset so RestockCard2 initializes with the pre-set values
+                (fakeProduct as any).selectedPreset = {
+                  preset_ID: card.presetId,
+                  main_Unit_Quantity: card.receivingQuantity,
+                  levelPricing: [],
+                };
+
+                return (
+                  <RestockCard2
+                    key={card.lineItemId}
+                    product={fakeProduct}
+                    itemId={String(card.lineItemId)}
+                    isPresetLocked
+                    onQuantityChange={(qty) =>
+                      handleQuantityChange(card.lineItemId, qty)
+                    }
+                    onRemove={() => handleRemove(card.lineItemId)}
+                  />
+                );
+              })}
+          </div>
+        )}
+
+        {/* Footer action */}
+        {activeCards.length > 0 && (
+          <div className="flex justify-end mt-4">
+            <button
+              disabled={!allItemsReady}
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                allItemsReady
+                  ? " text-white cursor-pointer"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+              onClick={() => setIsConfirmOpen(true)}
+            >
+              Continue
+            </button>
+          </div>
+        )}
+      </section>
+    </>
   );
 };
 

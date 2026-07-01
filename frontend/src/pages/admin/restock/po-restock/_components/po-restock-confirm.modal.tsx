@@ -49,13 +49,17 @@ export const PORestockConfirmModal = ({
       lineItemId: card.lineItemId,
       productName: li?.product?.product_Name ?? "",
       brand: li?.product?.brand ?? "",
-      presetCode: li?.unit_Preset?.preset_Levels?.map((l) => l.uom_Name).join(" → ") || li?.unit_Preset?.preset_Code || "",
+      presetCode:
+        li?.unit_Preset?.preset_Levels?.map((l) => l.uom_Name).join(" → ") ||
+        li?.unit_Preset?.preset_Code ||
+        "",
       orderedQuantity: card.orderedQuantity,
       receivedSoFar: card.receivedQuantity,
       remainingQuantity: card.remainingQuantity,
       receivingQuantity: card.removed ? 0 : card.receivingQuantity,
       discrepancy,
       removed: card.removed,
+      category: li?.product?.category,
     };
   });
 
@@ -86,12 +90,14 @@ export const PORestockConfirmModal = ({
 
   return (
     <>
-      <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
+      <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-999999">
         <div className="w-[1024px] max-h-[90vh] overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg flex flex-col gap-4">
           {/* Header */}
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-[#1f2937]">Restock Confirmation</h1>
+              <h1 className="text-2xl font-bold text-[#1f2937]">
+                Restock Confirmation
+              </h1>
               <span className="text-lg font-medium text-gray-500">
                 #{po.purchase_Order_Number}
               </span>
@@ -131,7 +137,9 @@ export const PORestockConfirmModal = ({
             <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-gray-50/80 text-[11px] text-gray-500 font-bold uppercase tracking-wider border-b">
               <div className="col-span-3 font-bold">PRODUCT</div>
               <div className="col-span-2 text-center font-bold">ORDERED</div>
-              <div className="col-span-2 text-center font-bold">PREV. RECEIVED</div>
+              <div className="col-span-2 text-center font-bold">
+                PREV. RECEIVED
+              </div>
               <div className="col-span-2 text-center font-bold">REMAINING</div>
               <div className="col-span-2 text-center font-bold">RECEIVING</div>
               <div className="col-span-1 text-center font-bold">DISC.</div>
@@ -141,12 +149,14 @@ export const PORestockConfirmModal = ({
               {lineItemRows.map((row, idx) => (
                 <div
                   key={row.lineItemId}
-                  className={`grid grid-cols-12 gap-4 px-4 py-6 text-xs items-center ${row.removed ? "opacity-40 line-through" : ""
-                    } ${idx !== lineItemRows.length - 1 ? "border-b border-gray-100" : ""}`}
+                  className={`grid grid-cols-12 gap-4 px-4 py-6 text-xs items-center ${
+                    row.removed ? "opacity-40 line-through" : ""
+                  } ${idx !== lineItemRows.length - 1 ? "border-b border-gray-100" : ""}`}
                 >
                   <div className="col-span-3 flex flex-col gap-1">
-                    <div className="font-semibold text-gray-800 text-sm">
-                      {row.productName}{row.brand ? ` - ${row.brand}` : ""}
+                    <div className="font-semibold text-gray-800 flex item-center text-xs flex-wrap">
+                      <span className="text-nowrap">{row.productName}</span>
+                      <span className="text-vesper-gray">{row.category}</span>
                     </div>
                     {row.presetCode && (
                       <div className="text-gray-400 text-[11px] font-medium uppercase tracking-wide">
@@ -167,12 +177,13 @@ export const PORestockConfirmModal = ({
                     {row.receivingQuantity}
                   </div>
                   <div
-                    className={`col-span-1 text-center font-bold ${row.discrepancy > 0
-                      ? "text-blue-600"
-                      : row.discrepancy < 0
-                        ? "text-red-500"
-                        : "text-green-600"
-                      }`}
+                    className={`col-span-1 text-center font-bold ${
+                      row.discrepancy > 0
+                        ? "text-blue-600"
+                        : row.discrepancy < 0
+                          ? "text-red-500"
+                          : "text-green-600"
+                    }`}
                   >
                     {row.discrepancy > 0
                       ? `+${row.discrepancy}`
