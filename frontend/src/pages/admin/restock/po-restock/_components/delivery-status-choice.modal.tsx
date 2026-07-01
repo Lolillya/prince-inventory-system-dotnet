@@ -100,28 +100,30 @@ export const DeliveryStatusChoiceModal = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col p-5 rounded-lg border-2 border-yellow-200 bg-[#FFFDF5]">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-5 h-5 bg-[#FFC107] rounded-full shrink-0" />
-              <label className="font-bold text-[#A67C00] text-lg">
-                Partial Delivery
-              </label>
+        <div className="flex gap-4 w-full">
+          {shortDeliveries.length > 0 && (
+            <div className="flex flex-col p-5 rounded-lg border-2 border-yellow-200 bg-[#FFFDF5]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-5 h-5 bg-[#FFC107] rounded-full shrink-0" />
+                <label className="font-bold text-[#A67C00] text-lg">
+                  Partial Delivery
+                </label>
+              </div>
+              <p className="text-sm text-[#A67C00] flex-grow leading-relaxed mb-4 font-medium">
+                The PO stays open. Remaining quantities are remembered and will
+                be pre-filled the next time you restock from this PO.
+              </p>
+              <button
+                disabled={isPending}
+                onClick={() => onChoose("PARTIAL")}
+                className="self-center bg-transparent border-none outline-none whitespace-nowrap text-center font-bold text-[#A67C00] disabled:opacity-50 hover:underline transition-all"
+              >
+                Mark As Partial Delivery
+              </button>
             </div>
-            <p className="text-sm text-[#A67C00] flex-grow leading-relaxed mb-4 font-medium">
-              The PO stays open. Remaining quantities are remembered and will be
-              pre-filled the next time you restock from this PO.
-            </p>
-            <button
-              disabled={isPending}
-              onClick={() => onChoose("PARTIAL")}
-              className="self-center bg-transparent border-none outline-none whitespace-nowrap text-center font-bold text-[#A67C00] disabled:opacity-50 hover:underline transition-all"
-            >
-              Mark As Partial Delivery
-            </button>
-          </div>
+          )}
 
-          <div className="flex flex-col p-5 rounded-lg border-2 border-green-200 bg-[#F5FFF9]">
+          <div className="flex flex-col p-5 rounded-lg border-2 border-green-200 bg-[#F5FFF9] w-full">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-5 h-5 bg-[#4ADE80] rounded-full shrink-0" />
               <label className="font-bold text-[#208350] text-lg">
