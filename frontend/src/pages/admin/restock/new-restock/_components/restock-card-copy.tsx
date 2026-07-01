@@ -51,8 +51,6 @@ export const RestockCard2 = ({
     }
   }, [product]);
 
-  console.log(product);
-
   const selectedPreset = product.unitPresets?.find(
     (p) => p.preset_ID === selectedPresetId,
   );
@@ -126,7 +124,7 @@ export const RestockCard2 = ({
           </span>
           <span>•</span>
           <span className="text-vesper-gray font-semibold">
-            {product.category.category_Name}
+            {product.category?.category_Name}
           </span>
         </div>
 

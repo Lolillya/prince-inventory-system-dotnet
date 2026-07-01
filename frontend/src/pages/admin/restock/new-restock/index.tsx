@@ -135,8 +135,16 @@ const NewRestockPage = () => {
                     </label>
                   </div>
                 ) : (
-                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border-border border shadow-sm px-4 py-2 bg-white z-10">
-                    <label className="text-sm font-medium">
+                  <div
+                    className={`absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border shadow-sm px-4 py-2 z-10 transition-colors ${
+                      allItemsReady
+                        ? "bg-green-50 border-green-400"
+                        : "bg-white border-border"
+                    }`}
+                  >
+                    <label
+                      className={`text-sm font-medium ${allItemsReady ? "text-green-700" : ""}`}
+                    >
                       {readyItemsCount}/{items.length} product
                       {items.length !== 1 ? "s" : ""} ready for restock
                     </label>

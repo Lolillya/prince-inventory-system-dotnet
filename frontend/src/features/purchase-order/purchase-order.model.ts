@@ -55,6 +55,7 @@ export type PurchaseOrderRecord = {
       product_Name: string;
       brand: string;
       variant: string;
+      category: string;
     } | null;
     unit: {
       uom_ID: number;
@@ -62,6 +63,7 @@ export type PurchaseOrderRecord = {
     } | null;
     unit_Preset: {
       preset_ID: number;
+      preset_Code?: string;
       preset_Levels: Array<{
         level: number;
         uom_Name: string;

@@ -63,6 +63,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     li.Product.Product_Name,
                     brand = li.Product.Brand != null ? li.Product.Brand.BrandName : "",
                     variant = li.Product.Variant != null ? li.Product.Variant.Variant_Name : "",
+                    category = li.Product.Category != null ? li.Product.Category.Category_Name : "",
                 } : null,
                 unit = li.UnitOfMeasure != null ? new
                 {
@@ -145,6 +146,9 @@ namespace backend.Controller.PurchaseOrderControllers
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Brand)
+                .Include(po => po.LineItems)
+                    .ThenInclude(li => li.Product)
+                        .ThenInclude(p => p.Category)
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Variant)

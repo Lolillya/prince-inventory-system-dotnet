@@ -60,27 +60,27 @@ function buildFakeProduct(
     },
     category: {
       category_ID: 0,
-      category_Name: "",
+      category_Name: li.product?.category ?? "",
       createdAt: "",
       updatedAt: "",
     },
     unitPresets: li.preset_ID
       ? [
-        {
-          assigned_At: "",
-          preset_ID: li.preset_ID,
-          product_Preset_ID: 0,
-          presetPricing: [],
-          preset: {
+          {
+            assigned_At: "",
             preset_ID: li.preset_ID,
-            preset_Code: li.unit_Preset?.preset_Code ?? "",
-            main_Unit_ID: 0,
-            created_At: "",
-            updated_At: "",
-            presetLevels,
+            product_Preset_ID: 0,
+            presetPricing: [],
+            preset: {
+              preset_ID: li.preset_ID,
+              preset_Code: li.unit_Preset?.preset_Code ?? "",
+              main_Unit_ID: 0,
+              created_At: "",
+              updated_At: "",
+              presetLevels,
+            },
           },
-        },
-      ]
+        ]
       : [],
     isComplete: false,
     isFavorited: false,
@@ -99,6 +99,8 @@ const PORestockPage = () => {
   const [cards, setCards] = useState<PORestockCardState[]>([]);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [notes, setNotes] = useState("");
+
+  console.log(po);
 
   useEffect(() => {
     if (!po) return;
@@ -145,8 +147,15 @@ const PORestockPage = () => {
 
   const activeCards = cards.filter((c) => !c.removed);
 
+  const readyItemsCount = activeCards.filter(
+    (c) => c.receivingQuantity > 0,
+  ).length;
+
+  const allItemsReady =
+    activeCards.length > 0 && readyItemsCount === activeCards.length;
+
   return (
-    <section>
+    <section className="relative">
       {isConfirmOpen && (
         <PORestockConfirmModal
           po={po}
@@ -185,6 +194,27 @@ const PORestockPage = () => {
           </div>
         </div>
       </div>
+
+      {activeCards.length === 0 ? (
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full border-border border shadow-sm px-4 py-2 bg-white">
+          <label className="text-sm font-medium">No items added</label>
+        </div>
+      ) : (
+        <div
+          className={`absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full border shadow-sm px-4 py-2 z-10 transition-colors ${
+            allItemsReady
+              ? "bg-green-50 border-green-400"
+              : "bg-white border-border"
+          }`}
+        >
+          <label
+            className={`text-sm font-medium ${allItemsReady ? "text-green-700" : ""}`}
+          >
+            {readyItemsCount}/{activeCards.length} product
+            {activeCards.length !== 1 ? "s" : ""} ready for restock
+          </label>
+        </div>
+      )}
 
       {/* Cards grid */}
       {activeCards.length === 0 ? (
@@ -235,7 +265,12 @@ const PORestockPage = () => {
       {activeCards.length > 0 && (
         <div className="flex justify-end mt-4">
           <button
-            className="cursor-pointer text-white bg-blue-500 hover:bg-blue-600 rounded px-6 py-2 text-sm font-medium"
+            disabled={!allItemsReady}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+              allItemsReady
+                ? " text-white cursor-pointer"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
             onClick={() => setIsConfirmOpen(true)}
           >
             Continue
