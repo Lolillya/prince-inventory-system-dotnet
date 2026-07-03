@@ -28,6 +28,9 @@ namespace backend.Models.RestockModel
         // Auto-replenish invoice reference (e.g., "DR/INV-000001")
         public string? Restock_Invoice_Reference { get; set; }
 
+        // Delivery resolution for PO restocks (PARTIAL or FULLY_DELIVERED)
+        public string? Delivery_Resolution { get; set; }
+
         // Navigation properties
         public ICollection<RestockBatch> RestockBatches { get; set; } = new List<RestockBatch>();
     }

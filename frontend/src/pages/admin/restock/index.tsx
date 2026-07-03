@@ -45,6 +45,8 @@ const RestockPage = () => {
     useState<RestockAllModel | null>(null);
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
 
+  console.log("restockItems", restockItems);
+
   const handleOpenModal = (restock: RestockAllModel) => {
     setSelectedRestock(restock);
     setIsModalOpen(true);
@@ -199,7 +201,7 @@ const RestockPage = () => {
                 key={r.restock_Id}
                 className="relative flex flex-col justify-between gap-5 border rounded-lg py-3 px-5 bg-custom-gray h-fit w-full break-inside-avoid"
               >
-                <div className="absolute -top-1">
+                <div className="absolute -top-1 flex gap-2">
                   {r.status === "VOIDED" && (
                     <div className="bg-orange-200 text-xs px-2 py-1 rounded-b-lg shadow-md border-2 border-orange-300 font-semibold flex text-orange-500 items-center gap-2">
                       <RotateCcw size={14} />
@@ -342,25 +344,6 @@ const RestockPage = () => {
                   </div>
                 </div>
 
-                {/* <div className="bg-background rounded-lg flex flex-col p-3 gap-2">
-                  <div className="flex w-full justify-between ">
-                    <span className="text-saltbox-gray text-sm font-semibold">
-                      {r?.line_Items[0].product.product_Name}
-                    </span>
-                    <span className="text-saltbox-gray text-xl font-semibold">
-                      {r?.line_Items[0].base_Unit_Quantity}{" "}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-saltbox-gray">
-                    <Box className="" size={18} />
-                    <span className="text-sm text-saltbox-gray font-semibold">
-                      1 Conversions
-                    </span>
-                  </div>
-                </div> */}
-
-                {/* <div className="bg-background rounded-lg flex items-center justify-center px-3 py-1"> */}
                 <button
                   onClick={() => handleOpenModal(r)}
                   className="bg-background text-saltbox-gray w-full max-w-full cursor-pointer hover:underline hover:shadow-none hover:bg-gray-300 transition-colors"

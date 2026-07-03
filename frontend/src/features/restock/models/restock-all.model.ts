@@ -3,6 +3,9 @@ export type RestockAllModel = {
   restock_Number: string;
   restock_Notes: string;
   purchase_order_number?: string;
+  purchase_order_id?: number;
+  purchase_order_status?: string;
+  delivery_resolution?: string;
   restock_Invoice_Reference: string;
   status: string;
   clerk: Clerk;

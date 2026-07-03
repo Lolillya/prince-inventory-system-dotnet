@@ -67,6 +67,9 @@ namespace backend.Controller.RestockControllers
                         restock_Number = r.Restock_Number,
                         restock_Notes = r.Restock_Notes,
                         purchase_order_number = r.PurchaseOrder != null ? r.PurchaseOrder.Purchase_Order_Number : null,
+                        purchase_order_id = r.PurchaseOrder != null ? r.PurchaseOrder.Purchase_Order_ID : (int?)null,
+                        purchase_order_status = r.PurchaseOrder != null ? r.PurchaseOrder.Status : null,
+                        delivery_resolution = r.Delivery_Resolution,
                         restock_Invoice_Reference = r.Restock_Invoice_Reference,
                         clerk = r.Clerk != null ? new
                         {

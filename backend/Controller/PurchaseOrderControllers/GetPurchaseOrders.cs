@@ -75,7 +75,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     li.UnitPreset.Preset_ID,
                     preset_Levels = li.UnitPreset.PresetLevels
                         .OrderBy(pl => pl.Level)
-                        .Select(pl => new { pl.Level, uom_Name = pl.UnitOfMeasure.uom_Name })
+                        .Select(pl => new { pl.Level, uom_Name = pl.UnitOfMeasure.uom_Name, conversion_Factor = pl.Conversion_Factor })
                         .ToList(),
                 } : null,
             };
@@ -277,6 +277,7 @@ namespace backend.Controller.PurchaseOrderControllers
                                 {
                                     pl.Level,
                                     uom_Name = pl.UnitOfMeasure.uom_Name,
+                                    conversion_Factor = pl.Conversion_Factor,
                                 })
                                 .ToList(),
                         } : null,

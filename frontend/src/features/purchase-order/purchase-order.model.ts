@@ -67,6 +67,7 @@ export type PurchaseOrderRecord = {
       preset_Levels: Array<{
         level: number;
         uom_Name: string;
+        conversion_Factor: number;
       }>;
     } | null;
   }>;

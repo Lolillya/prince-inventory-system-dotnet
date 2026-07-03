@@ -63,6 +63,7 @@ namespace backend.Controller.RestockControllers
                     Restock_Clerk = dto.Restock_Clerk,
                     Restock_Notes = dto.Notes,
                     Purchase_Order_ID = dto.Purchase_Order_ID,
+                    Delivery_Resolution = normalizedDeliveryStatus,
                     Status = "COMPLETE",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,

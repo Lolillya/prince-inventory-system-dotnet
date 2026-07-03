@@ -2,8 +2,8 @@ import { Separator } from "@/components/separator";
 import { RestockAllModel } from "@/features/restock/models/restock-all.model";
 import axios from "axios";
 import {
-  CircleAlert,
   Info,
+  Link2,
   LockKeyhole,
   ShieldCheck,
   TriangleAlert,
@@ -78,12 +78,41 @@ export const VoidRestockModal = ({
             {selectedRestock.supplier.lastName}
           </label>
 
-          <div className="flex items-center gap-2 p-4 border border-red-400 rounded-md bg-red-50">
-            <TriangleAlert className="text-red-600" size={20} />
-            <span className="text-sm text-red-600 font-semibold">
-              You are about to undo this restock!
-            </span>
+          <div className="flex items-start gap-2 p-4 border border-red-400 rounded-md bg-red-50">
+            <TriangleAlert className="text-red-600 shrink-0 mt-0.5" size={20} />
+            {selectedRestock.purchase_order_number ? (
+              <span className="text-sm text-red-600 font-semibold">
+                NOTE: This restock is linked to{" "}
+                <span className="font-bold">{selectedRestock.purchase_order_number}</span>. Undoing
+                this will reverse the inventory receipt, restock the PO balance, and reopen
+                the PO if it is currently completed.
+              </span>
+            ) : (
+              <span className="text-sm text-red-600 font-semibold">
+                You are about to undo this restock!
+              </span>
+            )}
           </div>
+
+          {selectedRestock.purchase_order_number && (
+            <div className="flex items-center gap-2 p-3 border border-blue-200 rounded-md bg-blue-50">
+              <Link2 size={14} className="text-blue-500 shrink-0" />
+              <span className="text-sm font-semibold text-blue-700">Linked Purchase Order:</span>
+              <span className="text-sm font-bold text-blue-800">
+                {selectedRestock.purchase_order_number}
+              </span>
+              {selectedRestock.purchase_order_status && (
+                <>
+                  <span className="text-blue-300">•</span>
+                  <span className="text-xs font-semibold text-blue-600 bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5">
+                    {selectedRestock.purchase_order_status === "FULLY_DELIVERED"
+                      ? "FULLY DELIVERED"
+                      : selectedRestock.purchase_order_status}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="flex-1 flex flex-col overflow-hidden gap-2 ">
             {/* TABLE DATA HEADERS */}
