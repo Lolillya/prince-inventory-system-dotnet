@@ -32,20 +32,6 @@ export const AddProductModal = ({
     }
   }, [isModalOpen]);
 
-  // const addProductHeader = "Add New Product";
-  // const addBrandHeader = "Add New Brand";
-  // const addCategoryHeader = "Add New Category";
-  // const addVariantHeader = "Add New Variant";
-
-  // const addProductInstructions =
-  //   "Fill in the details to add a new product to the inventory.";
-  // const addBrandInstructions =
-  //   "Fill in the details to add a new brand to the inventory.";
-  // const addCategoryInstructions =
-  //   "Fill in the details to add a new category to the inventory.";
-  // const addVariantInstructions =
-  //   "Fill in the details to add a new variant to the inventory.";
-
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
       <div className="w-3/6 h-4/5 bg-white px-20 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4">

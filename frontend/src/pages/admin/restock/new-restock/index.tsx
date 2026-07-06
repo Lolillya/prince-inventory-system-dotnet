@@ -10,12 +10,29 @@ import {
 } from "@/features/restock/unit-preset-restock.query";
 import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
+import { useRestockQuery } from "@/features/restock/restock-get-all";
+import { useNavigate } from "react-router-dom";
 
 const NewRestockPage = () => {
   // GLOBAL STATES
   const { data: inventoryData, isLoading, error } = UseInventoryQuery();
   const { data: items = [] } = useUnitPresetRestockItems();
   const { addProduct, removeProduct, clearAll } = useUnitPresetRestock();
+  const { data: allRestocks = [] } = useRestockQuery();
+  const navigate = useNavigate();
+
+  const nextRestockNumber = (() => {
+    const year = new Date().getFullYear();
+    const prefix = `RS-${year}-`;
+    const numbers = allRestocks
+      .map((r) => {
+        const match = r.restock_Number?.match(/RS-\d{4}-(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+      .filter((n) => n > 0);
+    const next = numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
+    return `${prefix}${String(next).padStart(3, "0")}`;
+  })();
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,6 +88,10 @@ const NewRestockPage = () => {
     removeProduct(itemId);
   };
 
+  const handleBack = () => {
+    navigate("/admin/restock");
+  };
+
   // Calculate if all items are ready for restock
   const readyItemsCount = items.filter((item) => {
     const typedItem = item as any;
@@ -85,16 +106,22 @@ const NewRestockPage = () => {
   return (
     <>
       <Activity mode={isModalOpen ? "visible" : "hidden"}>
-        <CreateRestockModal createRestock={createRestock} />
+        <CreateRestockModal
+          createRestock={createRestock}
+          nextRestockNumber={nextRestockNumber}
+        />
       </Activity>
       <section className="relative">
         <div className="flex flex-col min-h-0 flex-1 gap-5">
-          <div className="flex flex-col gap-10">
-            <div className="flex gap-3 border-b pb-5 items-center">
+          <div className="flex gap-10 items-center">
+            <div
+              className="text-sm text-gray-500 hover:text-gray-700 flex gap-2 items-center cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200 w-fit"
+              onClick={handleBack}
+            >
               <LeftArrowIcon />
-              <span>new restock</span>
-              <span>#123456</span>
+              <span>Back</span>
             </div>
+            <span>{nextRestockNumber}</span>
           </div>
 
           <div className="flex flex-col gap-10 overflow-y-hidden flex-1">
@@ -108,8 +135,16 @@ const NewRestockPage = () => {
                     </label>
                   </div>
                 ) : (
-                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border-border border shadow-sm px-4 py-2 bg-white z-10">
-                    <label className="text-sm font-medium">
+                  <div
+                    className={`absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border shadow-sm px-4 py-2 z-10 transition-colors ${
+                      allItemsReady
+                        ? "bg-green-50 border-green-400"
+                        : "bg-white border-border"
+                    }`}
+                  >
+                    <label
+                      className={`text-sm font-medium ${allItemsReady ? "text-green-700" : ""}`}
+                    >
                       {readyItemsCount}/{items.length} product
                       {items.length !== 1 ? "s" : ""} ready for restock
                     </label>
@@ -118,14 +153,14 @@ const NewRestockPage = () => {
                 {!items || items.length === 0 ? (
                   <NoSelectedState />
                 ) : (
-                  <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
+                  <div className="grid grid-cols-2 gap-2 h-full overflow-y-auto flex-1 pr-2 content-start auto-rows-min">
                     {items.map((item, i) => {
                       // Get all selected presets for this product from other items
                       const selectedPresetIds = items
                         .filter(
                           (otherItem) =>
                             otherItem.product.product_ID ===
-                            item.product.product_ID &&
+                              item.product.product_ID &&
                             (otherItem as any).itemId !== (item as any).itemId,
                         )
                         .map(
@@ -168,16 +203,26 @@ const NewRestockPage = () => {
                   </div>
 
                   <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
-                    {inventoryData?.filter((data) =>
-                      data.product.product_Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      data.product.product_Code.toLowerCase().includes(searchTerm.toLowerCase())
-                    ).map((data, i) => (
-                      <ProductCard
-                        product={data}
-                        onClick={() => handleClick(data)}
-                        key={i}
-                      />
-                    ))}
+                    {inventoryData
+                      ?.filter(
+                        (data) =>
+                          data.product.product_Name
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()) ||
+                          data.product.product_Code
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()),
+                      )
+                      .map(
+                        (data, i) =>
+                          data.unitPresets.length != 0 && (
+                            <ProductCard
+                              product={data}
+                              onClick={() => handleClick(data)}
+                              key={i}
+                            />
+                          ),
+                      )}
                   </div>
                 </div>
 
@@ -186,10 +231,11 @@ const NewRestockPage = () => {
                   <button
                     onClick={createRestock}
                     disabled={!allItemsReady}
-                    className={`px-4 py-2 rounded ${allItemsReady
+                    className={`px-4 py-2 rounded ${
+                      allItemsReady
                         ? "text-white cursor-pointer"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      }`}
+                    }`}
                   >
                     confirm restock
                   </button>

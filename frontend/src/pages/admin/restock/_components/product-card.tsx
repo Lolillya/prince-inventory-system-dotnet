@@ -17,9 +17,15 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
         className="flex justify-between bg-gray-bg rounded-lg py-2 px-2 text-xs items-center cursor-pointer hover:bg-gray-200"
         onClick={onClick}
       >
-        <div className="grid gap-3 items-center">
+        <div className="grid gap-3 items-center font-semibold">
           <span>{product.product.product_Name}</span>
-          <span>{product.brand.brandName}</span>
+          <div className="flex gap-2">
+            <span>{product.brand.brandName}</span>
+            <span>•</span>
+            <span className="text-vesper-gray">
+              {product.category.category_Name}
+            </span>
+          </div>
           <span>{product.variant.variant_Name}</span>
         </div>
         <HoverCard>
@@ -44,7 +50,8 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
                 {u.preset.presetLevels.map((l, idx) => (
                   <div key={idx} className="flex gap-1 items-center">
                     <span className="text-xs font-semibold whitespace-nowrap">
-                      {l.unitOfMeasure.uom_Name} ({l.conversion_Factor}x)
+                      {l.unitOfMeasure.uom_Name}{" "}
+                      {idx !== 0 && `(${l.conversion_Factor}x)`}
                     </span>
                     {idx < u.preset.presetLevels.length - 1 && (
                       <span className="text-xs font-semibold whitespace-nowrap">

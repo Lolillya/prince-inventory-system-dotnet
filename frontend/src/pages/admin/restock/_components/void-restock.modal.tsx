@@ -1,7 +1,19 @@
+import { Separator } from "@/components/separator";
 import { RestockAllModel } from "@/features/restock/models/restock-all.model";
+import {
+  InsufficientInventoryToVoidError,
+  InsufficientVoidRestockItem,
+} from "@/features/restock/void-restock.service";
 import axios from "axios";
-import { CircleAlert } from "lucide-react";
+import {
+  Info,
+  Link2,
+  LockKeyhole,
+  ShieldCheck,
+  TriangleAlert,
+} from "lucide-react";
 import { useState } from "react";
+import { InsufficientInventoryModal } from "./insufficient-inventory.modal";
 
 interface Props {
   selectedRestock: RestockAllModel;
@@ -25,6 +37,9 @@ export const VoidRestockModal = ({
   const [reasonError, setReasonError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [insufficientItems, setInsufficientItems] = useState<
+    InsufficientVoidRestockItem[] | null
+  >(null);
 
   const handleOpenPasswordModal = () => {
     if (!reason.trim()) {
@@ -50,6 +65,12 @@ export const VoidRestockModal = ({
         password: password.trim(),
       });
     } catch (error) {
+      if (error instanceof InsufficientInventoryToVoidError) {
+        setIsPasswordModalOpen(false);
+        setInsufficientItems(error.insufficientItems);
+        return;
+      }
+
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         setPasswordError("Incorrect password. Please try again.");
         return;
@@ -66,16 +87,52 @@ export const VoidRestockModal = ({
           <label className="text-xl font-semibold">
             {selectedRestock.restock_Number}
           </label>
-          <label className="text-sm text-vesper-gray">
+          <label className="text-sm text-vesper-gray font-semibold">
             Supplier: {selectedRestock.supplier.firstName}{" "}
             {selectedRestock.supplier.lastName}
           </label>
+
+          <div className="flex items-start gap-2 p-4 border border-red-400 rounded-md bg-red-50">
+            <TriangleAlert className="text-red-600 shrink-0 mt-0.5" size={20} />
+            {selectedRestock.purchase_order_number ? (
+              <span className="text-sm text-red-600 font-semibold">
+                NOTE: This restock is linked to{" "}
+                <span className="font-bold">{selectedRestock.purchase_order_number}</span>. Undoing
+                this will reverse the inventory receipt, restock the PO balance, and reopen
+                the PO if it is currently completed.
+              </span>
+            ) : (
+              <span className="text-sm text-red-600 font-semibold">
+                You are about to undo this restock!
+              </span>
+            )}
+          </div>
+
+          {selectedRestock.purchase_order_number && (
+            <div className="flex items-center gap-2 p-3 border border-blue-200 rounded-md bg-blue-50">
+              <Link2 size={14} className="text-blue-500 shrink-0" />
+              <span className="text-sm font-semibold text-blue-700">Linked Purchase Order:</span>
+              <span className="text-sm font-bold text-blue-800">
+                {selectedRestock.purchase_order_number}
+              </span>
+              {selectedRestock.purchase_order_status && (
+                <>
+                  <span className="text-blue-300">•</span>
+                  <span className="text-xs font-semibold text-blue-600 bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5">
+                    {selectedRestock.purchase_order_status === "FULLY_DELIVERED"
+                      ? "FULLY DELIVERED"
+                      : selectedRestock.purchase_order_status}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="flex-1 flex flex-col overflow-hidden gap-2 ">
             {/* TABLE DATA HEADERS */}
             <div className="flex justify-between py-3 px-5 bg-custom-gray rounded-lg gap-2">
               <label className="text-left w-full uppercase text-xs font-semibold">
-                Item
+                Product
               </label>
               <label className="text-left w-[70%] uppercase text-xs font-semibold">
                 Conversion
@@ -92,27 +149,27 @@ export const VoidRestockModal = ({
                   className={`py-3 px-5 flex justify-between gap-2 rounded-lg items-center ${i % 2 != 0 && "bg-custom-gray"}`}
                   key={i}
                 >
-                  <div className="text-nowrap text-sm w-full">
+                  <div className="text-xs w-full flex gap-2 items-center font-semibold">
                     <span>{item.product.product_Name}</span>
-                    <span> - </span>
-                    <span>{item.product.brand.brandName}</span>
-                    <span> - </span>
-                    <span>{item.product.variant.variant_Name}</span>
+                    <span>•</span>
+                    <span className="text-vesper-gray">
+                      {item.product.category.category_Name}
+                    </span>
                   </div>
-                  <span className="text-left w-[70%]">
+                  <span className="text-left w-[70%] text-xs font-semibold">
                     {item.unit_Preset?.preset_Levels
                       ?.map(
                         (l) =>
                           l.unit?.uom_Name +
                           (l.conversion_Factor !== 1
-                            ? ` (x${l.conversion_Factor})`
+                            ? ` (${l.conversion_Factor}x)`
                             : ""),
                       )
                       .filter(Boolean)
                       .join(" → ") || "No preset"}
                   </span>
 
-                  <span className="text-left w-[30%]">
+                  <span className="text-left w-[30%] text-xs font-semibold">
                     {item.base_Unit_Quantity} {item.base_Unit.uom_Name}
                   </span>
                 </div>
@@ -121,10 +178,17 @@ export const VoidRestockModal = ({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-vesper-gray">Reason:</label>
+            <div className="flex items-center gap-1">
+              <label className="text-sm font-semibold">Reason</label>
+              <span className="text-red-500">*</span>
+            </div>
+            <label className="text-vesper-gray text-xs">
+              The reason will be recorded in inventory history and will also
+              replacce the current restock notes for this restock entry.
+            </label>
             <textarea
-              className="border rounded-md p-2"
-              rows={2}
+              className="border rounded-md p-2 text-xs"
+              rows={4}
               value={reason}
               onChange={(e) => {
                 setReason(e.target.value);
@@ -139,13 +203,13 @@ export const VoidRestockModal = ({
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <CircleAlert className="text-red-400" size={14} />
             <span className="text-xs text-red-400">
               This restock is voidable, voiding will remove the quantity of the
               products listed above in the table
             </span>
-          </div>
+          </div> */}
 
           <div className="flex items-center justify-end gap-3">
             <button
@@ -160,7 +224,8 @@ export const VoidRestockModal = ({
               onClick={handleOpenPasswordModal}
               disabled={isVoiding}
             >
-              Continue
+              <TriangleAlert />
+              Undo Restock
             </button>
           </div>
         </div>
@@ -168,30 +233,60 @@ export const VoidRestockModal = ({
 
       {isPasswordModalOpen ? (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-60">
-          <div className="w-full max-w-md bg-white rounded-lg border shadow-lg p-6 flex flex-col gap-4">
-            <h3 className="text-lg font-semibold">Confirm Password</h3>
-            <p className="text-sm text-vesper-gray">
-              Enter your password to continue voiding this restock.
-            </p>
-            <input
-              type="password"
-              className="border rounded-md p-2"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (passwordError && e.target.value.trim()) {
-                  setPasswordError("");
-                }
-              }}
-              placeholder="Enter your password"
-            />
+          <div className="w-full max-w-md bg-white rounded-lg border shadow-lg p-6 flex flex-col gap-4 justify-center items-center">
+            <div className="p-3 rounded-md bg-indigo-100 w-fit">
+              <LockKeyhole className="text-indigo-500" />
+            </div>
+            <div className="flex flex-col gap-1 text-center">
+              <h3 className="text-lg font-semibold">Confirm Password</h3>
+              <p className="text-sm text-vesper-gray">
+                Authentication is required to proceed
+              </p>
+            </div>
+            <Separator orientation="horizontal" />
+            <div className="flex gap-2 w-full">
+              <div className="p-2 rounded-md bg-orange-100 h-fit">
+                <Info className="text-orange-500" />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-semibold">You are about to:</span>
+                <span className="font-semibold">Undo a Restock</span>
+                <span className="text-xs text-vesper-gray">
+                  This action cannot be undone.
+                </span>
+              </div>
+            </div>
+            <Separator orientation="horizontal" />
+            <div className="flex flex-col gap-1 w-full">
+              <label className="text-sm font-semibold text-left w-full">
+                Password
+              </label>
+              <input
+                type="password"
+                className="border rounded-md p-2 w-full shadow-none drop-shadow-none"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError && e.target.value.trim()) {
+                    setPasswordError("");
+                  }
+                }}
+                placeholder="Enter your password"
+              />
+            </div>
             {passwordError ? (
               <span className="text-xs text-red-500">{passwordError}</span>
             ) : null}
 
-            <div className="flex justify-end gap-3">
+            <span className="flex items-center gap-1 text-xs text-vesper-gray w-full font-semibold">
+              <ShieldCheck size={14} /> For your security, please confirm your
+              password to continue.
+            </span>
+
+            <div className="flex justify-end gap-3 w-full">
               <button
-                className="px-4 py-2 border rounded-md"
+                className="px-4 py-2 border rounded-md w-full max-w-full"
                 onClick={() => {
                   setIsPasswordModalOpen(false);
                   setPassword("");
@@ -202,7 +297,7 @@ export const VoidRestockModal = ({
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded-md disabled:opacity-60"
+                className="px-4 py-2 bg-red-500 text-white rounded-md disabled:opacity-60 w-full max-w-full"
                 onClick={handleVoid}
                 disabled={isVoiding}
               >
@@ -211,6 +306,13 @@ export const VoidRestockModal = ({
             </div>
           </div>
         </div>
+      ) : null}
+
+      {insufficientItems ? (
+        <InsufficientInventoryModal
+          insufficientItems={insufficientItems}
+          onClose={() => setInsufficientItems(null)}
+        />
       ) : null}
     </section>
   );

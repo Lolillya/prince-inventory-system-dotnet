@@ -5,6 +5,7 @@ import {
   useCreateUnitPresetRestock,
 } from "@/features/restock/unit-preset-restock.query";
 import { useSelectedRestockSupplier } from "@/features/restock/selected-supplier";
+import { useNavigate } from "react-router-dom";
 
 export const RestockTable = ({ close }: { close: () => void }) => {
   const { data: items = [] } = useUnitPresetRestockItems();
@@ -12,6 +13,8 @@ export const RestockTable = ({ close }: { close: () => void }) => {
   const { mutate: createRestock, isPending } = useCreateUnitPresetRestock();
   const { data: supplier } = useSelectedRestockSupplier();
   const { user } = useAuth();
+
+  const navigate = useNavigate();
 
   const handleCreateRestock = async () => {
     if (!items || items.length === 0) {
@@ -50,6 +53,7 @@ export const RestockTable = ({ close }: { close: () => void }) => {
     createRestock(restockPayload, {
       onSuccess: () => {
         close();
+        navigate("/admin/restock");
       },
     });
   };
@@ -69,7 +73,7 @@ export const RestockTable = ({ close }: { close: () => void }) => {
       {/* TABLE DATA HEADERS */}
       <div className="flex justify-between py-3 px-5 bg-custom-gray rounded-lg gap-2">
         <label className="text-left w-full uppercase text-xs font-semibold">
-          Item
+          Product
         </label>
         <label className="text-left w-[70%] uppercase text-xs font-semibold">
           Conversion
@@ -95,20 +99,24 @@ export const RestockTable = ({ close }: { close: () => void }) => {
                 key={i}
               >
                 <span className="text-left w-full">
-                  <div>
+                  <div className="flex items-center gap-2 flex-wrap font-semibold">
                     <span>{item.product.product_Name}</span>
-                    <span> - </span>
-                    <span>{item.brand.brandName}</span>
-                    <span> - </span>
-                    <span>{item.variant.variant_Name}</span>
+                    <span>•</span>
+                    <span className="text-vesper-gray">
+                      {item.category.category_Name}
+                    </span>
                   </div>
                 </span>
-                <span className="text-left w-[70%]">
+                <span className="text-left w-[70%] font-semibold">
                   {preset?.preset.presetLevels
-                    .map((l) => l.unitOfMeasure.uom_Name)
+                    .map(
+                      (l, i) =>
+                        l.unitOfMeasure.uom_Name +
+                        (i !== 0 ? " (" + l.conversion_Factor + "x)" : ""),
+                    )
                     .join(" → ")}
                 </span>
-                <span className="text-left w-[30%]">
+                <span className="text-left w-[30%] font-semibold">
                   {typedItem.selectedPreset?.main_Unit_Quantity}{" "}
                   {preset?.preset.presetLevels[0].unitOfMeasure.uom_Name}
                 </span>

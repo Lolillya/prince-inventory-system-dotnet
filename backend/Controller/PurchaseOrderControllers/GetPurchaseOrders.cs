@@ -63,6 +63,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     li.Product.Product_Name,
                     brand = li.Product.Brand != null ? li.Product.Brand.BrandName : "",
                     variant = li.Product.Variant != null ? li.Product.Variant.Variant_Name : "",
+                    category = li.Product.Category != null ? li.Product.Category.Category_Name : "",
                 } : null,
                 unit = li.UnitOfMeasure != null ? new
                 {
@@ -74,7 +75,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     li.UnitPreset.Preset_ID,
                     preset_Levels = li.UnitPreset.PresetLevels
                         .OrderBy(pl => pl.Level)
-                        .Select(pl => new { pl.Level, uom_Name = pl.UnitOfMeasure.uom_Name })
+                        .Select(pl => new { pl.Level, uom_Name = pl.UnitOfMeasure.uom_Name, conversion_Factor = pl.Conversion_Factor })
                         .ToList(),
                 } : null,
             };
@@ -145,6 +146,9 @@ namespace backend.Controller.PurchaseOrderControllers
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Brand)
+                .Include(po => po.LineItems)
+                    .ThenInclude(li => li.Product)
+                        .ThenInclude(p => p.Category)
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Variant)
@@ -273,6 +277,7 @@ namespace backend.Controller.PurchaseOrderControllers
                                 {
                                     pl.Level,
                                     uom_Name = pl.UnitOfMeasure.uom_Name,
+                                    conversion_Factor = pl.Conversion_Factor,
                                 })
                                 .ToList(),
                         } : null,

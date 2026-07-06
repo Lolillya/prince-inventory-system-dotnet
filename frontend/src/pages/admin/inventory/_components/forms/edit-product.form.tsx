@@ -3,7 +3,6 @@ import { UseProductFieldsQuery } from "@/features/inventory/get-product-fields.q
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { EditProductUnitCard } from "./_components/edit-product-unit-card";
 import { useEditProductMutation } from "@/features/inventory/edit-product/edit-product.mutation";
 import { EditProductPayload } from "@/features/inventory/edit-product/edit-product-payload.model";
 import { Plus } from "lucide-react";
@@ -59,13 +58,22 @@ interface EditProductFormProps {
   onEditSuccess: () => void;
   handleAddPackagingPreset: () => void;
   setIsEditProductModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isEditProductModalOpen: boolean;
+  setIsCategoryModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isCategoryModalOpen: boolean;
+  setIsEditProductFormOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isEditProductFormOpen: boolean;
 }
 
 export const EditProductForm = ({
   selectedProduct,
   onEditSuccess,
-  handleAddPackagingPreset,
   setIsEditProductModalOpen,
+  isEditProductModalOpen,
+  isCategoryModalOpen,
+  setIsCategoryModalOpen,
+  setIsEditProductFormOpen,
+  isEditProductFormOpen,
 }: EditProductFormProps) => {
   const {
     register,
@@ -108,12 +116,16 @@ export const EditProductForm = ({
       })),
     };
 
-    console.log("Submitting Edit Product Payload:", payload);
     editProduct(payload, {
       onSuccess: () => {
         onEditSuccess();
       },
     });
+  };
+
+  const handleOpenNewCategoryModal = () => {
+    setIsCategoryModalOpen(!isCategoryModalOpen);
+    setIsEditProductFormOpen(!isEditProductFormOpen);
   };
 
   return (
@@ -233,6 +245,14 @@ export const EditProductForm = ({
                 </option>
               ))}
             </select>
+
+            <button
+              className="input-style-3 items-center flex"
+              onClick={handleOpenNewCategoryModal}
+              type="button"
+            >
+              Add Category <Plus size={14} />
+            </button>
           </div>
           <span className="text-red-500 text-xs normal-case">
             {errors.category_Id?.message}
@@ -258,7 +278,7 @@ export const EditProductForm = ({
       <div className="flex gap-2 justify-between items-center">
         <button
           type="button"
-          onClick={() => setIsEditProductModalOpen(false)}
+          onClick={() => setIsEditProductModalOpen(!isEditProductModalOpen)}
           className="px-6 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 font-medium"
         >
           Cancel

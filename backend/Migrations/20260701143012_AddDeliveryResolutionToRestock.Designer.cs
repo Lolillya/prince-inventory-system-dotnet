@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260701143012_AddDeliveryResolutionToRestock")]
+    partial class AddDeliveryResolutionToRestock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1793,19 +1796,11 @@ namespace backend.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("Voided_At")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Voided_By")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Restock_ID");
 
                     b.HasIndex("Purchase_Order_ID");
 
                     b.HasIndex("Restock_Clerk");
-
-                    b.HasIndex("Voided_By");
 
                     b.ToTable("Restock", (string)null);
                 });
@@ -2734,16 +2729,9 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("backend.Models.PersonalDetails", "VoidedByUser")
-                        .WithMany()
-                        .HasForeignKey("Voided_By")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.Navigation("Clerk");
 
                     b.Navigation("PurchaseOrder");
-
-                    b.Navigation("VoidedByUser");
                 });
 
             modelBuilder.Entity("backend.Models.RestockModel.RestockBatch", b =>

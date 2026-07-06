@@ -47,7 +47,7 @@ namespace backend.Controller.InvoiceControllers
             var createdLineItems = await CreateInvoiceLineItems(payload, invoiceId);
 
             // Auto-replenish: create restock records for line items that request it before deducting.
-            var replenishError = await AutoReplenishDeficits(payload, invoiceId);
+            var (replenishError, autoReplenishRestockReference, autoReplenishRestockId) = await AutoReplenishDeficits(payload, invoiceId);
             if (replenishError != null)
             {
                 await transaction.RollbackAsync();
@@ -63,7 +63,7 @@ namespace backend.Controller.InvoiceControllers
 
             await transaction.CommitAsync();
 
-            return Ok(new { invoiceId, createdLineItems });
+            return Ok(new { invoiceId, createdLineItems, autoReplenishRestockReference, autoReplenishRestockId });
 
             // return Ok();
         }
@@ -463,20 +463,23 @@ namespace backend.Controller.InvoiceControllers
         // For each line item flagged for auto-replenish, calculate the deficit against current
         // preset quantities and create a restock record from the internal "Prince Educational
         // Supplies" supplier so that the subsequent deduction step can safely proceed.
-        private async Task<IActionResult?> AutoReplenishDeficits(InvoiceDTO payload, int invoiceId)
+        private async Task<(IActionResult? Error, string? RestockReference, int? RestockId)> AutoReplenishDeficits(InvoiceDTO payload, int invoiceId)
         {
             var replenishLines = payload.LineItem
                 .Where(li => li.Auto_Replenish && li.Preset_ID.HasValue)
                 .ToList();
 
             if (replenishLines.Count == 0)
-                return null;
+                return (null, null, null);
 
             var now = DateTime.UtcNow;
 
             // Build restock number once for all auto-replenish restocks in this invoice.
             var restockCount = await _db.Restocks.CountAsync();
             var restockNumber = $"RS-AUTO-{now:yyyy}-{(restockCount + 1):D6}";
+
+            // Generate the auto-replenish invoice reference
+            var autoReplenishReference = await GetNextAutoReplenishReference();
 
             var restock = new Restock
             {
@@ -485,7 +488,8 @@ namespace backend.Controller.InvoiceControllers
                 Restock_Notes = $"Auto replenish — Invoice #{invoiceId}",
                 Status = "COMPLETE",
                 CreatedAt = now,
-                UpdatedAt = now
+                UpdatedAt = now,
+                Restock_Invoice_Reference = autoReplenishReference
             };
 
             _db.Restocks.Add(restock);
@@ -514,8 +518,8 @@ namespace backend.Controller.InvoiceControllers
                         pp.Preset_ID == line.Preset_ID!.Value);
 
                 if (productPreset == null)
-                    return BadRequest(
-                        $"Preset '{line.Preset_ID}' not found for product '{line.Product_ID}'.");
+                    return (BadRequest(
+                        $"Preset '{line.Preset_ID}' not found for product '{line.Product_ID}'."), autoReplenishReference, restock.Restock_ID);
 
                 var presetLevels = productPreset.Preset.PresetLevels
                     .OrderBy(pl => pl.Level)
@@ -523,8 +527,8 @@ namespace backend.Controller.InvoiceControllers
 
                 var selectedLevel = presetLevels.FirstOrDefault(pl => pl.UOM_ID == line.Uom_ID);
                 if (selectedLevel == null)
-                    return BadRequest(
-                        $"No preset level matches UOM '{line.Uom_ID}' for product '{line.Product_ID}'.");
+                    return (BadRequest(
+                        $"No preset level matches UOM '{line.Uom_ID}' for product '{line.Product_ID}'."), autoReplenishReference, restock.Restock_ID);
 
                 // Calculate current available quantity at the requested level (same logic as frontend).
                 var quantityByLevel = productPreset.PresetQuantities
@@ -563,19 +567,36 @@ namespace backend.Controller.InvoiceControllers
                     deficitInBaseUnits = (int)Math.Ceiling(deficitInBaseUnits / (decimal)cfg.Conversion_Factor);
                 }
 
-                // Create the RestockLineItems record (base-unit entry).
-                var mainLevel = presetLevels.First(pl => pl.Level == 1);
-
-                var restockLineItem = new RestockLineItems
+                // Create RestockLineItems records for ALL preset levels (not just base level).
+                // This maintains the full unit preset structure in the restock batch.
+                foreach (var level in presetLevels)
                 {
-                    Batch_ID = batch.Batch_ID,
-                    Product_ID = line.Product_ID,
-                    Base_UOM_ID = mainLevel.UOM_ID,
-                    Base_Unit_Price = 0,
-                    Base_Unit_Quantity = deficitInBaseUnits
-                };
+                    // Calculate the deficit quantity at this level by converting from base units
+                    int deficitAtLevel = deficitInBaseUnits;
 
-                _db.RestockLineItems.Add(restockLineItem);
+                    // Convert from base (level 1) up to the current level
+                    for (var lvl = 2; lvl <= level.Level; lvl++)
+                    {
+                        var cfg = presetLevels.FirstOrDefault(pl => pl.Level == lvl);
+                        if (cfg == null || cfg.Conversion_Factor <= 0) break;
+                        deficitAtLevel = (int)Math.Floor(deficitAtLevel / (decimal)cfg.Conversion_Factor);
+                    }
+
+                    // Only create restock entry if there's a positive deficit at this level
+                    if (deficitAtLevel > 0)
+                    {
+                        var restockLineItem = new RestockLineItems
+                        {
+                            Batch_ID = batch.Batch_ID,
+                            Product_ID = line.Product_ID,
+                            Base_UOM_ID = level.UOM_ID,
+                            Base_Unit_Price = 0,
+                            Base_Unit_Quantity = deficitAtLevel
+                        };
+
+                        _db.RestockLineItems.Add(restockLineItem);
+                    }
+                }
                 await _db.SaveChangesAsync();
 
                 // Update / create preset quantities for each level.
@@ -597,15 +618,29 @@ namespace backend.Controller.InvoiceControllers
                         productPreset.PresetQuantities.Add(qRow);
                         quantityByLevel[level.Level] = qRow;
                     }
+
+                    // Calculate the deficit quantity for this level
+                    int deficitAtLevel = deficitInBaseUnits;
+
+                    // Convert from base (level 1) up to the current level
+                    for (var lvl = 2; lvl <= level.Level; lvl++)
+                    {
+                        var cfg = presetLevels.FirstOrDefault(pl => pl.Level == lvl);
+                        if (cfg == null || cfg.Conversion_Factor <= 0) break;
+                        deficitAtLevel = (int)Math.Floor(deficitAtLevel / (decimal)cfg.Conversion_Factor);
+                    }
+
+                    // Update quantity records for all levels
+                    if (deficitAtLevel > 0)
+                    {
+                        qRow.Remaining_Quantity += deficitAtLevel;
+                        qRow.Original_Quantity += deficitAtLevel;
+                        qRow.Updated_At = now;
+                    }
                 }
 
-                // Add the replenished base units to level-1 and propagate downward (no cascade needed;
-                // the deduction step will borrow upward as usual).
+                // Update the main preset's overall quantity based on level-1
                 var level1Row = quantityByLevel[1];
-                level1Row.Remaining_Quantity += deficitInBaseUnits;
-                level1Row.Original_Quantity += deficitInBaseUnits;
-                level1Row.Updated_At = now;
-
                 productPreset.Main_Unit_Quantity = Math.Max(0, level1Row.Remaining_Quantity);
 
                 // Update the inventory total to reflect the replenished stock.
@@ -619,17 +654,18 @@ namespace backend.Controller.InvoiceControllers
                 await _db.SaveChangesAsync();
             }
 
-            // Append auto-replenish note to the invoice.
+            // Append auto-replenish note to the invoice and link the restock.
             var invoice = await _db.Invoice.FindAsync(invoiceId);
             if (invoice != null)
             {
                 invoice.Notes = string.IsNullOrWhiteSpace(invoice.Notes)
                     ? "Auto replenish invoice"
                     : $"{invoice.Notes} | Auto replenish invoice";
+                invoice.AutoReplenish_Restock_ID = restock.Restock_ID;
                 await _db.SaveChangesAsync();
             }
 
-            return null;
+            return (null, autoReplenishReference, restock.Restock_ID);
         }
 
         private async Task<int> GetLatestInvoiceNumber()
@@ -637,6 +673,37 @@ namespace backend.Controller.InvoiceControllers
             var max = await _db.Invoice.MaxAsync(i => (int?)i.Invoice_Number);
 
             return (max ?? 0) + 1;
+        }
+
+        // Generate next auto-replenish restock reference in format "DR/INV-XXXXXX"
+        private async Task<string> GetNextAutoReplenishReference()
+        {
+            // Query all restocks with auto-replenish reference to find the highest number
+            var existingReferences = await _db.Restocks
+                .Where(r => r.Restock_Invoice_Reference != null)
+                .Select(r => r.Restock_Invoice_Reference)
+                .ToListAsync();
+
+            int nextNumber = 1;
+
+            if (existingReferences.Any())
+            {
+                // Extract numeric suffix from existing references and find the max
+                var numbers = existingReferences
+                    .Where(reference => reference.StartsWith("DR/INV-"))
+                    .Select(reference => reference.Substring("DR/INV-".Length))
+                    .Where(suffix => int.TryParse(suffix, out _))
+                    .Select(suffix => int.Parse(suffix))
+                    .OrderByDescending(n => n)
+                    .ToList();
+
+                if (numbers.Any())
+                {
+                    nextNumber = numbers.First() + 1;
+                }
+            }
+
+            return $"DR/INV-{nextNumber:D6}";
         }
     }
 }

@@ -6,6 +6,7 @@ import { useCreatePORestockMutation } from "@/features/restock/po-restock.query"
 import { PORestockDeliveryStatus } from "@/features/restock/models/po-restock.model";
 import { PORestockCardState } from "../index";
 import { DeliveryStatusChoiceModal } from "./delivery-status-choice.modal";
+import { ChevronDown, ClipboardList } from "lucide-react";
 
 interface PORestockConfirmModalProps {
   po: PurchaseOrderRecord;
@@ -48,13 +49,17 @@ export const PORestockConfirmModal = ({
       lineItemId: card.lineItemId,
       productName: li?.product?.product_Name ?? "",
       brand: li?.product?.brand ?? "",
-      presetCode: li?.unit_Preset?.preset_Code ?? "",
+      presetCode:
+        li?.unit_Preset?.preset_Levels?.map((l) => l.uom_Name).join(" → ") ||
+        li?.unit_Preset?.preset_Code ||
+        "",
       orderedQuantity: card.orderedQuantity,
       receivedSoFar: card.receivedQuantity,
       remainingQuantity: card.remainingQuantity,
       receivingQuantity: card.removed ? 0 : card.receivingQuantity,
       discrepancy,
       removed: card.removed,
+      category: li?.product?.category,
     };
   });
 
@@ -86,13 +91,19 @@ export const PORestockConfirmModal = ({
   return (
     <>
       <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
-        <div className="w-[820px] max-h-[90vh] overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg flex flex-col gap-4">
+        <div className="w-5xl max-h-[90vh] overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg flex flex-col gap-4">
           {/* Header */}
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">Restock Confirmation</h1>
-              <span className="text-sm bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
-                PO: {po.purchase_Order_Number}
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-[#1f2937]">
+                Restock Confirmation
+              </h1>
+              <span className="text-lg font-medium text-gray-500">
+                #{po.purchase_Order_Number}
+              </span>
+              <span className="text-gray-400">•</span>
+              <span className="text-xs bg-yellow-50 text-yellow-600 px-3 py-0.5 rounded-full border border-yellow-200 font-medium">
+                Partial
               </span>
             </div>
             <p className="text-gray-500 text-sm mt-1">
@@ -123,45 +134,50 @@ export const PORestockConfirmModal = ({
 
           {/* Items table */}
           <div className="rounded-lg border overflow-hidden">
-            <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-custom-gray text-xs font-semibold uppercase">
-              <div className="col-span-3">Product</div>
-              <div className="col-span-2 text-right">Ordered</div>
-              <div className="col-span-2 text-right">Prev. Received</div>
-              <div className="col-span-2 text-right">Remaining</div>
-              <div className="col-span-2 text-right">Receiving</div>
-              <div className="col-span-1 text-right">Disc.</div>
+            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-gray-50/80 text-[11px] text-gray-500 font-bold uppercase tracking-wider border-b">
+              <div className="col-span-3 font-bold">PRODUCT</div>
+              <div className="col-span-2 text-center font-bold">ORDERED</div>
+              <div className="col-span-2 text-center font-bold">
+                PREV. RECEIVED
+              </div>
+              <div className="col-span-2 text-center font-bold">REMAINING</div>
+              <div className="col-span-2 text-center font-bold">RECEIVING</div>
+              <div className="col-span-1 text-center font-bold">DISC.</div>
             </div>
 
             <div className="max-h-64 overflow-y-auto">
               {lineItemRows.map((row, idx) => (
                 <div
                   key={row.lineItemId}
-                  className={`grid grid-cols-12 gap-2 px-3 py-2 text-xs ${
+                  className={`grid grid-cols-12 gap-4 px-4 py-6 text-xs items-center ${
                     row.removed ? "opacity-40 line-through" : ""
-                  } ${idx !== lineItemRows.length - 1 ? "border-b" : ""}`}
+                  } ${idx !== lineItemRows.length - 1 ? "border-b border-gray-100" : ""}`}
                 >
-                  <div className="col-span-3">
-                    <div className="font-medium">{row.productName}</div>
-                    {row.presetName && (
-                      <div className="text-gray-400 text-xs">
-                        {row.presetName}
+                  <div className="col-span-3 flex flex-col gap-1">
+                    <div className="font-semibold text-gray-800 flex item-center text-xs flex-wrap">
+                      <span className="text-nowrap">{row.productName}</span>
+                      <span className="text-vesper-gray">{row.category}</span>
+                    </div>
+                    {row.presetCode && (
+                      <div className="text-gray-400 text-[11px] font-medium uppercase tracking-wide">
+                        {row.presetCode}
                       </div>
                     )}
                   </div>
-                  <div className="col-span-2 text-right">
+                  <div className="col-span-2 text-center font-medium text-gray-600">
                     {row.orderedQuantity}
                   </div>
-                  <div className="col-span-2 text-right text-gray-500">
+                  <div className="col-span-2 text-center font-medium text-gray-400">
                     {row.receivedSoFar}
                   </div>
-                  <div className="col-span-2 text-right">
+                  <div className="col-span-2 text-center font-medium text-gray-600">
                     {row.remainingQuantity}
                   </div>
-                  <div className="col-span-2 text-right font-medium">
+                  <div className="col-span-2 text-center font-bold text-gray-800">
                     {row.receivingQuantity}
                   </div>
                   <div
-                    className={`col-span-1 text-right font-semibold ${
+                    className={`col-span-1 text-center font-bold ${
                       row.discrepancy > 0
                         ? "text-blue-600"
                         : row.discrepancy < 0
@@ -179,31 +195,36 @@ export const PORestockConfirmModal = ({
           </div>
 
           {/* Discrepancy legend */}
-          <div className="flex gap-4 text-xs text-gray-400">
+          <div className="flex gap-5 text-[13px] text-gray-500 font-medium">
             <span>
-              <span className="text-blue-600 font-semibold">+n</span>{" "}
-              over-delivery
+              <span className="text-blue-600 font-bold">+n</span> Over-Delivery
             </span>
             <span>
-              <span className="text-red-500 font-semibold">-n</span> short
-              delivery
+              <span className="text-red-500 font-bold">-n</span> Short Delivery
             </span>
             <span>
-              <span className="text-green-600 font-semibold">0</span> exact
-              match
+              <span className="text-green-600 font-bold">0</span> Exact Match
             </span>
           </div>
 
           {/* Notes */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Note</label>
-            <textarea
-              className="input-style-2 min-h-20"
-              placeholder="Add restock notes..."
-              value={notes}
-              onChange={(e) => onNotesChange(e.target.value)}
-            />
-          </div>
+          <details className="group border border-gray-200 rounded-md overflow-hidden bg-gray-50/50">
+            <summary className="flex text-sm cursor-pointer items-center justify-between px-4 py-3 font-semibold text-gray-700 hover:bg-gray-100 list-none [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center gap-2">
+                <ClipboardList className="w-4 h-4 text-gray-500" />
+                Add notes (optional)
+              </span>
+              <ChevronDown className="w-4 h-4 text-gray-500 transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="p-4 bg-white border-t border-gray-200">
+              <textarea
+                className="input-style-2 min-h-20 w-full"
+                placeholder="Leave restock notes here..."
+                value={notes}
+                onChange={(e) => onNotesChange(e.target.value)}
+              />
+            </div>
+          </details>
 
           {/* Actions */}
           <div className="flex justify-end gap-3">
@@ -215,7 +236,7 @@ export const PORestockConfirmModal = ({
               Cancel
             </button>
             <button
-              className="px-4 py-2 text-sm rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+              className="px-4 py-2 text-sm rounded  text-white  disabled:opacity-50"
               onClick={() => setIsStatusChoiceOpen(true)}
               disabled={isPending}
             >
@@ -230,6 +251,8 @@ export const PORestockConfirmModal = ({
           isPending={isPending}
           onClose={() => setIsStatusChoiceOpen(false)}
           onChoose={handleSubmit}
+          po={po}
+          cards={cards}
         />
       )}
     </>

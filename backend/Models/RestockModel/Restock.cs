@@ -25,6 +25,17 @@ namespace backend.Models.RestockModel
         public int? Purchase_Order_ID { get; set; }
         public PurchaseOrder? PurchaseOrder { get; set; }
 
+        // Auto-replenish invoice reference (e.g., "DR/INV-000001")
+        public string? Restock_Invoice_Reference { get; set; }
+
+        // Delivery resolution for PO restocks (PARTIAL or FULLY_DELIVERED)
+        public string? Delivery_Resolution { get; set; }
+
+        // Set when the restock is voided/reversed
+        public string? Voided_By { get; set; } // foreign key from PersonalDetails
+        public PersonalDetails? VoidedByUser { get; set; }
+        public DateTime? Voided_At { get; set; }
+
         // Navigation properties
         public ICollection<RestockBatch> RestockBatches { get; set; } = new List<RestockBatch>();
     }
