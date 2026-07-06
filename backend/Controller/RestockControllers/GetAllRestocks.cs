@@ -29,6 +29,7 @@ namespace backend.Controller.RestockControllers
 
                 var results = await _db.Restocks
                     .Include(r => r.Clerk)
+                    .Include(r => r.VoidedByUser)
                     .Include(r => r.RestockBatches)
                         .ThenInclude(rb => rb.Supplier)
                     .Include(r => r.RestockBatches)
@@ -71,12 +72,20 @@ namespace backend.Controller.RestockControllers
                         purchase_order_status = r.PurchaseOrder != null ? r.PurchaseOrder.Status : null,
                         delivery_resolution = r.Delivery_Resolution,
                         restock_Invoice_Reference = r.Restock_Invoice_Reference,
+                        voided_At = r.Voided_At,
                         clerk = r.Clerk != null ? new
                         {
                             r.Clerk.Id,
                             r.Clerk.FirstName,
                             r.Clerk.LastName,
                             r.Clerk.Email
+                        } : null,
+                        voided_By_User = r.VoidedByUser != null ? new
+                        {
+                            r.VoidedByUser.Id,
+                            r.VoidedByUser.FirstName,
+                            r.VoidedByUser.LastName,
+                            r.VoidedByUser.Email
                         } : null,
                         supplier = r.RestockBatches
                             .Where(rb => rb.Supplier != null)

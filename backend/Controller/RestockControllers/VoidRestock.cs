@@ -201,6 +201,8 @@ namespace backend.Controller.RestockControllers
                 restock.Restock_Notes = payload.Reason.Trim();
                 restock.Status = "VOIDED";
                 restock.UpdatedAt = now;
+                restock.Voided_By = user.Id;
+                restock.Voided_At = now;
 
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();

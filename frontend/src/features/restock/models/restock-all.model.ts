@@ -8,6 +8,8 @@ export type RestockAllModel = {
   delivery_resolution?: string;
   restock_Invoice_Reference: string;
   status: string;
+  voided_At?: string;
+  voided_By_User?: Clerk;
   clerk: Clerk;
   supplier: Supplier;
   created_At: string;

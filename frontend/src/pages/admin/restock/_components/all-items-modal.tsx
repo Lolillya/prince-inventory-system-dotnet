@@ -436,13 +436,36 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                 </div>
               </div>
             ) : (
-              <textarea
-                rows={4}
-                placeholder="No restock notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="focus:outline-none p-2 resize-none border rounded"
-              />
+              <div className="w-full">
+                {selectedRestock.status === "VOIDED" && (
+                  <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-t-md border-t-2 border-l-2 border-r-2 border-orange-200 w-fit">
+                    <label className="text-sm font-semibold">
+                      Reversal Information
+                    </label>
+                    <label>
+                      This restock was reversed
+                      {selectedRestock.voided_At &&
+                        ` on ${new Date(selectedRestock.voided_At).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}`}
+                      {selectedRestock.voided_By_User &&
+                        ` by ${selectedRestock.voided_By_User.firstName} ${selectedRestock.voided_By_User.lastName}`}
+                    </label>
+                  </div>
+                )}
+                <textarea
+                  rows={4}
+                  placeholder="No restock notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="focus:outline-none p-2 resize-none border rounded w-full"
+                />
+              </div>
             )}
 
             {/* FOOTER */}

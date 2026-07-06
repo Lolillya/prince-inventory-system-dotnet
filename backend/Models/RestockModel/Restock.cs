@@ -31,6 +31,11 @@ namespace backend.Models.RestockModel
         // Delivery resolution for PO restocks (PARTIAL or FULLY_DELIVERED)
         public string? Delivery_Resolution { get; set; }
 
+        // Set when the restock is voided/reversed
+        public string? Voided_By { get; set; } // foreign key from PersonalDetails
+        public PersonalDetails? VoidedByUser { get; set; }
+        public DateTime? Voided_At { get; set; }
+
         // Navigation properties
         public ICollection<RestockBatch> RestockBatches { get; set; } = new List<RestockBatch>();
     }

@@ -175,6 +175,12 @@ namespace backend.Data
                     .HasForeignKey(r => r.Purchase_Order_ID)
                     .OnDelete(DeleteBehavior.NoAction)
                     .IsRequired(false);
+
+                entity.HasOne(r => r.VoidedByUser)
+                    .WithMany()
+                    .HasForeignKey(r => r.Voided_By)
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .IsRequired(false);
             });
 
             // RestockBatch Configuration
