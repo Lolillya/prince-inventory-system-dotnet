@@ -1,5 +1,9 @@
 import { Separator } from "@/components/separator";
 import { RestockAllModel } from "@/features/restock/models/restock-all.model";
+import {
+  InsufficientInventoryToVoidError,
+  InsufficientVoidRestockItem,
+} from "@/features/restock/void-restock.service";
 import axios from "axios";
 import {
   Info,
@@ -9,6 +13,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { useState } from "react";
+import { InsufficientInventoryModal } from "./insufficient-inventory.modal";
 
 interface Props {
   selectedRestock: RestockAllModel;
@@ -32,6 +37,9 @@ export const VoidRestockModal = ({
   const [reasonError, setReasonError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [insufficientItems, setInsufficientItems] = useState<
+    InsufficientVoidRestockItem[] | null
+  >(null);
 
   const handleOpenPasswordModal = () => {
     if (!reason.trim()) {
@@ -57,6 +65,12 @@ export const VoidRestockModal = ({
         password: password.trim(),
       });
     } catch (error) {
+      if (error instanceof InsufficientInventoryToVoidError) {
+        setIsPasswordModalOpen(false);
+        setInsufficientItems(error.insufficientItems);
+        return;
+      }
+
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         setPasswordError("Incorrect password. Please try again.");
         return;
@@ -292,6 +306,13 @@ export const VoidRestockModal = ({
             </div>
           </div>
         </div>
+      ) : null}
+
+      {insufficientItems ? (
+        <InsufficientInventoryModal
+          insufficientItems={insufficientItems}
+          onClose={() => setInsufficientItems(null)}
+        />
       ) : null}
     </section>
   );

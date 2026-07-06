@@ -109,7 +109,7 @@ export const DeliveryStatusChoiceModal = ({
                   Partial Delivery
                 </label>
               </div>
-              <p className="text-sm text-[#A67C00] flex-grow leading-relaxed mb-4 font-medium">
+              <p className="text-sm text-[#A67C00] grow leading-relaxed mb-4 font-medium">
                 The PO stays open. Remaining quantities are remembered and will
                 be pre-filled the next time you restock from this PO.
               </p>
@@ -130,7 +130,7 @@ export const DeliveryStatusChoiceModal = ({
                 Fully Delivered
               </label>
             </div>
-            <p className="text-sm text-[#208350] flex-grow leading-relaxed mb-4 font-medium">
+            <p className="text-sm text-[#208350] grow leading-relaxed mb-4 font-medium">
               Received items are added to inventory. Any remaining undelivered
               quantities are waived. This PO will be closed.
             </p>

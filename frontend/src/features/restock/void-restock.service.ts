@@ -23,6 +23,23 @@ export type VoidRestockPayload = {
   password: string;
 };
 
+export type InsufficientVoidRestockItem = {
+  productId: number;
+  productName: string;
+  availableQuantity: number;
+  requiredQuantity: number;
+};
+
+export class InsufficientInventoryToVoidError extends Error {
+  insufficientItems: InsufficientVoidRestockItem[];
+
+  constructor(message: string, insufficientItems: InsufficientVoidRestockItem[]) {
+    super(message);
+    this.name = "InsufficientInventoryToVoidError";
+    this.insufficientItems = insufficientItems;
+  }
+}
+
 export const voidRestock = async (
   payload: VoidRestockPayload,
 ): Promise<VoidRestockResponse> => {
@@ -37,6 +54,18 @@ export const voidRestock = async (
 
     return response.data;
   } catch (error) {
+    if (
+      axios.isAxiosError(error) &&
+      error.response?.status === 409 &&
+      Array.isArray(error.response.data?.insufficientItems)
+    ) {
+      throw new InsufficientInventoryToVoidError(
+        error.response.data.message ??
+          "There isn't enough inventory available to fully reverse this restock.",
+        error.response.data.insufficientItems,
+      );
+    }
+
     handleError(error);
     throw error;
   }
