@@ -4,6 +4,7 @@ import { useGetPurchaseOrderByIdQuery } from "@/features/purchase-order/purchase
 import { useUpdateRestockNotesMutation } from "@/features/restock/update-restock-notes.query";
 import {
   AlertTriangle,
+  Ban,
   Bot,
   Box,
   Calendar,
@@ -181,14 +182,25 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
         <div className="flex flex-col gap-5 flex-1 h-full">
           {/* HEADER */}
           <div className="flex flex-col gap-2">
-            {selectedRestock.restock_Number.match("AUTO-") && (
-              <div className="flex items-center gap-2 border-2 border-purple-400 bg-purple-50 rounded-sm p-1 w-max">
-                <Bot size={20} className="text-purple-800" />
-                <label className="font-semibold text-xs text-purple-800">
-                  Auto Restock
-                </label>
-              </div>
-            )}
+            <div className="flex gap-2 items-center">
+              {selectedRestock.restock_Number.match("AUTO-") && (
+                <div className="flex items-center gap-2 border-2 border-purple-400 bg-purple-50 rounded-sm p-1 w-max">
+                  <Bot size={20} className="text-purple-800" />
+                  <label className="font-semibold text-xs text-purple-800">
+                    Auto Restock
+                  </label>
+                </div>
+              )}
+
+              {selectedRestock.status === "VOIDED" && (
+                <div className="flex items-center gap-2 border-2 border-orange-400 bg-orange-50 rounded-sm p-1 w-max">
+                  <History size={20} className="text-orange-400" />
+                  <label className="font-semibold text-xs text-orange-400">
+                    Reversed Restock
+                  </label>
+                </div>
+              )}
+            </div>
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2">
                 <h3>{selectedRestock.restock_Number}</h3>
@@ -410,7 +422,50 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
 
             <Separator />
 
-            {selectedRestock.restock_Number.match("AUTO-") ? (
+            {selectedRestock.restock_Number.match("AUTO-") &&
+              selectedRestock.status === "VOIDED" && (
+                <div className="flex flex-col gap-4 bg-orange-50 border-2 border-orange-400 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <Ban className="text-red-500" />
+                    <label className="text-red-500 font-semibold">
+                      Auto Restock Information
+                    </label>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="flex items-center gap-2 text-sm ">
+                      <NotebookText size={21} className=" text-red-800" />
+                      <label className="font-bold text-xs">
+                        Linked Invoice:
+                      </label>
+                      <label className="text-xs">
+                        {selectedRestock.restock_Invoice_Reference}
+                      </label>
+                    </span>
+                    <span className="flex items-center gap-2 text-sm">
+                      <Box size={21} className=" text-red-800" />
+                      <label className="font-semibold text-xs">Type: </label>
+                      <label className="text-xs">Internal System Restock</label>
+                    </span>
+                    <span className="flex items-center gap-2 text-sm ">
+                      <Zap size={21} className=" text-red-800" />
+                      <label className="text-xs">
+                        Generated Automatically During Invoice Confirmation
+                      </label>
+                    </span>
+                  </div>
+                  <Separator orientation="horizontal" />
+                  <div className="flex flex-col text-xs gap-1">
+                    <span>
+                      This auto-restock was automatically voided because the
+                      linked invoice was voided.
+                    </span>
+                    <span>No inventory were reversed or deducted.</span>
+                  </div>
+                </div>
+              )}
+
+            {selectedRestock.restock_Number.match("AUTO-") &&
+            selectedRestock.status !== "VOIDED" ? (
               <div className="flex flex-col gap-4 bg-purple-50 border-2 border-purple-400 rounded-lg p-4">
                 <div className="flex items-center gap-2">
                   <Bot className="text-purple-800" />
@@ -481,33 +536,38 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                   </div>
                 )}
 
-                {selectedRestock.status === "VOIDED" && !isPORestock && (
-                  <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-t-md border-t-2 border-l-2 border-r-2 border-orange-200 w-fit">
-                    <label className="text-sm font-semibold">
-                      Reversal Information
-                    </label>
-                    <label>
-                      This restock was reversed
-                      {selectedRestock.voided_At &&
-                        ` on ${new Date(
-                          selectedRestock.voided_At,
-                        ).toLocaleDateString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })}`}
-                      {selectedRestock.voided_By_User &&
-                        ` by ${selectedRestock.voided_By_User.firstName} ${selectedRestock.voided_By_User.lastName}`}
-                    </label>
-                  </div>
+                {!selectedRestock.restock_Number.match("AUTO-") &&
+                  selectedRestock.status === "VOIDED" &&
+                  !isPORestock && (
+                    <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-t-md border-t-2 border-l-2 border-r-2 border-orange-200 w-fit">
+                      <label className="text-sm font-semibold">
+                        Reversal Information
+                      </label>
+                      <label>
+                        This restock was reversed
+                        {selectedRestock.voided_At &&
+                          ` on ${new Date(
+                            selectedRestock.voided_At,
+                          ).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          })}`}
+                        {selectedRestock.voided_By_User &&
+                          ` by ${selectedRestock.voided_By_User.firstName} ${selectedRestock.voided_By_User.lastName}`}
+                      </label>
+                    </div>
+                  )}
+
+                {!selectedRestock.restock_Number.match("AUTO-") && (
+                  <textarea
+                    rows={4}
+                    placeholder="No restock notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="focus:outline-none p-2 resize-none border rounded w-full"
+                  />
                 )}
-                <textarea
-                  rows={4}
-                  placeholder="No restock notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="focus:outline-none p-2 resize-none border rounded w-full"
-                />
               </div>
             )}
 
