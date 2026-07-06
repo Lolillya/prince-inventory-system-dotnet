@@ -9,6 +9,7 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
+  History,
   Link2,
   NotebookText,
   Zap,
@@ -341,6 +342,9 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                     >
                       <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0" />
                       <span className="font-semibold text-orange-500 text-xs tracking-wide flex-1">
+                        {selectedRestock.status === "VOIDED" &&
+                          isPORestock &&
+                          "HISTORICAL "}
                         SHORT DELIVERIES
                         {shortItems.length > 0 && (
                           <span className="ml-2 text-orange-400 font-normal">
@@ -437,7 +441,47 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
               </div>
             ) : (
               <div className="w-full">
-                {selectedRestock.status === "VOIDED" && (
+                {selectedRestock.status === "VOIDED" && isPORestock && (
+                  <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-t-md border-t-2 border-l-2 border-r-2 border-orange-200 w-fit">
+                    <div className="flex items-center gap-2 text-orange-400">
+                      <History size={18} />
+                      <label className="text-sm font-semibold text-orange-400">
+                        Reversal Information
+                      </label>
+                    </div>
+                    <div className="ml-5">
+                      <ul className="list-disc">
+                        <li className="text-xs">
+                          This restock wa reversed on{" "}
+                          <span className="font-bold text-orange-400">
+                            {selectedRestock.voided_At &&
+                              ` on ${new Date(
+                                selectedRestock.voided_At,
+                              ).toLocaleDateString("en-US", {
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                              })}`}
+                            {selectedRestock.voided_By_User &&
+                              ` by ${selectedRestock.voided_By_User.firstName} ${selectedRestock.voided_By_User.lastName}`}{" "}
+                          </span>
+                          and updated Purchase Order{" "}
+                          <span className="font-bold text-orange-400">
+                            {poData?.purchase_Order_Number}
+                          </span>
+                        </li>
+                        <li className="text-xs ">
+                          Purchase Order status after reversal:
+                          <span className="font-bold text-orange-400 ml-1">
+                            {poData?.status}
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {selectedRestock.status === "VOIDED" && !isPORestock && (
                   <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-t-md border-t-2 border-l-2 border-r-2 border-orange-200 w-fit">
                     <label className="text-sm font-semibold">
                       Reversal Information
@@ -445,14 +489,13 @@ export const ShowAllModal = ({ selectedRestock, onClose }: Props) => {
                     <label>
                       This restock was reversed
                       {selectedRestock.voided_At &&
-                        ` on ${new Date(selectedRestock.voided_At).toLocaleDateString(
-                          "en-US",
-                          {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          },
-                        )}`}
+                        ` on ${new Date(
+                          selectedRestock.voided_At,
+                        ).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })}`}
                       {selectedRestock.voided_By_User &&
                         ` by ${selectedRestock.voided_By_User.firstName} ${selectedRestock.voided_By_User.lastName}`}
                     </label>

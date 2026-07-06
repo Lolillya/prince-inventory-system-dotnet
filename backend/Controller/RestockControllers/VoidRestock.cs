@@ -119,14 +119,9 @@ namespace backend.Controller.RestockControllers
                         return BadRequest($"Inventory row for product '{deduction.Product_ID}' was not found.");
                     }
 
-                    if (inventory.Total_Quantity < deduction.Quantity)
-                    {
-                        await transaction.RollbackAsync();
-                        return Conflict(
-                            $"Cannot void restock. Product '{deduction.Product_ID}' has only {inventory.Total_Quantity} in inventory but needs {deduction.Quantity} to reverse this restock.");
-                    }
+                    var reversibleQuantity = Math.Min(inventory.Total_Quantity, deduction.Quantity);
 
-                    inventory.Total_Quantity -= deduction.Quantity;
+                    inventory.Total_Quantity -= reversibleQuantity;
                     inventory.Updated_At = now;
                 }
 
@@ -163,14 +158,8 @@ namespace backend.Controller.RestockControllers
                                 $"Product preset mapping not found for product '{deduction.Product_ID}' and preset '{deduction.Preset_ID}'.");
                         }
 
-                        if (productPreset.Main_Unit_Quantity < deduction.Quantity)
-                        {
-                            await transaction.RollbackAsync();
-                            return Conflict(
-                                $"Cannot void restock. Product preset '{productPreset.Product_Preset_ID}' has only {productPreset.Main_Unit_Quantity} main-unit quantity but needs {deduction.Quantity}.");
-                        }
-
-                        productPreset.Main_Unit_Quantity -= deduction.Quantity;
+                        var reversiblePresetQuantity = Math.Min(productPreset.Main_Unit_Quantity, deduction.Quantity);
+                        productPreset.Main_Unit_Quantity -= reversiblePresetQuantity;
 
                         var quantityRecord = await _db.Product_Unit_Preset_Quantities
                             .Where(q => q.Product_Preset_ID == productPreset.Product_Preset_ID)
@@ -185,15 +174,11 @@ namespace backend.Controller.RestockControllers
                                 $"Preset quantity record not found for product preset '{productPreset.Product_Preset_ID}'.");
                         }
 
-                        if (quantityRecord.Original_Quantity < deduction.Quantity || quantityRecord.Remaining_Quantity < deduction.Quantity)
-                        {
-                            await transaction.RollbackAsync();
-                            return Conflict(
-                                $"Cannot void restock. Preset quantity record '{quantityRecord.Quantity_ID}' has insufficient quantity to reverse {deduction.Quantity}.");
-                        }
+                        var reversibleOriginalQuantity = Math.Min(quantityRecord.Original_Quantity, deduction.Quantity);
+                        var reversibleRemainingQuantity = Math.Min(quantityRecord.Remaining_Quantity, deduction.Quantity);
 
-                        quantityRecord.Original_Quantity -= deduction.Quantity;
-                        quantityRecord.Remaining_Quantity -= deduction.Quantity;
+                        quantityRecord.Original_Quantity -= reversibleOriginalQuantity;
+                        quantityRecord.Remaining_Quantity -= reversibleRemainingQuantity;
                         quantityRecord.Updated_At = now;
                     }
                 }
