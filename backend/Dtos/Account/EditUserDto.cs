@@ -8,18 +8,14 @@ namespace backend.Dtos.Account
 {
     public class EditUserDto
     {
-        [Required]
-        public string Address { get; set; }
+        public string? Address { get; set; }
         [Required]
         public string CompanyName { get; set; }
-        [Required]
-        public string Email { get; set; }
-        [Required]
-        public string FirstName { get; set; }
+        public string? Email { get; set; }
+        public string? FirstName { get; set; }
         [Required]
         public string Id { get; set; }
-        [Required]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
         public string? Notes { get; set; }
         public string? PhoneNumber { get; set; }
         [Required]
@@ -27,6 +23,7 @@ namespace backend.Dtos.Account
         [Required]
         public string Username { get; set; }
         public int? Term { get; set; }
+        public string? Password { get; set; }
 
     }
 }

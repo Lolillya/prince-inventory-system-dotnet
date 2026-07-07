@@ -10,7 +10,6 @@ namespace api.Dtos.Account
     {
         [Required]
         public string? Username { get; set; }
-        [Required]
         [EmailAddress]
         public string? Email { get; set; }
         [Required]
@@ -20,15 +19,11 @@ namespace api.Dtos.Account
         [Required]
         public string CompanyName { get; set; } = "";
         public string Notes { get; set; } = "";
-        [Required]
         public string FirstName { get; set; } = "";
-        [Required]
         public string LastName { get; set; } = "";
-        [Required]
         public string PhoneNumber { get; set; } = "";
         [Required]
         public string RoleId { get; set; } = "";
-        [Required]
         public string Address { get; set; } = "";
         public int? Term { get; set; }
     }
