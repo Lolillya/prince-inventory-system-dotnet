@@ -65,6 +65,9 @@ export const SelectedUser = ({
     (po) => po.status?.toUpperCase() === "PENDING",
   ).length;
 
+  const isInternalSupplier =
+    selectedSupplier.username?.toLowerCase() === "princeeducationalsupplies";
+
   return (
     <div className="flex h-full min-h-0 w-full flex-col gap-2 p-5">
       <div className="flex items-center justify-between">
@@ -77,10 +80,12 @@ export const SelectedUser = ({
               <p className="text-base text-slate-700">
                 {selectedSupplier.company_Name}
               </p>
-              {/* 
-              <span className="rounded-full bg-cyan-200 px-2 py-[3px] text-sm tracking-wide text-cyan-700 capitalize">
-                {user.supplier_Type}
-              </span> */}
+
+              {isInternalSupplier && (
+                <span className="bg-purple-100 px-2 py-[3px] text-xs tracking-wide text-purple-700 p-2 rounded-md border-2 border-purple-200 uppercase font-semibold">
+                  Internal
+                </span>
+              )}
             </div>
             <p className="text-sm text-slate-400">
               {selectedSupplier.supplier_Id}
