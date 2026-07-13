@@ -29,6 +29,8 @@ export type RestockInfoModel = {
   status: string;
   createdAt: string;
   updatedAt: string;
+  purchase_Order_Number: string | null;
+  restock_Invoice_Reference: string | null;
 };
 
 export type RestockLineItemModel = {
