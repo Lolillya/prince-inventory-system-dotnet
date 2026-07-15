@@ -8,6 +8,7 @@ export type SupplierDataModel = {
   address: string;
   notes: string;
   username: string;
+  is_Active: boolean;
   restocks: RestockBatchModel[];
   total_Restock_Value: number;
 };

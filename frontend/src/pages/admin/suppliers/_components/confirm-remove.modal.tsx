@@ -1,50 +1,135 @@
-import { DeleteUserService } from "@/features/suppliers/remove-supplier/remove-supplier.service";
+import { Separator } from "@/components/separator";
+import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
+import { ToggleSupplierActiveService } from "@/features/suppliers/toggle-supplier-active/toggle-supplier-active.service";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { Info, LockKeyhole, ShieldCheck, TriangleAlert } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface ConfirmRemoveModalProps {
   setIsConfirmRemoveModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  userId: string;
+  supplier: SupplierDataModel;
 }
 
 export const ConfirmRemoveModal = ({
   setIsConfirmRemoveModalOpen,
-  userId,
+  supplier,
 }: ConfirmRemoveModalProps) => {
   const queryClient = useQueryClient();
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isActive = supplier.is_Active;
+  const actionLabel = isActive ? "Deactivate" : "Reactivate";
 
   const handleCloseModal = () => {
     setIsConfirmRemoveModalOpen(false);
   };
 
-  const handleRemove = async () => {
-    try {
-      const result = await DeleteUserService(userId);
+  const handleConfirm = async () => {
+    if (!password.trim()) {
+      setPasswordError("Password is required.");
+      return;
+    }
 
-      if (result) {
-        toast.success("Supplier deleted successfully");
-        queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-        handleCloseModal();
+    setIsSubmitting(true);
+    try {
+      await ToggleSupplierActiveService(supplier.supplier_Id, password.trim());
+
+      toast.success(
+        isActive
+          ? "Supplier deactivated successfully"
+          : "Supplier reactivated successfully",
+      );
+
+      await queryClient.invalidateQueries({ queryKey: ["suppliers"] });
+      handleCloseModal();
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        setPasswordError("Incorrect password. Please try again.");
         return;
       }
-
-      toast.error("Unable to delete supplier");
-    } catch {
-      toast.error("Unable to delete supplier");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
-      <div className="w-4/12 h-4/12 bg-white px-20 py-10 rounded-lg border shadow-lg relative flex flex-col gap-4 items-center justify-between">
-        <h1>Confirm Remove</h1>
-        <p className="text-center max-w-100">
-          Are you sure you want to remove this supplier? This action cannot be
-          undone.
-        </p>
-        <div className="flex gap-4">
-          <button onClick={handleRemove}>Remove</button>
-          <button onClick={handleCloseModal}>Cancel</button>
+    <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="w-full max-w-md bg-white rounded-lg border shadow-lg p-6 flex flex-col gap-4 justify-center items-center">
+        <div className="p-3 rounded-md bg-indigo-100 w-fit">
+          <LockKeyhole className="text-indigo-500" />
+        </div>
+        <div className="flex flex-col gap-1 text-center">
+          <h3 className="text-lg font-semibold">Confirm Password</h3>
+          <p className="text-sm text-vesper-gray">
+            Authentication is required to proceed
+          </p>
+        </div>
+        <Separator orientation="horizontal" />
+        <div className="flex gap-2 w-full">
+          <div className="p-2 rounded-md bg-orange-100 h-fit">
+            <Info className="text-orange-500" />
+          </div>
+
+          <div className="flex flex-col">
+            <span className="font-semibold">You are about to:</span>
+            <span className="font-semibold">
+              {actionLabel} {supplier.company_Name}
+            </span>
+            {isActive && (
+              <span className="text-xs text-vesper-gray">
+                The supplier will no longer be available for new restocks
+                until reactivated.
+              </span>
+            )}
+          </div>
+        </div>
+        <Separator orientation="horizontal" />
+        <div className="flex flex-col gap-1 w-full">
+          <label className="text-sm font-semibold text-left w-full">
+            Password
+          </label>
+          <input
+            type="password"
+            className="border rounded-md p-2 w-full shadow-none drop-shadow-none"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (passwordError && e.target.value.trim()) {
+                setPasswordError("");
+              }
+            }}
+            placeholder="Enter your password"
+          />
+        </div>
+        {passwordError ? (
+          <span className="text-xs text-red-500">{passwordError}</span>
+        ) : null}
+
+        <span className="flex items-center gap-1 text-xs text-vesper-gray w-full font-semibold">
+          <ShieldCheck size={14} /> For your security, please confirm your
+          password to continue.
+        </span>
+
+        <div className="flex justify-end gap-3 w-full">
+          <button
+            className="px-4 py-2 border rounded-md w-full max-w-full"
+            onClick={handleCloseModal}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-4 py-2 bg-red-500 text-white rounded-md disabled:opacity-60 w-full max-w-full"
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+          >
+            <TriangleAlert size={16} />
+            {isSubmitting ? "Please wait..." : actionLabel}
+          </button>
         </div>
       </div>
     </div>

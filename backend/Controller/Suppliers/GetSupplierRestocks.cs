@@ -45,6 +45,7 @@ namespace backend.Controller.Suppliers
                         address = supplier.Address,
                         notes = supplier.Notes,
                         username = supplier.UserName,
+                        is_Active = supplier.IsActive,
 
                         restocks = _db.RestockBatches
                             .Where(rb => rb.Supplier_ID == supplier.Id)
