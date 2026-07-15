@@ -6,7 +6,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { UserMinus, UserPlus } from "lucide-react";
+import { Ban, UserMinus, UserPlus } from "lucide-react";
 
 type UserType = "customer" | "supplier" | "employee";
 
@@ -39,17 +39,18 @@ export const InfoCard = ({
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <span className="info-name">{data.company_Name}</span>
-            {type === "supplier" && !data.is_Active && (
-              <span className="bg-red-100 px-2 py-[3px] text-xs tracking-wide text-red-700 rounded-md border-2 border-red-200 uppercase font-semibold">
-                Deactivated
-              </span>
-            )}
           </div>
           <span className="info-id">{data.supplier_Id}</span>
         </div>
       </div>
 
       <div className="flex items-center gap-1">
+        {type === "supplier" && !data.is_Active && (
+          <span className="bg-gray-100 px-2 py-[3px] text-xs tracking-wide text-gray-700 rounded-md border-2 border-gray-200 uppercase font-semibold flex items-center gap-2">
+            <Ban size={18} />
+            Deactivated
+          </span>
+        )}
         <div className="info-card-actions rounded-lg hover:bg-tinker-yellow hover:text-laughing-orange transition-all duration-300 ">
           <HoverCard>
             <HoverCardTrigger>
