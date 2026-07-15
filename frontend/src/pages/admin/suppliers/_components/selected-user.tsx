@@ -108,7 +108,7 @@ export const SelectedUser = ({
 
       <Separator />
 
-      <Tabs className="w-full">
+      <Tabs className="w-full" defaultValue="profile">
         <TabsList className="w-full gap-2">
           <TabsTrigger
             value="profile"
@@ -320,7 +320,6 @@ export const SelectedUser = ({
                         ? r.restock_Info.restock_Invoice_Reference
                         : r.restock_Info.purchase_Order_Number}
                     </label>
-
 
                     <div className="flex gap-2 items-center ">
                       <Box className="h-[18px] w-[18px] shrink-0 text-vesper-gray" />
