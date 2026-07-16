@@ -40,6 +40,7 @@ namespace backend.Controller.Inventory
                     product_ID = product.Product_ID,
                     product_Name = product.Product_Name,
                     product_Code = product.Product_Code,
+                    category_Name = product.Category != null ? product.Category.Category_Name : null,
                     presets = _db.Product_Unit_Presets
                         .Where(pup => pup.Product_ID == product.Product_ID)
                         .Select(pup => new

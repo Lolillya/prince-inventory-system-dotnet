@@ -26,7 +26,19 @@ export type ProductWithPresetsModel = {
   product_ID: number;
   product_Name: string;
   product_Code: string;
+  category_Name: string | null;
   presets: ProductWithPresetItem[];
+};
+
+export type PurchasePriceAuditLogModel = {
+  auditLog_ID: number;
+  userId: string;
+  userName: string;
+  action: string;
+  oldValue: string | null;
+  newValue: string | null;
+  description: string;
+  createdAt: string;
 };
 
 export type SupplierPurchasePriceModel = {
