@@ -7,6 +7,7 @@ import {
   EditIcon,
   History,
   MailIcon,
+  MapPin,
   NotebookPen,
   Package,
   PhoneIcon,
@@ -231,7 +232,7 @@ export const SelectedUser = ({
             <div className="p-2 rounded-lg bg-wash-gray">
               <div className="flex gap-3">
                 <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-                  <PinIcon />
+                  <MapPin />
                 </div>
                 <div className="flex flex-col justify-center gap-2">
                   <p className="text-xs info-id">Address</p>
