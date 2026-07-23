@@ -59,6 +59,12 @@ namespace backend.Controller.Suppliers
                     .Select(pup => (int?)pup.Product_Preset_ID)
                     .FirstOrDefaultAsync();
 
+                var mainUnitName = await _db.Unit_Presets
+                    .Where(p => p.Preset_ID == item.Preset_ID)
+                    .Select(p => p.MainUnit != null ? p.MainUnit.uom_Name : null)
+                    .FirstOrDefaultAsync() ?? "Unit";
+                var fieldName = $"{mainUnitName} (Main)";
+
                 var existing = await _db.SupplierProductPresetPrices
                     .FirstOrDefaultAsync(sp =>
                         sp.Supplier_ID == supplierId &&
@@ -79,10 +85,10 @@ namespace backend.Controller.Suppliers
                         UserId = userId,
                         UserName = userName,
                         Action = "SUPPLIER_PRICE_UPDATED",
-                        FieldName = "Purchase_Price",
+                        FieldName = fieldName,
                         OldValue = oldPrice.ToString("F2"),
                         NewValue = item.Price_Per_Unit.ToString("F2"),
-                        Description = $"Updated purchase price: {oldPrice:F2} → {item.Price_Per_Unit:F2}",
+                        Description = $"Updated {fieldName} purchase price: {oldPrice:F2} → {item.Price_Per_Unit:F2}",
                         CreatedAt = DateTime.UtcNow
                     });
                 }
@@ -106,10 +112,10 @@ namespace backend.Controller.Suppliers
                         UserId = userId,
                         UserName = userName,
                         Action = "SUPPLIER_PRICE_SET",
-                        FieldName = "Purchase_Price",
+                        FieldName = fieldName,
                         OldValue = null,
                         NewValue = item.Price_Per_Unit.ToString("F2"),
-                        Description = $"Set purchase price to {item.Price_Per_Unit:F2}",
+                        Description = $"Set {fieldName} purchase price to {item.Price_Per_Unit:F2}",
                         CreatedAt = DateTime.UtcNow
                     });
                 }

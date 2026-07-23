@@ -3,6 +3,7 @@ import { useProductsWithPresetsQuery } from "@/features/suppliers/supplier-purch
 import { useSupplierPurchasePricesQuery } from "@/features/suppliers/supplier-purchase-prices/get-supplier-purchase-prices.query";
 import { useSupplierPurchasePriceHistoryQuery } from "@/features/suppliers/supplier-purchase-prices/get-supplier-purchase-price-history.query";
 import { useUpsertSupplierPurchasePricesMutation } from "@/features/suppliers/supplier-purchase-prices/upsert-supplier-purchase-prices.service";
+import { useRemoveSupplierPurchasePriceMutation } from "@/features/suppliers/supplier-purchase-prices/remove-supplier-purchase-price.service";
 import { ProductWithPresetItem } from "@/features/suppliers/supplier-purchase-prices/supplier-purchase-prices.model";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -41,6 +42,9 @@ export const PurchasePriceModal = ({
     useProductsWithPresetsQuery();
   const { data: savedPrices = [] } = useSupplierPurchasePricesQuery(supplierId);
   const upsertMutation = useUpsertSupplierPurchasePricesMutation(
+    supplierId ?? "",
+  );
+  const removeMutation = useRemoveSupplierPurchasePriceMutation(
     supplierId ?? "",
   );
 
@@ -150,11 +154,13 @@ export const PurchasePriceModal = ({
   const sellingPrice = activePreset?.main_Unit_Selling_Price ?? 0;
   const isProfit = isDraftValid && draftNum < sellingPrice;
 
+  const isRevertAction = draftPrice === "" && activeSavedPrice !== undefined;
+
   const canSave =
     !!activeKey &&
     selectedKeys.has(activeKey) &&
-    isDraftValid &&
-    draftNum !== (activeSavedPrice ?? -1);
+    (isRevertAction ||
+      (isDraftValid && draftNum !== (activeSavedPrice ?? -1)));
 
   const handleSavePrice = async () => {
     if (!activeKey || !activeProduct || !activePreset) return;
@@ -162,6 +168,25 @@ export const PurchasePriceModal = ({
       toast.error("Select this preset first before saving a price");
       return;
     }
+
+    if (isRevertAction) {
+      await removeMutation.mutateAsync({
+        product_ID: activeProduct.product_ID,
+        preset_ID: activePreset.preset_ID,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [
+          "supplier-purchase-price-history",
+          supplierId,
+          activeProduct.product_ID,
+          activePreset.preset_ID,
+        ],
+      });
+      toast.success("Purchase price reverted to unconfigured");
+      handlePurchasePrice();
+      return;
+    }
+
     if (!isDraftValid) {
       toast.error("Please set a valid primary unit purchase price");
       return;
@@ -185,9 +210,7 @@ export const PurchasePriceModal = ({
     handlePurchasePrice();
   };
 
-  const getConfiguredCount = (
-    product: (typeof products)[number],
-  ) =>
+  const getConfiguredCount = (product: (typeof products)[number]) =>
     product.presets.filter((p) =>
       savedPriceMap.has(getKey(product.product_ID, p.preset_ID)),
     ).length;
@@ -220,7 +243,8 @@ export const PurchasePriceModal = ({
       const configuredCount = getConfiguredCount(product);
       const total = product.presets.length;
 
-      if (statusFilter === "complete") return total > 0 && configuredCount === total;
+      if (statusFilter === "complete")
+        return total > 0 && configuredCount === total;
       if (statusFilter === "none") return configuredCount === 0;
       return configuredCount > 0 && configuredCount < total;
     });
@@ -331,14 +355,24 @@ export const PurchasePriceModal = ({
                             );
                             const isSelected = selectedKeys.has(key);
                             const savedPrice = savedPriceMap.get(key);
+                            const isConfigured = savedPrice !== undefined;
+                            const hasPendingChange = key === activeKey && canSave;
 
                             return (
                               <div
                                 key={preset.preset_ID}
-                                className={`flex gap-2 items-center border-t p-2 cursor-pointer transition ${
-                                  isSelected
-                                    ? "bg-blue-50"
-                                    : "hover:bg-slate-50"
+                                className={`flex gap-2 items-center border-t p-2 cursor-pointer transition border-l-2 ${
+                                  isConfigured
+                                    ? "border-l-emerald-500"
+                                    : isSelected
+                                      ? "border-l-blue-500"
+                                      : "border-l-transparent"
+                                } ${
+                                  hasPendingChange
+                                    ? "bg-yellow-50"
+                                    : isSelected
+                                      ? "bg-blue-50"
+                                      : "hover:bg-slate-50"
                                 }`}
                                 onClick={() =>
                                   handleSelectPreset(
@@ -349,7 +383,11 @@ export const PurchasePriceModal = ({
                               >
                                 <div
                                   className={`rounded-full w-2 h-2 ml-10 shrink-0 ${
-                                    isSelected ? "bg-blue-500" : "bg-gray-400"
+                                    isConfigured
+                                      ? "bg-emerald-500"
+                                      : isSelected
+                                        ? "bg-blue-500"
+                                        : "bg-gray-400"
                                   }`}
                                 />
                                 <label className="text-sm font-semibold text-vesper-gray text-nowrap cursor-pointer">
@@ -358,11 +396,32 @@ export const PurchasePriceModal = ({
                                 <span className="font-semibold text-sm flex-1 cursor-pointer">
                                   {buildUnitChain(preset)}
                                 </span>
-                                {savedPrice !== undefined ? (
-                                  <span className="text-xs font-semibold text-emerald-600 text-nowrap">
-                                    Php {formatPhp(savedPrice)}
-                                  </span>
-                                ) : null}
+
+                                {savedPrice !== undefined
+                                  ? (() => {
+                                      const rowIsProfit =
+                                        savedPrice <
+                                        preset.main_Unit_Selling_Price;
+                                      return (
+                                        <span
+                                          className={`text-xs font-semibold text-nowrap flex items-center gap-2 rounded-full p-1 px-2 ${
+                                            rowIsProfit
+                                              ? "text-emerald-600 bg-emerald-100"
+                                              : "text-red-600 bg-red-100"
+                                          }`}
+                                        >
+                                          <PhilippinePeso size={12} />{" "}
+                                          {formatPhp(savedPrice)}
+                                          {rowIsProfit ? (
+                                            <TrendingUp size={18} />
+                                          ) : (
+                                            <TrendingDown size={18} />
+                                          )}
+                                          {rowIsProfit ? "Profit" : "Loss"}
+                                        </span>
+                                      );
+                                    })()
+                                  : null}
                               </div>
                             );
                           })
@@ -386,10 +445,26 @@ export const PurchasePriceModal = ({
         </div>
 
         {/* Right panel — Pricing */}
-        <div className="relative flex w-5/12 min-w-0 flex-col">
+        <div
+          className={`relative flex w-5/12 min-w-0 flex-col ${
+            canSave
+              ? "bg-yellow-50"
+              : activeSavedPrice !== undefined
+                ? "bg-green-50"
+                : ""
+          }`}
+        >
           {activeKey && activeProduct && activePreset ? (
             <>
-              <div className="absolute left-0 top-0 h-full w-[3px] bg-blue-400" />
+              <div
+                className={`absolute left-0 top-0 h-full w-[3px] ${
+                  canSave
+                    ? "bg-yellow-400"
+                    : activeSavedPrice !== undefined
+                      ? "bg-emerald-400"
+                      : "bg-blue-400"
+                }`}
+              />
 
               <div className="border-b border-slate-200 px-5 py-4">
                 <h4 className="text-base font-semibold text-vesper-gray">
@@ -405,7 +480,11 @@ export const PurchasePriceModal = ({
                     <span className="font-semibold text-vesper-gray">
                       {history[0].userName}
                     </span>{" "}
-                    on {format(new Date(history[0].createdAt), "MMM d, yyyy h:mm a")}
+                    on{" "}
+                    {format(
+                      new Date(history[0].createdAt),
+                      "MMM d, yyyy h:mm a",
+                    )}
                   </p>
                 ) : null}
               </div>
@@ -448,10 +527,11 @@ export const PurchasePriceModal = ({
                       {isProfit ? (
                         <TrendingUp size={12} />
                       ) : (
-                        <TrendingDown size={12} />
+                        <TrendingDown size={18} />
                       )}
-                      {isProfit ? "Profit" : "Loss"} — purchase Php{" "}
-                      {formatPhp(draftNum)} vs sell Php{" "}
+                      {isProfit ? "Profit" : "Loss"} — purchase{" "}
+                      <PhilippinePeso size={12} />
+                      {formatPhp(draftNum)} vs sell <PhilippinePeso size={12} />
                       {formatPhp(sellingPrice)}
                     </div>
                   ) : null}
@@ -543,35 +623,55 @@ export const PurchasePriceModal = ({
                   </div>
 
                   {isAuditLogOpen ? (
-                    <div className="flex flex-col border-t divide-y">
+                    <div className="border-t overflow-x-auto">
                       {history.length === 0 ? (
                         <p className="p-3 text-xs text-slate-400">
                           No pricing changes recorded yet.
                         </p>
                       ) : (
-                        history.map((log) => (
-                          <div
-                            key={log.auditLog_ID}
-                            className="flex flex-col gap-0.5 p-2 text-xs"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-semibold text-vesper-gray">
-                                {log.userName}
-                              </span>
-                              <span className="text-slate-400">
-                                {format(
-                                  new Date(log.createdAt),
-                                  "MMM d, yyyy h:mm a",
-                                )}
-                              </span>
-                            </div>
-                            <span className="text-slate-500">
-                              {log.oldValue
-                                ? `Php ${log.oldValue} → Php ${log.newValue}`
-                                : `Set to Php ${log.newValue}`}
-                            </span>
-                          </div>
-                        ))
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b bg-slate-50 text-left text-vesper-gray">
+                              <th className="p-2 font-semibold text-nowrap">
+                                Date &amp; Time
+                              </th>
+                              <th className="p-2 font-semibold text-nowrap">
+                                User
+                              </th>
+                              <th className="p-2 font-semibold">Changes</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y ">
+                            {history.map((log) => (
+                              <tr key={log.auditLog_ID}>
+                                <td className="p-2 align-middle text-slate-500 text-nowrap">
+                                  {format(
+                                    new Date(log.createdAt),
+                                    "MMM d, yyyy h:mm a",
+                                  )}
+                                </td>
+                                <td className="p-2 align-middle">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-500 text-[10px] font-semibold text-white">
+                                      {log.userName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="font-semibold text-vesper-gray text-nowrap">
+                                      {log.userName}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-2 align-middle text-slate-500">
+                                  {log.fieldName ?? "Purchase Price"}{" "}
+                                  {log.action === "SUPPLIER_PRICE_REMOVED"
+                                    ? `P ${log.oldValue} → Unconfigured`
+                                    : log.oldValue
+                                      ? `P ${log.oldValue} → P ${log.newValue}`
+                                      : `set to P ${log.newValue}`}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       )}
                     </div>
                   ) : null}
@@ -581,11 +681,17 @@ export const PurchasePriceModal = ({
               <div className="border-t border-slate-200 px-5 py-3 w-full justify-end flex">
                 <button
                   className="w-full max-w-fit flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={!canSave || upsertMutation.isPending}
+                  disabled={
+                    !canSave || upsertMutation.isPending || removeMutation.isPending
+                  }
                   onClick={handleSavePrice}
                 >
                   <Save size={18} />
-                  {upsertMutation.isPending ? "Saving…" : "Save Purchase Price"}
+                  {upsertMutation.isPending || removeMutation.isPending
+                    ? "Saving…"
+                    : isRevertAction
+                      ? "Revert to Unconfigured"
+                      : "Save Purchase Price"}
                 </button>
               </div>
             </>

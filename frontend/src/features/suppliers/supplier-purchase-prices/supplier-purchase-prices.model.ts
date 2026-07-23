@@ -35,6 +35,7 @@ export type PurchasePriceAuditLogModel = {
   userId: string;
   userName: string;
   action: string;
+  fieldName: string | null;
   oldValue: string | null;
   newValue: string | null;
   description: string;

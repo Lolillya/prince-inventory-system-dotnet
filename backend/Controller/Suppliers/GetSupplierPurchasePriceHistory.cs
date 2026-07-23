@@ -27,7 +27,7 @@ namespace backend.Controller.Suppliers
                 .Where(a =>
                     a.Supplier_ID == supplierId &&
                     a.Product_ID == productId &&
-                    (a.Action == "SUPPLIER_PRICE_UPDATED" || a.Action == "SUPPLIER_PRICE_SET"))
+                    (a.Action == "SUPPLIER_PRICE_UPDATED" || a.Action == "SUPPLIER_PRICE_SET" || a.Action == "SUPPLIER_PRICE_REMOVED"))
                 .Where(a => _db.Product_Unit_Presets
                     .Any(pup => pup.Product_Preset_ID == a.Product_Preset_ID
                         && pup.Product_ID == productId
@@ -40,6 +40,7 @@ namespace backend.Controller.Suppliers
                     a.UserId,
                     a.UserName,
                     a.Action,
+                    a.FieldName,
                     a.OldValue,
                     a.NewValue,
                     a.Description,
