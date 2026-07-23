@@ -7,13 +7,31 @@ import { PurchaseOrderPreview } from "./purchase-order-print.modal";
 interface PurchaseOrderDetailsModalProps {
   purchaseOrder: PurchaseOrderRecord;
   onClose: () => void;
+  onCancel?: (purchaseOrderId: number) => Promise<void> | void;
+  canCancel?: boolean;
 }
 
 export const PurchaseOrderDetailsModal = ({
   purchaseOrder,
   onClose,
+  onCancel,
+  canCancel = false,
 }: PurchaseOrderDetailsModalProps) => {
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+
+  const handleCancel = async () => {
+    if (!onCancel) return;
+    setIsCancelling(true);
+    try {
+      await onCancel(purchaseOrder.purchase_Order_ID);
+      setIsConfirmingCancel(false);
+      onClose();
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   const formatMoney = (value: number) => {
     return new Intl.NumberFormat("en-PH", {
@@ -127,6 +145,14 @@ export const PurchaseOrderDetailsModal = ({
           </div>
 
           <div className="flex gap-2">
+            {canCancel && onCancel && (
+              <button
+                className="px-4 py-2 text-sm rounded border border-red-300 text-red-600 hover:bg-red-50"
+                onClick={() => setIsConfirmingCancel(true)}
+              >
+                Cancel PO
+              </button>
+            )}
             <button
               className="px-4 py-2 text-sm rounded border"
               onClick={onClose}
@@ -141,6 +167,34 @@ export const PurchaseOrderDetailsModal = ({
             </button>
           </div>
         </div>
+
+        {isConfirmingCancel && (
+          <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-70 rounded-lg">
+            <div className="w-[380px] bg-white p-6 rounded-lg border shadow-xl flex flex-col gap-4">
+              <h3 className="text-lg font-bold">Cancel Purchase Order</h3>
+              <p className="text-sm text-gray-500">
+                Are you sure you want to cancel {purchaseOrder.purchase_Order_Number}?
+                This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  className="px-4 py-2 text-sm rounded border"
+                  onClick={() => setIsConfirmingCancel(false)}
+                  disabled={isCancelling}
+                >
+                  Go Back
+                </button>
+                <button
+                  className="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                  onClick={handleCancel}
+                  disabled={isCancelling}
+                >
+                  {isCancelling ? "Cancelling..." : "Confirm Cancel"}
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </section>
   );
