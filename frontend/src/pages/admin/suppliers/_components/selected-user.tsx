@@ -11,8 +11,6 @@ import {
   NotebookPen,
   Package,
   PhoneIcon,
-  PinIcon,
-  RotateCcw,
 } from "lucide-react";
 import { format } from "date-fns";
 

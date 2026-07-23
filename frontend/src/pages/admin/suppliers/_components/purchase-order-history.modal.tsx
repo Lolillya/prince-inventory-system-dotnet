@@ -7,7 +7,7 @@ import {
   PurchaseOrderStatus,
 } from "@/features/purchase-order/purchase-order.model";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
-import { SearchIcon, XIcon } from "@/icons";
+import { XIcon } from "@/icons";
 import { format } from "date-fns";
 import { useMemo, useState } from "react";
 import { PurchaseOrderDetailsModal } from "./purchase-order-details.modal";
