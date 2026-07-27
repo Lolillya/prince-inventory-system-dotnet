@@ -4,8 +4,11 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { PurchaseOrderPreview } from "./purchase-order-print.modal";
 import {
+  Ban,
   Calendar,
+  ChevronRight,
   ClipboardList,
+  Eye,
   FileText,
   RotateCcw,
   TriangleAlert,
@@ -61,7 +64,7 @@ export const PurchaseOrderDetailsModal = ({
     return format(parsed, "yyyy MMM dd");
   };
 
-  console.log(purchaseOrder)
+  console.log(purchaseOrder);
 
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-60">
@@ -72,7 +75,7 @@ export const PurchaseOrderDetailsModal = ({
         />
       )}
 
-      <div className="w-3/5 h-4/5 bg-white p-8 rounded-lg border shadow-lg flex flex-col gap-4">
+      <div className="w-3/5 h-4/5 bg-white p-8 rounded-lg border shadow-lg flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <h2 className="text-xl font-bold">Purchase Order Details</h2>
@@ -152,7 +155,7 @@ export const PurchaseOrderDetailsModal = ({
                 </label>
               </div>
 
-              <div className="flex flex-col bg-white h-full flex-1 overflow-y-auto">
+              <div className="flex flex-col bg-white h-full flex-1 overflow-y-auto rounded-md">
                 {purchaseOrder.line_Items.filter(
                   (row) => row.remaining_quantity > 0,
                 ).length === 0 ? (
@@ -165,12 +168,12 @@ export const PurchaseOrderDetailsModal = ({
                     .map((row, i) => (
                       <div
                         key={i}
-                        className="grid grid-cols-[2fr_2.5fr_1fr] gap-2 p-4 border-b-2"
+                        className="grid grid-cols-[2fr_2.5fr_1fr] gap-2 p-4 border-b-2 rounded-md"
                       >
-                        <label className="text-xs font-semibold break-words">
+                        <label className="text-xs font-semibold wrap-break-word">
                           {row.product?.product_Name}
                         </label>
-                        <label className="text-xs text-vesper-gray font-semibold break-words">
+                        <label className="text-xs text-vesper-gray font-semibold wrap-break-word">
                           {row.unit_Preset?.preset_Levels?.map(
                             (l, idx, arr) => {
                               const hasConv =
@@ -204,7 +207,7 @@ export const PurchaseOrderDetailsModal = ({
                 Restock History
               </label>
             </span>
-            <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex flex-col flex-1 min-h-0 rounded-md">
               <div className="grid grid-cols-[2fr_2.5fr_2.5fr_1fr] gap-2 px-4 py-2 border-b-2 bg-gray-50 shrink-0">
                 <label className="font-semibold uppercase text-vesper-gray text-xs">
                   restock reference
@@ -220,7 +223,7 @@ export const PurchaseOrderDetailsModal = ({
                 </label>
               </div>
 
-              <div className="flex flex-col bg-white h-full flex-1 overflow-y-auto">
+              <div className="flex flex-col bg-white h-full flex-1 overflow-y-auto rounded-md">
                 {restockHistory.length === 0 ? (
                   <div className="p-4 text-xs text-vesper-gray text-center">
                     No restocks found
@@ -229,16 +232,25 @@ export const PurchaseOrderDetailsModal = ({
                   restockHistory.map((restock) => (
                     <div
                       key={restock.restock_ID}
-                      className="grid grid-cols-[2fr_2.5fr_2.5fr_1fr] gap-2 p-4 border-b-2"
+                      className={`grid grid-cols-[2fr_2.5fr_2.5fr_1fr] gap-2 p-4 border-b-2 ${
+                        restock.is_Reversed ? "bg-gray-50 opacity-70" : ""
+                      }`}
                     >
                       <label className="text-xs font-semibold wrap-break-word">
-                        {restock.restock_Number}
-                        <div className="text-vesper-gray font-normal">
-                          Ref: {purchaseOrder.purchase_Order_Number}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {restock.restock_Number}
+                          {restock.is_Reversed && (
+                            <span className="flex items-center gap-1 bg-orange-200 text-orange-600 rounded-sm p-1 font-semibold w-fit h-fit">
+                              <RotateCcw size={14} />
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-vesper-gray font-semibold">
+                          {purchaseOrder.purchase_Order_Number}
                         </div>
                       </label>
                       <label className="text-xs text-vesper-gray font-semibold wrap-break-word flex items-center gap-2">
-                        <Calendar size={18}/> {formatDate(restock.created_At)}
+                        <Calendar size={18} /> {formatDate(restock.created_At)}
                       </label>
                       <label className="text-xs font-semibold flex items-center">
                         {restock.line_Items.length} product
@@ -255,8 +267,42 @@ export const PurchaseOrderDetailsModal = ({
           </div>
         </div>
 
-        <div>
-          
+        <div className="flex gap-2">
+          <div className="w-full flex gap-2 items-cente rounded-md border-2 border-gray-300 p-2 cursor-pointer">
+            <span className="bg-gray-100 rounded-md p-2 items-center justify-center w-fit h-fit text-blue-900">
+              <Eye />
+            </span>
+            <div className="flex flex-col">
+              <label className="font-semibold capitalize text-blue-900">
+                view purchase order
+              </label>
+              <span className="text-vesper-gray text-sm">
+                View full purchase order details
+              </span>
+            </div>
+
+            <span className="ml-auto p-2 items-center justify-center w-fit h-fit">
+              <ChevronRight />
+            </span>
+          </div>
+
+          <div className="w-full flex gap-2 items-cente rounded-md border-2 border-red-200 p-2 cursor-pointer">
+            <span className="bg-red-100 rounded-md p-2 items-center justify-center w-fit h-fit text-red-700">
+              <Ban />
+            </span>
+            <div className="flex flex-col">
+              <label className="font-semibold capitalize text-red-700">
+                cancel purchase order
+              </label>
+              <span className="text-vesper-gray text-sm">
+                Cancel this purchase order
+              </span>
+            </div>
+
+            <span className="ml-auto p-2 items-center justify-center w-fit h-fit">
+              <ChevronRight />
+            </span>
+          </div>
         </div>
 
         {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
