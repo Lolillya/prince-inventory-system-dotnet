@@ -34,6 +34,7 @@ export type PurchaseOrderRecord = {
     last_Name: string;
     company_Name: string;
     email: string;
+    address: string;
   };
   clerk: {
     id: string;

@@ -142,6 +142,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     last_Name = po.Supplier.LastName,
                     company_Name = po.Supplier.CompanyName,
                     email = po.Supplier.Email,
+                    address = po.Supplier.Address,
                 },
                 clerk = new
                 {
@@ -204,6 +205,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     last_Name = purchaseOrder.Supplier.LastName,
                     company_Name = purchaseOrder.Supplier.CompanyName,
                     email = purchaseOrder.Supplier.Email,
+                    address = purchaseOrder.Supplier.Address,
                 },
                 clerk = new
                 {
@@ -269,6 +271,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     last_Name = po.Supplier.LastName,
                     company_Name = po.Supplier.CompanyName,
                     email = po.Supplier.Email,
+                    address = po.Supplier.Address,
                 },
                 clerk = new
                 {
