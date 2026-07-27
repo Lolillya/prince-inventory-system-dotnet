@@ -15,6 +15,26 @@ namespace backend.Controller.PurchaseOrderControllers
             _db = db;
         }
 
+        private static object? ProjectCancellationInfo(backend.Models.PurchaseOrderModel.PurchaseOrder po)
+        {
+            if (po.Status != "CANCELLED")
+            {
+                return null;
+            }
+
+            return new
+            {
+                cancelled_At = po.Cancelled_At,
+                reason = po.Cancellation_Reason,
+                cancelled_By = po.CancelledByUser != null ? new
+                {
+                    id = po.CancelledByUser.Id,
+                    first_Name = po.CancelledByUser.FirstName,
+                    last_Name = po.CancelledByUser.LastName,
+                } : null,
+            };
+        }
+
         private async Task<Dictionary<(int poId, int productId), int>> BuildReceivedLookupAsync(IEnumerable<int>? poIds = null)
         {
             var query = _db.RestockLineItems
@@ -87,6 +107,7 @@ namespace backend.Controller.PurchaseOrderControllers
             var purchaseOrders = await _db.PurchaseOrders
                 .Include(po => po.Supplier)
                 .Include(po => po.Clerk)
+                .Include(po => po.CancelledByUser)
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Brand)
@@ -132,6 +153,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     .Select(li => ProjectLineItem(li, po.Purchase_Order_ID, receivedDict))
                     .ToList(),
                 grand_Total = po.LineItems.Sum(li => li.Sub_Total),
+                cancellation_Info = ProjectCancellationInfo(po),
             });
 
             return Ok(result);
@@ -143,6 +165,7 @@ namespace backend.Controller.PurchaseOrderControllers
             var purchaseOrder = await _db.PurchaseOrders
                 .Include(po => po.Supplier)
                 .Include(po => po.Clerk)
+                .Include(po => po.CancelledByUser)
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Brand)
@@ -192,6 +215,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     .Select(li => ProjectLineItem(li, purchaseOrderId, receivedDict))
                     .ToList(),
                 grand_Total = purchaseOrder.LineItems.Sum(li => li.Sub_Total),
+                cancellation_Info = ProjectCancellationInfo(purchaseOrder),
             };
 
             return Ok(result);
@@ -209,6 +233,7 @@ namespace backend.Controller.PurchaseOrderControllers
             var data = await _db.PurchaseOrders
                 .Include(po => po.Supplier)
                 .Include(po => po.Clerk)
+                .Include(po => po.CancelledByUser)
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Brand)
@@ -255,6 +280,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     .Select(li => ProjectLineItem(li, po.Purchase_Order_ID, receivedDict))
                     .ToList(),
                 grand_Total = po.LineItems.Sum(li => li.Sub_Total),
+                cancellation_Info = ProjectCancellationInfo(po),
             });
 
             return Ok(result);

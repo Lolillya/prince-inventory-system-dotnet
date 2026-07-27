@@ -1685,6 +1685,15 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Purchase_Order_ID"));
 
+                    b.Property<string>("Cancellation_Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Cancelled_At")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Cancelled_By")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1715,6 +1724,8 @@ namespace backend.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Purchase_Order_ID");
+
+                    b.HasIndex("Cancelled_By");
 
                     b.HasIndex("Purchase_Order_Clerk");
 
@@ -2681,6 +2692,11 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Models.PurchaseOrderModel.PurchaseOrder", b =>
                 {
+                    b.HasOne("backend.Models.PersonalDetails", "CancelledByUser")
+                        .WithMany()
+                        .HasForeignKey("Cancelled_By")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("backend.Models.PersonalDetails", "Clerk")
                         .WithMany()
                         .HasForeignKey("Purchase_Order_Clerk")
@@ -2692,6 +2708,8 @@ namespace backend.Migrations
                         .HasForeignKey("Supplier_ID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("CancelledByUser");
 
                     b.Navigation("Clerk");
 

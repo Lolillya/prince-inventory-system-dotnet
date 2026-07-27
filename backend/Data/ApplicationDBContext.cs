@@ -407,6 +407,12 @@ namespace backend.Data
                     .HasForeignKey(po => po.Purchase_Order_Clerk)
                     .OnDelete(DeleteBehavior.NoAction);
 
+                entity.HasOne(po => po.CancelledByUser)
+                    .WithMany()
+                    .HasForeignKey(po => po.Cancelled_By)
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .IsRequired(false);
+
                 entity.HasMany(po => po.LineItems)
                     .WithOne(li => li.PurchaseOrder)
                     .HasForeignKey(li => li.Purchase_Order_ID)
