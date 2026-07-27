@@ -61,12 +61,15 @@ export const useUpdatePurchaseOrderStatusMutation = (supplierId?: string) => {
     mutationFn: ({
       purchaseOrderId,
       status,
+      reason,
     }: {
       purchaseOrderId: number;
       status: PurchaseOrderStatus;
+      reason?: string;
     }) =>
       purchaseOrderService.updatePurchaseOrderStatus(purchaseOrderId, {
         status,
+        reason,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.all });
