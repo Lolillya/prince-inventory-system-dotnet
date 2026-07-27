@@ -175,10 +175,14 @@ export const PurchaseOrderHistoryModal = ({
     setStatusFilter("ALL");
   };
 
-  const handleCancelPurchaseOrder = async (purchaseOrderId: number) => {
+  const handleCancelPurchaseOrder = async (
+    purchaseOrderId: number,
+    reason: string,
+  ) => {
     await updateStatus({
       purchaseOrderId,
       status: "CANCELLED" as PurchaseOrderStatus,
+      reason,
     });
   };
 
