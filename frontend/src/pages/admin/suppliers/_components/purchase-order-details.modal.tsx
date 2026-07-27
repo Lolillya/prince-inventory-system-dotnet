@@ -61,6 +61,8 @@ export const PurchaseOrderDetailsModal = ({
     return format(parsed, "yyyy MMM dd");
   };
 
+  console.log(purchaseOrder)
+
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-60">
       {isPrintPreviewOpen && (
@@ -251,6 +253,10 @@ export const PurchaseOrderDetailsModal = ({
               </div>
             </div>
           </div>
+        </div>
+
+        <div>
+          
         </div>
 
         {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
