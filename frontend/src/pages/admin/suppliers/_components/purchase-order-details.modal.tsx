@@ -342,7 +342,7 @@ export const PurchaseOrderDetailsModal = ({
 
         <div className="flex gap-2 items-center justify-center">
           <div
-            className={`${canActuallyCancel ? "w-full" : ""}flex gap-2 items-center rounded-md border-2 border-gray-300 p-2 cursor-pointer hover:bg-gray-50`}
+            className={`${canActuallyCancel ? "w-full" : ""} flex gap-2 items-center rounded-md border-2 border-gray-300 p-2 cursor-pointer hover:bg-gray-50`}
             onClick={() => setIsPrintPreviewOpen(true)}
           >
             <span className="bg-gray-100 rounded-md p-2 items-center justify-center w-fit h-fit text-blue-900">
