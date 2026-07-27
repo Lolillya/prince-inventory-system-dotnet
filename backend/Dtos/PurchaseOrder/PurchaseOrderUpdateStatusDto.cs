@@ -6,5 +6,8 @@ namespace backend.Dtos.PurchaseOrder
     {
         [Required]
         public string Status { get; set; } = null!;
+
+        // Required when Status == "CANCELLED"
+        public string? Reason { get; set; }
     }
 }
