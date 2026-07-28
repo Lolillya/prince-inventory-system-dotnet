@@ -43,6 +43,11 @@ namespace backend.Controller.PurchaseOrderControllers
                 return BadRequest("A reason is required to cancel a purchase order.");
             }
 
+            if (normalizedStatus == "CANCELLED" && string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return BadRequest("Password is required to cancel a purchase order.");
+            }
+
             var purchaseOrder = await _db.PurchaseOrders
                 .Include(po => po.LineItems)
                 .FirstOrDefaultAsync(po => po.Purchase_Order_ID == purchaseOrderId);
@@ -74,6 +79,12 @@ namespace backend.Controller.PurchaseOrderControllers
                 if (callerUser == null)
                 {
                     return Unauthorized("User account not found.");
+                }
+
+                var isPasswordValid = await _userManager.CheckPasswordAsync(callerUser, dto.Password!);
+                if (!isPasswordValid)
+                {
+                    return Unauthorized("Invalid password.");
                 }
             }
 

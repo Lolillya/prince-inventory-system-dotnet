@@ -178,11 +178,13 @@ export const PurchaseOrderHistoryModal = ({
   const handleCancelPurchaseOrder = async (
     purchaseOrderId: number,
     reason: string,
+    password: string,
   ) => {
     await updateStatus({
       purchaseOrderId,
       status: "CANCELLED" as PurchaseOrderStatus,
       reason,
+      password,
     });
   };
 

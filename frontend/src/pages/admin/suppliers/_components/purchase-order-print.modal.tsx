@@ -1,7 +1,7 @@
 import { Separator } from "@/components/separator";
 import { Switch } from "@/components/ui/switch";
 import { PurchaseOrderRecord } from "@/features/purchase-order/purchase-order.model";
-import { AcrobatIcon, XIcon } from "@/icons";
+import { XIcon } from "@/icons";
 import { format } from "date-fns";
 // [CHANGED] Removed: import { PhilippinePeso } from "lucide-react";
 import jsPDF from "jspdf";

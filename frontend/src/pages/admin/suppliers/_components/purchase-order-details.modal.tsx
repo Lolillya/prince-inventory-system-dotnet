@@ -24,11 +24,16 @@ import {
   getDisplayStatus,
   isOpenStatus,
 } from "@/features/purchase-order/purchase-order-status.helper";
+import { CancelPurchaseOrderModal } from "./cancel-purchase-order.modal";
 
 interface PurchaseOrderDetailsModalProps {
   purchaseOrder: PurchaseOrderRecord;
   onClose: () => void;
-  onCancel?: (purchaseOrderId: number, reason: string) => Promise<void> | void;
+  onCancel?: (
+    purchaseOrderId: number,
+    reason: string,
+    password: string,
+  ) => Promise<void> | void;
   canCancel?: boolean;
 }
 
@@ -41,7 +46,6 @@ export const PurchaseOrderDetailsModal = ({
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
   const [selectedRestock, setSelectedRestock] =
     useState<PORestockHistoryRecord | null>(null);
 
@@ -54,11 +58,15 @@ export const PurchaseOrderDetailsModal = ({
   const isCancelled = purchaseOrder.status?.toUpperCase() === "CANCELLED";
   const canActuallyCancel = canCancel && isOpenStatus(displayStatus);
 
-  const handleCancel = async () => {
-    if (!onCancel || !cancelReason.trim()) return;
+  const handleCancel = async (payload: {
+    purchaseOrderId: number;
+    reason: string;
+    password: string;
+  }) => {
+    if (!onCancel) return;
     setIsCancelling(true);
     try {
-      await onCancel(purchaseOrder.purchase_Order_ID, cancelReason.trim());
+      await onCancel(payload.purchaseOrderId, payload.reason, payload.password);
       setIsConfirmingCancel(false);
       onClose();
     } finally {
@@ -98,6 +106,15 @@ export const PurchaseOrderDetailsModal = ({
         <RestockDetailsModal
           restock={selectedRestock}
           onClose={() => setSelectedRestock(null)}
+        />
+      )}
+
+      {isConfirmingCancel && (
+        <CancelPurchaseOrderModal
+          purchaseOrder={purchaseOrder}
+          onClose={() => setIsConfirmingCancel(false)}
+          onConfirm={handleCancel}
+          isCancelling={isCancelling}
         />
       )}
 
@@ -386,46 +403,6 @@ export const PurchaseOrderDetailsModal = ({
           )}
         </div>
 
-        {isConfirmingCancel && (
-          <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-70 rounded-lg">
-            <div className="w-[420px] bg-white p-6 rounded-lg border shadow-xl flex flex-col gap-4">
-              <h3 className="text-lg font-bold">Cancel Purchase Order</h3>
-              <p className="text-sm text-gray-500">
-                Are you sure you want to cancel{" "}
-                {purchaseOrder.purchase_Order_Number}? This action cannot be
-                undone.
-              </p>
-              <div>
-                <label className="text-xs uppercase tracking-wide text-vesper-gray font-semibold">
-                  Reason for cancellation
-                </label>
-                <textarea
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                  rows={3}
-                  className="w-full mt-1 px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-1 focus:ring-red-400"
-                  placeholder="Explain why this purchase order is being cancelled"
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  className="px-4 py-2 text-sm rounded border"
-                  onClick={() => setIsConfirmingCancel(false)}
-                  disabled={isCancelling}
-                >
-                  Go Back
-                </button>
-                <button
-                  className="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
-                  onClick={handleCancel}
-                  disabled={isCancelling || !cancelReason.trim()}
-                >
-                  {isCancelling ? "Cancelling..." : "Confirm Cancel"}
-                </button>
-              </div>
-            </div>
-          </section>
-        )}
       </div>
     </section>
   );

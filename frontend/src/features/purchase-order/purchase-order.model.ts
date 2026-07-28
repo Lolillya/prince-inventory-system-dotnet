@@ -87,4 +87,5 @@ export type PurchaseOrderRecord = {
 export type PurchaseOrderUpdateStatusPayload = {
   status: PurchaseOrderStatus;
   reason?: string;
+  password?: string;
 };

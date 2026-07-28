@@ -9,5 +9,8 @@ namespace backend.Dtos.PurchaseOrder
 
         // Required when Status == "CANCELLED"
         public string? Reason { get; set; }
+
+        // Required when Status == "CANCELLED" - verifies the acting user's password
+        public string? Password { get; set; }
     }
 }
