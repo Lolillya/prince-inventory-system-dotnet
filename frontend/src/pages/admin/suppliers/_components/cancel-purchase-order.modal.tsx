@@ -66,6 +66,14 @@ export const CancelPurchaseOrderModal = ({
     setIsPasswordModalOpen(true);
   };
 
+  const resetModalState = () => {
+    setIsPasswordModalOpen(false);
+    setPassword("");
+    setPasswordError("");
+    setReason("");
+    setReasonError("");
+  };
+
   const handleCancelPO = async () => {
     if (!password.trim()) {
       setPasswordError("Password is required.");
@@ -96,7 +104,13 @@ export const CancelPurchaseOrderModal = ({
           <div className="flex items-center">
             <h3>Cancel Purchase Order</h3>
 
-            <div className="p-2 rounded-md cursor-pointer duration-300 transition-all hover:bg-gray-100 ml-auto">
+            <div
+              className="p-2 rounded-md cursor-pointer duration-300 transition-all hover:bg-gray-100 ml-auto"
+              onClick={() => {
+                resetModalState();
+                onClose();
+              }}
+            >
               <X />
             </div>
           </div>
