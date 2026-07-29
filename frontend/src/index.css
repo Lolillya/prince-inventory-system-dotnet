@@ -206,10 +206,10 @@
     line-height: var(--text-sm--line-height);
   }
 
-  input:focus {
+  /* input:focus {
     outline: none;
     border: none;
-  }
+  } */
 
   textarea {
     @apply rounded-lg bg-custom-gray px-3 py-1 resize-none;
@@ -268,5 +268,9 @@
 
   .input-style-3 {
     @apply w-full drop-shadow-none bg-custom-gray font-semibold text-saltbox-gray text-xs whitespace-nowrap hover:bg-river-green/35;
+  }
+
+  .input-style-4 {
+    @apply w-full drop-shadow-none bg-white border-2 border-gray-200 font-semibold text-saltbox-gray text-xs whitespace-nowrap;
   }
 }
