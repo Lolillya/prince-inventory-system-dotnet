@@ -21,7 +21,8 @@ interface PurchaseOrderModalProps {
 export const PurchaseOrderModal = ({
   setIsPurchaseOrderModalOpen,
 }: PurchaseOrderModalProps) => {
-  const { updateMainQuantity, removeProduct } = useUnitPresetRestock();
+  const { updateMainQuantity, removeProduct, clearAll } =
+    useUnitPresetRestock();
   const { user } = useAuth();
   const { mutateAsync: createPurchaseOrder, isPending: isGenerating } =
     useCreatePurchaseOrderMutation();
@@ -88,9 +89,20 @@ export const PurchaseOrderModal = ({
         )?.price_Per_Unit || 0,
       );
 
+      const presetPath = presetLevels
+        .map((level: any) =>
+          level.conversion_Factor && level.conversion_Factor !== 1
+            ? `${level.unitOfMeasure?.uom_Name} (${level.conversion_Factor}x)`
+            : level.unitOfMeasure?.uom_Name,
+        )
+        .filter(Boolean)
+        .join(" > ");
+
       return {
         key: item.itemId || `${item.product.product_ID}-${index}`,
-        product: `${item.product.product_Name} - ${item.brand.brandName} - ${item.variant.variant_Name}`,
+        product: `${item.product.product_Name}`,
+        category: item.category?.category_Name || "",
+        presetPath,
         quantity,
         unit: mainUnitName,
         price,
@@ -201,6 +213,8 @@ export const PurchaseOrderModal = ({
 
       toast.success("Purchase order generated successfully.");
       setIsConfirmModalOpen(false);
+      setPreferredDelivery("");
+      clearAll();
       setIsPurchaseOrderModalOpen(false);
     } catch {
       // Error handling is already centralized in the service layer.
@@ -222,6 +236,8 @@ export const PurchaseOrderModal = ({
       />
     );
   }
+
+  console.log(confirmationItems);
 
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
@@ -268,9 +284,21 @@ export const PurchaseOrderModal = ({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="font-semibold">
-              Selected Products ({selectedItems.length})
-            </label>
+            <div className="flex justify-between">
+              <label className="font-semibold">
+                Selected Products ({selectedItems.length})
+              </label>
+
+              <span
+                className="flex gap-2 items-center text-red-500 hover:bg-red-50 rounded-md py-1 px-2 cursor-pointer duration-300 transition-colors"
+                onClick={clearAll}
+              >
+                <label className="font-semibold text-red-500 text-sm cursor-pointer">
+                  Clear all
+                </label>
+                <Trash2 />
+              </span>
+            </div>
 
             <div className="flex flex-col">
               <div className="grid grid-cols-[2fr_1fr_0.5fr_0.5fr_0.2fr] border-x-2 border-t-2 border-gray-300 rounded-t-md p-2 bg-gray-100 gap-2">
@@ -355,9 +383,7 @@ export const PurchaseOrderModal = ({
                       <div className="flex flex-col">
                         <div className="flex gap-1">
                           <label className="font-semibold">
-                            {item.product.product_Name} -{" "}
-                            {item.brand?.brandName} -{" "}
-                            {item.variant?.variant_Name}
+                            {item.product.product_Name}
                           </label>
                           {item.category?.category_Name ? (
                             <>
