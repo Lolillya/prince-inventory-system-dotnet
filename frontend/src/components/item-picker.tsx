@@ -9,6 +9,7 @@ import {
   useUnitPresetRestockItems,
 } from "@/features/restock/unit-preset-restock.query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Search } from "lucide-react";
 
 type ItemOption = {
   item: InventoryProductModel;
@@ -155,10 +156,15 @@ export const ItemPicker = () => {
           ...(lineItem.unit_Preset.preset_Levels ?? []),
         ].sort((a, b) => a.level - b.level);
         const presetPath = presetLevels
-          .map((level) => level.unit?.uom_Name ?? `UOM-${level.uoM_ID}`)
+          .map((level) => {
+            const uomName = level.unit?.uom_Name ?? `UOM-${level.uoM_ID}`;
+            return level.conversion_Factor && level.conversion_Factor !== 1
+              ? `${uomName} (${level.conversion_Factor}x)`
+              : uomName;
+          })
           .join(" > ");
 
-        const displayName = `${mappedItem.product.product_Name} - ${mappedItem.brand.brandName} - ${mappedItem.variant.variant_Name}`;
+        const displayName = `${mappedItem.product.product_Name}`;
         const searchValue = `${displayName} ${presetPath}`.toLowerCase();
         if (normalizedQuery && !searchValue.includes(normalizedQuery)) {
           return null;
@@ -209,10 +215,13 @@ export const ItemPicker = () => {
 
   return (
     <div className="flex flex-col w-full gap-2 relative" ref={ref}>
-      <label className="text-vesper-gray">Product</label>
-      <div className="flex w-full">
+      <span className="flex gap-1">
+        <label className="font-semibold">Products</label>
+        <label className="text-red-700">*</label>
+      </span>
+      <div className="flex w-full relative">
         <input
-          className="w-full"
+          className="input-style-4 pl-10"
           placeholder={
             selectedSupplierId ? "Search Product" : "Select supplier first"
           }
@@ -229,6 +238,8 @@ export const ItemPicker = () => {
             setOpen(true);
           }}
         />
+
+        <Search className="absolute self-center ml-3" />
       </div>
 
       {open && selectedSupplierId && (
@@ -251,12 +262,22 @@ export const ItemPicker = () => {
                     addProduct(item, presetId);
                   }}
                 >
-                  <div className="font-semibold">{option.displayName}</div>
+                  <div className="font-semibold flex gap-1 items-center">
+                    <label>{option.displayName}</label>
+                    <span>•</span>
+                    <label className="text-vesper-gray text-xs">
+                      {option.item.category.category_Name}
+                    </label>
+                  </div>
                   <div className="text-xs text-vesper-gray">
                     {option.presetPath}
                   </div>
-                  <div className="text-xs text-vesper-gray">
-                    Main unit price: {formatPrice(option.mainUnitPrice)}
+                  <div className="text-xs font-semibold">
+                    {formatPrice(option.mainUnitPrice)} /{" "}
+                    {
+                      option.item.unitPresets[0].preset.presetLevels[0]
+                        .unitOfMeasure.uom_Name
+                    }
                   </div>
 
                   {isAlreadyAdded ? (
