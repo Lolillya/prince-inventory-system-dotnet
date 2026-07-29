@@ -27,9 +27,11 @@ export const SupplierPicker = ({
     return () => window.removeEventListener("click", onClick);
   }, []);
 
-  const filtered = suppliersData?.filter((s) =>
-    String(s.company_Name).toLowerCase().includes(query.toLowerCase()),
-  );
+  const filtered = suppliersData
+    ?.filter((s) => s.is_Active)
+    .filter((s) =>
+      String(s.company_Name).toLowerCase().includes(query.toLowerCase()),
+    );
 
   return (
     <div className="flex flex-col w-full gap-1 relative" ref={ref}>
