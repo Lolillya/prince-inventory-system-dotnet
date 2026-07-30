@@ -21,12 +21,16 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface PurchasePriceModalProps {
   handlePurchasePrice: () => void;
   selectedSupplier: SupplierDataModel | null;
+  // Pre-selects a product + packaging preset when opened (e.g. from the
+  // Purchase Price Benchmark modal's "Open" action).
+  initialProductId?: number | null;
+  initialPresetId?: number | null;
 }
 
 type StatusFilter = "all" | "complete" | "partial" | "none";
@@ -34,6 +38,8 @@ type StatusFilter = "all" | "complete" | "partial" | "none";
 export const PurchasePriceModal = ({
   handlePurchasePrice,
   selectedSupplier,
+  initialProductId = null,
+  initialPresetId = null,
 }: PurchasePriceModalProps) => {
   const supplierId = selectedSupplier?.supplier_Id ?? null;
   const queryClient = useQueryClient();
@@ -92,6 +98,25 @@ export const PurchasePriceModal = ({
     const existing = savedPriceMap.get(key);
     setDraftPrice(existing !== undefined ? String(existing) : "");
   };
+
+  const didPreselect = useRef(false);
+  useEffect(() => {
+    if (didPreselect.current) return;
+    if (!initialProductId || !initialPresetId) return;
+    if (productsLoading || products.length === 0) return;
+
+    const product = products.find((p) => p.product_ID === initialProductId);
+    if (!product) return;
+    const preset = product.presets.find(
+      (p) => p.preset_ID === initialPresetId,
+    );
+    if (!preset) return;
+
+    didPreselect.current = true;
+    setExpandedProductId(initialProductId);
+    handleSelectPreset(initialProductId, initialPresetId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialProductId, initialPresetId, productsLoading, products]);
 
   const toggleGlobalPrices = (key: string) => {
     setExpandedGlobalPrices((prev) => {

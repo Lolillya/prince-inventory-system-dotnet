@@ -11,6 +11,8 @@ import {
 import { useBenchmarkOverviewQuery } from "@/features/suppliers/supplier-benchmark/get-benchmark-overview.query";
 import { useBenchmarkPresetSuppliersQuery } from "@/features/suppliers/supplier-benchmark/get-benchmark-preset-suppliers.query";
 import { BenchmarkPresetItem } from "@/features/suppliers/supplier-benchmark/supplier-benchmark.model";
+import { useSuppliersQuery } from "@/features/suppliers/supplier-get-all.query";
+import { PurchasePriceModal } from "./purchase-price.modal";
 
 interface PurchasePriceBenchmarkModalProps {
   onClose: () => void;
@@ -46,9 +48,23 @@ export const PurchasePriceBenchmarkModal = ({
   // key: "productId:presetId" — active selection that drives the right panel
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [isSellingPricesOpen, setIsSellingPricesOpen] = useState(false);
+  const [openSupplierPrice, setOpenSupplierPrice] = useState<{
+    supplierId: string;
+    productId: number;
+    presetId: number;
+  } | null>(null);
 
   const { data: products, isLoading: overviewLoading } =
     useBenchmarkOverviewQuery();
+  const { data: suppliersData } = useSuppliersQuery();
+
+  const openSupplierData = useMemo(
+    () =>
+      suppliersData?.find(
+        (s) => s.supplier_Id === openSupplierPrice?.supplierId,
+      ) ?? null,
+    [suppliersData, openSupplierPrice],
+  );
 
   const [activeProductId, activePresetId] = useMemo(() => {
     if (!activeKey) return [null, null];
@@ -443,7 +459,18 @@ export const PurchasePriceBenchmarkModal = ({
                               </span>
                             </div>
                             <div className="flex justify-center">
-                              <button className="flex w-fit items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-custom-black hover:bg-slate-50">
+                              <button
+                                className="flex w-fit items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-custom-black hover:bg-slate-50"
+                                onClick={() =>
+                                  activeProduct &&
+                                  activePreset &&
+                                  setOpenSupplierPrice({
+                                    supplierId: supplier.supplier_ID,
+                                    productId: activeProduct.product_ID,
+                                    presetId: activePreset.preset_ID,
+                                  })
+                                }
+                              >
                                 Open
                                 <ExternalLink size={12} />
                               </button>
@@ -499,6 +526,15 @@ export const PurchasePriceBenchmarkModal = ({
           )}
         </div>
       </div>
+
+      {openSupplierPrice && (
+        <PurchasePriceModal
+          selectedSupplier={openSupplierData}
+          initialProductId={openSupplierPrice.productId}
+          initialPresetId={openSupplierPrice.presetId}
+          handlePurchasePrice={() => setOpenSupplierPrice(null)}
+        />
+      )}
     </section>
   );
 };
