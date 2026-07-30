@@ -54,6 +54,7 @@ namespace backend.Controller.Inventory
                     product_ID = product.Product_ID,
                     product_Name = product.Product_Name,
                     product_Code = product.Product_Code,
+                    category_Name = product.Category != null ? product.Category.Category_Name : null,
                     presets = _db.Product_Unit_Presets
                         .Where(pup =>
                             pup.Product_ID == product.Product_ID &&
@@ -106,6 +107,7 @@ namespace backend.Controller.Inventory
                     product.product_ID,
                     product.product_Name,
                     product.product_Code,
+                    product.category_Name,
                     presets = product.presets
                         .Where(p => statsDict.ContainsKey($"{product.product_ID}:{p.preset_ID}"))
                         .Select(p =>

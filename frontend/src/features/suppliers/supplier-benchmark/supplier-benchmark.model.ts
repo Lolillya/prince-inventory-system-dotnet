@@ -28,6 +28,7 @@ export type BenchmarkProductItem = {
   product_ID: number;
   product_Name: string;
   product_Code: string;
+  category_Name: string | null;
   presets: BenchmarkPresetItem[];
 };
 
