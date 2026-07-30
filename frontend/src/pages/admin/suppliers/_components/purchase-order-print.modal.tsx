@@ -57,383 +57,279 @@ export const PurchaseOrderPreview = ({
       });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const left = 14;
-      const right = pageWidth - 14;
+      // Less margins all-around, black & white only, A4.
+      const left = 10;
+      const right = pageWidth - 10;
       const contentWidth = right - left;
+      const bottomLimit = pageHeight - 10;
       let y = 14;
+      let pageCount = 1;
 
       const pushNewPageIfNeeded = (requiredSpace = 8) => {
-        if (y + requiredSpace <= pageHeight - 14) return;
+        if (y + requiredSpace <= bottomLimit) return;
         doc.addPage();
-        y = 10;
+        pageCount += 1;
+        y = 14;
       };
-
-      const headerColor = "#1F4B76";
-      const tableHeaderColor = "#366282";
-      const gridColor = "#B8CDE1";
 
       const formatMoneyForPdf = (value: number) => {
         const amount = Number.isFinite(value) ? value : 0;
         const sign = amount < 0 ? "-" : "";
         const parts = Math.abs(amount).toFixed(2).split(".");
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return `${sign}PHP ${parts.join(".")}`;
+        return `${sign}${parts.join(".")}`;
       };
 
-      const fitFontSizeToWidth = (
-        text: string,
-        maxWidth: number,
-        initialSize = 9,
-        minSize = 6.5,
-      ) => {
-        let size = initialSize;
-        doc.setFontSize(size);
-        while (size > minSize && doc.getTextWidth(text) > maxWidth) {
-          size -= 0.5;
-          doc.setFontSize(size);
-        }
-        return size;
-      };
+      doc.setTextColor(0);
+      doc.setDrawColor(0);
 
       // HEADER SECTION
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.setTextColor(headerColor);
+      doc.setFontSize(18);
       doc.text("PRINCE", left, y);
+      doc.text("PURCHASE ORDER", right, y, { align: "right" });
+
+      const infoLabelX = right - 55;
+      let leftY = y + 8;
+      let rightY = y + 8;
 
       // Company info below PRINCE
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
-      doc.text("[Street Address]", left, y + 7);
-      doc.text("[City, State, ZIP]", left, y + 12);
-      doc.text("Contact No: XXX-XXXX", left, y + 17);
-      doc.text("Email: email@domain.com", left, y + 22);
+      doc.text(`Address: ${purchaseOrder.supplier.address}`, left, leftY);
+      leftY += 5;
+      // doc.text("City, State, ZIP", left, leftY);
+      // leftY += 5;
+      doc.text(`Contact No.: ${purchaseOrder.supplier.email}`, left, leftY);
+      leftY += 5;
+      doc.text(`Email: ${purchaseOrder.supplier.email}`, left, leftY);
+      leftY += 5;
 
-      // PURCHASE ORDER on right with underline
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.setTextColor(headerColor);
-      doc.text("PURCHASE ORDER", right, y, { align: "right" });
-      const titleWidth = doc.getTextWidth("PURCHASE ORDER");
-      doc.setDrawColor(headerColor);
-      doc.setLineWidth(0.45);
-      doc.line(right - titleWidth, y + 1.8, right, y + 1.8);
+      // P.O. #, Date, Page below PURCHASE ORDER
+      const infoRow = (label: string, value: string) => {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.text(label, infoLabelX, rightY);
+        doc.setFont("helvetica", "normal");
+        doc.text(value, right, rightY, { align: "right" });
+        rightY += 5;
+      };
 
-      // P.O. # and Date directly below PURCHASE ORDER
-      const poLabelX = right - 62;
-      const poValueX = right;
-      const poValueWidth = 50;
+      infoRow("P.O. #:", purchaseOrder.purchase_Order_Number || "-");
+      infoRow("Date:", formatDate(purchaseOrder.created_At));
+      infoRow("Page:", `${pageCount} of 1`);
 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text("P.O. #:", poLabelX, y + 10, { align: "left" });
-      doc.setFont("helvetica", "normal");
-      doc.text(purchaseOrder.purchase_Order_Number || "-", poValueX, y + 10, {
-        align: "right",
-        maxWidth: poValueWidth,
-      });
-
-      doc.setFont("helvetica", "bold");
-      doc.text("Date:", poLabelX, y + 16, { align: "left" });
-      doc.setFont("helvetica", "normal");
-      doc.text(formatDate(purchaseOrder.created_At), poValueX, y + 16, {
-        align: "right",
-        maxWidth: poValueWidth,
-      });
-
-      y += 29;
+      y = Math.max(leftY, rightY) + 3;
 
       // Header separator
-      doc.setDrawColor(tableHeaderColor);
-      doc.setLineWidth(1.1);
+      doc.setLineWidth(0.4);
       doc.line(left, y, right, y);
-
-      y += 9;
-
-      // SUPPLIER/BUYER AND DELIVER TO SECTION
-      const midColumn = left + contentWidth / 2;
-      const leftValueX = left + 24;
-      const rightValueX = right;
-      const detailRowGap = 9;
-      const detailDividerTop = y - 3;
-      const detailDividerBottom = y + detailRowGap + 3;
-
-      doc.setDrawColor("#D4DCE5");
-      doc.setLineWidth(0.2);
-      doc.line(
-        midColumn - 3,
-        detailDividerTop,
-        midColumn - 3,
-        detailDividerBottom,
-      );
-
-      // Left column: SUPPLIER and BUYER
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(headerColor);
-      doc.text("SUPPLIER:", left, y);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0);
-      doc.text(purchaseOrder.supplier.company_Name || "-", leftValueX, y);
-
-      // Right column: DELIVER TO
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(headerColor);
-      doc.text("DELIVER TO:", midColumn, y);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0);
-      doc.text(purchaseOrder.supplier.address || "-", rightValueX, y, {
-        align: "right",
-      });
-
-      doc.setDrawColor("#D4DCE5");
-      doc.setLineWidth(0.2);
-      doc.line(left, y + 2.2, midColumn - 6, y + 2.2);
-      doc.line(midColumn, y + 2.2, right, y + 2.2);
-
-      y += detailRowGap;
-
-      // BUYER row
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(headerColor);
-      doc.text("BUYER:", left, y);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0);
-      doc.text(
-        `${purchaseOrder.clerk.first_Name} ${purchaseOrder.clerk.last_Name}`,
-        leftValueX,
-        y,
-      );
-
-      // Please Deliver/Ship By row
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(headerColor);
-      doc.text("Please Deliver/Ship By:", midColumn, y);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0);
-      doc.text(formatDate(purchaseOrder.preferred_Delivery), rightValueX, y, {
-        align: "right",
-      });
 
       y += 7;
 
-      // HORIZONTAL LINE SEPARATOR
-      doc.setDrawColor(150);
-      doc.setLineWidth(0.3);
+      // SUPPLIER / REQUESTED DELIVERY / PREPARED BY / DELIVER TO
+      const midColumn = left + contentWidth * 0.52;
+      const leftValueX = left + 24;
+
+      const detailRow = (
+        leftLabel: string,
+        leftValue: string,
+        rightLabel: string,
+        rightValue: string,
+      ) => {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.text(leftLabel, left, y);
+        doc.setFont("helvetica", "normal");
+        doc.text(leftValue || "-", leftValueX, y);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(rightLabel, midColumn, y);
+        doc.setFont("helvetica", "normal");
+        doc.text(rightValue || "-", right, y, { align: "right" });
+
+        y += 6.5;
+      };
+
+      detailRow(
+        "Supplier:",
+        purchaseOrder.supplier.company_Name,
+        "Requested Delivery Date:",
+        formatDate(purchaseOrder.preferred_Delivery),
+      );
+      detailRow(
+        "Prepared By:",
+        `${purchaseOrder.clerk.first_Name} ${purchaseOrder.clerk.last_Name}`,
+        "Deliver To:",
+        purchaseOrder.supplier.address || "[Address]",
+      );
+
+      y += 2;
+
+      // Separator before table
+      doc.setLineWidth(0.4);
       doc.line(left, y, right, y);
 
       y += 6;
 
-      // TABLE SECTION - Define columns carefully
+      // TABLE SECTION - column widths (no vertical/grid lines, category excluded)
       const colWidths = {
         no: 12,
-        item: 72,
-        qty: 20,
-        unit: 18,
-        price: 26,
-        subtotal: 34,
+        qty: 22,
+        unit: 16,
+        unitPrice: 18,
+        total: 24,
       };
+      const itemWidth =
+        contentWidth -
+        (colWidths.no +
+          colWidths.qty +
+          colWidths.unit +
+          colWidths.unitPrice +
+          colWidths.total);
 
-      const colEdges = {
-        noStart: left,
-        noEnd: left + colWidths.no,
+      const colX = {
+        noCenter: left + colWidths.no / 2,
         itemStart: left + colWidths.no,
-        itemEnd: left + colWidths.no + colWidths.item,
-        qtyStart: left + colWidths.no + colWidths.item,
-        qtyEnd: left + colWidths.no + colWidths.item + colWidths.qty,
-        unitStart: left + colWidths.no + colWidths.item + colWidths.qty,
+        qtyEnd: left + colWidths.no + itemWidth + colWidths.qty,
         unitEnd:
-          left + colWidths.no + colWidths.item + colWidths.qty + colWidths.unit,
-        priceStart:
-          left + colWidths.no + colWidths.item + colWidths.qty + colWidths.unit,
-        priceEnd:
+          left + colWidths.no + itemWidth + colWidths.qty + colWidths.unit,
+        unitPriceEnd:
           left +
           colWidths.no +
-          colWidths.item +
+          itemWidth +
           colWidths.qty +
           colWidths.unit +
-          colWidths.price,
-        subtotalStart:
-          left +
-          colWidths.no +
-          colWidths.item +
-          colWidths.qty +
-          colWidths.unit +
-          colWidths.price,
-        subtotalEnd: right,
+          colWidths.unitPrice,
+        totalEnd: right,
       };
 
-      const colCenters = {
-        no: (colEdges.noStart + colEdges.noEnd) / 2,
-        qty: (colEdges.qtyStart + colEdges.qtyEnd) / 2,
-        unit: (colEdges.unitStart + colEdges.unitEnd) / 2,
-        price: (colEdges.priceStart + colEdges.priceEnd) / 2,
-        subtotal: (colEdges.subtotalStart + colEdges.subtotalEnd) / 2,
+      const colGap = 2;
+
+      const renderTableHeader = () => {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.text("No.", colX.noCenter, y, { align: "center" });
+        doc.text("Item Description", colX.itemStart, y, { align: "left" });
+        doc.text("Quantity", colX.qtyEnd - colGap, y, { align: "right" });
+        doc.text("Unit", colX.unitEnd - colWidths.unit + colGap, y, {
+          align: "left",
+        });
+        doc.text("Unit Price", colX.unitPriceEnd, y, { align: "right" });
+        doc.text("Total", colX.totalEnd, y, { align: "right" });
+        y += 3;
+        doc.setLineWidth(0.4);
+        doc.line(left, y, right, y);
+        y += 5.5;
       };
 
-      const rows = Math.max(10, purchaseOrder.line_Items.length);
-      const rowHeight = 6;
-      pushNewPageIfNeeded(8 + rows * rowHeight + 58);
+      renderTableHeader();
 
-      // Table header
-      doc.setFillColor(tableHeaderColor);
-      doc.setDrawColor(tableHeaderColor);
-      doc.rect(left, y, contentWidth, 7, "F");
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(255);
-      doc.text("No.", colCenters.no, y + 4.8, { align: "center" });
-      doc.text("Item Description", colEdges.itemStart + 2, y + 4.8, {
-        align: "left",
-      });
-      doc.text("Quantity", colCenters.qty, y + 4.8, { align: "center" });
-      doc.text("Unit", colCenters.unit, y + 4.8, { align: "center" });
-      doc.text("Price", colCenters.price, y + 4.8, { align: "center" });
-      doc.text("Subtotal", colCenters.subtotal, y + 4.8, { align: "center" });
-
-      y += 7;
-
-      // Draw rows and strong grid lines
-      const tableBottomY = y + rows * rowHeight;
-
-      // Horizontal lines
-      doc.setDrawColor(gridColor);
-      doc.setLineWidth(0.3);
-      for (let i = 0; i <= rows; i++) {
-        doc.line(left, y + i * rowHeight, right, y + i * rowHeight);
-      }
-
-      // Vertical lines for columns
-      const vLines = [
-        colEdges.noStart,
-        colEdges.noEnd,
-        colEdges.itemEnd,
-        colEdges.qtyEnd,
-        colEdges.unitEnd,
-        colEdges.priceEnd,
-        colEdges.subtotalEnd,
-      ];
-      vLines.forEach((x) => {
-        doc.line(x, y, x, tableBottomY);
-      });
-
-      // Table data
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
-      doc.setTextColor(0);
-      const cellPadding = 1.5;
-      const itemTextWidth = colWidths.item - cellPadding * 2;
-      const priceTextWidth = colWidths.price - cellPadding * 2;
-      const subtotalTextWidth = colWidths.subtotal - cellPadding * 2;
 
-      for (let i = 0; i < rows; i++) {
-        const rowY = y + i * rowHeight + 4;
+      const lineHeight = 4.2;
+      const itemTextWidth = itemWidth - 3;
 
-        if (i < purchaseOrder.line_Items.length) {
-          const line = purchaseOrder.line_Items[i];
-          const itemName = `${line.product?.product_Name || "-"} - ${line.product?.brand || "-"} - ${line.product?.variant || "-"}`;
-          const unitName = line.unit?.uom_Name ?? "-";
-          const itemText =
-            doc.splitTextToSize(itemName, itemTextWidth)[0] || "-";
+      if (purchaseOrder.line_Items.length === 0) {
+        doc.setFont("helvetica", "italic");
+        doc.text("No items listed.", left + colWidths.no, y);
+        y += lineHeight + 2;
+        doc.setLineWidth(0.2);
+        doc.line(left, y - 3, right, y - 3);
+      } else {
+        purchaseOrder.line_Items.forEach((line, i) => {
+          const itemName = [
+            line.product?.product_Name,
+            line.product?.brand,
+            line.product?.variant,
+          ]
+            .filter(Boolean)
+            .join(" - ");
+          const itemLines: string[] = doc.splitTextToSize(
+            itemName || "-",
+            itemTextWidth,
+          );
+          const rowHeight = Math.max(lineHeight, itemLines.length * lineHeight);
 
-          doc.text(String(i + 1), colCenters.no, rowY, { align: "center" });
-          doc.text(itemText, colEdges.itemStart + cellPadding, rowY, {
-            align: "left",
-          });
-          doc.text(String(line.quantity ?? 0), colCenters.qty, rowY, {
+          pushNewPageIfNeeded(rowHeight + 10);
+
+          const firstLineY = y;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          doc.text(String(i + 1), colX.noCenter, firstLineY, {
             align: "center",
           });
-          doc.text(unitName, colCenters.unit, rowY, { align: "center" });
+          doc.text(itemLines, colX.itemStart, firstLineY, { align: "left" });
+          doc.text(
+            String(line.quantity ?? 0),
+            colX.qtyEnd - colGap,
+            firstLineY,
+            {
+              align: "right",
+            },
+          );
+          doc.text(
+            line.unit?.uom_Name ?? "-",
+            colX.unitEnd - colWidths.unit + colGap,
+            firstLineY,
+            {
+              align: "left",
+            },
+          );
+          doc.text(
+            formatMoneyForPdf(Number(line.unit_Price ?? 0)),
+            colX.unitPriceEnd,
+            firstLineY,
+            { align: "right" },
+          );
+          doc.text(
+            formatMoneyForPdf(Number(line.sub_Total ?? 0)),
+            colX.totalEnd,
+            firstLineY,
+            { align: "right" },
+          );
 
-          // Format price and subtotal with ₱ symbol using explicit unicode escape
-          const priceStr = formatMoneyForPdf(Number(line.unit_Price ?? 0));
-          const subtotalStr = formatMoneyForPdf(Number(line.sub_Total ?? 0));
+          y += rowHeight + 2;
 
-          const baseFontSize = doc.getFontSize();
-
-          // Fit price text to available width, accounting for currency symbol
-          fitFontSizeToWidth(priceStr, priceTextWidth, 8.5, 6);
-          doc.text(priceStr, colCenters.price, rowY, {
-            align: "center",
-          });
-          doc.setFontSize(baseFontSize);
-
-          // Fit subtotal text to available width, accounting for currency symbol
-          fitFontSizeToWidth(subtotalStr, subtotalTextWidth, 8.5, 6);
-          doc.text(subtotalStr, colCenters.subtotal, rowY, {
-            align: "center",
-          });
-          doc.setFontSize(baseFontSize);
-        }
+          // Only a horizontal line separates rows - no vertical/grid lines.
+          doc.setLineWidth(0.2);
+          doc.line(left, y - 2, right, y - 2);
+        });
       }
 
-      y = tableBottomY + 7;
+      y += 5;
 
-      // TOTAL SECTION
-      pushNewPageIfNeeded(48);
-
+      // GRAND TOTAL
+      pushNewPageIfNeeded(20);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(0);
-
-      // Total row and boxed amount
-      const totalRowHeight = 10;
-      const totalBoxWidth = 42;
-      const totalBoxX = right - totalBoxWidth;
-      const totalValueY = y + totalRowHeight / 2 + 1.2;
-
-      doc.setDrawColor("#B8CDE1");
-      doc.setLineWidth(0.35);
-      doc.rect(left, y, contentWidth, totalRowHeight);
-
-      doc.text("Total:", totalBoxX - 6, totalValueY, { align: "right" });
-      doc.setDrawColor("#366282");
-      doc.setLineWidth(0.4);
-      doc.rect(totalBoxX, y, totalBoxWidth, totalRowHeight);
-
-      const totalStr = formatMoneyForPdf(
-        Number(purchaseOrder.grand_Total ?? 0),
+      doc.text("GRAND TOTAL:", right - 70, y);
+      doc.text(
+        `PHP ${formatMoneyForPdf(Number(purchaseOrder.grand_Total ?? 0))}`,
+        right,
+        y,
+        { align: "right" },
       );
-      doc.setFont("helvetica", "normal");
-      const totalAvailableWidth = totalBoxWidth - 4;
-      fitFontSizeToWidth(totalStr, totalAvailableWidth, 10, 8);
-      doc.text(totalStr, totalBoxX + totalBoxWidth / 2, totalValueY, {
-        align: "center",
-      });
-      doc.setFontSize(10);
 
-      y += 15;
+      y += 12;
 
-      // NOTE SECTION
-      pushNewPageIfNeeded(48);
-
-      // Note header with background
-      doc.setFillColor("#E5EFFD");
-      doc.setDrawColor("#B8CDE1");
-      doc.setLineWidth(0.3);
-      doc.rect(left, y, contentWidth, 7, "FD");
+      // NOTES SECTION - only occupies space if there is a note.
+      pushNewPageIfNeeded(20);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
-      doc.setTextColor(headerColor);
-      doc.text("NOTE", left + 2, y + 4.8);
-
-      y += 7;
-
-      // Note content box
-      doc.setDrawColor("#B8CDE1");
+      doc.text("Notes", left, y);
+      y += 2.5;
       doc.setLineWidth(0.3);
-      const noteBoxHeight = 34;
-      doc.rect(left, y, contentWidth, noteBoxHeight);
+      doc.line(left, y, right, y);
+      y += 5;
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
-      doc.setTextColor(0);
-      const noteLines = doc.splitTextToSize(
-        purchaseOrder.notes || "-",
-        contentWidth - 4,
-      );
-      doc.text(noteLines, left + 2, y + 4);
+      const noteText = purchaseOrder.notes?.trim() || "-";
+      const noteLines = doc.splitTextToSize(noteText, contentWidth);
+      pushNewPageIfNeeded(noteLines.length * lineHeight);
+      doc.text(noteLines, left, y);
 
       doc.save(`${purchaseOrder.purchase_Order_Number}.pdf`);
       toast.success("Purchase order PDF generated successfully.");
