@@ -237,8 +237,6 @@ export const PurchaseOrderModal = ({
     );
   }
 
-  console.log(confirmationItems);
-
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
       <div className="w-[1000px]  overflow-y-auto bg-white px-10 py-8 rounded-lg border shadow-lg relative flex flex-col gap-4">
