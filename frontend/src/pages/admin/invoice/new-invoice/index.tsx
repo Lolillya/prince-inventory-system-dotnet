@@ -13,8 +13,11 @@ import { UseInventoryQuery } from "@/features/inventory/get-inventory.query";
 import { InvoiceCard } from "./_components/invoice-card-copy";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { useSelectedPayloadInvoiceQuery } from "@/features/invoice/invoice-create-payload";
+import { useNavigate } from "react-router-dom";
 
 const NewInvoicePage = () => {
+  const navigate = useNavigate();
+
   // GLOBAL STATES
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
   const { data: inventoryData } = UseInventoryQuery();
@@ -36,6 +39,10 @@ const NewInvoicePage = () => {
 
   const handleClick = (data: InventoryProductModel) => {
     ADD_PRODUCT(data);
+  };
+
+  const handleBack = () => {
+    navigate("/admin/invoice");
   };
 
   const createInvoice = () => {
@@ -81,12 +88,16 @@ const NewInvoicePage = () => {
       <div className="flex flex-col min-h-0 flex-1 gap-5">
         <div className="flex flex-col gap-10">
           <div className="flex gap-3 border-b pb-5 items-center">
-            <LeftArrowIcon />
+            <div
+              className="text-sm text-gray-500 hover:text-gray-700 flex gap-2 items-center cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200 w-fit"
+              onClick={handleBack}
+            >
+              <LeftArrowIcon />
+              <span>Back</span>
+            </div>
             <span>new invoice</span>
             <span>#123456</span>
-            {/* <span>{selectedProduct?.product.product_ID}</span> */}
           </div>
-          {/* <Separator /> */}
         </div>
 
         <div className="flex flex-col gap-10 overflow-y-hidden flex-1">
