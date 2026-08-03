@@ -162,7 +162,7 @@ const NewInvoicePage = () => {
               {selectedInvoices.length === 0 ? (
                 <NoSelectedState />
               ) : (
-                <div className="flex gap-2 flex-wrap h-full overflow-y-auto flex-1 pr-2">
+                <div className="grid grid-cols-2 gap-2 h-full overflow-y-auto flex-1 pr-2 content-start auto-rows-min">
                   {selectedInvoices.map((item) => (
                     <InvoiceCard
                       product={item.data}
@@ -221,10 +221,12 @@ const NewInvoicePage = () => {
                   onClick={createInvoice}
                   disabled={!allCardsComplete}
                   className={
-                    !allCardsComplete ? "opacity-50 cursor-not-allowed" : ""
+                    !allCardsComplete
+                      ? "opacity-50 cursor-not-allowed bg-gray-300 text-gray-600"
+                      : ""
                   }
                 >
-                  create invoice
+                  confirm invoice
                 </button>
               </div>
             </div>
