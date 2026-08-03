@@ -15,6 +15,7 @@ import { InventoryProductModel } from "@/features/inventory/models/inventory.mod
 import { useSelectedPayloadInvoiceQuery } from "@/features/invoice/invoice-create-payload";
 import { useNavigate } from "react-router-dom";
 import { useInvoiceQuery } from "@/features/invoice/invoice-get-all";
+import { calculateAvailableStock } from "@/features/invoice/stock-availability";
 
 const NewInvoicePage = () => {
   const navigate = useNavigate();
@@ -60,14 +61,41 @@ const NewInvoicePage = () => {
     REMOVE_PRODUCT(itemKey);
   };
 
-  const allCardsComplete =
-    selectedInvoices.length > 0 &&
-    payloadData.every(
-      (p) =>
-        p.invoice.preset_ID !== null &&
-        p.invoice.unit_quantity > 0 &&
-        p.invoice.unit_price > 0,
+  const readyItemsCount = payloadData.filter((p) => {
+    const { invoice } = p;
+    if (
+      invoice.preset_ID === null ||
+      invoice.unit_quantity <= 0 ||
+      invoice.unit_price <= 0
+    )
+      return false;
+
+    const product = selectedInvoices.find(
+      (item) => item.itemKey === invoice.itemKey,
+    )?.data;
+    const preset = product?.unitPresets?.find(
+      (p2) => p2.preset_ID === invoice.preset_ID,
     );
+    const selectedUnitLevel =
+      preset?.preset.presetLevels.find((l) => l.uoM_ID === invoice.uom_ID)
+        ?.level ?? 1;
+
+    if (!product || !preset) return true;
+
+    const availableStock = calculateAvailableStock(
+      product,
+      preset,
+      selectedUnitLevel,
+    );
+    const isInsufficientStock =
+      invoice.unit_quantity > 0 &&
+      (availableStock === 0 || invoice.unit_quantity > availableStock);
+
+    return !isInsufficientStock || invoice.auto_Replenish;
+  }).length;
+
+  const allCardsComplete =
+    selectedInvoices.length > 0 && readyItemsCount === selectedInvoices.length;
 
   // For each invoice card, collect preset_IDs selected by OTHER cards of the same product+variant.
   const getExcludedPresetIds = (
@@ -110,7 +138,27 @@ const NewInvoicePage = () => {
         <div className="flex flex-col gap-10 overflow-y-hidden flex-1">
           <div className="flex gap-5 overflow-y-hidden flex-1">
             {/* LEFT */}
-            <div className="w-full flex">
+            <div className="w-full flex relative">
+              {selectedInvoices.length === 0 ? (
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border-border border shadow-sm px-4 py-2 bg-white">
+                  <label className="text-sm font-medium">No items added</label>
+                </div>
+              ) : (
+                <div
+                  className={`absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border shadow-sm px-4 py-2 z-10 transition-colors ${
+                    allCardsComplete
+                      ? "bg-green-50 border-green-400"
+                      : "bg-white border-border"
+                  }`}
+                >
+                  <label
+                    className={`text-sm font-medium ${allCardsComplete ? "text-green-700" : ""}`}
+                  >
+                    {readyItemsCount}/{selectedInvoices.length} product
+                    {selectedInvoices.length !== 1 ? "s" : ""} ready for invoice
+                  </label>
+                </div>
+              )}
               {selectedInvoices.length === 0 ? (
                 <NoSelectedState />
               ) : (
