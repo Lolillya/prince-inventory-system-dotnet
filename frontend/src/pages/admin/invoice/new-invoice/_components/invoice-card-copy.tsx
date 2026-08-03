@@ -5,7 +5,7 @@ import {
   useSelectedPayloadInvoiceQuery,
 } from "@/features/invoice/invoice-create-payload";
 import { XIcon } from "@/icons";
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, PhilippinePeso } from "lucide-react";
 import { useState } from "react";
 
 interface InvoiceCardProp {
@@ -381,13 +381,13 @@ export const InvoiceCard = ({
 
       <div className="flex gap-2 items-center text-xs justify-between">
         <div className="flex gap-2 items-center">
-          <div>
-            <span>{product.product.product_Name}</span>
-            <span> - </span>
-            <span>{product.brand.brandName}</span>
-            <span> - </span>
-            <span>{product.variant.variant_Name}</span>
-          </div>
+          <span className="font-semibold text-base">
+            {product.product.product_Name}
+          </span>
+          <span>•</span>
+          <span className="text-vesper-gray font-semibold">
+            {product.category?.category_Name}
+          </span>
         </div>
         <div
           onClick={onRemove}
@@ -431,7 +431,18 @@ export const InvoiceCard = ({
             <Separator orientation="horizontal" />
 
             <div className="flex flex-col w-full gap-2">
-              <label>quantity & unit</label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="font-semibold capitalize">
+                  quantity & unit
+                </label>
+
+                <span className="text-vesper-gray text-xs font-semibold flex gap-1">
+                  Available:
+                  <label className="text-primary">
+                    {calculateAvailableStock()}{" "}
+                  </label>
+                </span>
+              </div>
               <div className="flex">
                 <div className="relative w-full flex items-center justify-center">
                   <input
@@ -451,9 +462,7 @@ export const InvoiceCard = ({
                     }}
                     min="0"
                   />
-                  <label className="absolute right-2 text-vesper-gray text-xs">
-                    Available: {calculateAvailableStock()}{" "}
-                  </label>
+
                   {getMainUnitConversion() && (
                     <span className="absolute right-2 text-vesper-gray text-xs font-semibold flex gap-1">
                       {getMainUnitConversion()!.symbol}{" "}
@@ -566,7 +575,7 @@ export const InvoiceCard = ({
               )}
             </div>
             <div className="flex flex-col">
-              <span>pricing</span>
+              <span className="font-semibold capitalize">pricing</span>
               <div className="flex flex-col gap-2">
                 <div className="flex">
                   <input
@@ -579,6 +588,7 @@ export const InvoiceCard = ({
                         handlePriceChange(Number(value));
                       }
                     }}
+                    // placeholder="Enter Price..."
                   />
                   <select
                     className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
@@ -587,14 +597,14 @@ export const InvoiceCard = ({
                       handlePriceModeChange(e.target.value === "supplier")
                     }
                   >
-                    <option value="supplier">Supplier Price</option>
-                    <option value="manual">Manual</option>
+                    <option value="supplier">Standard Price</option>
+                    <option value="manual">Manual Price</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col">
+            {/* <div className="flex flex-col">
               <span>discount</span>
               <div className="flex flex-col gap-2">
                 <div className="flex">
@@ -622,22 +632,16 @@ export const InvoiceCard = ({
                   </select>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <Separator orientation="horizontal" />
 
-            <div className="flex gap-2 items-center">
-              <span>total:</span>
-              <input
-                className="shadow-none drop-shadow-none bg-custom-gray w-full"
-                disabled
-                value={calcTotal(
-                  quantity,
-                  price,
-                  discountValue,
-                  discount,
-                ).toFixed(2)}
-              />
+            <div className="flex gap-2 items-center justify-between">
+              <span className="font-semibold">Total:</span>
+              <label className="flex gap-1 text-lg font-semibold items-center">
+                <PhilippinePeso size={18} />
+                {calcTotal(quantity, price, discountValue, discount).toFixed(2)}
+              </label>
             </div>
           </>
         )}
