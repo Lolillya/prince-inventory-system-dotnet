@@ -292,15 +292,20 @@ export const InvoiceCard = ({
       levelMeta.uoM_ID,
     );
     UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, []);
+    UPDATE_INVOICE_PAYLOAD_QUANTITY(itemKey, 0);
+    UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH(itemKey, false);
+    setIsInsufficientStockExpanded(false);
 
+    const newPrice = isSupplierPriceSelected
+      ? getSupplierPrice(selectedPreset, levelNumber)
+      : price;
     if (isSupplierPriceSelected) {
-      const newPrice = getSupplierPrice(selectedPreset, levelNumber);
       UPDATE_INVOICE_PAYLOAD_PRICE(itemKey, newPrice);
-      UPDATE_INVOICE_PAYLOAD_TOTAL(
-        itemKey,
-        calcTotal(quantity, newPrice, discountValue, discount),
-      );
     }
+    UPDATE_INVOICE_PAYLOAD_TOTAL(
+      itemKey,
+      calcTotal(0, newPrice, discountValue, discount),
+    );
   };
 
   const handleQuantityChange = (newQuantity: number) => {
