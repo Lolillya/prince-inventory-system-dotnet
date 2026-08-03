@@ -71,8 +71,6 @@ export const SelectedUser = ({
   const isInternalSupplier =
     selectedSupplier.username?.toLowerCase() === "princeeducationalsupplies";
 
-  console.log(selectedSupplier);
-
   return (
     <div className="flex h-full min-h-0 w-full flex-col gap-2 p-5">
       <div className="flex items-center justify-between">
@@ -107,7 +105,10 @@ export const SelectedUser = ({
 
       <Separator />
 
-      <Tabs className="w-full" defaultValue="profile">
+      <Tabs
+        className="w-full min-h-0 flex-1"
+        defaultValue="profile"
+      >
         <TabsList className="w-full gap-2">
           <TabsTrigger
             value="profile"
@@ -259,7 +260,7 @@ export const SelectedUser = ({
             </div>
           </div>
         </TabsContent>
-        <TabsContent value="restocks">
+        <TabsContent value="restocks" className="flex min-h-0 flex-col">
           <div className="flex min-h-0 flex-1 flex-col p-2 ">
             <div className=" flex gap-3 items-center justify-between bg-wash-gray rounded-md">
               <button
