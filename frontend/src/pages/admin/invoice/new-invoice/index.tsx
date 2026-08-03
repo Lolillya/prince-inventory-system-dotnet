@@ -27,6 +27,7 @@ const NewInvoicePage = () => {
 
   // LOCAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
@@ -118,7 +119,12 @@ const NewInvoicePage = () => {
               <div className="rounded-lg shadow-lg p-5 border h-full overflow-y-hidden flex-1 flex flex-col gap-5">
                 <div className="flex flex-col gap-1">
                   <div className="relative w-full">
-                    <input placeholder="Search..." className="input-style-2" />
+                    <input
+                      placeholder="Search..."
+                      className="input-style-2"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                     <i className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <SearchIcon />
                     </i>
@@ -126,13 +132,20 @@ const NewInvoicePage = () => {
                 </div>
 
                 <div className="pr-2 flex flex-col gap-5 overflow-y-scroll flex-1 h-full">
-                  {inventoryData?.map((data, i) => (
-                    <ProductCard
-                      product={data}
-                      onClick={() => handleClick(data)}
-                      key={i}
-                    />
-                  ))}
+                  {inventoryData
+                    ?.filter((data) => data.unitPresets?.length > 0)
+                    .filter((data) =>
+                      `${data.product.product_Name} ${data.brand.brandName} ${data.variant.variant_Name}`
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()),
+                    )
+                    .map((data, i) => (
+                      <ProductCard
+                        product={data}
+                        onClick={() => handleClick(data)}
+                        key={i}
+                      />
+                    ))}
                 </div>
               </div>
 
