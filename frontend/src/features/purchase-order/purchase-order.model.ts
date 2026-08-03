@@ -34,6 +34,7 @@ export type PurchaseOrderRecord = {
     last_Name: string;
     company_Name: string;
     email: string;
+    address: string;
   };
   clerk: {
     id: string;
@@ -72,8 +73,19 @@ export type PurchaseOrderRecord = {
     } | null;
   }>;
   grand_Total: number;
+  cancellation_Info: {
+    cancelled_At: string;
+    reason: string;
+    cancelled_By: {
+      id: string;
+      first_Name: string;
+      last_Name: string;
+    } | null;
+  } | null;
 };
 
 export type PurchaseOrderUpdateStatusPayload = {
   status: PurchaseOrderStatus;
+  reason?: string;
+  password?: string;
 };

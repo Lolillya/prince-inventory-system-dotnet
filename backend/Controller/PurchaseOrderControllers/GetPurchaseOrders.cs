@@ -15,6 +15,26 @@ namespace backend.Controller.PurchaseOrderControllers
             _db = db;
         }
 
+        private static object? ProjectCancellationInfo(backend.Models.PurchaseOrderModel.PurchaseOrder po)
+        {
+            if (po.Status != "CANCELLED")
+            {
+                return null;
+            }
+
+            return new
+            {
+                cancelled_At = po.Cancelled_At,
+                reason = po.Cancellation_Reason,
+                cancelled_By = po.CancelledByUser != null ? new
+                {
+                    id = po.CancelledByUser.Id,
+                    first_Name = po.CancelledByUser.FirstName,
+                    last_Name = po.CancelledByUser.LastName,
+                } : null,
+            };
+        }
+
         private async Task<Dictionary<(int poId, int productId), int>> BuildReceivedLookupAsync(IEnumerable<int>? poIds = null)
         {
             var query = _db.RestockLineItems
@@ -87,6 +107,7 @@ namespace backend.Controller.PurchaseOrderControllers
             var purchaseOrders = await _db.PurchaseOrders
                 .Include(po => po.Supplier)
                 .Include(po => po.Clerk)
+                .Include(po => po.CancelledByUser)
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Brand)
@@ -121,6 +142,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     last_Name = po.Supplier.LastName,
                     company_Name = po.Supplier.CompanyName,
                     email = po.Supplier.Email,
+                    address = po.Supplier.Address,
                 },
                 clerk = new
                 {
@@ -132,6 +154,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     .Select(li => ProjectLineItem(li, po.Purchase_Order_ID, receivedDict))
                     .ToList(),
                 grand_Total = po.LineItems.Sum(li => li.Sub_Total),
+                cancellation_Info = ProjectCancellationInfo(po),
             });
 
             return Ok(result);
@@ -143,6 +166,7 @@ namespace backend.Controller.PurchaseOrderControllers
             var purchaseOrder = await _db.PurchaseOrders
                 .Include(po => po.Supplier)
                 .Include(po => po.Clerk)
+                .Include(po => po.CancelledByUser)
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Brand)
@@ -181,6 +205,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     last_Name = purchaseOrder.Supplier.LastName,
                     company_Name = purchaseOrder.Supplier.CompanyName,
                     email = purchaseOrder.Supplier.Email,
+                    address = purchaseOrder.Supplier.Address,
                 },
                 clerk = new
                 {
@@ -192,6 +217,7 @@ namespace backend.Controller.PurchaseOrderControllers
                     .Select(li => ProjectLineItem(li, purchaseOrderId, receivedDict))
                     .ToList(),
                 grand_Total = purchaseOrder.LineItems.Sum(li => li.Sub_Total),
+                cancellation_Info = ProjectCancellationInfo(purchaseOrder),
             };
 
             return Ok(result);
@@ -209,6 +235,7 @@ namespace backend.Controller.PurchaseOrderControllers
             var data = await _db.PurchaseOrders
                 .Include(po => po.Supplier)
                 .Include(po => po.Clerk)
+                .Include(po => po.CancelledByUser)
                 .Include(po => po.LineItems)
                     .ThenInclude(li => li.Product)
                         .ThenInclude(p => p.Brand)
@@ -223,70 +250,43 @@ namespace backend.Controller.PurchaseOrderControllers
                             .ThenInclude(pl => pl.UnitOfMeasure)
                 .Where(po => po.Supplier_ID == supplierId)
                 .OrderByDescending(po => po.CreatedAt)
-                .Select(po => new
-                {
-                    purchase_Order_ID = po.Purchase_Order_ID,
-                    purchase_Order_Number = po.Purchase_Order_Number,
-                    status = po.Status,
-                    preferred_Delivery = po.Preferred_Delivery,
-                    notes = po.Notes,
-                    created_At = po.CreatedAt,
-                    updated_At = po.UpdatedAt,
-                    supplier = new
-                    {
-                        supplier_Id = po.Supplier.Id,
-                        first_Name = po.Supplier.FirstName,
-                        last_Name = po.Supplier.LastName,
-                        company_Name = po.Supplier.CompanyName,
-                        email = po.Supplier.Email,
-                    },
-                    clerk = new
-                    {
-                        id = po.Clerk.Id,
-                        first_Name = po.Clerk.FirstName,
-                        last_Name = po.Clerk.LastName,
-                    },
-                    line_Items = po.LineItems.Select(li => new
-                    {
-                        purchase_Order_LineItem_ID = li.Purchase_Order_LineItem_ID,
-                        product_ID = li.Product_ID,
-                        preset_ID = li.Preset_ID,
-                        uom_ID = li.UOM_ID,
-                        quantity = li.Quantity,
-                        unit_Price = li.Unit_Price,
-                        sub_Total = li.Sub_Total,
-                        product = li.Product != null ? new
-                        {
-                            li.Product.Product_ID,
-                            li.Product.Product_Name,
-                            brand = li.Product.Brand != null ? li.Product.Brand.BrandName : "",
-                            variant = li.Product.Variant != null ? li.Product.Variant.Variant_Name : "",
-                        } : null,
-                        unit = li.UnitOfMeasure != null ? new
-                        {
-                            li.UnitOfMeasure.uom_ID,
-                            li.UnitOfMeasure.uom_Name,
-                        } : null,
-                        unit_Preset = li.UnitPreset != null ? new
-                        {
-                            li.UnitPreset.Preset_ID,
-                            li.UnitPreset.Preset_Code,
-                            preset_Levels = li.UnitPreset.PresetLevels
-                                .OrderBy(pl => pl.Level)
-                                .Select(pl => new
-                                {
-                                    pl.Level,
-                                    uom_Name = pl.UnitOfMeasure.uom_Name,
-                                    conversion_Factor = pl.Conversion_Factor,
-                                })
-                                .ToList(),
-                        } : null,
-                    }).ToList(),
-                    grand_Total = po.LineItems.Sum(li => li.Sub_Total),
-                })
                 .ToListAsync();
 
-            return Ok(data);
+            var poIds = data.Select(po => po.Purchase_Order_ID);
+            var receivedDict = await BuildReceivedLookupAsync(poIds);
+
+            var result = data.Select(po => new
+            {
+                purchase_Order_ID = po.Purchase_Order_ID,
+                purchase_Order_Number = po.Purchase_Order_Number,
+                status = po.Status,
+                preferred_Delivery = po.Preferred_Delivery,
+                notes = po.Notes,
+                created_At = po.CreatedAt,
+                updated_At = po.UpdatedAt,
+                supplier = new
+                {
+                    supplier_Id = po.Supplier.Id,
+                    first_Name = po.Supplier.FirstName,
+                    last_Name = po.Supplier.LastName,
+                    company_Name = po.Supplier.CompanyName,
+                    email = po.Supplier.Email,
+                    address = po.Supplier.Address,
+                },
+                clerk = new
+                {
+                    id = po.Clerk.Id,
+                    first_Name = po.Clerk.FirstName,
+                    last_Name = po.Clerk.LastName,
+                },
+                line_Items = po.LineItems
+                    .Select(li => ProjectLineItem(li, po.Purchase_Order_ID, receivedDict))
+                    .ToList(),
+                grand_Total = po.LineItems.Sum(li => li.Sub_Total),
+                cancellation_Info = ProjectCancellationInfo(po),
+            });
+
+            return Ok(result);
         }
     }
 }

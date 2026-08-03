@@ -1,7 +1,11 @@
 using backend.Data;
+using backend.Models.Inventory;
 using backend.Models.Suppliers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace backend.Controller.Suppliers
 {
@@ -24,6 +28,7 @@ namespace backend.Controller.Suppliers
         }
 
         [HttpPost("{supplierId}/purchase-prices")]
+        [Authorize]
         public async Task<IActionResult> Upsert(string supplierId, [FromBody] List<UpsertPriceDto> items)
         {
             if (items == null || items.Count == 0)
@@ -32,6 +37,9 @@ namespace backend.Controller.Suppliers
             var supplierExists = await _db.Users.AnyAsync(u => u.Id == supplierId);
             if (!supplierExists)
                 return NotFound($"Supplier '{supplierId}' was not found.");
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            var userName = User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue(JwtRegisteredClaimNames.GivenName) ?? "Unknown";
 
             foreach (var item in items)
             {
@@ -46,6 +54,17 @@ namespace backend.Controller.Suppliers
                 if (!presetExists)
                     return BadRequest($"Preset {item.Preset_ID} was not found.");
 
+                var productPresetId = await _db.Product_Unit_Presets
+                    .Where(pup => pup.Product_ID == item.Product_ID && pup.Preset_ID == item.Preset_ID)
+                    .Select(pup => (int?)pup.Product_Preset_ID)
+                    .FirstOrDefaultAsync();
+
+                var mainUnitName = await _db.Unit_Presets
+                    .Where(p => p.Preset_ID == item.Preset_ID)
+                    .Select(p => p.MainUnit != null ? p.MainUnit.uom_Name : null)
+                    .FirstOrDefaultAsync() ?? "Unit";
+                var fieldName = $"{mainUnitName} (Main)";
+
                 var existing = await _db.SupplierProductPresetPrices
                     .FirstOrDefaultAsync(sp =>
                         sp.Supplier_ID == supplierId &&
@@ -54,8 +73,24 @@ namespace backend.Controller.Suppliers
 
                 if (existing != null)
                 {
+                    var oldPrice = existing.Price_Per_Unit;
                     existing.Price_Per_Unit = item.Price_Per_Unit;
                     existing.Updated_At = DateTime.UtcNow;
+
+                    await _db.ProductAuditLogs.AddAsync(new ProductAuditLog
+                    {
+                        Product_ID = item.Product_ID,
+                        Product_Preset_ID = productPresetId,
+                        Supplier_ID = supplierId,
+                        UserId = userId,
+                        UserName = userName,
+                        Action = "SUPPLIER_PRICE_UPDATED",
+                        FieldName = fieldName,
+                        OldValue = oldPrice.ToString("F2"),
+                        NewValue = item.Price_Per_Unit.ToString("F2"),
+                        Description = $"Updated {fieldName} purchase price: {oldPrice:F2} → {item.Price_Per_Unit:F2}",
+                        CreatedAt = DateTime.UtcNow
+                    });
                 }
                 else
                 {
@@ -67,6 +102,21 @@ namespace backend.Controller.Suppliers
                         Price_Per_Unit = item.Price_Per_Unit,
                         Created_At = DateTime.UtcNow,
                         Updated_At = DateTime.UtcNow
+                    });
+
+                    await _db.ProductAuditLogs.AddAsync(new ProductAuditLog
+                    {
+                        Product_ID = item.Product_ID,
+                        Product_Preset_ID = productPresetId,
+                        Supplier_ID = supplierId,
+                        UserId = userId,
+                        UserName = userName,
+                        Action = "SUPPLIER_PRICE_SET",
+                        FieldName = fieldName,
+                        OldValue = null,
+                        NewValue = item.Price_Per_Unit.ToString("F2"),
+                        Description = $"Set {fieldName} purchase price to {item.Price_Per_Unit:F2}",
+                        CreatedAt = DateTime.UtcNow
                     });
                 }
             }

@@ -35,6 +35,12 @@ export const useUpsertSupplierPurchasePricesMutation = (supplierId: string) => {
       queryClient.invalidateQueries({
         queryKey: ["supplier-purchase-prices", supplierId],
       });
+      // Keep the Purchase Price Benchmark modal in sync when a price is
+      // changed via its "Open" action.
+      queryClient.invalidateQueries({ queryKey: ["benchmark-overview"] });
+      queryClient.invalidateQueries({
+        queryKey: ["benchmark-preset-suppliers"],
+      });
     },
   });
 };

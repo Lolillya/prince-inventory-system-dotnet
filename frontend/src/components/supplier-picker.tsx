@@ -27,16 +27,21 @@ export const SupplierPicker = ({
     return () => window.removeEventListener("click", onClick);
   }, []);
 
-  const filtered = suppliersData?.filter((s) =>
-    String(s.company_Name).toLowerCase().includes(query.toLowerCase()),
-  );
+  const filtered = suppliersData
+    ?.filter((s) => s.is_Active)
+    .filter((s) =>
+      String(s.company_Name).toLowerCase().includes(query.toLowerCase()),
+    );
 
   return (
-    <div className="flex flex-col w-full gap-2 relative" ref={ref}>
-      <label className="text-vesper-gray">Supplier</label>
+    <div className="flex flex-col w-full gap-1 relative" ref={ref}>
+      <span className="flex gap-1">
+        <label className="font-semibold">Supplier</label>
+        <label className="text-red-700">*</label>
+      </span>
       <div className="flex w-full">
         <input
-          className="w-full"
+          className="input-style-4"
           placeholder="Supplier Name"
           value={selectedSupplier?.company_Name}
           onFocus={() => setOpen(true)}
@@ -48,7 +53,7 @@ export const SupplierPicker = ({
       </div>
 
       {open && (
-        <div className="absolute w-full bg-white top-20 max-h-64 overflow-y-auto border shadow-lg rounded-lg p-3">
+        <div className="absolute w-full bg-white top-20 max-h-64 overflow-y-auto border shadow-lg rounded-lg p-3 z-50">
           {filtered && filtered.length > 0 ? (
             filtered.map((supplier, index) => (
               <div

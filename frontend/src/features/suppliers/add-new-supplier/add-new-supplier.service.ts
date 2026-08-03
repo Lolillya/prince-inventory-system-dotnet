@@ -6,7 +6,13 @@ import axios from "axios";
 
 export const AddNewSupplierService = async (payload: UserModel) => {
   // Generate random username and password
-  const generatedUsername = `${payload.firstName.toLowerCase()}.${payload.lastName.toLowerCase()}.${Math.floor(Math.random() * 10000)}`;
+  const usernameBase =
+    [payload.firstName, payload.lastName]
+      .filter(Boolean)
+      .join(".")
+      .toLowerCase() ||
+    payload.companyName.toLowerCase().replace(/\s+/g, "-");
+  const generatedUsername = `${usernameBase}.${Math.floor(Math.random() * 10000)}`;
   const generatedPassword =
     Math.random().toString(36).slice(-12) +
     Math.random().toString(36).slice(-12).toUpperCase() +

@@ -17,6 +17,12 @@ namespace backend.Models.PurchaseOrderModel
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+        // Set when the purchase order is cancelled
+        public string? Cancelled_By { get; set; } // foreign key from PersonalDetails
+        public PersonalDetails? CancelledByUser { get; set; }
+        public DateTime? Cancelled_At { get; set; }
+        public string? Cancellation_Reason { get; set; }
+
         public PersonalDetails Supplier { get; set; } = null!;
         public PersonalDetails Clerk { get; set; } = null!;
         public ICollection<PurchaseOrderLineItem> LineItems { get; set; } = new List<PurchaseOrderLineItem>();

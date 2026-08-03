@@ -45,6 +45,7 @@ namespace backend.Controller.Suppliers
                         address = supplier.Address,
                         notes = supplier.Notes,
                         username = supplier.UserName,
+                        is_Active = supplier.IsActive,
 
                         restocks = _db.RestockBatches
                             .Where(rb => rb.Supplier_ID == supplier.Id)
@@ -64,6 +65,10 @@ namespace backend.Controller.Suppliers
                                     rb.Restock.Status,
                                     rb.Restock.CreatedAt,
                                     rb.Restock.UpdatedAt,
+                                    purchase_Order_Number = rb.Restock.PurchaseOrder != null
+                                        ? rb.Restock.PurchaseOrder.Purchase_Order_Number
+                                        : null,
+                                    rb.Restock.Restock_Invoice_Reference,
                                 },
 
                                 line_Items = rb.RestockLineItems.Select(rli => new

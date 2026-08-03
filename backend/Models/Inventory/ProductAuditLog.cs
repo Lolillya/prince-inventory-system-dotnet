@@ -13,6 +13,9 @@ namespace backend.Models.Inventory
 
         public int? Product_Preset_ID { get; set; }
 
+        // Set when this log entry belongs to a supplier-specific purchase price change
+        public string? Supplier_ID { get; set; }
+
         public string UserId { get; set; } = string.Empty;
 
         // Snapshot of username at time of change — preserved even if user is deleted

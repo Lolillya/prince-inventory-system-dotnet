@@ -10,7 +10,6 @@ import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 import { InfoCard } from "./_components/info-card";
 import { SupplierDataModel } from "@/features/suppliers/get-all-suppliers.model";
 import { SelectedUser } from "./_components/selected-user";
-import { toast } from "sonner";
 import { Scale, ShoppingCart } from "lucide-react";
 import { PurchasePriceModal } from "./_components/purchase-price.modal";
 import { PurchaseOrderModal } from "./_components/purchase-order.modal";
@@ -55,11 +54,6 @@ const SuppliersPage = () => {
   };
 
   const handleDelete = (data: SupplierDataModel) => {
-    if (data.restocks.length > 0) {
-      toast.error("Cannot delete supplier with existing restocks");
-      return;
-    }
-
     setUserToDelete(data);
     setIsConfirmRemoveModalOpen(true);
   };
@@ -143,7 +137,7 @@ const SuppliersPage = () => {
       {isConfirmRemoveModalOpen && userToDelete && (
         <ConfirmRemoveModal
           setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
-          userId={userToDelete.supplier_Id}
+          supplier={userToDelete}
         />
       )}
       <div className="w-full mb-8">

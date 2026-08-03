@@ -71,6 +71,7 @@ const RestockPage = () => {
       address: "",
       restocks: [],
       total_Restock_Value: 0,
+      is_Active: true,
     };
 
     try {

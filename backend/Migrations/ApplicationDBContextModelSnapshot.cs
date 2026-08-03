@@ -1078,6 +1078,9 @@ namespace backend.Migrations
                     b.Property<int?>("Product_Preset_ID")
                         .HasColumnType("int");
 
+                    b.Property<string>("Supplier_ID")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1500,6 +1503,9 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1564,6 +1570,7 @@ namespace backend.Migrations
                             Email = "admin@prince.edu",
                             EmailConfirmed = true,
                             FirstName = "System",
+                            IsActive = true,
                             LastName = "Administrator",
                             LockoutEnabled = true,
                             NormalizedEmail = "ADMIN@PRINCE.EDU",
@@ -1586,6 +1593,7 @@ namespace backend.Migrations
                             Email = "employee@prince.edu",
                             EmailConfirmed = true,
                             FirstName = "John",
+                            IsActive = true,
                             LastName = "Doe",
                             LockoutEnabled = true,
                             NormalizedEmail = "EMPLOYEE@PRINCE.EDU",
@@ -1608,6 +1616,7 @@ namespace backend.Migrations
                             Email = "supplier@example.com",
                             EmailConfirmed = true,
                             FirstName = "Jane",
+                            IsActive = true,
                             LastName = "Smith",
                             LockoutEnabled = true,
                             NormalizedEmail = "SUPPLIER@EXAMPLE.COM",
@@ -1630,6 +1639,7 @@ namespace backend.Migrations
                             Email = "customer@example.com",
                             EmailConfirmed = true,
                             FirstName = "Robert",
+                            IsActive = true,
                             LastName = "Johnson",
                             LockoutEnabled = true,
                             NormalizedEmail = "CUSTOMER@EXAMPLE.COM",
@@ -1652,6 +1662,7 @@ namespace backend.Migrations
                             Email = "internal@princeeducationalsupplies.com",
                             EmailConfirmed = true,
                             FirstName = "Prince",
+                            IsActive = true,
                             LastName = "Educational",
                             LockoutEnabled = false,
                             NormalizedEmail = "INTERNAL@PRINCEEDUCATIONALSUPPLIES.COM",
@@ -1673,6 +1684,15 @@ namespace backend.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Purchase_Order_ID"));
+
+                    b.Property<string>("Cancellation_Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Cancelled_At")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Cancelled_By")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -1704,6 +1724,8 @@ namespace backend.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Purchase_Order_ID");
+
+                    b.HasIndex("Cancelled_By");
 
                     b.HasIndex("Purchase_Order_Clerk");
 
@@ -2670,6 +2692,11 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Models.PurchaseOrderModel.PurchaseOrder", b =>
                 {
+                    b.HasOne("backend.Models.PersonalDetails", "CancelledByUser")
+                        .WithMany()
+                        .HasForeignKey("Cancelled_By")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("backend.Models.PersonalDetails", "Clerk")
                         .WithMany()
                         .HasForeignKey("Purchase_Order_Clerk")
@@ -2681,6 +2708,8 @@ namespace backend.Migrations
                         .HasForeignKey("Supplier_ID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("CancelledByUser");
 
                     b.Navigation("Clerk");
 

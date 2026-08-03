@@ -1,9 +1,12 @@
 using backend.Data;
 using backend.Dtos.PurchaseOrder;
+using backend.Models;
 using backend.Models.Inventory;
 using backend.Models.Unit;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace backend.Controller.PurchaseOrderControllers
 {
@@ -12,10 +15,12 @@ namespace backend.Controller.PurchaseOrderControllers
     public class UpdatePurchaseOrderStatus : ControllerBase
     {
         private readonly ApplicationDBContext _db;
+        private readonly UserManager<PersonalDetails> _userManager;
 
-        public UpdatePurchaseOrderStatus(ApplicationDBContext db)
+        public UpdatePurchaseOrderStatus(ApplicationDBContext db, UserManager<PersonalDetails> userManager)
         {
             _db = db;
+            _userManager = userManager;
         }
 
         [HttpPut("{purchaseOrderId:int}/status")]
@@ -33,6 +38,16 @@ namespace backend.Controller.PurchaseOrderControllers
                 return BadRequest("Status must be NOT_DELIVERED, PARTIAL, FULLY_DELIVERED, or CANCELLED.");
             }
 
+            if (normalizedStatus == "CANCELLED" && string.IsNullOrWhiteSpace(dto.Reason))
+            {
+                return BadRequest("A reason is required to cancel a purchase order.");
+            }
+
+            if (normalizedStatus == "CANCELLED" && string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return BadRequest("Password is required to cancel a purchase order.");
+            }
+
             var purchaseOrder = await _db.PurchaseOrders
                 .Include(po => po.LineItems)
                 .FirstOrDefaultAsync(po => po.Purchase_Order_ID == purchaseOrderId);
@@ -47,12 +62,46 @@ namespace backend.Controller.PurchaseOrderControllers
                 return BadRequest("Purchase order is already FULLY_DELIVERED.");
             }
 
+            if (purchaseOrder.Status == "CANCELLED")
+            {
+                return BadRequest("Purchase order is already CANCELLED.");
+            }
+
+            if (normalizedStatus == "CANCELLED")
+            {
+                var callerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(callerId))
+                {
+                    return Unauthorized("User is not authenticated.");
+                }
+
+                var callerUser = await _userManager.FindByIdAsync(callerId);
+                if (callerUser == null)
+                {
+                    return Unauthorized("User account not found.");
+                }
+
+                var isPasswordValid = await _userManager.CheckPasswordAsync(callerUser, dto.Password!);
+                if (!isPasswordValid)
+                {
+                    return Unauthorized("Invalid password.");
+                }
+            }
+
             await using var transaction = await _db.Database.BeginTransactionAsync();
             try
             {
                 if (normalizedStatus == "FULLY_DELIVERED" && purchaseOrder.Status != "FULLY_DELIVERED")
                 {
                     await ApplyInventoryAndPresetUpdates(purchaseOrder.LineItems);
+                }
+
+                if (normalizedStatus == "CANCELLED")
+                {
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                    purchaseOrder.Cancelled_By = userId;
+                    purchaseOrder.Cancelled_At = DateTime.UtcNow;
+                    purchaseOrder.Cancellation_Reason = dto.Reason!.Trim();
                 }
 
                 purchaseOrder.Status = normalizedStatus!;

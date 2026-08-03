@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using backend.Data;
 using backend.Dtos.Account;
 using backend.Dtos.User;
 using backend.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controller.Users.EditUserById
 {
     [ApiController]
+    [Authorize]
     [Route("api/edit-user-by-id")]
     public class EditUserById : ControllerBase
     {
@@ -45,6 +48,33 @@ namespace backend.Controller.Users.EditUserById
 
             try
             {
+                // Supplier edits re-authenticate the currently logged-in user via password
+                if (payload.RoleID == 3)
+                {
+                    if (string.IsNullOrWhiteSpace(payload.Password))
+                    {
+                        return BadRequest("Password is required to edit a supplier.");
+                    }
+
+                    var requestingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (string.IsNullOrWhiteSpace(requestingUserId))
+                    {
+                        return Unauthorized("User is not authenticated.");
+                    }
+
+                    var requestingUser = await _userManager.FindByIdAsync(requestingUserId);
+                    if (requestingUser == null)
+                    {
+                        return Unauthorized("User account not found.");
+                    }
+
+                    var isPasswordValid = await _userManager.CheckPasswordAsync(requestingUser, payload.Password);
+                    if (!isPasswordValid)
+                    {
+                        return Unauthorized("Invalid password.");
+                    }
+                }
+
                 await using var transaction = await _db.Database.BeginTransactionAsync();
                 var userId = payload.Id;
                 var user = await _db.Users.FindAsync(userId);

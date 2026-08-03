@@ -10,5 +10,6 @@ export const EditSupplierService = async (payload: UserModel) => {
     return data;
   } catch (err) {
     handleError(err);
+    throw err;
   }
 };

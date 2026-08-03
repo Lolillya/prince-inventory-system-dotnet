@@ -8,7 +8,9 @@ import {
   useUnitPresetRestock,
   useUnitPresetRestockItems,
 } from "@/features/restock/unit-preset-restock.query";
+import { useSupplierPurchasePricesQuery } from "@/features/suppliers/supplier-purchase-prices/get-supplier-purchase-prices.query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Search } from "lucide-react";
 
 type ItemOption = {
   item: InventoryProductModel;
@@ -17,6 +19,7 @@ type ItemOption = {
   displayName: string;
   presetPath: string;
   mainUnitPrice: number;
+  hasPurchasePrice: boolean;
 };
 
 export const ItemPicker = () => {
@@ -36,6 +39,20 @@ export const ItemPicker = () => {
       ?.supplier_Id ??
     (selectedSupplier as { supplier_Id?: string; id?: string } | undefined)?.id;
 
+  const { data: supplierPurchasePrices = [] } = useSupplierPurchasePricesQuery(
+    selectedSupplierId ?? null,
+  );
+
+  // Configured purchase prices are the source of truth for pricing — restock
+  // history can be stale or missing entirely for a product/preset pair.
+  const purchasePriceByProductPreset = useMemo(() => {
+    const map = new Map<string, number>();
+    supplierPurchasePrices.forEach((price) => {
+      map.set(`${price.product_ID}:${price.preset_ID}`, price.price_Per_Unit);
+    });
+    return map;
+  }, [supplierPurchasePrices]);
+
   useEffect(() => {
     setSelectedItemLabel("");
     setOpen(false);
@@ -54,6 +71,7 @@ export const ItemPicker = () => {
 
   const mapLineItemToInventoryProduct = (
     lineItem: RestockLineItemModel,
+    currentMainUnitPrice?: number,
   ): InventoryProductModel | null => {
     if (!lineItem.product || !lineItem.unit_Preset) return null;
 
@@ -78,9 +96,34 @@ export const ItemPicker = () => {
         0,
       uoM_ID: pricing.uoM_ID,
       unitName: pricing.unit?.uom_Name ?? `UOM-${pricing.uoM_ID}`,
-      price_Per_Unit: pricing.price_Per_Unit,
+      // The configured supplier purchase price (if any) always overrides the
+      // price captured on a past restock, which can be stale or missing.
+      price_Per_Unit:
+        currentMainUnitPrice !== undefined &&
+        pricing.uoM_ID === lineItem.unit_Preset!.main_Unit_ID
+          ? currentMainUnitPrice
+          : pricing.price_Per_Unit,
       created_At: "",
     }));
+
+    if (
+      currentMainUnitPrice !== undefined &&
+      !presetPricing.some(
+        (p) => p.uoM_ID === lineItem.unit_Preset!.main_Unit_ID,
+      )
+    ) {
+      const mainLevel = presetLevels.find(
+        (level) => level.uoM_ID === lineItem.unit_Preset!.main_Unit_ID,
+      );
+      presetPricing.push({
+        pricing_ID: 0,
+        level: mainLevel?.level ?? 0,
+        uoM_ID: lineItem.unit_Preset!.main_Unit_ID,
+        unitName: mainLevel?.unitOfMeasure.uom_Name ?? "",
+        price_Per_Unit: currentMainUnitPrice,
+        created_At: "",
+      });
+    }
 
     return {
       product: {
@@ -148,17 +191,29 @@ export const ItemPicker = () => {
       .map((lineItem) => {
         if (!lineItem.product || !lineItem.unit_Preset) return null;
 
-        const mappedItem = mapLineItemToInventoryProduct(lineItem);
+        const currentMainUnitPrice = purchasePriceByProductPreset.get(
+          `${lineItem.product.product_ID}:${lineItem.unit_Preset.preset_ID}`,
+        );
+
+        const mappedItem = mapLineItemToInventoryProduct(
+          lineItem,
+          currentMainUnitPrice,
+        );
         if (!mappedItem) return null;
 
         const presetLevels = [
           ...(lineItem.unit_Preset.preset_Levels ?? []),
         ].sort((a, b) => a.level - b.level);
         const presetPath = presetLevels
-          .map((level) => level.unit?.uom_Name ?? `UOM-${level.uoM_ID}`)
+          .map((level) => {
+            const uomName = level.unit?.uom_Name ?? `UOM-${level.uoM_ID}`;
+            return level.conversion_Factor && level.conversion_Factor !== 1
+              ? `${uomName} (${level.conversion_Factor}x)`
+              : uomName;
+          })
           .join(" > ");
 
-        const displayName = `${mappedItem.product.product_Name} - ${mappedItem.brand.brandName} - ${mappedItem.variant.variant_Name}`;
+        const displayName = `${mappedItem.product.product_Name}`;
         const searchValue = `${displayName} ${presetPath}`.toLowerCase();
         if (normalizedQuery && !searchValue.includes(normalizedQuery)) {
           return null;
@@ -170,7 +225,8 @@ export const ItemPicker = () => {
           key: `${mappedItem.product.product_ID}-${lineItem.unit_Preset.preset_ID}`,
           displayName,
           presetPath,
-          mainUnitPrice: lineItem.base_Unit_Price ?? 0,
+          mainUnitPrice: currentMainUnitPrice ?? lineItem.base_Unit_Price ?? 0,
+          hasPurchasePrice: currentMainUnitPrice !== undefined,
         } as ItemOption;
       })
       .filter((option): option is ItemOption => option !== null);
@@ -182,8 +238,16 @@ export const ItemPicker = () => {
       }
     });
 
-    return Array.from(distinctByProductPreset.values());
-  }, [supplierData, query, selectedSupplierId]);
+    // Items with a configured supplier purchase price take priority over
+    // those still missing one.
+    return Array.from(distinctByProductPreset.values()).sort((a, b) =>
+      a.hasPurchasePrice === b.hasPurchasePrice
+        ? 0
+        : a.hasPurchasePrice
+          ? -1
+          : 1,
+    );
+  }, [supplierData, query, selectedSupplierId, purchasePriceByProductPreset]);
 
   const selectedIds = useMemo(
     () =>
@@ -209,10 +273,13 @@ export const ItemPicker = () => {
 
   return (
     <div className="flex flex-col w-full gap-2 relative" ref={ref}>
-      <label className="text-vesper-gray">Product</label>
-      <div className="flex w-full">
+      <span className="flex gap-1">
+        <label className="font-semibold">Products</label>
+        <label className="text-red-700">*</label>
+      </span>
+      <div className="flex w-full relative">
         <input
-          className="w-full"
+          className="input-style-4 pl-10"
           placeholder={
             selectedSupplierId ? "Search Product" : "Select supplier first"
           }
@@ -229,6 +296,8 @@ export const ItemPicker = () => {
             setOpen(true);
           }}
         />
+
+        <Search className="absolute self-center ml-3" />
       </div>
 
       {open && selectedSupplierId && (
@@ -239,25 +308,48 @@ export const ItemPicker = () => {
               const isAlreadyAdded = selectedIds.has(
                 `${item.product.product_ID}-${presetId}`,
               );
+              const isDisabled = !option.hasPurchasePrice;
 
               return (
                 <div
                   key={option.key}
-                  className="p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
+                  className={`p-2 rounded-lg ${
+                    isDisabled
+                      ? "opacity-60 cursor-not-allowed"
+                      : "hover:bg-gray-100 cursor-pointer"
+                  }`}
                   onClick={() => {
+                    if (isDisabled) return;
                     setOpen(false);
                     setQuery("");
                     setSelectedItemLabel(option.displayName);
                     addProduct(item, presetId);
                   }}
                 >
-                  <div className="font-semibold">{option.displayName}</div>
+                  <div className="font-semibold flex gap-1 items-center">
+                    <label>{option.displayName}</label>
+                    <span>•</span>
+                    <label className="text-vesper-gray text-xs">
+                      {option.item.category.category_Name}
+                    </label>
+                  </div>
                   <div className="text-xs text-vesper-gray">
                     {option.presetPath}
                   </div>
-                  <div className="text-xs text-vesper-gray">
-                    Main unit price: {formatPrice(option.mainUnitPrice)}
-                  </div>
+
+                  {isDisabled ? (
+                    <div className="text-xs text-red-600 mt-1">
+                      No supplier price set up yet
+                    </div>
+                  ) : (
+                    <div className="text-xs font-semibold">
+                      {formatPrice(option.mainUnitPrice)} /{" "}
+                      {
+                        option.item.unitPresets[0].preset.presetLevels[0]
+                          .unitOfMeasure.uom_Name
+                      }
+                    </div>
+                  )}
 
                   {isAlreadyAdded ? (
                     <div className="text-xs text-blue-600 mt-1">

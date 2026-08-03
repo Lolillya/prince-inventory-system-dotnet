@@ -14,6 +14,7 @@ namespace backend.Models
         public string CompanyName { get; set; } = "";
         public string Notes { get; set; } = "";
         public string Address { get; set; } = "";
+        public bool IsActive { get; set; } = true;
 
         // Navigation property for favorites
         public ICollection<UserInventoryFavorites> FavoriteInventoryItems { get; set; } = new List<UserInventoryFavorites>();
