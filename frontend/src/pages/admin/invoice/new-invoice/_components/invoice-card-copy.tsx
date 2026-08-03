@@ -134,6 +134,37 @@ export const InvoiceCard = ({
   const calculateDeficit = (): number =>
     Math.max(0, quantity - calculateAvailableStock());
 
+  const getMainUnitConversion = (): {
+    symbol: "=" | "≈";
+    value: string;
+    unitName: string;
+  } | null => {
+    if (!selectedPreset || quantity <= 0 || selectedUnitLevel === 1)
+      return null;
+
+    const sortedLevels = [...selectedPreset.preset.presetLevels].sort(
+      (a, b) => a.level - b.level,
+    );
+    const mainUnit = sortedLevels.find((l) => l.level === 1);
+    if (!mainUnit) return null;
+
+    let factor = 1;
+    for (const level of sortedLevels) {
+      if (level.level === 1) continue;
+      if (level.level > selectedUnitLevel) break;
+      factor *= level.conversion_Factor;
+    }
+
+    const mainQty = quantity / factor;
+    const hasRemainder = Math.abs(mainQty - Math.round(mainQty)) > 1e-9;
+
+    return {
+      symbol: hasRemainder ? "≈" : "=",
+      value: hasRemainder ? mainQty.toFixed(2) : String(Math.round(mainQty)),
+      unitName: mainUnit.unitOfMeasure.uom_Name,
+    };
+  };
+
   const getCompatiblePresetsWithStock = () => {
     if (!selectedPreset) return [];
 
@@ -405,10 +436,16 @@ export const InvoiceCard = ({
                 <div className="relative w-full flex items-center justify-center">
                   <input
                     className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
-                    value={quantity}
+                    placeholder="Enter quantity..."
+                    value={quantity === 0 ? "" : quantity}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                      if (value === "") {
+                        handleQuantityChange(0);
+                      } else if (
+                        /^\d*\.?\d*$/.test(value) &&
+                        Number(value) > 0
+                      ) {
                         handleQuantityChange(Number(value));
                       }
                     }}
@@ -417,6 +454,13 @@ export const InvoiceCard = ({
                   <label className="absolute right-2 text-vesper-gray text-xs">
                     Available: {calculateAvailableStock()}{" "}
                   </label>
+                  {getMainUnitConversion() && (
+                    <span className="absolute right-2 text-vesper-gray text-xs font-semibold flex gap-1">
+                      {getMainUnitConversion()!.symbol}{" "}
+                      {getMainUnitConversion()!.value}{" "}
+                      {getMainUnitConversion()!.unitName}
+                    </span>
+                  )}
                 </div>
                 <select
                   className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6 outline:none"
