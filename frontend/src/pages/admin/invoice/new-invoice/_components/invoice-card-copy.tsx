@@ -6,7 +6,14 @@ import {
 } from "@/features/invoice/invoice-create-payload";
 import { useAutoReplenishPreviewQuery } from "@/features/restock/auto-replenish-preview.query";
 import { XIcon } from "@/icons";
-import { ChevronDown, Info, PhilippinePeso, TriangleAlert } from "lucide-react";
+import {
+  Bot,
+  ChevronDown,
+  CircleCheck,
+  Info,
+  PhilippinePeso,
+  TriangleAlert,
+} from "lucide-react";
 import { useState } from "react";
 
 interface InvoiceCardProp {
@@ -357,7 +364,11 @@ export const InvoiceCard = ({
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
-  const isCardComplete = selectedPresetId !== null && quantity > 0 && price > 0;
+  const isCardComplete =
+    selectedPresetId !== null &&
+    quantity > 0 &&
+    price > 0 &&
+    (!isInsufficientStock || isAutoReplenish);
 
   return (
     <div
@@ -369,7 +380,7 @@ export const InvoiceCard = ({
       <div className="absolute -top-1">
         {isCardComplete ? (
           <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
-            Complete
+            Ready
           </div>
         ) : (
           <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
@@ -526,22 +537,43 @@ export const InvoiceCard = ({
 
                 {isInsufficientStock && (
                   <div
-                    className="flex items-center p-2 rounded-b-md bg-red-100 border-2 border-red-400 cursor-pointer select-none"
+                    className={`flex items-center p-2 rounded-b-md border-2 cursor-pointer select-none ${
+                      isAutoReplenish
+                        ? "bg-green-100 border-green-400"
+                        : "bg-red-100 border-red-400"
+                    }`}
                     onClick={handleToggleInsufficientStockExpanded}
                   >
                     <div className="flex gap-2 items-center">
-                      <TriangleAlert className="text-red-600" size={18} />
-                      <label className="text-red-600 font-semibold cursor-pointer">
-                        {isInsufficientStockExpanded
-                          ? "Stock Resolution Required"
-                          : "Insufficient Stock"}
+                      {isAutoReplenish ? (
+                        <CircleCheck className="text-green-600" size={18} />
+                      ) : (
+                        <TriangleAlert className="text-red-600" size={18} />
+                      )}
+                      <label
+                        className={`font-semibold cursor-pointer ${
+                          isAutoReplenish ? "text-green-600" : "text-red-600"
+                        }`}
+                      >
+                        {isAutoReplenish
+                          ? "Stock Deficit Resolved"
+                          : isInsufficientStockExpanded
+                            ? "Stock Resolution Required"
+                            : "Insufficient Stock"}
                       </label>
+                      {isAutoReplenish && !isInsufficientStockExpanded && (
+                        <Bot className="text-indigo-600" size={14} />
+                      )}
                     </div>
 
                     {!isInsufficientStockExpanded && (
                       <span className="flex gap-1 items-center ml-auto pr-12">
-                        <label>Deficit:</label>
-                        <label className="text-red-600 font-semibold">
+                        <label>{isAutoReplenish ? "Covered:" : "Deficit:"}</label>
+                        <label
+                          className={`font-semibold ${
+                            isAutoReplenish ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
                           {calculateDeficit()} {selectedUnitName}
                         </label>
                       </span>
@@ -549,9 +581,9 @@ export const InvoiceCard = ({
 
                     <ChevronDown
                       size={18}
-                      className={`ml-auto transition-transform text-red-600 ${
-                        isInsufficientStockExpanded ? "rotate-180" : ""
-                      }`}
+                      className={`ml-auto transition-transform ${
+                        isAutoReplenish ? "text-green-600" : "text-red-600"
+                      } ${isInsufficientStockExpanded ? "rotate-180" : ""}`}
                     />
                   </div>
                 )}
@@ -635,7 +667,11 @@ export const InvoiceCard = ({
               </div>
 
               {isInsufficientStock && isInsufficientStockExpanded && (
-                <div className="absolute inset-0 z-20 bg-white border-2 border-red-400 rounded-md shadow-lg p-3 flex flex-col gap-3  h-fit">
+                <div
+                  className={`absolute inset-0 z-20 bg-white border-2 rounded-md shadow-lg p-3 flex flex-col gap-3 h-fit ${
+                    isAutoReplenish ? "border-green-400" : "border-red-400"
+                  }`}
+                >
                   <span className="text-vesper-gray">
                     The requested quantity exceeds the available stock.
                   </span>
