@@ -61,6 +61,9 @@ export const InvoiceCard = ({
     useState<boolean>(true);
   const [isInsufficientStockExpanded, setIsInsufficientStockExpanded] =
     useState<boolean>(false);
+  const [manualPriceInput, setManualPriceInput] = useState<string>(
+    price ? String(price) : "",
+  );
 
   const {
     UPDATE_INVOICE_PAYLOAD_PRESET,
@@ -269,6 +272,9 @@ export const InvoiceCard = ({
 
   const handlePriceModeChange = (isSupplier: boolean) => {
     setIsSupplierPriceSelected(isSupplier);
+    if (!isSupplier) {
+      setManualPriceInput(price ? String(price) : "");
+    }
     if (isSupplier) {
       const newPrice = getSupplierPrice();
       UPDATE_INVOICE_PAYLOAD_PRICE(itemKey, newPrice);
@@ -535,11 +541,14 @@ export const InvoiceCard = ({
                     <input
                       className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
                       disabled={isSupplierPriceSelected}
-                      value={price || ""}
+                      value={
+                        isSupplierPriceSelected ? price || "" : manualPriceInput
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
-                        if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                          handlePriceChange(Number(value));
+                        if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
+                          setManualPriceInput(value);
+                          handlePriceChange(value === "" ? 0 : Number(value));
                         }
                       }}
                     />
