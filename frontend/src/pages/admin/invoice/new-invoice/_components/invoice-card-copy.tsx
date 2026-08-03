@@ -5,6 +5,10 @@ import {
   useSelectedPayloadInvoiceQuery,
 } from "@/features/invoice/invoice-create-payload";
 import { useAutoReplenishPreviewQuery } from "@/features/restock/auto-replenish-preview.query";
+import {
+  calculateAvailableStock as calcAvailableStock,
+  getAvailableStockBreakdown,
+} from "@/features/invoice/stock-availability";
 import { XIcon } from "@/icons";
 import {
   Bot,
@@ -115,88 +119,11 @@ export const InvoiceCard = ({
     return "🟢";
   };
 
-  // Cumulative conversion factor to go FROM a given level's unit TO the
-  // target (selected) level's unit. Each presetLevel's conversion_Factor
-  // expresses how many units of that level make up one unit of the
-  // previous (larger) level, e.g. BOTTLE(1x) -> BOX(15x) -> TUBE(40x).
-  const getCumulativeFactor = (
-    fromLevel: number,
-    toLevel: number,
-    levels: (typeof selectedPreset extends undefined
-      ? never
-      : NonNullable<typeof selectedPreset>)["preset"]["presetLevels"],
-  ): number => {
-    if (fromLevel === toLevel) return 1;
-    let factor = 1;
-    for (const level of levels) {
-      if (level.level <= fromLevel) continue;
-      if (level.level > toLevel) break;
-      factor *= level.conversion_Factor;
-    }
-    return factor;
-  };
+  const getAvailableBreakdown = () =>
+    getAvailableStockBreakdown(product, selectedPreset, selectedUnitLevel);
 
-  // Available = the remaining/leftover quantity at EVERY level from the
-  // base unit up to (and including) the currently selected unit, each
-  // converted into the selected unit and summed together. This correctly
-  // accounts for leftovers of intermediate units instead of only
-  // converting the top-level (level 1) quantity directly.
-  const getAvailableBreakdown = (): Array<{
-    level: number;
-    unitName: string;
-    remaining: number;
-    converted: number;
-  }> => {
-    if (!selectedPreset) return [];
-
-    const presetQuantities = (selectedPreset as any).presetQuantities as
-      | Array<{ level: number; remaining_Quantity?: number }>
-      | undefined;
-
-    const presetLevels = [...selectedPreset.preset.presetLevels].sort(
-      (a, b) => a.level - b.level,
-    );
-
-    const breakdown: Array<{
-      level: number;
-      unitName: string;
-      remaining: number;
-      converted: number;
-    }> = [];
-
-    for (const level of presetLevels) {
-      if (level.level > selectedUnitLevel) break;
-
-      const remaining =
-        (level.level === 1 && !presetQuantities?.length
-          ? (product.product.quantity ?? 0)
-          : (presetQuantities?.find((q) => q.level === level.level)
-              ?.remaining_Quantity ?? 0)) || 0;
-
-      if (remaining <= 0) continue;
-
-      const factor = getCumulativeFactor(
-        level.level,
-        selectedUnitLevel,
-        presetLevels,
-      );
-
-      breakdown.push({
-        level: level.level,
-        unitName: level.unitOfMeasure.uom_Name,
-        remaining,
-        converted: remaining * factor,
-      });
-    }
-
-    return breakdown;
-  };
-
-  const calculateAvailableStock = (): number => {
-    const breakdown = getAvailableBreakdown();
-    const total = breakdown.reduce((sum, b) => sum + b.converted, 0);
-    return Math.floor(total);
-  };
+  const calculateAvailableStock = (): number =>
+    calcAvailableStock(product, selectedPreset, selectedUnitLevel);
 
   // Info icon / tooltip should only show when a HIGHER unit (a level with
   // a smaller level number than the one selected) is contributing
@@ -573,7 +500,9 @@ export const InvoiceCard = ({
 
                     {!isInsufficientStockExpanded && (
                       <span className="flex gap-1 items-center ml-auto pr-12">
-                        <label>{isAutoReplenish ? "Covered:" : "Deficit:"}</label>
+                        <label>
+                          {isAutoReplenish ? "Covered:" : "Deficit:"}
+                        </label>
                         <label
                           className={`font-semibold ${
                             isAutoReplenish ? "text-green-600" : "text-red-600"
@@ -613,7 +542,6 @@ export const InvoiceCard = ({
                           handlePriceChange(Number(value));
                         }
                       }}
-                      // placeholder="Enter Price..."
                     />
                     <select
                       className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
