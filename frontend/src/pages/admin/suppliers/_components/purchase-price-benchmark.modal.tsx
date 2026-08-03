@@ -3,6 +3,7 @@ import {
   ChevronDown,
   ChevronRight,
   ExternalLink,
+  Search,
   ShoppingBag,
   TrendingDown,
   TrendingUp,
@@ -157,23 +158,27 @@ export const PurchasePriceBenchmarkModal = ({
           </div>
 
           {/* Search + Legend */}
-          <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-4">
+          <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-2.5">
-              <ShoppingBag size={20} className="shrink-0 text-river-green" />
-              <div className="flex w-full flex-col">
-                <label className="text-sm font-semibold text-custom-black">
+              {/* <ShoppingBag size={20} className="shrink-0 text-river-green" /> */}
+              <div className="flex w-full flex-col relative">
+                {/* <label className="text-sm font-semibold text-custom-black">
                   Product
-                </label>
+                </label> */}
+                <Search
+                  size={16}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="text"
                   placeholder="Search product..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full border-none bg-transparent p-0 text-sm text-slate-400 outline-none placeholder:text-slate-400"
+                  className="input-style-4 pl-10"
                 />
               </div>
             </div>
-            <div className="flex items-center gap-5 text-xs text-slate-500">
+            <div className="flex items-center gap-5 text-xs text-slate-500 px-4">
               <span className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                 All supplier prices profitable
