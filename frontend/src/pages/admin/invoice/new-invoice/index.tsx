@@ -14,6 +14,7 @@ import { InvoiceCard } from "./_components/invoice-card-copy";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { useSelectedPayloadInvoiceQuery } from "@/features/invoice/invoice-create-payload";
 import { useNavigate } from "react-router-dom";
+import { useInvoiceQuery } from "@/features/invoice/invoice-get-all";
 
 const NewInvoicePage = () => {
   const navigate = useNavigate();
@@ -22,9 +23,15 @@ const NewInvoicePage = () => {
   const { data: selectedInvoices = [] } = useSelectedProductInvoiceQuery();
   const { data: inventoryData } = UseInventoryQuery();
   const { data: payloadData = [] } = useSelectedPayloadInvoiceQuery();
+  const { data: allInvoices = [] } = useInvoiceQuery();
   const { ADD_PRODUCT, REMOVE_PRODUCT, CLEAR_TO_INVOICE_LIST } =
     useSelectedInvoiceProduct();
   const { isLoading, error } = useInvoiceBatchQuery();
+
+  const nextInvoiceNumber =
+    allInvoices.length > 0
+      ? Math.max(...allInvoices.map((inv) => inv.invoice_Number)) + 1
+      : 1;
 
   console.log(payloadData);
 
@@ -96,7 +103,7 @@ const NewInvoicePage = () => {
               <span>Back</span>
             </div>
             <span>new invoice</span>
-            <span>#123456</span>
+            <span>#{nextInvoiceNumber}</span>
           </div>
         </div>
 
