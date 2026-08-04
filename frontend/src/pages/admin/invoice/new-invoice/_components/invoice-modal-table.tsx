@@ -7,6 +7,12 @@ import { useAuth } from "@/context/use-auth";
 import { createInvoice } from "@/features/invoice/create-invoice.service";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
 import { InvoiceAddPayloadModel } from "@/features/invoice/models/invoice-add-payload.model";
+import { Bot, Tag } from "lucide-react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 type UnitPresetItem = InventoryProductModel["unitPresets"][number];
 
@@ -49,6 +55,59 @@ const computeAvailableAtUom = (
     available *= l.conversion_Factor;
   }
   return Math.floor(available);
+};
+
+const getPresetPricingEntry = (
+  invoiceItem: InvoiceAddPayloadModel["invoice"],
+  product: InventoryProductModel | undefined,
+) => {
+  const preset = product?.unitPresets.find(
+    (up) => up.preset_ID === invoiceItem.preset_ID,
+  );
+  if (!preset) return undefined;
+
+  const level = preset.preset.presetLevels.find(
+    (l) => l.uoM_ID === invoiceItem.uom_ID,
+  )?.level;
+
+  return preset.presetPricing.find((pp) => pp.level === level);
+};
+
+// Manual price = the stored unit price doesn't match the preset's supplier
+// price for the selected unit level.
+const isManualPrice = (
+  invoiceItem: InvoiceAddPayloadModel["invoice"],
+  product: InventoryProductModel | undefined,
+): boolean => {
+  if (!product) return false;
+  const supplierPrice =
+    getPresetPricingEntry(invoiceItem, product)?.price_Per_Unit ?? 0;
+  return invoiceItem.unit_price !== supplierPrice;
+};
+
+const formatPricingDate = (dateString: string): string =>
+  new Date(dateString).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+// Original = quantity fulfilled from the preset's own remaining stock;
+// replenished = the remainder covered by auto-replenish.
+const getAutoReplenishBreakdown = (
+  invoiceItem: InvoiceAddPayloadModel["invoice"],
+  product: InventoryProductModel | undefined,
+): { original: number; replenished: number } | undefined => {
+  const preset = product?.unitPresets.find(
+    (up) => up.preset_ID === invoiceItem.preset_ID,
+  );
+  if (!preset) return undefined;
+
+  const available = computeAvailableAtUom(preset, invoiceItem.uom_ID);
+  const original = Math.min(available, invoiceItem.unit_quantity);
+  const replenished = Math.max(0, invoiceItem.unit_quantity - original);
+
+  return { original, replenished };
 };
 
 type TooltipProps = {
@@ -202,14 +261,18 @@ export const InvoiceTable = () => {
         <label className="text-right w-full">Subtotal</label>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 px-1 text-[11px] font-light text-gray-500">
+      <div className="flex flex-wrap items-center gap-4 px-1 text-[11px] text-gray-500 font-semibold">
         <div className="flex items-center gap-1">
-          <span className="text-red-500 font-semibold">⚯</span>
-          <span>Supplemented from other packaging presets</span>
+          <span className="text-purple-500 font-semibold p-0.5 rounded-md bg-purple-50 border-2 border-purple-400">
+            <Bot size={16} />
+          </span>
+          <span>Used Auto-replenish deficit</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-orange-500 font-semibold">⟳</span>
-          <span>Automatically replenish deficit</span>
+          <span className="text-green-700 font-semibold p-0.5 rounded-md bg-green-50 border-2 border-green-400">
+            <Tag size={16} />
+          </span>
+          <span>Used Manual Price</span>
         </div>
       </div>
 
@@ -219,11 +282,11 @@ export const InvoiceTable = () => {
           payloadData.map((p, i) => {
             const inv = p.invoice;
             const productLabel = `${inv.product.product_Name} - ${inv.brand.brandName} - ${inv.variant.variant_Name}`;
-            const hasSupplement = (inv.supplement_Preset_IDs ?? []).length > 0;
             const hasAutoReplenish = inv.auto_Replenish ?? false;
             const product = selectedInvoices.find(
               (si) => si.itemKey === inv.itemKey,
             )?.data;
+            const hasManualPrice = isManualPrice(inv, product);
 
             return (
               <div
@@ -235,22 +298,79 @@ export const InvoiceTable = () => {
                 <span className="text-left w-full relative">
                   <span className="inline-flex items-center gap-1">
                     <span>{productLabel}</span>
-                    {(hasSupplement || hasAutoReplenish) && (
+                    {(hasAutoReplenish || hasManualPrice) && (
                       <span className="relative group inline-flex items-center gap-1 align-middle">
-                        {hasSupplement && (
-                          <span className="text-red-500 text-sm leading-none">
-                            ⚯
-                          </span>
-                        )}
-                        {hasAutoReplenish && (
-                          <span className="text-orange-500 text-sm leading-none">
-                            ⟳
-                          </span>
-                        )}
-                        <FulfillmentTooltip
+                        {hasAutoReplenish &&
+                          (() => {
+                            const breakdown = getAutoReplenishBreakdown(
+                              inv,
+                              product,
+                            );
+                            return (
+                              <HoverCard openDelay={100} closeDelay={0}>
+                                <HoverCardTrigger asChild>
+                                  <span className="text-purple-500 font-semibold p-0.5 rounded-md bg-purple-50 border-2 border-purple-400 inline-flex cursor-default">
+                                    <Bot size={12} />
+                                  </span>
+                                </HoverCardTrigger>
+                                <HoverCardContent className="w-fit p-3 text-xs flex flex-col gap-1">
+                                  <span>
+                                    Original:{" "}
+                                    <span className="font-semibold">
+                                      {breakdown?.original ?? 0}
+                                    </span>
+                                  </span>
+                                  <span>
+                                    Auto-replenished:{" "}
+                                    <span className="font-semibold">
+                                      +{breakdown?.replenished ?? 0}
+                                    </span>
+                                  </span>
+                                </HoverCardContent>
+                              </HoverCard>
+                            );
+                          })()}
+                        {hasManualPrice &&
+                          (() => {
+                            const pricingEntry = getPresetPricingEntry(
+                              inv,
+                              product,
+                            );
+                            return (
+                              <HoverCard openDelay={100} closeDelay={0}>
+                                <HoverCardTrigger asChild>
+                                  <span className="text-green-700 font-semibold p-0.5 rounded-md bg-green-50 border-2 border-green-400 inline-flex cursor-default">
+                                    <Tag size={12} />
+                                  </span>
+                                </HoverCardTrigger>
+                                <HoverCardContent className="w-fit p-3 text-xs flex flex-col gap-1">
+                                  <span>
+                                    Standard price:{" "}
+                                    <span className="font-semibold">
+                                      ₱
+                                      {(
+                                        pricingEntry?.price_Per_Unit ?? 0
+                                      ).toFixed(2)}
+                                    </span>
+                                  </span>
+                                  <span>
+                                    As of:{" "}
+                                    <span className="font-semibold">
+                                      {pricingEntry
+                                        ? formatPricingDate(
+                                            pricingEntry.created_At,
+                                          )
+                                        : "N/A"}
+                                    </span>
+                                  </span>
+                                </HoverCardContent>
+                              </HoverCard>
+                            );
+                          })()}
+                        {/* <FulfillmentTooltip
                           invoiceItem={inv}
                           product={product}
-                        />
+                        /> */}
                       </span>
                     )}
                   </span>
@@ -281,12 +401,12 @@ export const InvoiceTable = () => {
           <div className="flex items-center gap-0 text-sm">
             <span className="font-semibold mr-2">Discount</span>
             <input
-              className="w-20 px-2 py-1 rounded-l border border-gray-300"
+              className="w-20 px-2 py-1 rounded-l-md rounded-r-none shadow-none drop-shadow-none border border-gray-300"
               value={discountValue}
               onChange={(e) => setDiscountValue(e.target.value)}
             />
             <select
-              className="w-14 px-1 py-1 rounded-r border border-l-0 border-gray-300 bg-white"
+              className="w-14 px-1 py-1 rounded-r-md rounded-l-none border border-l-0 border-gray-300 bg-white"
               value={discountType}
               onChange={(e) =>
                 setDiscountType(e.target.value as "%" | "amount")
@@ -306,9 +426,9 @@ export const InvoiceTable = () => {
         <button
           onClick={handleSave}
           disabled={isSaving || payloadData.length === 0}
-          className="px-8 py-2 border border-gray-800 bg-white text-gray-900 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="disabled:cursor-not-allowed"
         >
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? "Saving..." : "Save Invoice"}
         </button>
       </div>
     </div>
