@@ -117,7 +117,10 @@ const NewInvoicePage = () => {
   return (
     <section>
       <Activity mode={isModalOpen ? "visible" : "hidden"}>
-        <CreateInvoiceModal createInvoice={createInvoice} />
+        <CreateInvoiceModal
+          createInvoice={createInvoice}
+          invoiceNumber={nextInvoiceNumber}
+        />
       </Activity>
 
       <div className="flex flex-col min-h-0 flex-1 gap-5">
