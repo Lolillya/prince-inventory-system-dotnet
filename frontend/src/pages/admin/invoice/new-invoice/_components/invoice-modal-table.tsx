@@ -1,8 +1,23 @@
 import { useState } from "react";
-import { useSelectedPayloadInvoiceQuery } from "@/features/invoice/invoice-create-payload";
-import { useSelectedProductInvoiceQuery } from "@/features/invoice/selected-product";
-import { useSelectedInvoiceCustomer } from "@/features/invoice/invoice-customer.state";
-import { useInvoiceTermQuery } from "@/features/invoice/invoice-term.state";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
+import {
+  useInvoicePayloadQuery,
+  useSelectedPayloadInvoiceQuery,
+} from "@/features/invoice/invoice-create-payload";
+import {
+  useSelectedInvoiceProduct,
+  useSelectedProductInvoiceQuery,
+} from "@/features/invoice/selected-product";
+import {
+  updateSelectedCustomer,
+  useSelectedInvoiceCustomer,
+} from "@/features/invoice/invoice-customer.state";
+import {
+  setInvoiceTermQuery,
+  useInvoiceTermQuery,
+} from "@/features/invoice/invoice-term.state";
 import { useAuth } from "@/context/use-auth";
 import { createInvoice } from "@/features/invoice/create-invoice.service";
 import { InventoryProductModel } from "@/features/inventory/models/inventory.model";
@@ -13,6 +28,10 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+
+interface InvoiceTableProps {
+  invoiceNumber: number;
+}
 
 type UnitPresetItem = InventoryProductModel["unitPresets"][number];
 
@@ -217,7 +236,8 @@ const FulfillmentTooltip = ({ invoiceItem, product }: TooltipProps) => {
   );
 };
 
-export const InvoiceTable = () => {
+export const InvoiceTable = ({ invoiceNumber }: InvoiceTableProps) => {
+  const navigate = useNavigate();
   const [discountValue, setDiscountValue] = useState("0");
   const [discountType, setDiscountType] = useState<"%" | "amount">("%");
   const [isSaving, setIsSaving] = useState(false);
@@ -227,6 +247,10 @@ export const InvoiceTable = () => {
   const { data: selectedCustomer } = useSelectedInvoiceCustomer();
   const { data: invoiceTerm } = useInvoiceTermQuery();
   const { user } = useAuth();
+  const { CLEAR_TO_INVOICE_LIST } = useSelectedInvoiceProduct();
+  const { CLEAR_INVOICE_PAYLOAD } = useInvoicePayloadQuery();
+  const { CLEAR_SELECTED_CUSTOMER } = updateSelectedCustomer();
+  const { CLEAR_INVOICE_TERM } = setInvoiceTermQuery();
 
   // Subtotal is the sum of per-line totals (each already has per-item discount applied)
   const subtotal = payloadData.reduce((acc, p) => acc + p.invoice.total, 0);
@@ -240,16 +264,206 @@ export const InvoiceTable = () => {
     return isPercentage ? `${discount}%` : `₱${formatCurrency(discount)}`;
   };
 
+  const generateInvoicePdf = () => {
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const left = 10;
+    const right = pageWidth - 10;
+    const contentWidth = right - left;
+    const bottomLimit = pageHeight - 10;
+    let y = 14;
+
+    doc.setTextColor(0);
+    doc.setDrawColor(0);
+
+    const invoiceNumberLabel = String(invoiceNumber).padStart(6, "0");
+    const dateLabel = new Date().toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    // HEADER
+    const infoLabelX = right - 55;
+    const detailRow = (
+      leftLabel: string,
+      leftValue: string,
+      rightLabel: string,
+      rightValue: string,
+    ) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.text(leftLabel, left, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(leftValue || "-", left + 22, y);
+
+      doc.setFont("helvetica", "bold");
+      doc.text(rightLabel, infoLabelX, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(rightValue || "-", right, y, { align: "right" });
+
+      y += 6.5;
+    };
+
+    detailRow(
+      "Customer:",
+      selectedCustomer?.companyName ?? "-",
+      "DR/Invoice #:",
+      invoiceNumberLabel,
+    );
+    detailRow(
+      "Term:",
+      invoiceTerm ? String(invoiceTerm) : "-",
+      "Date:",
+      dateLabel,
+    );
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.text("Page:", infoLabelX, y);
+    doc.setFont("helvetica", "normal");
+    doc.text("1 of 1", right, y, { align: "right" });
+
+    y += 4;
+    doc.setLineWidth(0.4);
+    doc.line(left, y, right, y);
+    y += 7;
+
+    // TABLE
+    const colWidths = { qty: 22, unit: 20, unitPrice: 26, total: 30 };
+    const descWidth =
+      contentWidth -
+      (colWidths.qty + colWidths.unit + colWidths.unitPrice + colWidths.total);
+    const colX = {
+      descStart: left,
+      qtyEnd: left + descWidth + colWidths.qty,
+      unitStart: left + descWidth + colWidths.qty + 2,
+      unitPriceEnd:
+        left + descWidth + colWidths.qty + colWidths.unit + colWidths.unitPrice,
+      totalEnd: right,
+    };
+
+    const renderTableHeader = () => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.text("Description", colX.descStart, y);
+      doc.text("Quantity", colX.qtyEnd, y, { align: "right" });
+      doc.text("Unit", colX.unitStart, y);
+      doc.text("Unit Price", colX.unitPriceEnd, y, { align: "right" });
+      doc.text("Total", colX.totalEnd, y, { align: "right" });
+      y += 3;
+      doc.setLineWidth(0.4);
+      doc.line(left, y, right, y);
+      y += 5.5;
+    };
+
+    renderTableHeader();
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+
+    const lineHeight = 4.2;
+    const descTextWidth = descWidth - 3;
+
+    payloadData.forEach((p) => {
+      const inv = p.invoice;
+      const productLabel = `${inv.product.product_Name} - ${inv.brand.brandName} - ${inv.variant.variant_Name}`;
+      const descLines: string[] = doc.splitTextToSize(
+        productLabel,
+        descTextWidth,
+      );
+      const rowHeight = Math.max(lineHeight, descLines.length * lineHeight);
+
+      if (y + rowHeight + 10 > bottomLimit) {
+        doc.addPage();
+        y = 14;
+        renderTableHeader();
+      }
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text(descLines, colX.descStart, y);
+      doc.text(String(inv.unit_quantity), colX.qtyEnd, y, { align: "right" });
+      doc.text(inv.unit, colX.unitStart, y);
+      doc.text(formatCurrency(inv.unit_price), colX.unitPriceEnd, y, {
+        align: "right",
+      });
+      doc.text(formatCurrency(inv.total), colX.totalEnd, y, { align: "right" });
+
+      y += rowHeight + 2;
+      doc.setLineWidth(0.2);
+      doc.line(left, y - 2, right, y - 2);
+    });
+
+    y += 5;
+
+    // GRAND TOTAL
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("GRAND TOTAL:", right - 70, y);
+    doc.text(`P${formatCurrency(total)}`, right, y, { align: "right" });
+
+    y += 20;
+
+    // SIGNATURE BLOCKS
+    const signatureWidth = contentWidth / 3 - 4;
+    const signatureLineHeight = 3.5;
+    const signatureBlock = (x: number, label: string) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      const labelLines: string[] = doc.splitTextToSize(label, signatureWidth);
+      doc.text(labelLines, x, y);
+
+      const lineY = y + labelLines.length * signatureLineHeight + 6;
+      doc.setLineWidth(0.3);
+      doc.line(x, lineY, x + signatureWidth, lineY);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.text("Signature Above Printed Name", x, lineY + 4);
+    };
+
+    signatureBlock(left, "\nPrepared By:");
+    signatureBlock(left + signatureWidth + 6, "\nChecked By:");
+    signatureBlock(
+      left + (signatureWidth + 6) * 2,
+      "Received the Above Goods in Good Order and Condition:",
+    );
+
+    doc.save(`Invoice-${invoiceNumberLabel}.pdf`);
+  };
+
   const handleSave = async () => {
     if (isSaving) return;
     setIsSaving(true);
+    const toastId = toast.loading("Saving invoice...");
     try {
-      await createInvoice(
+      const res = await createInvoice(
         payloadData,
         selectedCustomer?.id,
         user?.user_ID,
         invoiceTerm,
       );
+      if (!res) {
+        toast.dismiss(toastId);
+        return;
+      }
+
+      generateInvoicePdf();
+      toast.success("Invoice created successfully.", { id: toastId });
+
+      CLEAR_TO_INVOICE_LIST();
+      CLEAR_INVOICE_PAYLOAD();
+      CLEAR_SELECTED_CUSTOMER();
+      CLEAR_INVOICE_TERM();
+
+      navigate("/admin/invoice");
+    } catch {
+      toast.error("Failed to create invoice.", { id: toastId });
     } finally {
       setIsSaving(false);
     }

@@ -46,7 +46,7 @@ export const CreateInvoiceModal = ({
           <CustomerPicker />
 
           {/* TABLE CONTAINER */}
-          <InvoiceTable />
+          <InvoiceTable invoiceNumber={invoiceNumber} />
         </div>
       </div>
     </div>
