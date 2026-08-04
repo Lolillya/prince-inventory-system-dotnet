@@ -16,6 +16,12 @@ import {
 
 type UnitPresetItem = InventoryProductModel["unitPresets"][number];
 
+const formatCurrency = (value: number): string =>
+  value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
 // Build a human-readable preset chain, e.g. "Box > Pack (x10) > Piece (x20)"
 const buildPresetPath = (preset: UnitPresetItem): string => {
   const sorted = [...preset.preset.presetLevels].sort(
@@ -231,7 +237,7 @@ export const InvoiceTable = () => {
 
   const formatDiscount = (discount: number, isPercentage: boolean): string => {
     if (discount === 0) return "—";
-    return isPercentage ? `${discount}%` : `₱${discount.toLocaleString()}`;
+    return isPercentage ? `${discount}%` : `₱${formatCurrency(discount)}`;
   };
 
   const handleSave = async () => {
@@ -378,13 +384,13 @@ export const InvoiceTable = () => {
                 <span className="text-right w-full">{inv.unit_quantity}</span>
                 <span className="text-left w-full">{inv.unit}</span>
                 <span className="text-right w-full">
-                  ₱{inv.unit_price.toLocaleString()}
+                  ₱{formatCurrency(inv.unit_price)}
                 </span>
                 <span className="text-right w-full">
                   {formatDiscount(inv.discount, inv.isDiscountPercentage)}
                 </span>
                 <span className="text-right w-full">
-                  ₱{inv.total.toLocaleString()}
+                  ₱{formatCurrency(inv.total)}
                 </span>
               </div>
             );
@@ -419,7 +425,7 @@ export const InvoiceTable = () => {
 
           <div className="flex gap-2 font-bold tracking-wider text-2xl">
             <span>TOTAL:</span>
-            <label>₱{total.toLocaleString()}</label>
+            <label>₱{formatCurrency(total)}</label>
           </div>
         </div>
 

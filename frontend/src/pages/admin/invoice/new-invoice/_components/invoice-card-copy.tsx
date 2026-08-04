@@ -602,9 +602,15 @@ export const InvoiceCard = ({
                 <span className="font-semibold">Total:</span>
                 <label className="flex gap-1 text-lg font-semibold items-center">
                   <PhilippinePeso size={18} />
-                  {calcTotal(quantity, price, discountValue, discount).toFixed(
-                    2,
-                  )}
+                  {calcTotal(
+                    quantity,
+                    price,
+                    discountValue,
+                    discount,
+                  ).toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </label>
               </div>
 
