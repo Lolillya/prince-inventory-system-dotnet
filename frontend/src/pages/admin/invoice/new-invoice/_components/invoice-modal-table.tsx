@@ -589,6 +589,44 @@ export const InvoiceTable = ({ invoiceNumber }: InvoiceTableProps) => {
     });
   };
 
+  // ── TEST HELPER: generates dummy multi-page data so the multi-page PDF
+  // layout (page counting, "(Continued on Page N)", simplified continuation
+  // headers, and last-page-only totals/signatures) can be verified without
+  // needing to build a real, huge invoice first. Not wired to any real
+  // invoice data — purely for QA/demo purposes. ──
+  const generateTestMultiPagedInvoicePdf = () => {
+    // 100 rows comfortably spans multiple A4 pages regardless of exact row
+    // density, guaranteeing the multi-page path (page counting, continuation
+    // headers, "(Continued on Page N)") actually gets exercised.
+    const dummyLineItems: InvoicePdfLineItem[] = Array.from(
+      { length: 100 },
+      () => ({
+        label: "testItem - testBrand - Variant1",
+        quantity: 25,
+        unit: "PIECE",
+        unitPrice: 2000,
+        total: 50000,
+      }),
+    );
+
+    const dummySubtotal = dummyLineItems.reduce((acc, li) => acc + li.total, 0);
+    const dummyDiscountAmount = dummySubtotal * 0.1;
+    const dummyGrandTotal = dummySubtotal - dummyDiscountAmount;
+
+    buildInvoicePdf({
+      invoiceNumberLabel: "000011",
+      customerName: "Madeline Corp",
+      term: "30",
+      dateLabel: "March 1, 2025",
+      lineItems: dummyLineItems,
+      subtotal: dummySubtotal,
+      discountAmount: dummyDiscountAmount,
+      discountLabel: `P${formatCurrency(dummyDiscountAmount)}`,
+      grandTotal: dummyGrandTotal,
+      fileName: "Invoice-000011-TEST-multipage.pdf",
+    });
+  };
+
   const handleSave = async () => {
     if (isSaving) return;
     setIsSaving(true);
@@ -795,13 +833,23 @@ export const InvoiceTable = ({ invoiceNumber }: InvoiceTableProps) => {
           </div>
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={isSaving || payloadData.length === 0}
-          className="disabled:cursor-not-allowed"
-        >
-          {isSaving ? "Saving..." : "Save Invoice"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={generateTestMultiPagedInvoicePdf}
+            className="text-xs border rounded-md px-3 py-2"
+            title="Generates a PDF with dummy data to test the multi-page invoice layout — not tied to real invoice data."
+          >
+            Test Multi-Page PDF
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving || payloadData.length === 0}
+            className="disabled:cursor-not-allowed"
+          >
+            {isSaving ? "Saving..." : "Save Invoice"}
+          </button>
+        </div>
       </div>
     </div>
   );
