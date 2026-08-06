@@ -76,6 +76,7 @@ namespace backend.Controller.InvoiceControllers
                 totalLineItems += item.Subtotal;
 
             var invoiceNumber = await GetLatestInvoiceNumber();
+            var now = DateTime.UtcNow;
 
             var invoice = new Invoice
             {
@@ -88,6 +89,8 @@ namespace backend.Controller.InvoiceControllers
                 Status = "PENDING",
                 Term = payload.Term,
                 Discount = 0,
+                CreatedAt = now,
+                UpdatedAt = now,
             };
 
             _db.Add(invoice);
