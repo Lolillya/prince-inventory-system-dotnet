@@ -79,6 +79,7 @@ const InvoicePage = () => {
       discountLabel: `P${inv.discount.toLocaleString()}`,
       grandTotal: inv.total_Amount,
       fileName: `Invoice-${invoiceNumberLabel}.pdf`,
+      isVoided: inv.status === "VOIDED",
     });
   };
 

@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import jsPDF, { GState } from "jspdf";
 
 export const formatPdfCurrency = (value: number): string =>
   value.toLocaleString("en-US", {
@@ -25,6 +25,7 @@ export type InvoicePdfOptions = {
   discountLabel: string;
   grandTotal: number;
   fileName: string;
+  isVoided?: boolean;
 };
 
 // Shared PDF builder used by the "Save Invoice" flow, the multi-page test
@@ -41,6 +42,7 @@ export const buildInvoicePdf = ({
   discountLabel,
   grandTotal,
   fileName,
+  isVoided = false,
 }: InvoicePdfOptions) => {
   const doc = new jsPDF({
     orientation: "portrait",
@@ -295,6 +297,23 @@ export const buildInvoicePdf = ({
     left + (signatureWidth + 6) * 2,
     "Received the Above Goods in Good Order and Condition:",
   );
+
+  if (isVoided) {
+    const totalPageCount = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPageCount; p++) {
+      doc.setPage(p);
+      doc.saveGraphicsState();
+      doc.setGState(new GState({ opacity: 0.18 }));
+      doc.setTextColor(220, 38, 38);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(100);
+      doc.text("VOIDED", pageWidth / 2 + 30, pageHeight / 2, {
+        align: "center",
+        angle: 45,
+      });
+      doc.restoreGraphicsState();
+    }
+  }
 
   doc.save(fileName);
 };
