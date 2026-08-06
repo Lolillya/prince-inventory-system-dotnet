@@ -558,14 +558,14 @@ export const InvoiceTable = ({ invoiceNumber }: InvoiceTableProps) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          {/* <button
             type="button"
             onClick={generateTestMultiPagedInvoicePdf}
             className="text-xs border rounded-md px-3 py-2"
             title="Generates a PDF with dummy data to test the multi-page invoice layout — not tied to real invoice data."
           >
             Test Multi-Page PDF
-          </button>
+          </button> */}
           <button
             onClick={handleSave}
             disabled={isSaving || payloadData.length === 0}
