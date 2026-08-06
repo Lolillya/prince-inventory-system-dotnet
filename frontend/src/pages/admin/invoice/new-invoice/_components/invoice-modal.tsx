@@ -4,10 +4,12 @@ import { CustomerPicker } from "./customer-picker";
 
 interface CreateInvoiceModalProps {
   createInvoice: () => void;
+  invoiceNumber: number;
 }
 
 export const CreateInvoiceModal = ({
   createInvoice,
+  invoiceNumber,
 }: CreateInvoiceModalProps) => {
   const handleClose = () => {
     createInvoice();
@@ -26,8 +28,11 @@ export const CreateInvoiceModal = ({
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-semibold tracking-wide">
-                Invoice Confirmation #XXXXX
+                Invoice Confirmation
               </h2>
+              <span className="text-2xl font-medium tracking-wide text-gray-400">
+                #{String(invoiceNumber).padStart(6, "0")}
+              </span>
             </div>
             <div
               onClick={handleClose}
@@ -41,7 +46,7 @@ export const CreateInvoiceModal = ({
           <CustomerPicker />
 
           {/* TABLE CONTAINER */}
-          <InvoiceTable />
+          <InvoiceTable invoiceNumber={invoiceNumber} />
         </div>
       </div>
     </div>

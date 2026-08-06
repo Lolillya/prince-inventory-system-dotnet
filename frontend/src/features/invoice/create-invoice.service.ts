@@ -9,6 +9,7 @@ export const createInvoice = async (
   customerId?: string | number,
   userId?: string | number,
   invoiceTerm?: number,
+  notes?: string,
 ) => {
   console.log("payload: ", payload);
   console.log("customerId: ", customerId);
@@ -21,7 +22,7 @@ export const createInvoice = async (
       Invoice_Clerk: userId,
       Customer_ID: customerId,
       Term: invoiceTerm,
-      Notes: "Sample Invoice Note",
+      Notes: notes?.trim() || "",
     };
 
     dtos.LineItem = payload.map((p) => ({

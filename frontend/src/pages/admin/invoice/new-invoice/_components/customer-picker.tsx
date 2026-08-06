@@ -48,7 +48,7 @@ export const CustomerPicker = ({
 
   return (
     <div className="flex flex-col w-full gap-2 relative" ref={ref}>
-      <label className="text-vesper-gray">Customer</label>
+      <label className="text-vesper-gray">Customer & Term</label>
       <div className="flex w-full">
         <input
           className="w-full rounded-r-none"
@@ -64,8 +64,16 @@ export const CustomerPicker = ({
           placeholder="Term by days"
           type="number"
           className="rounded-l-none"
-          value={invoiceTerm ?? 0}
-          onChange={(e) => UPDATE_INVOICE_TERM(Number(e.target.value))}
+          value={invoiceTerm || ""}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "") {
+              UPDATE_INVOICE_TERM(0);
+            } else if (Number(value) > 0) {
+              UPDATE_INVOICE_TERM(Number(value));
+            }
+          }}
+          min="1"
         />
       </div>
 

@@ -4,8 +4,20 @@ import {
   useInvoicePayloadQuery,
   useSelectedPayloadInvoiceQuery,
 } from "@/features/invoice/invoice-create-payload";
+import { useAutoReplenishPreviewQuery } from "@/features/restock/auto-replenish-preview.query";
+import {
+  calculateAvailableStock as calcAvailableStock,
+  getAvailableStockBreakdown,
+} from "@/features/invoice/stock-availability";
 import { XIcon } from "@/icons";
-import { CircleAlert } from "lucide-react";
+import {
+  Bot,
+  ChevronDown,
+  CircleCheck,
+  Info,
+  PhilippinePeso,
+  TriangleAlert,
+} from "lucide-react";
 import { useState } from "react";
 
 interface InvoiceCardProp {
@@ -42,14 +54,16 @@ export const InvoiceCard = ({
     (myPayload?.isDiscountPercentage ?? false)
       ? DiscountEnum.PERCENTAGE
       : DiscountEnum.MANUAL;
-  const selectedSupplementPresetIds = myPayload?.supplement_Preset_IDs ?? [];
   const isAutoReplenish = myPayload?.auto_Replenish ?? false;
 
   // Pure UI state — not tracked in the invoice payload, no useEffect needed
   const [isSupplierPriceSelected, setIsSupplierPriceSelected] =
     useState<boolean>(true);
-  const [isSupplementPresetChecked, setIsSupplementPresetChecked] =
+  const [isInsufficientStockExpanded, setIsInsufficientStockExpanded] =
     useState<boolean>(false);
+  const [manualPriceInput, setManualPriceInput] = useState<string>(
+    price ? String(price) : "",
+  );
 
   const {
     UPDATE_INVOICE_PAYLOAD_PRESET,
@@ -108,93 +122,62 @@ export const InvoiceCard = ({
     return "🟢";
   };
 
-  const calculateAvailableStock = (): number => {
-    if (!selectedPreset) return 0;
+  const getAvailableBreakdown = () =>
+    getAvailableStockBreakdown(product, selectedPreset, selectedUnitLevel);
 
-    const presetQuantities = (selectedPreset as any).presetQuantities as
-      | Array<{ level: number; remaining_Quantity?: number }>
-      | undefined;
+  const calculateAvailableStock = (): number =>
+    calcAvailableStock(product, selectedPreset, selectedUnitLevel);
 
-    const presetLevels = [...selectedPreset.preset.presetLevels].sort(
-      (a, b) => a.level - b.level,
-    );
-
-    let stock = presetQuantities?.length
-      ? (presetQuantities.find((q) => q.level === 1)?.remaining_Quantity ?? 0)
-      : (product.product.quantity ?? 0);
-
-    for (const level of presetLevels) {
-      if (level.level === 1) continue;
-      if (level.level > selectedUnitLevel) break;
-      stock *= level.conversion_Factor;
-    }
-    return Math.floor(stock);
-  };
+  // Info icon / tooltip should only show when a HIGHER unit (a level with
+  // a smaller level number than the one selected) is contributing
+  // leftover stock towards the total — not merely because the selected
+  // unit itself has remaining stock.
+  const hasHigherUnitContribution = (): boolean =>
+    getAvailableBreakdown().some((b) => b.level < selectedUnitLevel);
 
   const calculateDeficit = (): number =>
     Math.max(0, quantity - calculateAvailableStock());
 
-  const getCompatiblePresetsWithStock = () => {
-    if (!selectedPreset) return [];
+  const selectedUnitName =
+    selectedPreset?.preset.presetLevels.find(
+      (l) => l.level === selectedUnitLevel,
+    )?.unitOfMeasure.uom_Name ?? "";
 
-    const selectedLevelMeta = selectedPreset.preset.presetLevels.find(
-      (level) => level.level === selectedUnitLevel,
+  const isInsufficientStock =
+    !!selectedPreset &&
+    quantity > 0 &&
+    (calculateAvailableStock() === 0 || quantity > calculateAvailableStock());
+
+  const getMainUnitConversion = (): {
+    symbol: "=" | "≈";
+    value: string;
+    unitName: string;
+  } | null => {
+    if (!selectedPreset || quantity <= 0 || selectedUnitLevel === 1)
+      return null;
+
+    const sortedLevels = [...selectedPreset.preset.presetLevels].sort(
+      (a, b) => a.level - b.level,
     );
-    if (!selectedLevelMeta) return [];
+    const mainUnit = sortedLevels.find((l) => l.level === 1);
+    if (!mainUnit) return null;
 
-    const targetUomId = selectedLevelMeta.uoM_ID;
+    let factor = 1;
+    for (const level of sortedLevels) {
+      if (level.level === 1) continue;
+      if (level.level > selectedUnitLevel) break;
+      factor *= level.conversion_Factor;
+    }
 
-    return (product.unitPresets ?? [])
-      .filter(
-        (otherPreset) => otherPreset.preset_ID !== selectedPreset.preset_ID,
-      )
-      .map((otherPreset) => {
-        const sortedLevels = [...otherPreset.preset.presetLevels].sort(
-          (a, b) => a.level - b.level,
-        );
-        const targetLevel = sortedLevels.find(
-          (level) => level.uoM_ID === targetUomId,
-        );
-        if (!targetLevel) return null;
+    const mainQty = quantity / factor;
+    const hasRemainder = Math.abs(mainQty - Math.round(mainQty)) > 1e-9;
 
-        const presetQuantities = (otherPreset as any).presetQuantities as
-          | Array<{ level: number; remaining_Quantity?: number }>
-          | undefined;
-
-        const levelOneQuantity =
-          presetQuantities?.find((q) => q.level === 1)?.remaining_Quantity ?? 0;
-        if (levelOneQuantity <= 0) return null;
-
-        let available = levelOneQuantity;
-        for (const level of sortedLevels) {
-          if (level.level === 1) continue;
-          if (level.level > targetLevel.level) break;
-          available *= level.conversion_Factor;
-        }
-
-        return {
-          presetId: otherPreset.preset_ID,
-          path: sortedLevels
-            .map((level) => level.unitOfMeasure.uom_Name)
-            .join(" > "),
-          unitName: targetLevel.unitOfMeasure.uom_Name,
-          availableStock: Math.floor(available),
-        };
-      })
-      .filter(
-        (
-          preset,
-        ): preset is {
-          presetId: number;
-          path: string;
-          unitName: string;
-          availableStock: number;
-        } => preset !== null,
-      );
+    return {
+      symbol: hasRemainder ? "≈" : "=",
+      value: hasRemainder ? mainQty.toFixed(2) : String(Math.round(mainQty)),
+      unitName: mainUnit.unitOfMeasure.uom_Name,
+    };
   };
-
-  const compatiblePresetsWithStock = getCompatiblePresetsWithStock();
-  const findAvailablePreset = () => compatiblePresetsWithStock.length;
 
   // ─── Event handlers — direct payload updates, no useEffect ────────────────
 
@@ -224,7 +207,6 @@ export const InvoiceCard = ({
       itemKey,
       calcTotal(0, newPrice, discountValue, discount),
     );
-    setIsSupplementPresetChecked(false);
   };
 
   const handleUnitLevelChange = (levelNumber: number) => {
@@ -240,16 +222,20 @@ export const InvoiceCard = ({
       levelMeta.uoM_ID,
     );
     UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, []);
-    setIsSupplementPresetChecked(false);
+    UPDATE_INVOICE_PAYLOAD_QUANTITY(itemKey, 0);
+    UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH(itemKey, false);
+    setIsInsufficientStockExpanded(false);
 
+    const newPrice = isSupplierPriceSelected
+      ? getSupplierPrice(selectedPreset, levelNumber)
+      : price;
     if (isSupplierPriceSelected) {
-      const newPrice = getSupplierPrice(selectedPreset, levelNumber);
       UPDATE_INVOICE_PAYLOAD_PRICE(itemKey, newPrice);
-      UPDATE_INVOICE_PAYLOAD_TOTAL(
-        itemKey,
-        calcTotal(quantity, newPrice, discountValue, discount),
-      );
     }
+    UPDATE_INVOICE_PAYLOAD_TOTAL(
+      itemKey,
+      calcTotal(0, newPrice, discountValue, discount),
+    );
   };
 
   const handleQuantityChange = (newQuantity: number) => {
@@ -286,6 +272,9 @@ export const InvoiceCard = ({
 
   const handlePriceModeChange = (isSupplier: boolean) => {
     setIsSupplierPriceSelected(isSupplier);
+    if (!isSupplier) {
+      setManualPriceInput(price ? String(price) : "");
+    }
     if (isSupplier) {
       const newPrice = getSupplierPrice();
       UPDATE_INVOICE_PAYLOAD_PRICE(itemKey, newPrice);
@@ -296,38 +285,28 @@ export const InvoiceCard = ({
     }
   };
 
-  const handleSupplementToggle = (isChecked: boolean) => {
-    setIsSupplementPresetChecked(isChecked);
-    if (isChecked) {
-      UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH(itemKey, false);
-    } else {
-      UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, []);
-    }
-  };
-
-  const handleSupplementPresetToggle = (
-    presetId: number,
-    isChecked: boolean,
-  ) => {
-    const newIds = isChecked
-      ? selectedSupplementPresetIds.includes(presetId)
-        ? selectedSupplementPresetIds
-        : [...selectedSupplementPresetIds, presetId]
-      : selectedSupplementPresetIds.filter((id) => id !== presetId);
-    UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, newIds);
-  };
-
   const handleAutoReplenishToggle = (isChecked: boolean) => {
     UPDATE_INVOICE_PAYLOAD_AUTO_REPLENISH(itemKey, isChecked);
     if (isChecked) {
-      setIsSupplementPresetChecked(false);
       UPDATE_INVOICE_PAYLOAD_SUPPLEMENT_PRESETS(itemKey, []);
     }
   };
 
+  const handleToggleInsufficientStockExpanded = () => {
+    setIsInsufficientStockExpanded((prev) => !prev);
+  };
+
+  const { data: autoReplenishPreview } = useAutoReplenishPreviewQuery(
+    isInsufficientStock && isInsufficientStockExpanded,
+  );
+
   // ─── Render ─────────────────────────────────────────────────────────────────
 
-  const isCardComplete = selectedPresetId !== null && quantity > 0 && price > 0;
+  const isCardComplete =
+    selectedPresetId !== null &&
+    quantity > 0 &&
+    price > 0 &&
+    (!isInsufficientStock || isAutoReplenish);
 
   return (
     <div
@@ -339,7 +318,7 @@ export const InvoiceCard = ({
       <div className="absolute -top-1">
         {isCardComplete ? (
           <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
-            Complete
+            Ready
           </div>
         ) : (
           <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-b-lg shadow-md">
@@ -350,13 +329,13 @@ export const InvoiceCard = ({
 
       <div className="flex gap-2 items-center text-xs justify-between">
         <div className="flex gap-2 items-center">
-          <div>
-            <span>{product.product.product_Name}</span>
-            <span> - </span>
-            <span>{product.brand.brandName}</span>
-            <span> - </span>
-            <span>{product.variant.variant_Name}</span>
-          </div>
+          <span className="font-semibold text-base">
+            {product.product.product_Name}
+          </span>
+          <span>•</span>
+          <span className="text-vesper-gray font-semibold">
+            {product.category?.category_Name}
+          </span>
         </div>
         <div
           onClick={onRemove}
@@ -400,200 +379,308 @@ export const InvoiceCard = ({
             <Separator orientation="horizontal" />
 
             <div className="flex flex-col w-full gap-2">
-              <label>quantity & unit</label>
-              <div className="flex">
-                <div className="relative w-full flex items-center justify-center">
-                  <input
-                    className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
-                    value={quantity}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                        handleQuantityChange(Number(value));
-                      }
-                    }}
-                    min="0"
-                  />
-                  <label className="absolute right-2 text-vesper-gray text-xs">
-                    Available: {calculateAvailableStock()}{" "}
+              <div className="grid grid-cols-2 gap-2">
+                <label className="font-semibold capitalize">
+                  quantity & unit
+                </label>
+
+                <span className="text-vesper-gray text-xs font-semibold flex gap-1 items-center relative">
+                  Available:
+                  <label
+                    className={
+                      calculateAvailableStock() === 0
+                        ? "text-red-500"
+                        : "text-primary"
+                    }
+                  >
+                    {calculateAvailableStock()}
                   </label>
-                </div>
-                <select
-                  className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6 outline:none"
-                  value={selectedUnitLevel}
-                  onChange={(e) =>
-                    handleUnitLevelChange(Number(e.target.value))
-                  }
-                >
-                  {selectedPreset.preset.presetLevels.map((level) => (
-                    <option key={level.level_ID} value={level.level}>
-                      {level.unitOfMeasure.uom_Name}
-                    </option>
-                  ))}
-                </select>
+                  {hasHigherUnitContribution() && (
+                    <span className="group relative inline-flex items-center">
+                      <Info
+                        size={12}
+                        className="text-vesper-gray cursor-help"
+                      />
+                      <div className="hidden group-hover:flex flex-col absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-56 bg-white border rounded-md shadow-lg p-2 z-10">
+                        <span className="text-[10px] font-semibold text-vesper-gray whitespace-nowrap">
+                          From Remaining Quantity
+                        </span>
+                        <div className="h-px bg-gray-200 my-1" />
+                        <span className="text-xs text-primary whitespace-nowrap">
+                          {getAvailableBreakdown().map((b, i) => (
+                            <span key={b.level}>
+                              {i > 0 && " + "}
+                              <span
+                                className={
+                                  b.level === selectedUnitLevel
+                                    ? "font-bold"
+                                    : ""
+                                }
+                              >
+                                {b.remaining} {b.unitName}
+                              </span>
+                            </span>
+                          ))}
+                        </span>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-white border-b border-r rotate-45 -mt-1" />
+                      </div>
+                    </span>
+                  )}
+                </span>
               </div>
 
-              {(calculateAvailableStock() === 0 ||
-                quantity > calculateAvailableStock()) && (
-                <div className="flex flex-col text-red-400">
-                  <div className="flex gap-2 items-center">
-                    <CircleAlert className="text-red-400" size={18} />
-                    <label className="text-red-400 font-semibold">
-                      Insufficient Stock
-                    </label>
+              <div className="flex flex-col">
+                <div className="flex">
+                  <div className="relative w-full flex items-center justify-center">
+                    <input
+                      className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
+                      placeholder="Enter quantity..."
+                      value={quantity === 0 ? "" : quantity}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "") {
+                          handleQuantityChange(0);
+                        } else if (
+                          /^\d*\.?\d*$/.test(value) &&
+                          Number(value) > 0
+                        ) {
+                          handleQuantityChange(Number(value));
+                        }
+                      }}
+                      min="0"
+                    />
+
+                    {getMainUnitConversion() && (
+                      <span className="absolute right-2 text-vesper-gray text-xs font-semibold flex gap-1">
+                        {getMainUnitConversion()!.symbol}{" "}
+                        {getMainUnitConversion()!.value}{" "}
+                        {getMainUnitConversion()!.unitName}
+                      </span>
+                    )}
                   </div>
+                  <select
+                    className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6 outline:none"
+                    value={selectedUnitLevel}
+                    onChange={(e) =>
+                      handleUnitLevelChange(Number(e.target.value))
+                    }
+                  >
+                    {selectedPreset.preset.presetLevels.map((level) => (
+                      <option key={level.level_ID} value={level.level}>
+                        {level.unitOfMeasure.uom_Name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                  {findAvailablePreset() > 0 && (
-                    <div className="flex flex-col">
-                      <div className="flex gap-2 items-center">
-                        <input
-                          type="checkbox"
-                          checked={isSupplementPresetChecked}
-                          onChange={(e) =>
-                            handleSupplementToggle(e.target.checked)
-                          }
-                          disabled={isAutoReplenish}
-                        />
-                        <label className="text-red-400">
-                          Supplement from compatible packaging preset (
-                          {findAvailablePreset()} available)
-                        </label>
-                      </div>
-
-                      {isSupplementPresetChecked && (
-                        <div className="pl-6 flex flex-col gap-1">
-                          {compatiblePresetsWithStock.map((preset) => (
-                            <div
-                              key={preset.presetId}
-                              className="flex gap-2 items-center"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedSupplementPresetIds.includes(
-                                  preset.presetId,
-                                )}
-                                onChange={(e) =>
-                                  handleSupplementPresetToggle(
-                                    preset.presetId,
-                                    e.target.checked,
-                                  )
-                                }
-                              />
-                              <div className="flex gap-2 items-center">
-                                <span>{preset.path}</span>
-                                <span>-</span>
-                                <span>
-                                  {preset.availableStock} {preset.unitName}{" "}
-                                  available
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                {isInsufficientStock && (
+                  <div
+                    className={`flex items-center p-2 rounded-b-md border-2 cursor-pointer select-none ${
+                      isAutoReplenish
+                        ? "bg-green-100 border-green-400"
+                        : "bg-red-100 border-red-400"
+                    }`}
+                    onClick={handleToggleInsufficientStockExpanded}
+                  >
+                    <div className="flex gap-2 items-center">
+                      {isAutoReplenish ? (
+                        <CircleCheck className="text-green-600" size={18} />
+                      ) : (
+                        <TriangleAlert className="text-red-600" size={18} />
+                      )}
+                      <label
+                        className={`font-semibold cursor-pointer ${
+                          isAutoReplenish ? "text-green-600" : "text-red-600"
+                        }`}
+                      >
+                        {isAutoReplenish
+                          ? "Stock Deficit Resolved"
+                          : isInsufficientStockExpanded
+                            ? "Stock Resolution Required"
+                            : "Insufficient Stock"}
+                      </label>
+                      {isAutoReplenish && !isInsufficientStockExpanded && (
+                        <Bot className="text-indigo-600" size={14} />
                       )}
                     </div>
-                  )}
 
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="checkbox"
-                      checked={isAutoReplenish}
-                      onChange={(e) =>
-                        handleAutoReplenishToggle(e.target.checked)
-                      }
+                    {!isInsufficientStockExpanded && (
+                      <span className="flex gap-1 items-center ml-auto pr-12">
+                        <label>
+                          {isAutoReplenish ? "Covered:" : "Deficit:"}
+                        </label>
+                        <label
+                          className={`font-semibold ${
+                            isAutoReplenish ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
+                          {calculateDeficit()} {selectedUnitName}
+                        </label>
+                      </span>
+                    )}
+
+                    <ChevronDown
+                      size={18}
+                      className={`ml-auto transition-transform ${
+                        isAutoReplenish ? "text-green-600" : "text-red-600"
+                      } ${isInsufficientStockExpanded ? "rotate-180" : ""}`}
                     />
-                    <label className="text-red-400">
-                      Automatically replenish deficit
-                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Pricing + Total — wrapped in a relative container so the
+                Stage 2 "Stock Resolution Required" panel can expand OVER
+                this section (instead of pushing the card taller). */}
+            <div className="relative flex flex-col gap-3">
+              <div className="flex flex-col">
+                <span className="font-semibold capitalize">pricing</span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex">
+                    <input
+                      className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
+                      disabled={isSupplierPriceSelected}
+                      value={
+                        isSupplierPriceSelected ? price || "" : manualPriceInput
+                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
+                          setManualPriceInput(value);
+                          handlePriceChange(value === "" ? 0 : Number(value));
+                        }
+                      }}
+                    />
+                    <select
+                      className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
+                      value={isSupplierPriceSelected ? "supplier" : "manual"}
+                      onChange={(e) =>
+                        handlePriceModeChange(e.target.value === "supplier")
+                      }
+                    >
+                      <option value="supplier">Standard Price</option>
+                      <option value="manual">Manual Price</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* <div className="flex flex-col">
+                <span>discount</span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex">
+                    <input
+                      className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
+                      value={discountValue || 0}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                          handleDiscountValueChange(Number(value));
+                        }
+                      }}
+                    />
+                    <select
+                      className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
+                      value={discount}
+                      onChange={(e) =>
+                        handleDiscountTypeChange(e.target.value as DiscountEnum)
+                      }
+                    >
+                      <option value={DiscountEnum.PERCENTAGE}>
+                        Percentage (%)
+                      </option>
+                      <option value={DiscountEnum.MANUAL}>Manual</option>
+                    </select>
+                  </div>
+                </div>
+              </div> */}
+
+              <Separator orientation="horizontal" />
+
+              <div className="flex gap-2 items-center justify-between">
+                <span className="font-semibold">Total:</span>
+                <label className="flex gap-1 text-lg font-semibold items-center">
+                  <PhilippinePeso size={18} />
+                  {calcTotal(
+                    quantity,
+                    price,
+                    discountValue,
+                    discount,
+                  ).toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </label>
+              </div>
+
+              {isInsufficientStock && isInsufficientStockExpanded && (
+                <div
+                  className={`absolute inset-0 z-20 bg-white border-2 rounded-md shadow-lg p-3 flex flex-col gap-3 h-fit ${
+                    isAutoReplenish ? "border-green-400" : "border-red-400"
+                  }`}
+                >
+                  <span className="text-vesper-gray">
+                    The requested quantity exceeds the available stock.
+                  </span>
+
+                  <Separator orientation="horizontal" />
+
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2 items-start">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5"
+                        checked={isAutoReplenish}
+                        onChange={(e) =>
+                          handleAutoReplenishToggle(e.target.checked)
+                        }
+                      />
+                      <div className="flex flex-col">
+                        <label className="font-semibold">
+                          Auto-replenish deficit
+                        </label>
+                        <span className="text-vesper-gray">
+                          Generates an internal replenishment order to cover the
+                          remaining{" "}
+                          <span className="text-red-600 font-semibold">
+                            {calculateDeficit()} {selectedUnitName} deficit
+                          </span>
+                          .
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 justify-between p-2 rounded-md border bg-custom-gray">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">
+                          {autoReplenishPreview?.supplier_Company_Name ??
+                            "Prince Educational Supplies"}
+                        </span>
+                        <span className="bg-indigo-100 text-indigo-600 font-semibold rounded-full text-[10px] py-0.5 px-2">
+                          {autoReplenishPreview?.supplier_Label ?? "INTERNAL"}
+                        </span>
+                      </div>
+                      <span className="text-vesper-gray font-semibold">
+                        #{autoReplenishPreview?.restock_Number ?? "…"}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex gap-2 items-center">
-                    <label className="text-red-400">Deficit: </label>
-                    <span className="text-red-400">
-                      {calculateDeficit()}{" "}
-                      {
-                        selectedPreset?.preset.presetLevels.find(
-                          (l) => l.level === selectedUnitLevel,
-                        )?.unitOfMeasure.uom_Name
-                      }
+                  <div className="flex items-start gap-2 p-2 rounded-md bg-gray-100">
+                    <Info
+                      size={14}
+                      className="text-vesper-gray shrink-0 mt-0.5"
+                    />
+                    <span className="text-[11px] text-vesper-gray">
+                      This invoice cannot be completed until the stock shortage
+                      is resolved. Enable Auto-replenish deficit to generate an
+                      internal replenish order, or reduce the requested
+                      quantity.
                     </span>
                   </div>
                 </div>
               )}
-            </div>
-            <div className="flex flex-col">
-              <span>pricing</span>
-              <div className="flex flex-col gap-2">
-                <div className="flex">
-                  <input
-                    className="drop-shadow-none rounded-r-none  bg-custom-gray w-full"
-                    disabled={isSupplierPriceSelected}
-                    value={price || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                        handlePriceChange(Number(value));
-                      }
-                    }}
-                  />
-                  <select
-                    className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
-                    value={isSupplierPriceSelected ? "supplier" : "manual"}
-                    onChange={(e) =>
-                      handlePriceModeChange(e.target.value === "supplier")
-                    }
-                  >
-                    <option value="supplier">Supplier Price</option>
-                    <option value="manual">Manual</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col">
-              <span>discount</span>
-              <div className="flex flex-col gap-2">
-                <div className="flex">
-                  <input
-                    className="drop-shadow-none rounded-r-none bg-custom-gray w-full"
-                    value={discountValue || 0}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                        handleDiscountValueChange(Number(value));
-                      }
-                    }}
-                  />
-                  <select
-                    className="drop-shadow-none rounded-l-none border-l-gray border-l bg-custom-gray w-full rounded-r-lg pl-6"
-                    value={discount}
-                    onChange={(e) =>
-                      handleDiscountTypeChange(e.target.value as DiscountEnum)
-                    }
-                  >
-                    <option value={DiscountEnum.PERCENTAGE}>
-                      Percentage (%)
-                    </option>
-                    <option value={DiscountEnum.MANUAL}>Manual</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <Separator orientation="horizontal" />
-
-            <div className="flex gap-2 items-center">
-              <span>total:</span>
-              <input
-                className="shadow-none drop-shadow-none bg-custom-gray w-full"
-                disabled
-                value={calcTotal(
-                  quantity,
-                  price,
-                  discountValue,
-                  discount,
-                ).toFixed(2)}
-              />
             </div>
           </>
         )}

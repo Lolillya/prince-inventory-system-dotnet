@@ -8,6 +8,7 @@ export type InvoiceAllModel = {
   status: string;
   term: number;
   createdAt: string;
+  autoReplenishRestockNumber: string | null;
   customer: InvoiceCustomer;
   clerk: InvoiceClerk;
   lineItems: InvoiceLineItem[];
@@ -34,9 +35,14 @@ export type InvoiceLineItem = {
   product: {
     product_ID: number;
     product_Name: string;
+    brandName: string;
+    variantName: string;
+    categoryName: string;
   };
   unit: string;
   unit_Price: number;
   sub_Total: number;
   unit_Quantity: number;
+  standardPrice: number | null;
+  standardPriceDate: string | null;
 };
