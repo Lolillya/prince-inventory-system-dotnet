@@ -1,6 +1,7 @@
 using backend.Data;
 using backend.Dtos.InvoiceDTO;
 using backend.Models;
+using backend.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -69,13 +70,64 @@ namespace backend.Controller.InvoiceControllers
                 });
             }
 
-            invoice.Status = "VOIDED";
-            invoice.Notes = payload.Reason.Trim();
-            invoice.UpdatedAt = DateTime.UtcNow;
+            var reason = payload.Reason.Trim();
+            var now = DateTime.UtcNow;
 
-            await _db.SaveChangesAsync();
+            await using var transaction = await _db.Database.BeginTransactionAsync();
 
-            return Ok(new { invoice.Invoice_ID, invoice.Status });
+            try
+            {
+                // Cascade: if this invoice was covered by an auto-replenish
+                // restock, voiding it must also void that restock — reversing
+                // the inventory it received, since the invoice it was created
+                // for no longer exists.
+                var linkedRestockVoided = false;
+                if (invoice.AutoReplenish_Restock_ID.HasValue)
+                {
+                    var restockId = invoice.AutoReplenish_Restock_ID.Value;
+                    var restockOutcome = await RestockVoidHelper.VoidRestockCoreAsync(
+                        _db, restockId, $"Linked invoice voided. Reason: {reason}", user.Id, now);
+
+                    if (restockOutcome.InsufficientItems != null)
+                    {
+                        await transaction.RollbackAsync();
+                        return Conflict(new
+                        {
+                            message = "There isn't enough inventory available to void the linked restock.",
+                            insufficientItems = restockOutcome.InsufficientItems
+                        });
+                    }
+
+                    if (restockOutcome.Success)
+                    {
+                        linkedRestockVoided = true;
+                    }
+                    else if (!restockOutcome.AlreadyVoided && !restockOutcome.NotFound)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest(restockOutcome.Message ?? "Unable to void linked restock.");
+                    }
+                }
+
+                invoice.Status = "VOIDED";
+                invoice.Notes = reason;
+                invoice.UpdatedAt = now;
+
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new
+                {
+                    invoice.Invoice_ID,
+                    invoice.Status,
+                    linkedRestockVoided,
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Error while voiding invoice: {ex.Message}");
+            }
         }
     }
 }
