@@ -16,6 +16,9 @@ import { CustomerSOAModal } from "./_components/customer-soa.modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserModel } from "@/features/auth-login/models/user.model";
 import { InfoCard } from "@/components/info-card";
+import { EditCustomerService } from "@/features/customers/edit-customer/edit-customer.service";
+import axios from "axios";
+import { Info, LockKeyhole, ShieldCheck } from "lucide-react";
 
 const SuppliersPage = () => {
   const queryClient = useQueryClient();
@@ -34,6 +37,13 @@ const SuppliersPage = () => {
     null,
   );
   const [isSOAModalOpen, setIsSOAModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingEditData, setPendingEditData] = useState<UserModel | null>(
+    null,
+  );
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
@@ -74,6 +84,46 @@ const SuppliersPage = () => {
     queryClient.invalidateQueries({ queryKey: ["customer"] });
   };
 
+  const handleRequestEditConfirm = (data: UserModel) => {
+    setPendingEditData(data);
+    setPasswordError("");
+    setIsPasswordModalOpen(true);
+  };
+
+  const handleConfirmEdit = async () => {
+    if (!password.trim()) {
+      setPasswordError("Password is required.");
+      return;
+    }
+
+    if (!pendingEditData) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await EditCustomerService({
+        ...pendingEditData,
+        password,
+      });
+      const updatedCustomer = response?.data;
+
+      if (!updatedCustomer) return;
+
+      setIsPasswordModalOpen(false);
+      setPassword("");
+      setPendingEditData(null);
+      setIsEditCustomerModalOpen(false);
+      handleEditCustomerSuccess(updatedCustomer);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        setPasswordError("Incorrect password. Please try again.");
+        return;
+      }
+      console.error("Error editing customer:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleDelete = (data: UserClientModel) => {
     setUserToDelete(data);
     setIsConfirmRemoveModalOpen(true);
@@ -101,6 +151,82 @@ const SuppliersPage = () => {
 
   return (
     <section>
+      {isPasswordModalOpen ? (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-60">
+          <div className="w-full max-w-md bg-white rounded-lg border shadow-lg p-6 flex flex-col gap-4 justify-center items-center">
+            <div className="p-3 rounded-md bg-indigo-100 w-fit">
+              <LockKeyhole className="text-indigo-500" />
+            </div>
+            <div className="flex flex-col gap-1 text-center">
+              <h3 className="text-lg font-semibold">Confirm Password</h3>
+              <p className="text-sm text-vesper-gray">
+                Authentication is required to proceed
+              </p>
+            </div>
+            <Separator orientation="horizontal" />
+            <div className="flex gap-2 w-full">
+              <div className="p-2 rounded-md bg-orange-100 h-fit">
+                <Info className="text-orange-500" />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-semibold">You are about to:</span>
+                <span className="font-semibold">Edit a Customer</span>
+              </div>
+            </div>
+            <Separator orientation="horizontal" />
+            <div className="flex flex-col gap-1 w-full">
+              <label className="text-sm font-semibold text-left w-full">
+                Password
+              </label>
+              <input
+                type="password"
+                className="border rounded-md p-2 w-full shadow-none drop-shadow-none"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError && e.target.value.trim()) {
+                    setPasswordError("");
+                  }
+                }}
+                placeholder="Enter your password"
+              />
+            </div>
+            {passwordError ? (
+              <span className="text-xs text-red-500">{passwordError}</span>
+            ) : null}
+
+            <span className="flex items-center gap-1 text-xs text-vesper-gray w-full font-semibold">
+              <ShieldCheck size={14} /> For your security, please confirm your
+              password to continue.
+            </span>
+
+            <div className="flex justify-end gap-3 w-full">
+              <button
+                type="button"
+                className="px-4 py-2 border rounded-md w-full max-w-full"
+                onClick={() => {
+                  setIsPasswordModalOpen(false);
+                  setPassword("");
+                  setPasswordError("");
+                }}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 bg-river-green text-white rounded-md disabled:opacity-60 w-full max-w-full"
+                onClick={handleConfirmEdit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Saving..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {/* ADD CUSTOMER MODAL */}
       {isAddCustomerModalOpen && (
         <AddCustomerModal
@@ -126,7 +252,7 @@ const SuppliersPage = () => {
             roleID: 4,
             term: selectedCustomer.term,
           }}
-          onSuccess={handleEditCustomerSuccess}
+          onRequestConfirm={handleRequestEditConfirm}
         />
       )}
 

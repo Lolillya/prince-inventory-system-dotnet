@@ -9,5 +9,6 @@ export const EditCustomerService = async (payload: UserModel) => {
     return data;
   } catch (err) {
     handleError(err);
+    throw err;
   }
 };

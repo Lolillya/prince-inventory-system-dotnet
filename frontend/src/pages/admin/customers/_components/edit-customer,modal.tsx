@@ -6,21 +6,16 @@ import { UserModel } from "@/features/auth-login/models/user.model";
 interface EditCustomerModalProps {
   setIsEditCustomerModalOpen: Dispatch<SetStateAction<boolean>>;
   selectedCustomer: UserModel;
-  onSuccess?: (updatedCustomer: UserModel) => void;
+  onRequestConfirm: (data: UserModel) => void;
 }
 
 export const EditCustomerModal = ({
   setIsEditCustomerModalOpen,
   selectedCustomer,
-  onSuccess,
+  onRequestConfirm,
 }: EditCustomerModalProps) => {
   const handleCloseModal = () => {
     setIsEditCustomerModalOpen(false);
-  };
-
-  const handleSuccess = (updatedCustomer: UserModel) => {
-    handleCloseModal();
-    onSuccess?.(updatedCustomer);
   };
 
   return (
@@ -41,7 +36,7 @@ export const EditCustomerModal = ({
         {/*  */}
         <EditCustomerForm
           selectedCustomer={selectedCustomer}
-          onSuccess={handleSuccess}
+          onRequestConfirm={onRequestConfirm}
         />
       </div>
     </div>
