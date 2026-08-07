@@ -299,7 +299,7 @@ export const buildInvoicePdf = ({
   );
 
   if (isVoided) {
-    const totalPageCount = doc.internal.getNumberOfPages();
+    const totalPageCount = doc.getNumberOfPages();
     for (let p = 1; p <= totalPageCount; p++) {
       doc.setPage(p);
       doc.saveGraphicsState();
