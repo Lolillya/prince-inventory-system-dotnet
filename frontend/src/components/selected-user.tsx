@@ -9,7 +9,14 @@ import {
 } from "../icons";
 import { UserClientModel } from "../models/user-client.model";
 import { useState } from "react";
-import { Box, Calendar, CornerRightUp, KeyRound, Package } from "lucide-react";
+import {
+  Box,
+  Calendar,
+  CornerRightUp,
+  KeyRound,
+  Package,
+  PhilippinePeso,
+} from "lucide-react";
 
 import { InvoiceHistoryModal } from "./invoice-history-modal";
 
@@ -22,6 +29,7 @@ import { InvoiceDetailModal } from "@/pages/admin/invoice/_components/invoice-de
 import { ShowAllModal } from "@/pages/admin/restock/_components/all-items-modal";
 import { EmployeeAllInvoicesModal } from "./employee-all-invoices-modal";
 import { EmployeeAllRestocksModal } from "./employee-all-restocks-modal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 type UserType = "customer" | "supplier" | "employee";
 
@@ -40,6 +48,9 @@ export const SelectedUser = ({
   const [isInvoiceHistoryModalOpen, setIsInvoiceHistoryModalOpen] =
     useState(false);
   const amountInReceivables = 5000; // scaffold placeholder
+  const { data: customerInvoices } = useCustomerInvoicesQuery(
+    type === "customer" ? user.id : "",
+  );
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col gap-2 p-5">
@@ -80,105 +91,137 @@ export const SelectedUser = ({
 
       <Separator />
 
-      {/* amount in receivables SECTION */}
-      <div
-        className="p-2 rounded-lg bg-wash-gray hover:cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => setIsInvoiceHistoryModalOpen(true)}
-      >
-        <div className=" flex items-center gap-3">
-          <div className="bg-green-200 h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-            <span className="text-green-500 font-bold">₱</span>
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 ">
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold info-name flex gap-2">
-                ₱{amountInReceivables.toLocaleString()}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <p className="info-id text-sm">Amount in Receivables</p>
-              <CornerRightUp size={18} className="text-vesper-gray" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <Tabs className="flex-1 min-h-0 w-full" defaultValue="details">
+        <TabsList className="w-full gap-2">
+          <TabsTrigger
+            value="details"
+            className="w-full max-w-full bg-white! font-semibold text-vesper-gray
+            data-[state=active]:bg-white
+            data-[state=active]:text-blue-600
+              data-[state=active]:border-b-2
+            data-[state=active]:border-blue-600"
+          >
+            Profile
+          </TabsTrigger>
 
-      {/* user FULLNAME SECTION */}
-      <div className="p-2 rounded-lg bg-wash-gray">
-        <div className=" flex items-center gap-3">
-          <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-            <UserIcon />
-          </div>
-          <div className="flex flex-col justify-center">
-            <p className="info-id text-sm">Representative</p>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold info-name ">
-                {user.firstName} {user.lastName}
-              </p>
+          <TabsTrigger
+            value="invoice"
+            className="w-full max-w-full bg-white! font-semibold text-vesper-gray
+            data-[state=active]:bg-white
+            data-[state=active]:text-blue-600
+              data-[state=active]:border-b-2
+            data-[state=active]:border-blue-600"
+          >
+            Invoice ({customerInvoices?.length ?? 0})
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="details">
+          <div className="flex flex-col gap-2 h-full">
+            {/* amount in receivables SECTION */}
+            <div
+              className="p-2 rounded-lg bg-wash-gray hover:cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => setIsInvoiceHistoryModalOpen(true)}
+            >
+              <div className=" flex items-center gap-3">
+                <div className="bg-green-200 h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+                  <span className="text-green-500 font-bold">₱</span>
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 ">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold info-name flex gap-2">
+                      ₱{amountInReceivables.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <p className="info-id text-sm">Amount in Receivables</p>
+                    <CornerRightUp size={18} className="text-vesper-gray" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* user FULLNAME SECTION */}
+            <div className="p-2 rounded-lg bg-wash-gray">
+              <div className=" flex items-center gap-3">
+                <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+                  <UserIcon />
+                </div>
+                <div className="flex flex-col justify-center">
+                  <p className="info-id text-sm">Representative</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold info-name ">
+                      {user.firstName} {user.lastName}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* user CONTACT NUMBER SECTION */}
+            <div className="p-2 rounded-lg bg-wash-gray">
+              <div className=" flex items-center gap-3">
+                <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+                  <PhoneIcon />
+                </div>
+                <div className="flex flex-col justify-center">
+                  <p className="text-sm info-id">Contact</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm info-name">{user.phoneNumber}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* user EMAIL SECTION */}
+            <div className="p-2 rounded-lg bg-wash-gray">
+              <div className=" flex items-center gap-3">
+                <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+                  <MailIcon />
+                </div>
+                <div className="flex flex-col justify-center">
+                  <p className="text-sm info-id">Email</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm info-name">{user.email}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* user ADDRESS SECTOIN */}
+            <div className="p-2 rounded-lg bg-wash-gray">
+              <div className="flex gap-3">
+                <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+                  <PinIcon />
+                </div>
+                <div className="flex flex-col justify-center gap-2">
+                  <p className="text-xs info-id">Address</p>
+                  <div className="flex flex-col">
+                    <span className="text-xs info-name">{user.address}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* user NOTES SECTION */}
+            <div className="p-2 rounded-lg bg-wash-gray h-full">
+              <div className="flex gap-3 flex-col h-full">
+                <p className="text-xs text-slate-400">Notes</p>
+                <div className="flex w-full gap-2 h-full">
+                  <textarea
+                    rows={3}
+                    value={user.notes}
+                    readOnly
+                    className="w-full resize-none text-sm"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* user CONTACT NUMBER SECTION */}
-      <div className="p-2 rounded-lg bg-wash-gray">
-        <div className=" flex items-center gap-3">
-          <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-            <PhoneIcon />
-          </div>
-          <div className="flex flex-col justify-center">
-            <p className="text-sm info-id">Contact</p>
-            <div className="flex items-center gap-2">
-              <p className="text-sm info-name">{user.phoneNumber}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* user EMAIL SECTION */}
-      <div className="p-2 rounded-lg bg-wash-gray">
-        <div className=" flex items-center gap-3">
-          <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-            <MailIcon />
-          </div>
-          <div className="flex flex-col justify-center">
-            <p className="text-sm info-id">Email</p>
-            <div className="flex items-center gap-2">
-              <p className="text-sm info-name">{user.email}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* user ADDRESS SECTOIN */}
-      <div className="p-2 rounded-lg bg-wash-gray">
-        <div className="flex gap-3">
-          <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-            <PinIcon />
-          </div>
-          <div className="flex flex-col justify-center gap-2">
-            <p className="text-xs info-id">Address</p>
-            <div className="flex flex-col">
-              <span className="text-xs info-name">{user.address}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* user NOTES SECTION */}
-      <div className="p-2 rounded-lg bg-wash-gray">
-        <div className="flex gap-3 flex-col">
-          <p className="text-xs text-slate-400">Notes</p>
-          <div className="flex w-full gap-2">
-            <textarea
-              rows={3}
-              value={user.notes}
-              readOnly
-              className="w-full resize-none text-sm"
-            />
-          </div>
-        </div>
-      </div>
+        </TabsContent>
+        <TabsContent value="invoice" className="min-h-0 flex flex-col">
+          {type === "customer" && <CustomerActions customerId={user.id} />}
+        </TabsContent>
+      </Tabs>
 
       {isInvoiceHistoryModalOpen && (
         <InvoiceHistoryModal
@@ -188,9 +231,9 @@ export const SelectedUser = ({
       )}
 
       {/* USER ACTIONS SECTION */}
-      {type === "supplier" && <SupplierActions />}
-      {type === "customer" && <CustomerActions customerId={user.id} />}
-      {type === "employee" && <EmployeeActions employeeId={user.id} />}
+      {/* {type === "supplier" && <SupplierActions />} */}
+
+      {/* {type === "employee" && <EmployeeActions employeeId={user.id} />} */}
     </div>
   );
 };
@@ -267,17 +310,32 @@ const SupplierActions = () => {
   );
 };
 
-const invoiceStatusTag = (status: string | null) => {
-  if (!status) return null;
+const computeInvoiceDueDate = (invoice: InvoiceAllModel): Date => {
+  const dueDate = new Date(invoice.createdAt);
+  dueDate.setDate(dueDate.getDate() + invoice.term);
+  return dueDate;
+};
+
+const computeInvoiceStatus = (invoice: InvoiceAllModel): string => {
+  if (invoice.status?.toUpperCase() === "VOIDED") return "Voided";
+  if (invoice.balance <= 0) return "Paid";
+  if (invoice.balance < invoice.total_Amount) return "Partially Paid";
+  if (new Date() > computeInvoiceDueDate(invoice)) return "Overdue";
+  return "Pending";
+};
+
+const invoiceStatusTag = (status: string) => {
   const map: Record<string, string> = {
-    PAID: "bg-green-100 text-green-700",
-    PENDING: "bg-amber-100 text-amber-700",
-    VOIDED: "bg-red-100 text-red-600",
+    Paid: "bg-green-100 text-green-700",
+    Pending: "bg-indigo-100 text-indigo-700",
+    "Partially Paid": "bg-amber-100 text-amber-700",
+    Overdue: "bg-red-100 text-red-600",
+    Voided: "bg-gray-100 text-gray-600",
   };
-  const classes = map[status.toUpperCase()] ?? "bg-gray-100 text-gray-600";
+  const classes = map[status] ?? "bg-gray-100 text-gray-600";
   return (
     <span
-      className={`text-xs px-2 py-0.5 rounded-full font-semibold capitalize ${classes}`}
+      className={`text-xs px-3 py-1.5 rounded-full font-semibold whitespace-nowrap ${classes}`}
     >
       {status}
     </span>
@@ -296,7 +354,7 @@ const CustomerActions = ({ customerId }: { customerId: string }) => {
           setIsInvoiceHistoryModalOpen={setIsInvoiceModalOpen}
         />
       )}
-      <div className="p-2 rounded-lg bg-wash-gray flex shrink-0 flex-1 flex-col">
+      <div className="p-2 rounded-lg bg-wash-gray flex shrink-0 flex-1 flex-col min-h-0">
         <div className="flex gap-3 items-center justify-between">
           <button
             className="bg-transparent text-vesper-gray font-semibold tracking-wide w-fit hover:bg-bellflower-gray"
@@ -317,41 +375,34 @@ const CustomerActions = ({ customerId }: { customerId: string }) => {
         )}
 
         {!isLoading && invoices && invoices.length > 0 && (
-          <div className="flex flex-col gap-3 mt-2">
+          <div className="flex flex-1 flex-col gap-3 mt-2 min-h-0 overflow-y-scroll">
             {invoices.map((invoice) => (
               <div
                 key={invoice.invoice_ID}
-                className="flex flex-col gap-1 px-2"
+                className="flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm"
               >
-                <div className="flex items-center justify-between">
-                  <label className="text-saltbox-gray font-semibold">
-                    #{invoice.invoice_Number}
+                <div className="grid grid-cols-2 items-center w-full">
+                  <label className="text-sm font-semibold text-saltbox-gray">
+                    DR/INV-{String(invoice.invoice_Number).padStart(6, "0")}
                   </label>
-                  {invoiceStatusTag(invoice.status)}
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="text-vesper-gray" size={14} />
-                    <label className="text-vesper-gray text-xs font-semibold">
-                      {new Intl.DateTimeFormat("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      }).format(new Date(invoice.createdAt))}
-                    </label>
+                  <div className="flex flex-col gap-2 pl-3 border-l-2 border-slate-300">
+                    <div className="flex items-center gap-2 text-vesper-gray">
+                      <Calendar size={14} />
+                      <span className="text-xs font-medium">
+                        {new Intl.DateTimeFormat("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }).format(new Date(invoice.createdAt))}
+                      </span>
+                    </div>
+                    <span className="text-xs font-semibold text-vesper-gray flex gap-2">
+                      <PhilippinePeso size={14} />
+                      {invoice.total_Amount.toLocaleString()}
+                    </span>
                   </div>
-                  <Separator orientation="vertical" className="flex-0!" />
-                  <div className="flex items-center gap-1">
-                    <Box className="text-vesper-gray" size={14} />
-                    <label className="text-vesper-gray text-xs font-semibold">
-                      {invoice.lineItems.length} item/s
-                    </label>
-                  </div>
-                  <Separator orientation="vertical" className="flex-0!" />
-                  <label className="text-vesper-gray text-xs font-semibold">
-                    ₱{invoice.total_Amount.toLocaleString()}
-                  </label>
                 </div>
+                {invoiceStatusTag(computeInvoiceStatus(invoice))}
               </div>
             ))}
           </div>
