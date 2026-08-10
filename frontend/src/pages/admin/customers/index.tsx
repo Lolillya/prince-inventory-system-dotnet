@@ -11,7 +11,7 @@ import { Fragment, useState } from "react";
 import { AddCustomerModal } from "./_components/add-customer.modal";
 import { EditCustomerModal } from "./_components/edit-customer,modal";
 import { UserClientModel } from "@/models/user-client.model";
-import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { ToggleCustomerActiveModal } from "./_components/toggle-customer-active.modal";
 import { CustomerSOAModal } from "./_components/customer-soa.modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserModel } from "@/features/auth-login/models/user.model";
@@ -31,11 +31,8 @@ const SuppliersPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [isEditCustomerModalOpen, setIsEditCustomerModalOpen] = useState(false);
-  const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
-    useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
-    null,
-  );
+  const [customerToToggle, setCustomerToToggle] =
+    useState<UserClientModel | null>(null);
   const [isSOAModalOpen, setIsSOAModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -59,6 +56,7 @@ const SuppliersPage = () => {
       ...newCustomer,
       roleID: 4,
       role: "Customer", // Add the role field for tag display
+      isActive: true, // Newly created customers are active by default
     } as UserClientModel;
 
     // Update the cache with the new customer added to the list
@@ -76,6 +74,7 @@ const SuppliersPage = () => {
     // Update the selected customer in the query cache
     const updatedCustomerWithRole = {
       ...updatedCustomer,
+      isActive: true,
       roleID: 3,
       role: "Customer", // Add the role field for tag display
     } as UserClientModel;
@@ -124,30 +123,23 @@ const SuppliersPage = () => {
     }
   };
 
-  const handleDelete = (data: UserClientModel) => {
-    setUserToDelete(data);
-    setIsConfirmRemoveModalOpen(true);
+  const handleToggleActive = (data: UserClientModel) => {
+    setCustomerToToggle(data);
   };
 
-  const handleDeleteCustomerSuccess = (deletedUserId: string) => {
-    // Invalidate the customers query to refresh the list
-    queryClient.invalidateQueries({ queryKey: ["customer"] });
-    // Clear selected customer if the deleted customer was selected
-    if (selectedCustomer?.id === deletedUserId) {
-      queryClient.setQueryData(["invoice-customer"], null);
-    }
-  };
-
-  const filteredCustomers = customers?.filter((customer) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      customer.firstName.toLowerCase().includes(query) ||
-      customer.lastName.toLowerCase().includes(query) ||
-      customer.email.toLowerCase().includes(query) ||
-      customer.companyName.toLowerCase().includes(query) ||
-      customer.phoneNumber.toLowerCase().includes(query)
-    );
-  });
+  const filteredCustomers = customers
+    ?.filter((customer) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        customer.firstName.toLowerCase().includes(query) ||
+        customer.lastName.toLowerCase().includes(query) ||
+        customer.email.toLowerCase().includes(query) ||
+        customer.companyName.toLowerCase().includes(query) ||
+        customer.phoneNumber.toLowerCase().includes(query)
+      );
+    })
+    // Deactivated customers sink to the bottom of the list.
+    .sort((a, b) => Number(b.isActive) - Number(a.isActive));
 
   return (
     <section>
@@ -201,12 +193,11 @@ const SuppliersPage = () => {
         <CustomerSOAModal setIsSOAModalOpen={setIsSOAModalOpen} />
       )}
 
-      {/* CONFIRM DELETE MODAL */}
-      {isConfirmRemoveModalOpen && userToDelete && (
-        <ConfirmRemoveModal
-          setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
-          userId={userToDelete.id}
-          onSuccess={handleDeleteCustomerSuccess}
+      {/* DEACTIVATE/REACTIVATE CUSTOMER MODAL */}
+      {customerToToggle && (
+        <ToggleCustomerActiveModal
+          customer={customerToToggle}
+          onClose={() => setCustomerToToggle(null)}
         />
       )}
       <div className="w-full mb-8">
@@ -272,8 +263,8 @@ const SuppliersPage = () => {
                   type="customer"
                   key={index}
                   {...data}
-                  handleDelete={() => handleDelete(data)}
-                  setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
+                  setIsConfirmRemoveModalOpen={() => {}}
+                  onToggleActive={() => handleToggleActive(data)}
                 />
                 <Separator />
               </Fragment>
