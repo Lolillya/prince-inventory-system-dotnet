@@ -1,6 +1,6 @@
 import { Search, X, ArrowLeft, FileText, FileSearch } from "lucide-react";
 import jsPDF from "jspdf";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { useCustomerReceivablesSummaryQuery } from "@/features/customers/customer-receivables-summary.query";
 import { useCustomerInvoicesQuery } from "@/features/customers/customer-invoices.query";
 import { InvoiceAllModel } from "@/features/invoice/models/invoice-all.model";
@@ -12,6 +12,7 @@ import { InvoicePaymentModel } from "@/features/invoice/models/invoice-payment.m
 
 interface CustomerSOAModalProps {
   setIsSOAModalOpen: Dispatch<SetStateAction<boolean>>;
+  initialCustomerId?: string;
 }
 
 type InvoiceStatus =
@@ -104,6 +105,7 @@ const StatusBreakdownDots = ({
 
 export const CustomerSOAModal = ({
   setIsSOAModalOpen,
+  initialCustomerId,
 }: CustomerSOAModalProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -124,6 +126,19 @@ export const CustomerSOAModal = ({
 
   const { data: summary, isLoading: isSummaryLoading } =
     useCustomerReceivablesSummaryQuery();
+
+  // Pre-select a customer when opened from their own profile, skipping the
+  // customer list. Only auto-selects once, so navigating back to the list
+  // afterwards (when allowed) sticks.
+  const hasAutoSelected = useRef(false);
+  useEffect(() => {
+    if (!initialCustomerId || hasAutoSelected.current) return;
+    const match = summary?.find((c) => c.id === initialCustomerId);
+    if (match) {
+      setSelectedCustomer(match);
+      hasAutoSelected.current = true;
+    }
+  }, [initialCustomerId, summary]);
 
   const { data: invoices, isLoading: isInvoicesLoading } =
     useCustomerInvoicesQuery(selectedCustomer?.id ?? "");
@@ -488,15 +503,19 @@ export const CustomerSOAModal = ({
           <>
             {/* Header */}
             <div className="flex items-center justify-between">
-              <div
-                className="flex items-center gap-2 cursor-pointer text-vesper-gray hover:text-saltbox-gray transition-colors"
-                onClick={() => setSelectedCustomer(null)}
-              >
-                <ArrowLeft size={18} />
-                <span className="text-sm font-semibold">
-                  General Receivables
-                </span>
-              </div>
+              {initialCustomerId ? (
+                <div />
+              ) : (
+                <div
+                  className="flex items-center gap-2 cursor-pointer text-vesper-gray hover:text-saltbox-gray transition-colors"
+                  onClick={() => setSelectedCustomer(null)}
+                >
+                  <ArrowLeft size={18} />
+                  <span className="text-sm font-semibold">
+                    General Receivables
+                  </span>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <button
                   className={`px-4 py-2 border rounded-lg bg-white text-blue-600 text-sm font-semibold flex items-center gap-2 transition-colors ${

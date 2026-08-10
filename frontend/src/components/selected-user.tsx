@@ -22,12 +22,14 @@ import {
 import { InvoiceHistoryModal } from "./invoice-history-modal";
 
 import { useCustomerInvoicesQuery } from "@/features/customers/customer-invoices.query";
+import { useCustomerReceivablesSummaryQuery } from "@/features/customers/customer-receivables-summary.query";
 import { useEmployeeInvoicesQuery } from "@/features/employees/employee-invoices.query";
 import { useEmployeeRestocksQuery } from "@/features/employees/employee-restocks.query";
 import { InvoiceAllModel } from "@/features/invoice/models/invoice-all.model";
 import { RestockAllModel } from "@/features/restock/models/restock-all.model";
 import { InvoiceDetailModal } from "@/pages/admin/invoice/_components/invoice-detail-modal";
 import { ShowAllModal } from "@/pages/admin/restock/_components/all-items-modal";
+import { CustomerSOAModal } from "@/pages/admin/customers/_components/customer-soa.modal";
 import { EmployeeAllInvoicesModal } from "./employee-all-invoices-modal";
 import { EmployeeAllRestocksModal } from "./employee-all-restocks-modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -46,12 +48,14 @@ export const SelectedUser = ({
   handleRecover,
   ...user
 }: SelectedUserProps) => {
-  const [isInvoiceHistoryModalOpen, setIsInvoiceHistoryModalOpen] =
-    useState(false);
-  const amountInReceivables = 5000; // scaffold placeholder
+  const [isReceivablesModalOpen, setIsReceivablesModalOpen] = useState(false);
   const { data: customerInvoices } = useCustomerInvoicesQuery(
     type === "customer" ? user.id : "",
   );
+  const { data: receivablesSummary } = useCustomerReceivablesSummaryQuery();
+  const amountInReceivables =
+    receivablesSummary?.find((c) => c.id === user.id)
+      ?.totalOutstandingBalance ?? 0;
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col gap-2 p-5">
@@ -121,7 +125,7 @@ export const SelectedUser = ({
             {/* amount in receivables SECTION */}
             <div
               className="p-2 rounded-lg bg-wash-gray hover:cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => setIsInvoiceHistoryModalOpen(true)}
+              onClick={() => setIsReceivablesModalOpen(true)}
             >
               <div className=" flex items-center gap-3">
                 <div className="bg-green-200 h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
@@ -224,10 +228,10 @@ export const SelectedUser = ({
         </TabsContent>
       </Tabs>
 
-      {isInvoiceHistoryModalOpen && (
-        <InvoiceHistoryModal
-          customerId={user.id}
-          setIsInvoiceHistoryModalOpen={setIsInvoiceHistoryModalOpen}
+      {isReceivablesModalOpen && (
+        <CustomerSOAModal
+          setIsSOAModalOpen={setIsReceivablesModalOpen}
+          initialCustomerId={user.id}
         />
       )}
 
