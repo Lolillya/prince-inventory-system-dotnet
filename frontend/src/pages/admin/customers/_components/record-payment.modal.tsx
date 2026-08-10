@@ -1,13 +1,24 @@
 import {
   ArrowLeft,
+  Ban,
   Calendar,
   ChevronDown,
   ChevronRight,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  ShieldCheck,
+  TriangleAlert,
   X,
   CircleAlert,
 } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { InvoiceAllModel } from "@/features/invoice/models/invoice-all.model";
 import { PaymentMethod } from "@/features/invoice/models/invoice-payment.model";
 import {
@@ -105,6 +116,8 @@ export const RecordPaymentModal = ({
   const [invalidationPasswordError, setInvalidationPasswordError] =
     useState("");
   const [invalidationReasonError, setInvalidationReasonError] = useState("");
+  const [showInvalidationPassword, setShowInvalidationPassword] =
+    useState(false);
 
   const { data: payments, isLoading: isPaymentsLoading } =
     useInvoicePaymentsQuery(invoice.invoice_ID);
@@ -122,6 +135,8 @@ export const RecordPaymentModal = ({
     !isNaN(amountNum) && amountNum > 0 && amountNum <= liveBalance;
 
   const needsReference = paymentMethod !== "Cash";
+
+  const isPaid = computeInvoiceStatus(invoice) === "Paid";
 
   const handleRecordPayment = async () => {
     setFormError("");
@@ -157,6 +172,9 @@ export const RecordPaymentModal = ({
     }
   };
 
+  const invalidatingPayment =
+    payments?.find((p) => p.payment_ID === invalidatingPaymentId) ?? null;
+
   const handleOpenInvalidation = (paymentId: number) => {
     setInvalidatingPaymentId(paymentId);
     setInvalidationStep("confirm");
@@ -164,6 +182,7 @@ export const RecordPaymentModal = ({
     setInvalidationReason("");
     setInvalidationPasswordError("");
     setInvalidationReasonError("");
+    setShowInvalidationPassword(false);
   };
 
   const handleCloseInvalidation = () => {
@@ -234,7 +253,7 @@ export const RecordPaymentModal = ({
           </div>
           <div>
             <h1 className="text-2xl font-bold text-saltbox-gray">
-              Record Payment
+              {isPaid ? "Payment History" : "Record Payment"}
             </h1>
             <p className="text-sm text-vesper-gray flex items-center gap-2">
               <span>{String(invoice.invoice_Number).padStart(6, "0")}</span>
@@ -275,6 +294,7 @@ export const RecordPaymentModal = ({
         </div>
 
         {/* Enter Payment */}
+        {!isPaid && (
         <div className="flex flex-col gap-3">
           <h2 className="text-base font-bold text-saltbox-gray">
             Enter Payment
@@ -393,6 +413,7 @@ export const RecordPaymentModal = ({
             </div>
           </div>
         </div>
+        )}
 
         {/* Payment History Toggle */}
         <div className="border rounded-lg overflow-hidden">
@@ -426,7 +447,7 @@ export const RecordPaymentModal = ({
                   No payments recorded yet.
                 </div>
               ) : (
-                <table className="w-full text-sm">
+                <table className="w-full text-sm relative">
                   <thead>
                     <tr className="bg-wash-gray border-b">
                       <th className="text-left px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
@@ -493,19 +514,38 @@ export const RecordPaymentModal = ({
                         </td>
                         <td className="px-4 py-2 text-center">
                           {payment.isInvalidated ? (
-                            <div className="flex flex-col items-center gap-0.5">
-                              <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-red-100 text-red-600">
-                                INVALIDATED
-                              </span>
-                              {payment.invalidationReason && (
-                                <span
-                                  className="text-xs text-vesper-gray italic max-w-[140px] truncate"
-                                  title={payment.invalidationReason}
-                                >
-                                  "{payment.invalidationReason}"
+                            <HoverCard openDelay={100} closeDelay={100}>
+                              <HoverCardTrigger asChild>
+                                <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-red-100 text-red-600 cursor-default">
+                                  INVALIDATED
                                 </span>
-                              )}
-                            </div>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-72 bg-red-50 border-red-200 p-4 text-left">
+                                <div className="flex items-center gap-2 text-red-700 font-semibold text-sm">
+                                  <Ban size={16} />
+                                  Invalidation Information
+                                </div>
+                                <div className="border-t border-red-200 my-2" />
+                                <p className="text-xs text-red-700">
+                                  Invalidated on{" "}
+                                  <span className="font-bold text-red-800">
+                                    {payment.invalidatedAt
+                                      ? formatDate(payment.invalidatedAt)
+                                      : "—"}
+                                  </span>{" "}
+                                  by{" "}
+                                  <span className="font-bold text-red-800">
+                                    {payment.invalidatedByName ?? "—"}
+                                  </span>
+                                </p>
+                                {payment.invalidationReason && (
+                                  <div className="mt-2 bg-white rounded-md p-2 text-xs text-saltbox-gray">
+                                    <span className="font-bold">Reason:</span>{" "}
+                                    {payment.invalidationReason}
+                                  </div>
+                                )}
+                              </HoverCardContent>
+                            </HoverCard>
                           ) : (
                             <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-green-100 text-green-700">
                               VALID
@@ -536,100 +576,217 @@ export const RecordPaymentModal = ({
 
       {/* Invalidation Overlay */}
       {invalidatingPaymentId != null && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-60">
-          <div className="w-full max-w-md bg-white rounded-lg border shadow-lg p-6 flex flex-col gap-4 mx-4">
-            {invalidationStep === "confirm" ? (
-              <>
-                <h3 className="text-lg font-semibold text-saltbox-gray">
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-60 p-4">
+          {invalidationStep === "confirm" ? (
+            <div className="w-full max-w-lg bg-white rounded-xl border shadow-lg p-6 flex flex-col gap-4">
+              <div className="flex items-start justify-between">
+                <h3 className="text-xl font-bold text-saltbox-gray">
                   Invalidate Payment
                 </h3>
-                <p className="text-sm text-vesper-gray">
-                  Are you sure you want to invalidate this payment? This will
-                  restore the invoice balance.
-                </p>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-vesper-gray uppercase">
-                    Reason
-                  </label>
-                  <textarea
-                    className="border rounded-md p-2 text-sm resize-none"
-                    rows={3}
-                    placeholder="Enter reason for invalidation"
-                    value={invalidationReason}
-                    onChange={(e) => {
-                      setInvalidationReason(e.target.value);
-                      if (e.target.value.trim()) setInvalidationReasonError("");
-                    }}
-                  />
-                  {invalidationReasonError && (
-                    <span className="text-xs text-red-500">
-                      {invalidationReasonError}
-                    </span>
-                  )}
+                <div
+                  className="p-1 rounded-md cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={handleCloseInvalidation}
+                >
+                  <X size={20} className="text-saltbox-gray" />
                 </div>
-                <div className="flex items-center gap-2 text-amber-600">
-                  <CircleAlert size={14} />
-                  <span className="text-xs">
-                    The invoice balance will be recalculated upon invalidation.
+              </div>
+
+              <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg p-4">
+                <TriangleAlert
+                  size={26}
+                  className="text-red-600 shrink-0 mt-0.5"
+                />
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-bold text-red-700">
+                    This action will invalidate the payment.
+                  </span>
+                  <span className="text-sm text-red-600">
+                    After invalidating this payment, the invoice balance will be
+                    recalculated to reflect the change.
                   </span>
                 </div>
-                <div className="flex justify-end gap-3">
-                  <button
-                    className="px-4 py-2 border rounded-md text-sm"
-                    onClick={handleCloseInvalidation}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-red-500 text-white text-sm rounded-md"
-                    onClick={handleInvalidationContinue}
-                  >
-                    Continue
-                  </button>
+              </div>
+
+              {invalidatingPayment && (
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-sm font-bold text-saltbox-gray">
+                    Payment Details
+                  </h4>
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-wash-gray border-b">
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
+                            Payment Date
+                          </th>
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
+                            Amount
+                          </th>
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
+                            Method
+                          </th>
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
+                            Recorded By
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="px-4 py-2 text-vesper-gray whitespace-nowrap">
+                            {formatDate(invalidatingPayment.createdAt)}
+                          </td>
+                          <td className="px-4 py-2 font-bold text-saltbox-gray line-through whitespace-nowrap">
+                            {formatCurrency(invalidatingPayment.amount)}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <p className="text-saltbox-gray font-medium">
+                              {PAYMENT_METHODS.find(
+                                (m) =>
+                                  m.value === invalidatingPayment.paymentMethod,
+                              )?.label ?? invalidatingPayment.paymentMethod}
+                            </p>
+                            <p className="text-xs text-vesper-gray">
+                              {invalidatingPayment.referenceNo ?? "—"}
+                            </p>
+                          </td>
+                          <td className="px-4 py-2 text-vesper-gray whitespace-nowrap">
+                            {invalidatingPayment.createdByName}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </>
-            ) : (
-              <>
-                <h3 className="text-lg font-semibold text-saltbox-gray">
-                  Confirm Password
-                </h3>
-                <p className="text-sm text-vesper-gray">
-                  Enter your password to proceed with invalidation.
-                </p>
-                <input
-                  type="password"
-                  className="border rounded-md p-2 text-sm"
-                  placeholder="Enter your password"
-                  value={invalidationPassword}
+              )}
+
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-bold text-saltbox-gray">
+                  Reason <span className="text-red-500">*</span>
+                </label>
+                <span className="text-xs text-vesper-gray">
+                  This reason will be recorded in the payment history.
+                </span>
+                <textarea
+                  className="border rounded-md p-3 text-sm resize-none mt-1"
+                  rows={3}
+                  placeholder="Enter the reason for invalidating this payment"
+                  value={invalidationReason}
                   onChange={(e) => {
-                    setInvalidationPassword(e.target.value);
-                    if (e.target.value.trim()) setInvalidationPasswordError("");
+                    setInvalidationReason(e.target.value);
+                    if (e.target.value.trim()) setInvalidationReasonError("");
                   }}
                 />
+                {invalidationReasonError && (
+                  <span className="text-xs text-red-500">
+                    {invalidationReasonError}
+                  </span>
+                )}
+              </div>
+
+              <div className="border-t pt-4 flex justify-end gap-3">
+                <button onClick={handleCloseInvalidation}>Cancel</button>
+                <button
+                  className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-md flex items-center gap-2 transition-colors text-nowrap max-w-fit"
+                  onClick={handleInvalidationContinue}
+                >
+                  <TriangleAlert size={18} />
+                  Invalidate Payment
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full max-w-md bg-white rounded-xl border shadow-lg p-6 flex flex-col gap-4">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="rounded-lg p-3 bg-indigo-200 w-fit">
+                  <LockKeyhole className="text-indigo-600" size={28} />
+                </div>
+                <h3 className="text-xl font-bold text-saltbox-gray">
+                  Confirm Your Password
+                </h3>
+                <p className="text-sm text-vesper-gray">
+                  Authentication required to proceed
+                </p>
+              </div>
+
+              <div className="border-t" />
+
+              <div className="flex gap-3 items-start">
+                <div className="rounded-lg p-2 bg-orange-100 w-fit shrink-0">
+                  <TriangleAlert className="text-orange-500" size={22} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-saltbox-gray">
+                    You are about to:
+                  </span>
+                  <span className="text-sm font-bold text-saltbox-gray">
+                    Invalidate this Payment
+                  </span>
+                  <span className="text-xs text-vesper-gray">
+                    This action cannot be undone.
+                  </span>
+                </div>
+              </div>
+
+              <div className="border-t" />
+
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-saltbox-gray">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showInvalidationPassword ? "text" : "password"}
+                    className="border rounded-md p-2 pr-10 w-full text-sm"
+                    placeholder="Enter your password"
+                    value={invalidationPassword}
+                    onChange={(e) => {
+                      setInvalidationPassword(e.target.value);
+                      if (e.target.value.trim())
+                        setInvalidationPasswordError("");
+                    }}
+                  />
+                  <div
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-vesper-gray cursor-pointer hover:text-saltbox-gray transition-colors"
+                    onClick={() => setShowInvalidationPassword((prev) => !prev)}
+                    tabIndex={-1}
+                  >
+                    {showInvalidationPassword ? (
+                      <EyeOff size={16} />
+                    ) : (
+                      <Eye size={16} />
+                    )}
+                  </div>
+                </div>
                 {invalidationPasswordError && (
                   <span className="text-xs text-red-500">
                     {invalidationPasswordError}
                   </span>
                 )}
-                <div className="flex justify-end gap-3">
-                  <button
-                    className="px-4 py-2 border rounded-md text-sm"
-                    onClick={() => setInvalidationStep("confirm")}
-                    disabled={isInvalidating}
-                  >
-                    Back
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-red-500 text-white text-sm rounded-md disabled:opacity-60"
-                    onClick={handleConfirmInvalidation}
-                    disabled={isInvalidating}
-                  >
-                    {isInvalidating ? "Invalidating..." : "Invalidate Payment"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+              </div>
+
+              <span className="flex items-center gap-1 text-xs text-vesper-gray font-semibold">
+                <ShieldCheck size={14} /> For your security, please confirm your
+                password to continue.
+              </span>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  className="px-4 py-2 border rounded-md text-sm font-semibold text-saltbox-gray bg-white! hover:bg-gray-50 transition-colors max-w-full w-full"
+                  onClick={() => setInvalidationStep("confirm")}
+                  disabled={isInvalidating}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 bg-river-green text-white text-sm font-semibold rounded-md disabled:opacity-60 transition-colors max-w-full w-full"
+                  onClick={handleConfirmInvalidation}
+                  disabled={isInvalidating}
+                >
+                  {isInvalidating ? "Please wait..." : "Confirm & Proceed"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
