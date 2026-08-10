@@ -10,4 +10,5 @@ export type UserClientModel = {
   role: string;
   address: string;
   term?: number;
+  isActive: boolean;
 };
