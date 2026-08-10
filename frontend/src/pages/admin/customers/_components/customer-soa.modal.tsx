@@ -6,6 +6,7 @@ import { useCustomerInvoicesQuery } from "@/features/customers/customer-invoices
 import { InvoiceAllModel } from "@/features/invoice/models/invoice-all.model";
 import { CustomerReceivablesSummary } from "@/features/customers/models/customer-receivables-summary.model";
 import { RecordPaymentModal } from "./record-payment.modal";
+import { InvoiceDetailModal } from "@/pages/admin/invoice/_components/invoice-detail-modal";
 import { invoicePaymentService } from "@/features/invoice/invoice-payment.service";
 import { InvoicePaymentModel } from "@/features/invoice/models/invoice-payment.model";
 
@@ -109,6 +110,9 @@ export const CustomerSOAModal = ({
   const [selectedCustomer, setSelectedCustomer] =
     useState<CustomerReceivablesSummary | null>(null);
   const [paymentInvoice, setPaymentInvoice] = useState<InvoiceAllModel | null>(
+    null,
+  );
+  const [viewedInvoice, setViewedInvoice] = useState<InvoiceAllModel | null>(
     null,
   );
 
@@ -368,6 +372,15 @@ export const CustomerSOAModal = ({
           setPaymentInvoice(null);
           setIsSOAModalOpen(false);
         }}
+      />
+    );
+  }
+
+  if (viewedInvoice) {
+    return (
+      <InvoiceDetailModal
+        selectedInvoice={viewedInvoice}
+        onClose={() => setViewedInvoice(null)}
       />
     );
   }
@@ -687,6 +700,20 @@ export const CustomerSOAModal = ({
                                     onClick={() => setPaymentInvoice(invoice)}
                                   >
                                     Record Payment
+                                  </div>
+                                ) : status === "Paid" ? (
+                                  <div
+                                    className="text-xs text-saltbox-gray font-semibold border rounded-md px-3 py-1 hover:bg-bellflower-gray transition-colors cursor-pointer inline-block"
+                                    onClick={() => setPaymentInvoice(invoice)}
+                                  >
+                                    Payment History
+                                  </div>
+                                ) : status === "Voided" ? (
+                                  <div
+                                    className="text-xs text-saltbox-gray font-semibold border rounded-md px-3 py-1 hover:bg-bellflower-gray transition-colors cursor-pointer inline-block"
+                                    onClick={() => setViewedInvoice(invoice)}
+                                  >
+                                    View Details
                                   </div>
                                 ) : null}
                               </td>

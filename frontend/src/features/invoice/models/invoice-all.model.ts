@@ -8,6 +8,7 @@ export type InvoiceAllModel = {
   status: string;
   term: number;
   createdAt: string;
+  updatedAt: string;
   autoReplenishRestockNumber: string | null;
   customer: InvoiceCustomer;
   clerk: InvoiceClerk;
