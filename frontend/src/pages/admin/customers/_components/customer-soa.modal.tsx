@@ -227,40 +227,19 @@ export const CustomerSOAModal = ({
     );
 
     const pdfCurrency = (amount: number) =>
-      `PHP ${amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      `Php ${amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-    const checkPageBreak = (doc: jsPDF, y: number, needed = 14): number => {
-      if (y + needed > 275) {
-        doc.addPage();
-        return 20;
-      }
-      return y;
-    };
+    const formatInvoiceNo = (n: number) =>
+      `DR/INV-${String(n).padStart(6, "0")}`;
+
+    const LEFT = 15;
+    const RIGHT = 195;
+    const BOTTOM = 275;
 
     const doc = new jsPDF();
     doc.setFont("helvetica");
 
-    // Title
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text("STATEMENT OF ACCOUNT", 15, 20);
-
-    // Customer info
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(selectedCustomer.companyName, 15, 30);
-    doc.text(
-      `${selectedCustomer.firstName} ${selectedCustomer.lastName}`,
-      15,
-      36,
-    );
-
-    // Statement Date
     const todayStr = formatDate(new Date().toISOString());
-    doc.setFont("helvetica", "bold");
-    doc.text("Statement Date:", 15, 46);
-    doc.setFont("helvetica", "normal");
-    doc.text(todayStr, 48, 46);
 
     // Statement Period (min–max of open invoice createdAt)
     let periodStr = "N/A";
@@ -276,83 +255,175 @@ export const CustomerSOAModal = ({
       );
       periodStr = `${minDate} - ${maxDate}`;
     }
-    doc.setFont("helvetica", "bold");
-    doc.text("Statement Period:", 15, 52);
-    doc.setFont("helvetica", "normal");
-    doc.text(periodStr, 50, 52);
 
-    doc.setDrawColor(220, 220, 220);
-    doc.line(15, 59, 195, 59);
+    const drawTitle = () => {
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("STATEMENT OF ACCOUNT", LEFT, 20);
+    };
 
-    // Account Summary header
+    // Full header — customer, address, statement date/period. First page only.
+    const drawFirstPageHeader = (): number => {
+      drawTitle();
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Customer Name:", LEFT, 30);
+      doc.setFont("helvetica", "normal");
+      doc.text(selectedCustomer.companyName, LEFT + 34, 30);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Address:", LEFT, 36);
+      doc.setFont("helvetica", "normal");
+      doc.text("-", LEFT + 34, 36);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Statement Date:", LEFT, 46);
+      doc.setFont("helvetica", "normal");
+      doc.text(todayStr, LEFT + 34, 46);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Statement Period:", LEFT, 52);
+      doc.setFont("helvetica", "normal");
+      doc.text(periodStr, LEFT + 38, 52);
+
+      doc.setDrawColor(220, 220, 220);
+      doc.line(LEFT, 59, RIGHT, 59);
+
+      return 72;
+    };
+
+    // Condensed header repeated on continuation pages.
+    const drawContinuationHeader = (): number => {
+      drawTitle();
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Customer Name:", LEFT, 30);
+      doc.setFont("helvetica", "normal");
+      doc.text(selectedCustomer.companyName, LEFT + 34, 30);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Statement Period:", LEFT, 36);
+      doc.setFont("helvetica", "normal");
+      doc.text(periodStr, LEFT + 38, 36);
+
+      doc.setDrawColor(220, 220, 220);
+      doc.line(LEFT, 42, RIGHT, 42);
+
+      return 54;
+    };
+
+    const drawSummaryColumnHeaders = (y: number): number => {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text("Invoice No.", LEFT, y);
+      doc.text("Due Date", 75, y);
+      doc.text("Invoice Amount", 120, y);
+      doc.text("Outstanding Balance", RIGHT, y, { align: "right" });
+      doc.setDrawColor(220, 220, 220);
+      doc.line(LEFT, y + 4, RIGHT, y + 4);
+      return y + 12;
+    };
+
+    const drawHistoryColumnHeaders = (y: number): number => {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text("Invoice No.", LEFT, y);
+      doc.text("Payment Date", 65, y);
+      doc.text("Amount", 110, y);
+      doc.text("Method", 150, y);
+      doc.setDrawColor(220, 220, 220);
+      doc.line(LEFT, y + 4, RIGHT, y + 4);
+      return y + 12;
+    };
+
+    // Which table is currently being rendered — determines which column
+    // headers get repeated when a page break happens mid-table.
+    let section: "summary" | "history" = "summary";
+
+    const goToNextPage = (): number => {
+      const nextPageNumber = doc.getNumberOfPages() + 1;
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.setTextColor(140, 140, 140);
+      doc.text(
+        `(Continued on Page ${nextPageNumber})`,
+        (LEFT + RIGHT) / 2,
+        BOTTOM + 4,
+        { align: "center" },
+      );
+      doc.setTextColor(0, 0, 0);
+
+      doc.addPage();
+      const headerY = drawContinuationHeader();
+      return section === "history"
+        ? drawHistoryColumnHeaders(headerY)
+        : drawSummaryColumnHeaders(headerY);
+    };
+
+    const checkPageBreak = (y: number, needed = 14): number =>
+      y + needed > BOTTOM ? goToNextPage() : y;
+
+    // ----- PAGE 1 HEADER -----
+    let y = drawFirstPageHeader();
+
+    // ----- ACCOUNT SUMMARY (unpaid or partially paid invoices) -----
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Account Summary", 15, 72);
+    doc.text("Account Summary", LEFT, y);
+    y += 10;
 
-    doc.setFontSize(9);
-    doc.text("Invoice No.", 15, 82);
-    doc.text("Due Date", 60, 82);
-    doc.text("Invoice Amount", 110, 82);
-    doc.text("Balance Due", 160, 82);
-    doc.line(15, 86, 195, 86);
+    section = "summary";
+    y = drawSummaryColumnHeaders(y);
 
-    // Invoice rows — unpaid or partially paid (open) invoices only
-    let y = 94;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
 
     openInvoices.forEach(({ invoice: inv }) => {
-      y = checkPageBreak(doc, y);
+      y = checkPageBreak(y);
       const dueDate = computeDueDate(inv);
-      doc.text(`#${inv.invoice_Number}`, 15, y);
-      doc.text(formatDate(dueDate.toISOString()), 60, y);
-      doc.text(pdfCurrency(inv.total_Amount), 110, y);
-      doc.text(pdfCurrency(inv.balance), 160, y);
-      doc.line(15, y + 4, 195, y + 4);
+      doc.text(formatInvoiceNo(inv.invoice_Number), LEFT, y);
+      doc.text(formatDate(dueDate.toISOString()), 75, y);
+      doc.text(pdfCurrency(inv.total_Amount), 120, y);
+      doc.text(pdfCurrency(inv.balance), RIGHT, y, { align: "right" });
+      doc.setDrawColor(220, 220, 220);
+      doc.line(LEFT, y + 4, RIGHT, y + 4);
       y += 12;
     });
 
     y += 8;
-    y = checkPageBreak(doc, y, 20);
+    y = checkPageBreak(y, 20);
 
     // Total Outstanding Balance
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.text("Total Outstanding Balance", 195, y, { align: "right" });
+    doc.text("Total Outstanding Balance", RIGHT, y, { align: "right" });
     doc.setFontSize(14);
-    doc.text(pdfCurrency(outstandingBalance), 195, y + 10, {
+    doc.text(pdfCurrency(outstandingBalance), RIGHT, y + 10, {
       align: "right",
     });
 
     y += 24;
 
-    // Payment History section
-    y = checkPageBreak(doc, y, 30);
+    // ----- PAYMENT HISTORY -----
+    y = checkPageBreak(y, 30);
     doc.setDrawColor(220, 220, 220);
-    doc.line(15, y, 195, y);
+    doc.line(LEFT, y, RIGHT, y);
     y += 10;
 
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Payment History", 15, y);
+    doc.text("Payment History", LEFT, y);
     y += 10;
+
+    section = "history";
 
     if (allPayments.length === 0) {
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      doc.text("No payments recorded.", 15, y);
+      doc.text("No payments recorded.", LEFT, y);
     } else {
-      // Column headers
-      doc.setFontSize(9);
-      doc.text("Invoice No.", 15, y);
-      doc.text("Date", 50, y);
-      doc.text("Amount", 95, y);
-      doc.text("Method", 135, y);
-      doc.text("Reference", 170, y);
-      doc.line(15, y + 4, 195, y + 4);
-      y += 12;
+      y = drawHistoryColumnHeaders(y);
 
-      doc.setFont("helvetica", "normal");
       const methodLabel: Record<string, string> = {
         Cash: "Cash",
         Check: "Check",
@@ -361,15 +432,43 @@ export const CustomerSOAModal = ({
       };
 
       allPayments.forEach((p) => {
-        y = checkPageBreak(doc, y);
-        doc.text(`#${p.invoiceNumber}`, 15, y);
-        doc.text(formatDate(p.createdAt), 50, y);
-        doc.text(pdfCurrency(p.amount), 95, y);
-        doc.text(methodLabel[p.paymentMethod] ?? p.paymentMethod, 135, y);
-        doc.text(p.referenceNo ?? "-", 170, y);
-        doc.line(15, y + 4, 195, y + 4);
-        y += 12;
+        y = checkPageBreak(y, 16);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(0, 0, 0);
+        doc.text(formatInvoiceNo(p.invoiceNumber), LEFT, y);
+        doc.text(formatDate(p.createdAt), 65, y);
+        doc.text(pdfCurrency(p.amount), 110, y);
+        doc.text(methodLabel[p.paymentMethod] ?? p.paymentMethod, 150, y);
+        if (p.referenceNo) {
+          doc.setFontSize(8);
+          doc.setTextColor(140, 140, 140);
+          doc.text(p.referenceNo, 150, y + 4);
+          doc.setTextColor(0, 0, 0);
+        }
+        doc.setDrawColor(220, 220, 220);
+        doc.line(LEFT, y + 8, RIGHT, y + 8);
+        y += 16;
       });
+    }
+
+    // ----- END OF STATEMENT -----
+    y = checkPageBreak(y, 14);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text("— End of Statement —", (LEFT + RIGHT) / 2, y, {
+      align: "center",
+    });
+    doc.setTextColor(0, 0, 0);
+
+    // ----- PAGE NUMBERS -----
+    const totalPages = doc.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Page ${p} of ${totalPages}`, RIGHT, 20, { align: "right" });
     }
 
     doc.save(
