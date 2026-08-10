@@ -37,6 +37,7 @@ namespace backend.Controller.Customers
                         i.Status,
                         i.Term,
                         i.CreatedAt,
+                        i.UpdatedAt,
                         Customer = new
                         {
                             Id = i.Customer.Id,

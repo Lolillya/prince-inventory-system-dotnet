@@ -48,12 +48,14 @@ namespace backend.Controller.Users.EditUserById
 
             try
             {
-                // Supplier edits re-authenticate the currently logged-in user via password
-                if (payload.RoleID == 3)
+                // Supplier and customer edits re-authenticate the currently logged-in user via password
+                if (payload.RoleID == 3 || payload.RoleID == 4)
                 {
                     if (string.IsNullOrWhiteSpace(payload.Password))
                     {
-                        return BadRequest("Password is required to edit a supplier.");
+                        return BadRequest(payload.RoleID == 3
+                            ? "Password is required to edit a supplier."
+                            : "Password is required to edit a customer.");
                     }
 
                     var requestingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);

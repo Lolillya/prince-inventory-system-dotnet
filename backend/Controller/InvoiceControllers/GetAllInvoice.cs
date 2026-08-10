@@ -44,6 +44,7 @@ namespace backend.Controller.InvoiceControllers
                         i.Status,
                         i.Term,
                         i.CreatedAt,
+                        i.UpdatedAt,
                         // Auto-replenish is tracked per-invoice, not per-line, so every
                         // line item on an auto-replenished invoice is flagged together.
                         AutoReplenishRestockNumber = i.AutoReplenishRestock != null

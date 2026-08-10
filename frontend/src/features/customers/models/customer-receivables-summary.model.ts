@@ -4,5 +4,9 @@ export type CustomerReceivablesSummary = {
   lastName: string;
   companyName: string;
   totalOutstandingBalance: number;
-  overallStatus: "PAID" | "PENDING";
+  hasOverdue: boolean;
+  hasPartiallyPaid: boolean;
+  hasPending: boolean;
+  allCollectibleInvoicesArePaid: boolean;
+  allInvoicesAreVoided: boolean;
 };

@@ -11,11 +11,14 @@ import { Fragment, useState } from "react";
 import { AddCustomerModal } from "./_components/add-customer.modal";
 import { EditCustomerModal } from "./_components/edit-customer,modal";
 import { UserClientModel } from "@/models/user-client.model";
-import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
+import { ToggleCustomerActiveModal } from "./_components/toggle-customer-active.modal";
 import { CustomerSOAModal } from "./_components/customer-soa.modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserModel } from "@/features/auth-login/models/user.model";
 import { InfoCard } from "@/components/info-card";
+import { EditCustomerService } from "@/features/customers/edit-customer/edit-customer.service";
+import axios from "axios";
+import { EditCustomerAuthModal } from "./_components/edit-customer-auth.modal";
 
 const SuppliersPage = () => {
   const queryClient = useQueryClient();
@@ -28,12 +31,16 @@ const SuppliersPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [isEditCustomerModalOpen, setIsEditCustomerModalOpen] = useState(false);
-  const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
-    useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
+  const [customerToToggle, setCustomerToToggle] =
+    useState<UserClientModel | null>(null);
+  const [isSOAModalOpen, setIsSOAModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingEditData, setPendingEditData] = useState<UserModel | null>(
     null,
   );
-  const [isSOAModalOpen, setIsSOAModalOpen] = useState(false);
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
@@ -49,6 +56,7 @@ const SuppliersPage = () => {
       ...newCustomer,
       roleID: 4,
       role: "Customer", // Add the role field for tag display
+      isActive: true, // Newly created customers are active by default
     } as UserClientModel;
 
     // Update the cache with the new customer added to the list
@@ -66,6 +74,7 @@ const SuppliersPage = () => {
     // Update the selected customer in the query cache
     const updatedCustomerWithRole = {
       ...updatedCustomer,
+      isActive: true,
       roleID: 3,
       role: "Customer", // Add the role field for tag display
     } as UserClientModel;
@@ -74,33 +83,82 @@ const SuppliersPage = () => {
     queryClient.invalidateQueries({ queryKey: ["customer"] });
   };
 
-  const handleDelete = (data: UserClientModel) => {
-    setUserToDelete(data);
-    setIsConfirmRemoveModalOpen(true);
+  const handleRequestEditConfirm = (data: UserModel) => {
+    setPendingEditData(data);
+    setPasswordError("");
+    setIsPasswordModalOpen(true);
   };
 
-  const handleDeleteCustomerSuccess = (deletedUserId: string) => {
-    // Invalidate the customers query to refresh the list
-    queryClient.invalidateQueries({ queryKey: ["customer"] });
-    // Clear selected customer if the deleted customer was selected
-    if (selectedCustomer?.id === deletedUserId) {
-      queryClient.setQueryData(["invoice-customer"], null);
+  const handleConfirmEdit = async () => {
+    if (!password.trim()) {
+      setPasswordError("Password is required.");
+      return;
+    }
+
+    if (!pendingEditData) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await EditCustomerService({
+        ...pendingEditData,
+        password,
+      });
+      const updatedCustomer = response?.data;
+
+      if (!updatedCustomer) return;
+
+      setIsPasswordModalOpen(false);
+      setPassword("");
+      setPendingEditData(null);
+      setIsEditCustomerModalOpen(false);
+      handleEditCustomerSuccess(updatedCustomer);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        setPasswordError("Incorrect password. Please try again.");
+        return;
+      }
+      console.error("Error editing customer:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const filteredCustomers = customers?.filter((customer) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      customer.firstName.toLowerCase().includes(query) ||
-      customer.lastName.toLowerCase().includes(query) ||
-      customer.email.toLowerCase().includes(query) ||
-      customer.companyName.toLowerCase().includes(query) ||
-      customer.phoneNumber.toLowerCase().includes(query)
-    );
-  });
+  const handleToggleActive = (data: UserClientModel) => {
+    setCustomerToToggle(data);
+  };
+
+  const filteredCustomers = customers
+    ?.filter((customer) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        customer.firstName.toLowerCase().includes(query) ||
+        customer.lastName.toLowerCase().includes(query) ||
+        customer.email.toLowerCase().includes(query) ||
+        customer.companyName.toLowerCase().includes(query) ||
+        customer.phoneNumber.toLowerCase().includes(query)
+      );
+    })
+    // Deactivated customers sink to the bottom of the list.
+    .sort((a, b) => Number(b.isActive) - Number(a.isActive));
 
   return (
     <section>
+      {isPasswordModalOpen ? (
+        <EditCustomerAuthModal
+          password={password}
+          setPassword={setPassword}
+          passwordError={passwordError}
+          setPasswordError={setPasswordError}
+          isSubmitting={isSubmitting}
+          onCancel={() => {
+            setIsPasswordModalOpen(false);
+            setPassword("");
+            setPasswordError("");
+          }}
+          onConfirm={handleConfirmEdit}
+        />
+      ) : null}
+
       {/* ADD CUSTOMER MODAL */}
       {isAddCustomerModalOpen && (
         <AddCustomerModal
@@ -126,7 +184,7 @@ const SuppliersPage = () => {
             roleID: 4,
             term: selectedCustomer.term,
           }}
-          onSuccess={handleEditCustomerSuccess}
+          onRequestConfirm={handleRequestEditConfirm}
         />
       )}
 
@@ -135,12 +193,11 @@ const SuppliersPage = () => {
         <CustomerSOAModal setIsSOAModalOpen={setIsSOAModalOpen} />
       )}
 
-      {/* CONFIRM DELETE MODAL */}
-      {isConfirmRemoveModalOpen && userToDelete && (
-        <ConfirmRemoveModal
-          setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
-          userId={userToDelete.id}
-          onSuccess={handleDeleteCustomerSuccess}
+      {/* DEACTIVATE/REACTIVATE CUSTOMER MODAL */}
+      {customerToToggle && (
+        <ToggleCustomerActiveModal
+          customer={customerToToggle}
+          onClose={() => setCustomerToToggle(null)}
         />
       )}
       <div className="w-full mb-8">
@@ -206,8 +263,8 @@ const SuppliersPage = () => {
                   type="customer"
                   key={index}
                   {...data}
-                  handleDelete={() => handleDelete(data)}
-                  setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
+                  setIsConfirmRemoveModalOpen={() => {}}
+                  onToggleActive={() => handleToggleActive(data)}
                 />
                 <Separator />
               </Fragment>

@@ -58,7 +58,8 @@ namespace backend.Controller.Suppliers
                         PhoneNumber = user.PhoneNumber,
                         Role = role.Name,
                         Address = user.Address,
-                        Term = termsByUserId.TryGetValue(user.Id, out var term) ? term : null
+                        Term = termsByUserId.TryGetValue(user.Id, out var term) ? term : null,
+                        IsActive = user.IsActive
                     });
 
                     allUsers.AddRange(mapped);

@@ -1,5 +1,4 @@
 import { UserModel } from "@/features/auth-login/models/user.model";
-import { EditCustomerService } from "@/features/customers/edit-customer/edit-customer.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -8,32 +7,32 @@ const schema = yup.object().shape({
   id: yup.string(),
   username: yup.string(),
   password: yup.string(),
-  firstName: yup.string().required("First name is required"),
-  lastName: yup.string().required("Last name is required"),
+  firstName: yup.string().optional(),
+  lastName: yup.string().optional(),
   email: yup
     .string()
+    .optional()
     .email("Invalid email address")
-    .required("Email address is required")
-    .matches(
-      /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-      "Invalid email format",
-    ),
-  phoneNumber: yup.string().required("Contact number is required"),
+    .matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/, {
+      message: "Invalid email format",
+      excludeEmptyString: true,
+    }),
+  phoneNumber: yup.string().optional(),
   companyName: yup.string().required("Company name is required"),
-  address: yup.string().required("Address is required"),
+  address: yup.string().optional(),
   notes: yup.string().optional(),
   roleID: yup.number().required(),
-  term: yup.number().optional(),
+  term: yup.number().required("Term is required"),
 });
 
 interface EditCustomerFormProps {
   selectedCustomer: UserModel;
-  onSuccess?: (updatedCustomer: UserModel) => void;
+  onRequestConfirm: (data: UserModel) => void;
 }
 
 export const EditCustomerForm = ({
   selectedCustomer,
-  onSuccess,
+  onRequestConfirm,
 }: EditCustomerFormProps) => {
   const {
     register,
@@ -57,185 +56,189 @@ export const EditCustomerForm = ({
     },
   });
 
-  const onSubmit = async (data: UserModel) => {
-    try {
-      await EditCustomerService(data);
-      onSuccess?.(data);
-    } catch (error) {
-      console.error("Error editing customer:", error);
-    }
+  const onValidated = (data: yup.InferType<typeof schema>) => {
+    onRequestConfirm(data as UserModel);
   };
 
   return (
     <form
       className="h-full flex flex-col justify-between"
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onValidated)}
     >
-      <div className="flex flex-col space-y-5 mb-auto">
-        {/* LOGIN DETAILS - Hidden */}
-        <div className="hidden">
-          <div className="flex w-full justify-between gap-4">
-            <div className="flex flex-col w-full">
-              <input
-                id="firstName"
-                type="text"
-                className="w-full drop-shadow-none bg-custom-gray p-2"
-                placeholder="AUTO GENERATED"
-                disabled
-                {...register("username")}
-              />
-            </div>
-            <div className="flex flex-col w-full">
-              <input
-                id="password"
-                type="text"
-                className="w-full drop-shadow-none bg-custom-gray p-2"
-                placeholder="AUTO GENERATED"
-                disabled
-                {...register("password")}
-              />
+        <div className="flex flex-col space-y-5 mb-auto">
+          {/* LOGIN DETAILS - Hidden */}
+          <div className="hidden">
+            <div className="flex w-full justify-between gap-4">
+              <div className="flex flex-col w-full">
+                <input
+                  id="firstName"
+                  type="text"
+                  className="w-full drop-shadow-none bg-custom-gray p-2"
+                  placeholder="AUTO GENERATED"
+                  disabled
+                  {...register("username")}
+                />
+              </div>
+              <div className="flex flex-col w-full">
+                <input
+                  id="password"
+                  type="text"
+                  className="w-full drop-shadow-none bg-custom-gray p-2"
+                  placeholder="AUTO GENERATED"
+                  disabled
+                  {...register("password")}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* COMPANY NAME AND TERM */}
-        <div className="flex w-full justify-between gap-6">
-          {/* COMPANY NAME */}
-          <div className="flex flex-col flex-1">
-            <label htmlFor="companyName" className="block text-sm font-medium">
-              Customer Company Name<span className="text-red-500">*</span>
+          {/* COMPANY NAME AND TERM */}
+          <div className="flex w-full justify-between gap-6">
+            {/* COMPANY NAME */}
+            <div className="flex flex-col flex-1">
+              <label
+                htmlFor="companyName"
+                className="block text-sm font-medium"
+              >
+                Customer Company Name<span className="text-red-500">*</span>
+              </label>
+              <input
+                id="companyName"
+                type="text"
+                className="w-full drop-shadow-none bg-custom-gray p-2"
+                {...register("companyName")}
+              />
+              <span className="text-red-500 text-xs normal-case">
+                {errors.companyName?.message}
+              </span>
+            </div>
+
+            {/* TERM */}
+            <div className="flex flex-col w-32">
+              <label htmlFor="term" className="block text-sm font-medium">
+                Term <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="term"
+                type="number"
+                className="w-full drop-shadow-none bg-custom-gray p-2"
+                placeholder=""
+                {...register("term", { valueAsNumber: true })}
+              />
+              <span className="text-red-500 text-xs normal-case">
+                {errors.term?.message}
+              </span>
+            </div>
+          </div>
+
+          {/* REPRESENTATIVE */}
+          <div className="flex flex-col w-full gap-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Representative
+            </label>
+            <div className="flex w-full justify-between gap-4">
+              <div className="flex flex-col w-full">
+                <input
+                  id="firstName"
+                  type="text"
+                  className="w-full drop-shadow-none bg-custom-gray p-2"
+                  placeholder="First Name"
+                  {...register("firstName")}
+                />
+                <span className="text-red-500 text-xs normal-case">
+                  {errors.firstName?.message}
+                </span>
+              </div>
+
+              <div className="flex flex-col w-full">
+                <input
+                  id="lastName"
+                  type="text"
+                  className="w-full drop-shadow-none bg-custom-gray p-2"
+                  placeholder="Last Name"
+                  {...register("lastName")}
+                />
+                <span className="text-red-500 text-xs normal-case">
+                  {errors.lastName?.message}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* CONTACT NUMBER AND EMAIL */}
+          <div className="flex w-full justify-between gap-4">
+            <div className="flex flex-col w-full">
+              <label
+                htmlFor="contactNumber"
+                className="block text-sm font-medium"
+              >
+                Contact Number
+              </label>
+              <input
+                id="contactNumber"
+                type="text"
+                className="w-full drop-shadow-none bg-custom-gray p-2"
+                {...register("phoneNumber")}
+              />
+              <span className="text-red-500 text-xs normal-case">
+                {errors.phoneNumber?.message}
+              </span>
+            </div>
+
+            <div className="flex flex-col w-full">
+              <label
+                htmlFor="emailAddress"
+                className="block text-sm font-medium"
+              >
+                Email
+              </label>
+              <input
+                id="emailAddress"
+                type="text"
+                className="w-full drop-shadow-none bg-custom-gray p-2"
+                {...register("email")}
+              />
+              <span className="text-red-500 text-xs normal-case">
+                {errors.email?.message}
+              </span>
+            </div>
+          </div>
+
+          {/* ADDRESS */}
+          <div className="flex flex-col w-full">
+            <label htmlFor="address" className="block text-sm font-medium">
+              Address
             </label>
             <input
-              id="companyName"
+              id="address"
               type="text"
               className="w-full drop-shadow-none bg-custom-gray p-2"
-              {...register("companyName")}
+              {...register("address")}
             />
             <span className="text-red-500 text-xs normal-case">
-              {errors.companyName?.message}
+              {errors.address?.message}
             </span>
           </div>
 
-          {/* TERM */}
-          <div className="flex flex-col w-32">
-            <label htmlFor="term" className="block text-sm font-medium">
-              Term
-            </label>
-            <input
-              id="term"
-              type="number"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              placeholder=""
-              {...register("term", { valueAsNumber: true })}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.term?.message}
-            </span>
-          </div>
-        </div>
-
-        {/* REPRESENTATIVE */}
-        <div className="flex flex-col w-full gap-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Representative
-          </label>
-          <div className="flex w-full justify-between gap-4">
-            <div className="flex flex-col w-full">
-              <input
-                id="firstName"
-                type="text"
-                className="w-full drop-shadow-none bg-custom-gray p-2"
-                placeholder="First Name"
-                {...register("firstName")}
-              />
-              <span className="text-red-500 text-xs normal-case">
-                {errors.firstName?.message}
-              </span>
-            </div>
-
-            <div className="flex flex-col w-full">
-              <input
-                id="lastName"
-                type="text"
-                className="w-full drop-shadow-none bg-custom-gray p-2"
-                placeholder="Last Name"
-                {...register("lastName")}
-              />
-              <span className="text-red-500 text-xs normal-case">
-                {errors.lastName?.message}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* CONTACT NUMBER AND EMAIL */}
-        <div className="flex w-full justify-between gap-4">
+          {/* CUSTOMER NOTES */}
           <div className="flex flex-col w-full">
             <label
-              htmlFor="contactNumber"
+              htmlFor="customerNotes"
               className="block text-sm font-medium"
             >
-              Contact Number
+              Customer Note
             </label>
-            <input
-              id="contactNumber"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              {...register("phoneNumber")}
+            <textarea
+              id="customerNotes"
+              className="w-full p-2 rounded-lg bg-custom-gray"
+              rows={4}
+              {...register("notes")}
             />
             <span className="text-red-500 text-xs normal-case">
-              {errors.phoneNumber?.message}
-            </span>
-          </div>
-
-          <div className="flex flex-col w-full">
-            <label htmlFor="emailAddress" className="block text-sm font-medium">
-              Email
-            </label>
-            <input
-              id="emailAddress"
-              type="text"
-              className="w-full drop-shadow-none bg-custom-gray p-2"
-              {...register("email")}
-            />
-            <span className="text-red-500 text-xs normal-case">
-              {errors.email?.message}
+              {errors.notes?.message}
             </span>
           </div>
         </div>
-
-        {/* ADDRESS */}
-        <div className="flex flex-col w-full">
-          <label htmlFor="address" className="block text-sm font-medium">
-            Address
-          </label>
-          <input
-            id="address"
-            type="text"
-            className="w-full drop-shadow-none bg-custom-gray p-2"
-            {...register("address")}
-          />
-          <span className="text-red-500 text-xs normal-case">
-            {errors.address?.message}
-          </span>
-        </div>
-
-        {/* CUSTOMER NOTES */}
-        <div className="flex flex-col w-full">
-          <label htmlFor="customerNotes" className="block text-sm font-medium">
-            Customer Notes
-          </label>
-          <textarea
-            id="customerNotes"
-            className="w-full p-2 rounded-lg bg-custom-gray"
-            rows={4}
-            {...register("notes")}
-          />
-          <span className="text-red-500 text-xs normal-case">
-            {errors.notes?.message}
-          </span>
-        </div>
-      </div>
 
       <button type="submit" className="mt-4">
         Confirm Edit

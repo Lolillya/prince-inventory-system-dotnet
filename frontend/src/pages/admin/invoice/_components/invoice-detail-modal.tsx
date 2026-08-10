@@ -4,7 +4,7 @@ import {
   invoicePaymentStatusDot,
 } from "@/features/invoice/invoice-status";
 import { XIcon } from "@/icons";
-import { Bot, Calendar, Info, Printer, Tag } from "lucide-react";
+import { Ban, Bot, Calendar, Info, Printer, Tag } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
@@ -25,6 +25,7 @@ export const InvoiceDetailModal = ({ selectedInvoice, onClose }: Props) => {
     `${selectedInvoice.clerk.firstName} ${selectedInvoice.clerk.lastName}`.trim();
 
   const paymentStatus = getInvoicePaymentStatus(selectedInvoice);
+  const isVoided = paymentStatus === "Voided";
 
   return (
     <section className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-center z-50">
@@ -32,6 +33,12 @@ export const InvoiceDetailModal = ({ selectedInvoice, onClose }: Props) => {
         {/* HEADER */}
         <div className="flex items-start justify-between w-full">
           <div className="flex flex-col gap-2">
+            {isVoided && (
+              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase text-red-600 border border-red-300 bg-white rounded-md px-2.5 py-1 w-fit">
+                <Ban size={14} />
+                Voided
+              </span>
+            )}
             <h3 className="text-2xl font-bold tracking-wide">
               DR/INV-{String(selectedInvoice.invoice_Number).padStart(6, "0")}
             </h3>
@@ -45,13 +52,15 @@ export const InvoiceDetailModal = ({ selectedInvoice, onClose }: Props) => {
                 }).format(new Date(selectedInvoice.createdAt))}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="font-semibold">Status:</span>
-              <span
-                className={`w-2.5 h-2.5 rounded-full ${invoicePaymentStatusDot[paymentStatus]}`}
-              />
-              <span className="font-semibold">{paymentStatus}</span>
-            </div>
+            {!isVoided && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold">Status:</span>
+                <span
+                  className={`w-2.5 h-2.5 rounded-full ${invoicePaymentStatusDot[paymentStatus]}`}
+                />
+                <span className="font-semibold">{paymentStatus}</span>
+              </div>
+            )}
           </div>
           <div
             onClick={onClose}
@@ -216,6 +225,28 @@ export const InvoiceDetailModal = ({ selectedInvoice, onClose }: Props) => {
           </div>
         </div>
 
+        {/* VOID INFORMATION */}
+        {isVoided && (
+          <div className="flex flex-wrap items-center gap-2 border border-red-300 bg-red-50 rounded-lg px-4 py-2.5 text-sm">
+            <span className="flex items-center gap-1.5 font-bold text-red-600">
+              <Ban size={16} />
+              Void Information
+            </span>
+            <span className="text-red-300">|</span>
+            <span className="text-red-600">
+              This invoice was voided on{" "}
+              <span className="font-semibold">
+                {new Intl.DateTimeFormat("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                }).format(new Date(selectedInvoice.updatedAt))}
+              </span>
+              .
+            </span>
+          </div>
+        )}
+
         {/* NOTES */}
         <div className="bg-custom-gray rounded-lg px-4 py-3 text-sm text-vesper-gray min-h-16">
           {selectedInvoice.notes?.trim() || "No invoice notes"}
@@ -231,13 +262,22 @@ export const InvoiceDetailModal = ({ selectedInvoice, onClose }: Props) => {
               ₱{selectedInvoice.total_Amount.toLocaleString()}
             </span>
           </div>
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-2 text-white hover:bg-green-700 px-6 py-3 rounded-lg"
-          >
-            <Printer size={18} />
-            Print Invoice
-          </button>
+          {isVoided ? (
+            <button
+              onClick={onClose}
+              className="flex items-center gap-2 text-white hover:bg-green-700 px-6 py-3 rounded-lg"
+            >
+              Close
+            </button>
+          ) : (
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-2 text-white hover:bg-green-700 px-6 py-3 rounded-lg"
+            >
+              <Printer size={18} />
+              Print Invoice
+            </button>
+          )}
         </div>
       </div>
     </section>

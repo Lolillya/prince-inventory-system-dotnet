@@ -7,22 +7,21 @@ import * as yup from "yup";
 const schema = yup.object().shape({
   username: yup.string(),
   password: yup.string(),
-  firstName: yup.string().required("First name is required"),
-  lastName: yup.string().required("Last name is required"),
+  firstName: yup.string().optional(),
+  lastName: yup.string().optional(),
   email: yup
     .string()
-    .email("Invalid email address")
-    .required("Email address is required")
+    .optional()
     .matches(
       /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
       "Invalid email format",
     ),
-  phoneNumber: yup.string().required("Contact number is required"),
+  phoneNumber: yup.string().optional(),
   companyName: yup.string().required("Company name is required"),
-  address: yup.string().required("Address is required"),
+  address: yup.string().optional(),
   notes: yup.string().optional(),
   roleID: yup.number().required(),
-  term: yup.number().optional(),
+  term: yup.number().required("Term is required"),
 });
 
 interface AddCustomerFormProps {
@@ -43,11 +42,18 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
     },
   });
 
-  const onSubmit = async (data: UserModel) => {
+  const onSubmit = async (data: yup.InferType<typeof schema>) => {
     try {
-      // AddNewSupplierService(data);
-      await AddNewCustomerService(data);
-      onSuccess?.(data);
+      const payload: UserModel = {
+        ...data,
+        firstName: data.firstName ?? "",
+        lastName: data.lastName ?? "",
+        email: data.email ?? "",
+        phoneNumber: data.phoneNumber ?? "",
+        address: data.address ?? "",
+      };
+      await AddNewCustomerService(payload);
+      onSuccess?.(payload);
     } catch (error) {
       console.error("Error adding customer:", error);
     }
@@ -106,7 +112,7 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
           {/* TERM */}
           <div className="flex flex-col w-32">
             <label htmlFor="term" className="block text-sm font-medium">
-              Term
+              Term <span className="text-red-500">*</span>
             </label>
             <input
               id="term"
@@ -174,7 +180,7 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
 
           <div className="flex flex-col w-full">
             <label htmlFor="emailAddress" className="block text-sm font-medium">
-              Email
+              Email Address
             </label>
             <input
               id="emailAddress"
@@ -207,7 +213,7 @@ export const AddCustomerForm = ({ onSuccess }: AddCustomerFormProps) => {
         {/* CUSTOMER NOTES */}
         <div className="flex flex-col w-full">
           <label htmlFor="customerNotes" className="block text-sm font-medium">
-            Customer Notes
+            Customer Note
           </label>
           <textarea
             id="customerNotes"

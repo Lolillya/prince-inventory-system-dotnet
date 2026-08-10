@@ -7,6 +7,7 @@ using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controller.Users.ToggleUserActive
 {
@@ -56,6 +57,17 @@ namespace backend.Controller.Users.ToggleUserActive
                 if (user == null)
                 {
                     return NotFound($"User with id {payload.UserId} not found");
+                }
+
+                // Deactivating a customer (i.e. going from active -> inactive)
+                // is only allowed once they have zero invoice records at all.
+                if (user.IsActive)
+                {
+                    var hasAnyInvoices = await _db.Invoice.AnyAsync(i => i.Customer_ID == payload.UserId);
+                    if (hasAnyInvoices)
+                    {
+                        return Conflict("This customer has invoice records and cannot be deactivated.");
+                    }
                 }
 
                 user.IsActive = !user.IsActive;
