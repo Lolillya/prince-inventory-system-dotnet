@@ -42,9 +42,11 @@ export const CustomerPicker = ({
     return () => window.removeEventListener("click", onClick);
   }, []);
 
-  const filtered = list?.filter((c) =>
-    String(c.companyName).toLowerCase().includes(query.toLowerCase()),
-  );
+  const filtered = list
+    ?.filter((c) => c.isActive !== false)
+    .filter((c) =>
+      String(c.companyName).toLowerCase().includes(query.toLowerCase()),
+    );
 
   return (
     <div className="flex flex-col w-full gap-2 relative" ref={ref}>
