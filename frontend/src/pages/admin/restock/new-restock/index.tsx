@@ -31,7 +31,7 @@ const NewRestockPage = () => {
       })
       .filter((n) => n > 0);
     const next = numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
-    return `${prefix}${String(next).padStart(3, "0")}`;
+    return `${prefix}${String(next).padStart(6, "0")}`;
   })();
 
   // LOCAL STATES
