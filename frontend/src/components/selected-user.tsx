@@ -10,6 +10,7 @@ import {
 import { UserClientModel } from "../models/user-client.model";
 import { useState } from "react";
 import {
+  Ban,
   Box,
   Calendar,
   CornerRightUp,
@@ -382,8 +383,13 @@ const CustomerActions = ({ customerId }: { customerId: string }) => {
                 className="flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm"
               >
                 <div className="grid grid-cols-2 items-center w-full">
-                  <label className="text-sm font-semibold text-saltbox-gray">
+                  <label className="text-sm font-semibold text-saltbox-gray flex gap-2 items-center">
                     DR/INV-{String(invoice.invoice_Number).padStart(6, "0")}
+                    {invoice.status?.toUpperCase() === "VOIDED" && (
+                      <span className="bg-red-50 rounded-sm p-1 flex w-fit items-center justify-center border border-red-300">
+                        <Ban size={14} className="text-red-600" />
+                      </span>
+                    )}
                   </label>
                   <div className="flex flex-col gap-2 pl-3 border-l-2 border-slate-300">
                     <div className="flex items-center gap-2 text-vesper-gray">
