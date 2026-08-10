@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  Calendar,
   ChevronDown,
   ChevronRight,
   X,
@@ -22,6 +23,35 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: "Ewallet", label: "E-wallet" },
 ];
 
+type InvoiceStatus =
+  | "Pending"
+  | "Partially Paid"
+  | "Overdue"
+  | "Paid"
+  | "Voided";
+
+const INVOICE_STATUS_BADGE_CLASSES: Record<InvoiceStatus, string> = {
+  Pending: "bg-indigo-100 text-indigo-700",
+  "Partially Paid": "bg-amber-100 text-amber-700",
+  Overdue: "bg-red-100 text-red-600",
+  Paid: "bg-green-100 text-green-700",
+  Voided: "bg-gray-100 text-gray-600",
+};
+
+const computeInvoiceDueDate = (invoice: InvoiceAllModel): Date => {
+  const dueDate = new Date(invoice.createdAt);
+  dueDate.setDate(dueDate.getDate() + invoice.term);
+  return dueDate;
+};
+
+const computeInvoiceStatus = (invoice: InvoiceAllModel): InvoiceStatus => {
+  if (invoice.status?.toUpperCase() === "VOIDED") return "Voided";
+  if (invoice.balance <= 0) return "Paid";
+  if (invoice.balance < invoice.total_Amount) return "Partially Paid";
+  if (new Date() > computeInvoiceDueDate(invoice)) return "Overdue";
+  return "Pending";
+};
+
 const formatCurrency = (amount: number) =>
   `₱${amount.toLocaleString("en-PH", {
     minimumFractionDigits: 2,
@@ -33,6 +63,10 @@ const formatDate = (dateStr: string) =>
     year: "numeric",
     month: "short",
     day: "numeric",
+  }).format(new Date(dateStr));
+
+const formatTime = (dateStr: string) =>
+  new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(dateStr));
@@ -51,7 +85,6 @@ export const RecordPaymentModal = ({
   onClose,
 }: RecordPaymentModalProps) => {
   // --- Payment form state ---
-  const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Cash");
   const [amount, setAmount] = useState("");
   const [referenceNo, setReferenceNo] = useState("");
@@ -114,7 +147,6 @@ export const RecordPaymentModal = ({
       setAmount("");
       setReferenceNo("");
       setPaymentMethod("Cash");
-      setIsPaymentFormOpen(false);
       setIsHistoryOpen(true);
     } catch (e) {
       if (axios.isAxiosError(e)) {
@@ -182,80 +214,99 @@ export const RecordPaymentModal = ({
 
   return (
     <div className="absolute bg-black/40 w-full h-full top-0 left-0 flex justify-center items-start z-50 py-10">
-      <div className="max-w-3xl max-h-320 h-full w-full bg-white px-10 py-8 rounded-lg border shadow-lg overflow-y-auto relative flex flex-col gap-6 mx-4">
+      <div className="max-w-4xl max-h-320 h-full w-full bg-white px-10 py-8 rounded-lg border shadow-lg overflow-y-auto relative flex flex-col gap-6 mx-4">
         {/* Header */}
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-4">
           <div className="flex justify-between w-full items-center gap-3">
             <div
-              className="p-2 rounded-lg hover:bg-bellflower-gray transition-colors"
+              className="flex items-center gap-2 cursor-pointer text-vesper-gray hover:text-saltbox-gray transition-colors"
               onClick={onBack}
             >
-              <ArrowLeft size={18} className="text-vesper-gray" />
+              <ArrowLeft size={18} />
+              <span className="text-sm font-semibold">Receivables</span>
             </div>
-            <div
-              className="p-2 rounded-lg hover:bg-bellflower-gray transition-colors"
+            {/* <div
+              className="p-2 rounded-lg hover:bg-bellflower-gray transition-colors cursor-pointer"
               onClick={onClose}
             >
               <X size={18} className="text-vesper-gray" />
-            </div>
+            </div> */}
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-saltbox-gray">
+            <h1 className="text-2xl font-bold text-saltbox-gray">
               Record Payment
             </h1>
-            <p className="text-xs text-vesper-gray">
-              Invoice #{invoice.invoice_Number} — {invoice.customer.companyName}
+            <p className="text-sm text-vesper-gray flex items-center gap-2">
+              <span>{String(invoice.invoice_Number).padStart(6, "0")}</span>
+              <span>•</span>
+              <span>{invoice.customer.companyName}</span>
             </p>
           </div>
         </div>
 
         {/* Invoice Summary */}
-        <div className="border rounded-lg p-4 flex flex-col gap-2 bg-wash-gray">
-          <div className="flex justify-between text-sm">
+        <div className="border rounded-lg p-4 flex flex-col gap-3 bg-wash-gray">
+          <div className="flex justify-between items-center text-sm">
             <span className="text-vesper-gray">Customer</span>
             <span className="font-semibold text-saltbox-gray">
               {invoice.customer.companyName}
             </span>
           </div>
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between items-center text-sm">
             <span className="text-vesper-gray">Invoice Total</span>
             <span className="text-saltbox-gray">
               {formatCurrency(invoice.total_Amount)}
             </span>
           </div>
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between items-center text-sm">
             <span className="text-vesper-gray">Remaining Balance</span>
             <span className="font-semibold text-saltbox-gray">
               {formatCurrency(liveBalance)}
             </span>
           </div>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-vesper-gray">Status</span>
+            <span
+              className={`text-xs px-2.5 py-1 rounded-full font-semibold uppercase ${INVOICE_STATUS_BADGE_CLASSES[computeInvoiceStatus(invoice)]}`}
+            >
+              {computeInvoiceStatus(invoice)}
+            </span>
+          </div>
         </div>
 
-        {/* Record Payment Toggle */}
-        <div className="border rounded-lg overflow-hidden">
-          <button
-            className="w-full flex items-center gap-2 px-4 py-3 bg-custom-gray hover:bg-bellflower-gray transition-colors text-left max-w-full"
-            onClick={() => setIsPaymentFormOpen((v) => !v)}
-          >
-            {isPaymentFormOpen ? (
-              <ChevronDown size={16} className="text-vesper-gray" />
-            ) : (
-              <ChevronRight size={16} className="text-vesper-gray" />
-            )}
-            <span className="text-sm font-semibold text-saltbox-gray">
-              Record Payment
-            </span>
-          </button>
+        {/* Enter Payment */}
+        <div className="flex flex-col gap-3">
+          <h2 className="text-base font-bold text-saltbox-gray">
+            Enter Payment
+          </h2>
+          <div className="border rounded-lg p-4 flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              {/* Payment Date — informational, always today */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-vesper-gray uppercase">
+                  Payment Date
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    className="input-style-2"
+                    value={formatDate(new Date().toISOString())}
+                    readOnly
+                  />
+                  <Calendar
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-vesper-gray"
+                  />
+                </div>
+              </div>
 
-          {isPaymentFormOpen && (
-            <div className="p-4 flex flex-col gap-4">
               {/* Payment Method */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-vesper-gray uppercase">
                   Payment Method
                 </label>
                 <select
-                  className="input-style-2"
+                  className="input-style-2 py-3!"
                   value={paymentMethod}
                   onChange={(e) => {
                     setPaymentMethod(e.target.value as PaymentMethod);
@@ -269,16 +320,40 @@ export const RecordPaymentModal = ({
                   ))}
                 </select>
               </div>
+            </div>
 
-              {/* Amount */}
+            {/* Reference No — only for non-Cash */}
+            {needsReference && (
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-vesper-gray uppercase">
-                  Amount
+                  Payment Reference
                 </label>
+                <input
+                  type="text"
+                  className="input-style-2"
+                  placeholder="Enter payment reference"
+                  value={referenceNo}
+                  onChange={(e) => {
+                    setReferenceNo(e.target.value);
+                    setFormError("");
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Amount */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-vesper-gray uppercase">
+                Amount
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-vesper-gray">
+                  ₱
+                </span>
                 <input
                   type="number"
                   min={0.01}
-                  className="input-style-2"
+                  className="input-style-2 pl-8"
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => {
@@ -286,48 +361,37 @@ export const RecordPaymentModal = ({
                     setFormError("");
                   }}
                 />
-                <span className="text-xs text-vesper-gray">
-                  Max: {formatCurrency(liveBalance)}
-                </span>
               </div>
-
-              {/* Reference No — only for non-Cash */}
-              {needsReference && (
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-vesper-gray uppercase">
-                    Reference No.
-                  </label>
-                  <input
-                    type="text"
-                    className="input-style-2"
-                    placeholder="Enter reference number"
-                    value={referenceNo}
-                    onChange={(e) => {
-                      setReferenceNo(e.target.value);
-                      setFormError("");
-                    }}
-                  />
-                </div>
-              )}
-
-              {formError && (
+              <span className="text-xs text-vesper-gray">
+                Maximum payable: {formatCurrency(liveBalance)}
+              </span>
+              {amount && !isNaN(amountNum) && amountNum > liveBalance && (
                 <div className="flex items-center gap-2">
                   <CircleAlert size={14} className="text-red-400" />
-                  <span className="text-xs text-red-500">{formError}</span>
+                  <span className="text-xs text-red-500">
+                    Amount exceeds the remaining balance.
+                  </span>
                 </div>
               )}
-
-              <div className="flex justify-end">
-                <button
-                  className="px-4 py-2 bg-saltbox-gray text-white text-sm rounded-lg disabled:opacity-50 transition-opacity"
-                  onClick={handleRecordPayment}
-                  disabled={isRecording}
-                >
-                  {isRecording ? "Recording..." : "Confirm Payment"}
-                </button>
-              </div>
             </div>
-          )}
+
+            {formError && (
+              <div className="flex items-center gap-2">
+                <CircleAlert size={14} className="text-red-400" />
+                <span className="text-xs text-red-500">{formError}</span>
+              </div>
+            )}
+
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 text-white bg-blue-800 text-sm font-semibold rounded-lg disabled:opacity-50 disabled:bg-gray-300 transition-colors"
+                onClick={handleRecordPayment}
+                disabled={isRecording || !isAmountValid}
+              >
+                {isRecording ? "Recording..." : "Record Payment"}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Payment History Toggle */}
@@ -366,7 +430,7 @@ export const RecordPaymentModal = ({
                   <thead>
                     <tr className="bg-wash-gray border-b">
                       <th className="text-left px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
-                        Date
+                        Payment Date
                       </th>
                       <th className="text-right px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
                         Amount
@@ -375,10 +439,10 @@ export const RecordPaymentModal = ({
                         Method
                       </th>
                       <th className="text-left px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
-                        Ref. No.
+                        Recorded By
                       </th>
                       <th className="text-left px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
-                        By
+                        Logged At
                       </th>
                       <th className="text-center px-4 py-2 text-xs font-semibold text-vesper-gray whitespace-nowrap">
                         Status
@@ -407,24 +471,31 @@ export const RecordPaymentModal = ({
                           {formatCurrency(payment.amount)}
                         </td>
                         <td className="px-4 py-2 text-vesper-gray whitespace-nowrap">
-                          {PAYMENT_METHODS.find(
-                            (m) => m.value === payment.paymentMethod,
-                          )?.label ?? payment.paymentMethod}
-                        </td>
-                        <td className="px-4 py-2 text-vesper-gray">
-                          {payment.referenceNo ?? "—"}
+                          <p className="text-saltbox-gray font-medium">
+                            {PAYMENT_METHODS.find(
+                              (m) => m.value === payment.paymentMethod,
+                            )?.label ?? payment.paymentMethod}
+                          </p>
+                          <p className="text-xs text-vesper-gray">
+                            {payment.referenceNo ?? "—"}
+                          </p>
                         </td>
                         <td className="px-4 py-2 text-vesper-gray whitespace-nowrap">
                           {payment.createdByName}
+                        </td>
+                        <td className="px-4 py-2 text-vesper-gray whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span>{formatDate(payment.createdAt)}</span>
+                            <span className="text-xs text-vesper-gray font-semibold">
+                              {formatTime(payment.createdAt)}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-2 text-center">
                           {payment.isInvalidated ? (
                             <div className="flex flex-col items-center gap-0.5">
                               <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-red-100 text-red-600">
                                 INVALIDATED
-                              </span>
-                              <span className="text-xs text-vesper-gray">
-                                by {payment.invalidatedByName}
                               </span>
                               {payment.invalidationReason && (
                                 <span
@@ -443,14 +514,14 @@ export const RecordPaymentModal = ({
                         </td>
                         <td className="px-4 py-2 text-center">
                           {!payment.isInvalidated && (
-                            <button
-                              className="text-xs text-red-500 hover:underline"
+                            <div
+                              className="text-xs text-red-500 hover:underline cursor-pointer bg-red-50 p-2 py-1 rounded-md border border-red-300"
                               onClick={() =>
                                 handleOpenInvalidation(payment.payment_ID)
                               }
                             >
                               Invalidate
-                            </button>
+                            </div>
                           )}
                         </td>
                       </tr>
