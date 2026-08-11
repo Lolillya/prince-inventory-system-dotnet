@@ -8,8 +8,8 @@ import { useSelectedEmployeeQuery } from "@/features/employees/empployee-selecte
 import { AddEmployeeModal } from "./_components/add-employee.modal";
 import { UserClientModel } from "@/models/user-client.model";
 import { EditEmployeeModal } from "./_components/edit-employee.modal";
-import { ConfirmRemoveModal } from "./_components/confirm-remove.modal";
 import { RecoverAccountModal } from "./_components/recover-account.modal";
+import { ToggleEmployeeActiveModal } from "./_components/toggle-employee-active.modal";
 import { InfoCard } from "@/components/info-card";
 import { useAuth } from "@/context/use-auth";
 
@@ -22,37 +22,36 @@ const EmployeesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false);
-  const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
-    useState(false);
   const [isRecoverAccountModalOpen, setIsRecoverAccountModalOpen] =
     useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserClientModel | null>(
-    null,
-  );
+  const [employeeToToggle, setEmployeeToToggle] =
+    useState<UserClientModel | null>(null);
 
   // FETCH DATA LOADING STATE
   if (isLoading) return <div>Loading...</div>;
   // FETCHING DATA ERROR STATE
   if (error) return <div>Error...</div>;
 
-  const filteredEmployees = employees?.filter((employee) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      employee.firstName.toLowerCase().includes(query) ||
-      employee.lastName.toLowerCase().includes(query) ||
-      employee.email.toLowerCase().includes(query) ||
-      employee.companyName.toLowerCase().includes(query) ||
-      employee.phoneNumber.toLowerCase().includes(query)
-    );
-  });
+  const filteredEmployees = employees
+    ?.filter((employee) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        employee.firstName.toLowerCase().includes(query) ||
+        employee.lastName.toLowerCase().includes(query) ||
+        employee.email.toLowerCase().includes(query) ||
+        employee.companyName.toLowerCase().includes(query) ||
+        employee.phoneNumber.toLowerCase().includes(query)
+      );
+    })
+    // Deactivated employees sink to the bottom of the list.
+    .sort((a, b) => Number(b.isActive) - Number(a.isActive));
 
   const handleAddEmployee = () => {
     setIsAddEmployeeModalOpen(!isAddEmployeeModalOpen);
   };
 
-  const handleDelete = (data: UserClientModel) => {
-    setUserToDelete(data);
-    setIsConfirmRemoveModalOpen(true);
+  const handleToggleActive = (data: UserClientModel) => {
+    setEmployeeToToggle(data);
   };
 
   const handleEdit = () => {
@@ -91,11 +90,11 @@ const EmployeesPage = () => {
         />
       )}
 
-      {/* CONFIRM DELETE MODAL */}
-      {isConfirmRemoveModalOpen && userToDelete && (
-        <ConfirmRemoveModal
-          setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
-          userId={userToDelete.id}
+      {/* DEACTIVATE/REACTIVATE EMPLOYEE MODAL */}
+      {employeeToToggle && (
+        <ToggleEmployeeActiveModal
+          employee={employeeToToggle}
+          onClose={() => setEmployeeToToggle(null)}
         />
       )}
 
@@ -104,6 +103,7 @@ const EmployeesPage = () => {
         <RecoverAccountModal
           setIsRecoverAccountModalOpen={setIsRecoverAccountModalOpen}
           userId={selectedEmployee.id}
+          username={selectedEmployee.username}
         />
       )}
       <div className="w-full mb-8">
@@ -126,7 +126,7 @@ const EmployeesPage = () => {
           </div>
           {isAdmin && (
             <button
-              className="flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 text-nowrap"
               onClick={handleAddEmployee}
             >
               <PlusIcon />
@@ -155,8 +155,8 @@ const EmployeesPage = () => {
                   type="employee"
                   key={index}
                   {...data}
-                  handleDelete={() => handleDelete(data)}
-                  setIsConfirmRemoveModalOpen={setIsConfirmRemoveModalOpen}
+                  setIsConfirmRemoveModalOpen={() => {}}
+                  onToggleActive={() => handleToggleActive(data)}
                 />
                 <Separator />
               </Fragment>

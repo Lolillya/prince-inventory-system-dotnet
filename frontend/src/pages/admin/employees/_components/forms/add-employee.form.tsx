@@ -25,14 +25,14 @@ const schema = yup.object().shape({
   email: yup
     .string()
     .email("Invalid email address")
-    .required("Email address is required")
+    .optional()
     .matches(
       /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-      "Invalid email format",
+      { message: "Invalid email format", excludeEmptyString: true },
     ),
-  phoneNumber: yup.string().required("Contact number is required"),
+  phoneNumber: yup.string().optional(),
   companyName: yup.string().required("Company name is required"),
-  address: yup.string().required("Address is required"),
+  address: yup.string().optional(),
   notes: yup.string().optional(),
   roleID: yup.number().required(),
 });
@@ -122,6 +122,7 @@ export const AddEmployeeForm = ({
             <input
               id="contactNumber"
               type="text"
+              placeholder="09XXXXXXXXX"
               className="w-full drop-shadow-none bg-custom-gray p-2"
               {...register("phoneNumber")}
             />
@@ -136,6 +137,7 @@ export const AddEmployeeForm = ({
             <input
               id="emailAddress"
               type="text"
+              placeholder="example@email.com"
               className="w-full drop-shadow-none bg-custom-gray p-2"
               {...register("email")}
             />
@@ -210,7 +212,7 @@ export const AddEmployeeForm = ({
 
         <div className="flex flex-col w-full">
           <label htmlFor="employeeNotes" className="block text-sm font-medium">
-            About the Employee
+            Employee Note
           </label>
           <textarea
             id="employeeNotes"

@@ -59,14 +59,29 @@ namespace backend.Controller.Users.ToggleUserActive
                     return NotFound($"User with id {payload.UserId} not found");
                 }
 
-                // Deactivating a customer (i.e. going from active -> inactive)
-                // is only allowed once they have zero invoice records at all.
+                // Deactivating a user (i.e. going from active -> inactive)
+                // is only allowed once they have zero records tying them to
+                // existing transactions.
                 if (user.IsActive)
                 {
-                    var hasAnyInvoices = await _db.Invoice.AnyAsync(i => i.Customer_ID == payload.UserId);
-                    if (hasAnyInvoices)
+                    var roles = await _userManager.GetRolesAsync(user);
+
+                    if (roles.Contains("Customer"))
                     {
-                        return Conflict("This customer has invoice records and cannot be deactivated.");
+                        var hasAnyInvoices = await _db.Invoice.AnyAsync(i => i.Customer_ID == payload.UserId);
+                        if (hasAnyInvoices)
+                        {
+                            return Conflict("This customer has invoice records and cannot be deactivated.");
+                        }
+                    }
+                    else if (roles.Contains("Employee") || roles.Contains("Admin"))
+                    {
+                        var hasAnyInvoices = await _db.Invoice.AnyAsync(i => i.Invoice_Clerk == payload.UserId);
+                        var hasAnyRestocks = await _db.Restocks.AnyAsync(r => r.Restock_Clerk == payload.UserId);
+                        if (hasAnyInvoices || hasAnyRestocks)
+                        {
+                            return Conflict("This employee has invoice or restock records and cannot be deactivated.");
+                        }
                     }
                 }
 
