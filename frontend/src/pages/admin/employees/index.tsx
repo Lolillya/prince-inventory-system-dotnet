@@ -126,7 +126,7 @@ const EmployeesPage = () => {
           </div>
           {isAdmin && (
             <button
-              className="flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 text-nowrap"
               onClick={handleAddEmployee}
             >
               <PlusIcon />
