@@ -28,12 +28,13 @@ export const InfoCard = ({
     if (type === "customer") setCustomerSelected(user);
   };
 
-  const isDeactivatedCustomer = type === "customer" && !data.isActive;
+  const canToggleActive = type === "customer" || type === "employee";
+  const isDeactivated = canToggleActive && !data.isActive;
 
   return (
     <div
       className={`hover:bg-custom-gray-lighter hover:cursor-pointer p-5 rounded-lg flex items-center justify-between ${
-        isDeactivatedCustomer ? "opacity-60" : ""
+        isDeactivated ? "opacity-60" : ""
       }`}
       onClick={() => handleClick(data)}
     >
@@ -42,8 +43,14 @@ export const InfoCard = ({
 
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <span className="info-name">{data.companyName}</span>
-            {isDeactivatedCustomer && (
+            {type === "customer" && <span>{data.companyName}</span>}
+
+            {type === "employee" && (
+              <span className="info-name">
+                {data.firstName} {data.lastName}
+              </span>
+            )}
+            {isDeactivated && (
               <span className="bg-gray-100 text-gray-500 text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full flex items-center gap-1">
                 <Ban size={12} />
                 Deactivated
@@ -58,7 +65,7 @@ export const InfoCard = ({
         <div className="info-card-actions rounded-lg hover:bg-tinker-yellow hover:text-laughing-orange transition-all duration-300 ">
           <StarIcon width={24} height={24} />
         </div>
-        {type === "customer" ? (
+        {canToggleActive ? (
           <div
             className={`info-card-actions rounded-lg transition-all duration-300 ${
               data.isActive
