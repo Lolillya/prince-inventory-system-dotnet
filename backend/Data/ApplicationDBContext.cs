@@ -47,6 +47,7 @@ namespace backend.Data
         public DbSet<CustomerTerm> CustomerTerms { get; set; }
         public DbSet<InvoicePayment> InvoicePayments { get; set; }
         public DbSet<ProductAuditLog> ProductAuditLogs { get; set; }
+        public DbSet<UserAuditLog> UserAuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

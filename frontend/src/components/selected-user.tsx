@@ -10,6 +10,7 @@ import {
 import { UserClientModel } from "../models/user-client.model";
 import { useState } from "react";
 import {
+  AtSign,
   Ban,
   Box,
   Calendar,
@@ -17,6 +18,7 @@ import {
   KeyRound,
   Package,
   PhilippinePeso,
+  Shield,
 } from "lucide-react";
 
 import { InvoiceHistoryModal } from "./invoice-history-modal";
@@ -32,6 +34,7 @@ import { ShowAllModal } from "@/pages/admin/restock/_components/all-items-modal"
 import { CustomerSOAModal } from "@/pages/admin/customers/_components/customer-soa.modal";
 import { EmployeeAllInvoicesModal } from "./employee-all-invoices-modal";
 import { EmployeeAllRestocksModal } from "./employee-all-restocks-modal";
+import { AuditLog } from "@/pages/admin/employees/_components/audit-log";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 type UserType = "customer" | "supplier" | "employee";
@@ -62,12 +65,18 @@ export const SelectedUser = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-5">
           <div className="rounded-lg">
-            <div className="bg-black h-12 w-12 rounded-lg" />
+            <div className="bg-black h-12 w-12 rounded-lg flex items-center justify-center text-orange-500">
+              <UserIcon />
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <p className="text-base text-slate-700">{user.companyName}</p>
-              {/* 
+              <p className="text-base text-slate-700">
+                {type === "employee"
+                  ? `${user.firstName} ${user.lastName}`
+                  : user.companyName}
+              </p>
+              {/*
               <span className="rounded-full bg-cyan-200 px-2 py-[3px] text-sm tracking-wide text-cyan-700 capitalize">
                 {user.supplier_Type}
               </span> */}
@@ -117,50 +126,91 @@ export const SelectedUser = ({
               data-[state=active]:border-b-2
             data-[state=active]:border-blue-600"
           >
-            Invoice ({customerInvoices?.length ?? 0})
+            {type === "employee"
+              ? "Activity"
+              : `Invoice (${customerInvoices?.length ?? 0})`}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="details">
           <div className="flex flex-col gap-2 h-full">
             {/* amount in receivables SECTION */}
-            <div
-              className="p-2 rounded-lg bg-wash-gray hover:cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => setIsReceivablesModalOpen(true)}
-            >
-              <div className=" flex items-center gap-3">
-                <div className="bg-green-200 h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-                  <span className="text-green-500 font-bold">₱</span>
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 ">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold info-name flex gap-2">
-                      ₱{amountInReceivables.toLocaleString()}
-                    </p>
+            {type !== "employee" && (
+              <div
+                className="p-2 rounded-lg bg-wash-gray hover:cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setIsReceivablesModalOpen(true)}
+              >
+                <div className=" flex items-center gap-3">
+                  <div className="bg-green-200 h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+                    <span className="text-green-500 font-bold">₱</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <p className="info-id text-sm">Amount in Receivables</p>
-                    <CornerRightUp size={18} className="text-vesper-gray" />
+                  <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 ">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold info-name flex gap-2">
+                        ₱{amountInReceivables.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <p className="info-id text-sm">Amount in Receivables</p>
+                      <CornerRightUp size={18} className="text-vesper-gray" />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* user FULLNAME SECTION */}
-            <div className="p-2 rounded-lg bg-wash-gray">
-              <div className=" flex items-center gap-3">
-                <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
-                  <UserIcon />
-                </div>
-                <div className="flex flex-col justify-center">
-                  <p className="info-id text-sm">Representative</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold info-name ">
-                      {user.firstName} {user.lastName}
-                    </p>
+            {type === "employee" ? (
+              <div className="p-2 rounded-lg bg-wash-gray">
+                <div className=" flex items-center gap-3">
+                  <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+                    <AtSign size={18} />
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <p className="info-id text-sm">Username</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold info-name ">
+                        {user.username}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="p-2 rounded-lg bg-wash-gray">
+                <div className=" flex items-center gap-3">
+                  <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+                    <UserIcon />
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <p className="info-id text-sm">Representative</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold info-name ">
+                        {user.firstName} {user.lastName}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* user ROLE SECTION */}
+            {type === "employee" && (
+              <div className="p-2 rounded-lg bg-wash-gray">
+                <div className=" flex items-center gap-3">
+                  <div className="bg-bellflower-gray h-10 w-10 rounded-lg flex items-center justify-center text-blouse-gray">
+                    <Shield size={18} />
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <p className="info-id text-sm">Role</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold info-name capitalize">
+                        {user.role}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* user CONTACT NUMBER SECTION */}
             <div className="p-2 rounded-lg bg-wash-gray">
@@ -225,6 +275,7 @@ export const SelectedUser = ({
         </TabsContent>
         <TabsContent value="invoice" className="min-h-0 flex flex-col">
           {type === "customer" && <CustomerActions customerId={user.id} />}
+          {type === "employee" && <AuditLog userId={user.id} />}
         </TabsContent>
       </Tabs>
 
