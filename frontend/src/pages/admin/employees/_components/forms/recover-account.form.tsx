@@ -1,11 +1,10 @@
 import { ChangeEmployeePasswordService } from "@/features/employees/change-employee-password.service";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useState, Dispatch, SetStateAction } from "react";
+import { useId, useState, ComponentProps, Dispatch, SetStateAction } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
-import { Separator } from "@/components/separator";
 
 const schema = yup.object().shape({
   newPassword: yup
@@ -39,6 +38,10 @@ export const RecoverAccountForm = ({
   userId,
   setIsRecoverAccountModalOpen,
 }: RecoverAccountFormProps) => {
+  const fieldId = useId();
+  // Presentation only: the existing update API does not accept this field.
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -63,76 +66,99 @@ export const RecoverAccountForm = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-4 w-full"
+      className="flex w-full flex-col"
     >
-      {/* NEW PASSWORD */}
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">New Password</label>
-        <div className="relative">
-          <input
-            type={showNewPassword ? "text" : "password"}
-            className="w-full drop-shadow-none bg-custom-gray p-2 pr-10"
-            placeholder="Enter new password"
-            {...register("newPassword")}
-          />
-          <div
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 mr-2 cursor-pointer"
-            onClick={() => setShowNewPassword((v) => !v)}
-          >
-            {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </div>
-        </div>
-        {errors.newPassword && (
-          <span className="text-red-500 text-xs">
-            {errors.newPassword.message}
-          </span>
-        )}
+      <div className="flex min-h-[420px] flex-col gap-6 px-5 py-8 sm:px-8">
+        <PasswordField
+          label="Current Password"
+          visible={showCurrentPassword}
+          onToggle={() => setShowCurrentPassword((value) => !value)}
+          inputProps={{
+            id: `${fieldId}-current`,
+            value: currentPassword,
+            onChange: (event) => setCurrentPassword(event.target.value),
+            autoComplete: "off",
+          }}
+        />
+        <PasswordField
+          label="New Password"
+          visible={showNewPassword}
+          onToggle={() => setShowNewPassword((value) => !value)}
+          error={errors.newPassword?.message}
+          inputProps={{
+            id: `${fieldId}-new`,
+            autoComplete: "new-password",
+            ...register("newPassword"),
+          }}
+        />
+        <PasswordField
+          label="Confirm New Password"
+          visible={showConfirmPassword}
+          onToggle={() => setShowConfirmPassword((value) => !value)}
+          error={errors.confirmPassword?.message}
+          inputProps={{
+            id: `${fieldId}-confirm`,
+            autoComplete: "new-password",
+            ...register("confirmPassword"),
+          }}
+        />
+        <ul className="ml-4 list-disc text-sm leading-6 text-slate-500">
+          <li>Minimum 8 characters</li>
+          <li>Must include a number</li>
+        </ul>
       </div>
 
-      {/* CONFIRM PASSWORD */}
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">Confirm Password</label>
-        <div className="relative">
-          <input
-            type={showConfirmPassword ? "text" : "password"}
-            className="w-full drop-shadow-none bg-custom-gray p-2 pr-10"
-            placeholder="Confirm new password"
-            {...register("confirmPassword")}
-          />
-          <div
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 mr-2 cursor-pointer"
-            onClick={() => setShowConfirmPassword((v) => !v)}
-          >
-            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </div>
-        </div>
-        {errors.confirmPassword && (
-          <span className="text-red-500 text-xs">
-            {errors.confirmPassword.message}
-          </span>
-        )}
-      </div>
-
-      <ul className=" list-disc ml-4">
-        <li className="text-vesper-gray text-xs">Minimum of 8 characters</li>
-        <li className="text-vesper-gray text-xs">Must include a number</li>
-      </ul>
-
-      <Separator orientation="horizontal" />
-
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex justify-end gap-4 border-t border-gray-200 px-5 py-6 sm:px-8 sm:py-7">
         <button
           type="button"
-          className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+          className="h-12 w-auto max-w-none rounded-md border border-gray-200 bg-white px-6 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => setIsRecoverAccountModalOpen(false)}
           disabled={isSubmitting}
         >
           Cancel
         </button>
-        <button type="submit" disabled={isSubmitting}>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-12 w-auto max-w-none rounded-md bg-[#009f83] px-6 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+        >
           {isSubmitting ? "Saving..." : "Update Password"}
         </button>
       </div>
     </form>
   );
 };
+
+interface PasswordFieldProps {
+  label: string;
+  visible: boolean;
+  onToggle: () => void;
+  inputProps: ComponentProps<"input">;
+  error?: string;
+}
+
+const PasswordField = ({ label, visible, onToggle, inputProps, error }: PasswordFieldProps) => (
+  <div className="flex flex-col gap-2">
+    <label htmlFor={inputProps.id} className="text-base font-medium text-slate-600">{label}</label>
+    <div className="relative">
+      <input
+        {...inputProps}
+        type={visible ? "text" : "password"}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${inputProps.id}-error` : undefined}
+        className="h-12 w-full rounded-lg border border-gray-200 bg-white px-4 pr-12 text-base text-slate-700 drop-shadow-none focus:border-emerald-500 focus:outline-2 focus:outline-emerald-500/20"
+      />
+      <button
+        type="button"
+        aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
+        aria-pressed={visible}
+        aria-controls={inputProps.id}
+        onClick={onToggle}
+        className="absolute inset-y-1 right-1 my-auto h-10 w-10 max-w-none rounded-md bg-transparent p-2 text-slate-600 shadow-none hover:bg-slate-50 hover:shadow-none focus-visible:outline-2 focus-visible:outline-emerald-600"
+      >
+        {visible ? <EyeOff size={21} strokeWidth={1.7} /> : <Eye size={21} strokeWidth={1.7} />}
+      </button>
+    </div>
+    {error && <p id={`${inputProps.id}-error`} role="alert" className="text-xs text-red-600">{error}</p>}
+  </div>
+);
